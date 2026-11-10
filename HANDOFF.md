@@ -1,5 +1,9 @@
 # Handoff (2026-11-10)
 
+**P3 reel (2026-11-10):** paused at Step 0. Drafted OAS 1952, RRSP 1957, CPP 1966 as unverified in `canada-planning-facts`
+(pushed, 62 tests pass; entry cap raised to 50). Beats drafted in `reels/beats-draft.md`. Waiting for Mo to confirm the dates
+and approve the beats; then `npm run sync-facts`, pin code-video, build `reels/` (not started). No dated card renders before that.
+
 **Done:** `labs/money-milestones` (P7): single-file page built by `npm run build` into `labs/money-milestones/dist/index.html`
 (styles, script, fonts and the facts inlined). Birth year in, 4,940 weeks out, four rules (TFSA from the minimum age,
 CPP start window, OAS from the start age with deferral, RRSP maturity) placed beside the grid and listed as real text with
