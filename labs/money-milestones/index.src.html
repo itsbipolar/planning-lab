@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your money milestones, in weeks · Mohammed El Chayeb</title>
+<meta name="description" content="Type a birth year and see the rules Canada has already set for registered plans and public pensions, on the weeks of a life. Education only, not advice.">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<div class="page">
+  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/money-milestones/">About this build</a></header>
+  <main>
+    <h1>Your money milestones, in weeks</h1>
+    <p class="lede">Type a birth year. The rules Canada has already set for registered plans and public pensions appear on the weeks of a life, each with its source.</p>
+    <p class="status-tag"><span data-status>demo</span></p>
+
+    <form id="form" novalidate>
+      <label for="year">Birth year</label>
+      <div class="row"><input id="year" name="year" type="number" inputmode="numeric" autocomplete="off" aria-describedby="hint error"><button type="submit">Show my milestones</button></div>
+      <p id="hint" class="small">Your birth year stays in your browser. It is not saved, put in the address, or sent anywhere.</p>
+      <p id="error" class="small error" role="alert" hidden></p>
+    </form>
+
+    <p id="summary" class="summary" role="status" aria-live="polite"></p>
+
+    <section id="result" hidden aria-label="Your weeks and milestones">
+      <figure class="viz" aria-hidden="true"><div id="grid" class="grid"></div></figure>
+      <p class="small legend-note">Each row is one calendar year of age, each box one week. Filled boxes have passed. The bars on the right mark the rules below; the shaded rows are where several of them land.</p>
+      <h2>The milestones</h2>
+      <ol id="list" class="list"></ol>
+    </section>
+
+    <p class="foot-note">Education only; rules can change and your situation may differ.</p>
+    <p class="small">General rules, as read on the dates shown, with no projections and no personal recommendation. Inspired by <em>Life in Weeks</em> by Gina Trapani (MIT licence).</p>
+  </main>
+  <footer class="foot">
+    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
+    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
+  </footer>
+</div>
+<script type="application/json" id="facts">/*@@FACTS@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "planning-lab",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "sync-facts": "node scripts/sync-facts.mjs",
+    "build": "node labs/money-milestones/build.mjs",
+    "test": "node --test labs/money-milestones/tests/no-hardcoded.test.mjs && npx playwright test",
+    "check": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.63.0"
+  }
+}
