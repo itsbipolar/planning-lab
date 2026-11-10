@@ -7,6 +7,7 @@ or stock, `shell/art.mjs`), look A "Paper" (`reel.json` "look"). Two render roun
 collide) and put the drawings on the end card. 14 reel tests: preflight (missing, unconfirmed or absent fact; digit in text; the
 render refuses), no fact year in code, every word inside the phone-app safe band, every carousel slide fits. All 39+42 checks pass.
 Pinned: code-video 6e806a5 (read only), hyperframes 0.8.217 (lint and render, telemetry off), zzfx 1.4.0, gsap 3.14.2.
+**Web copies:** `--web` makes history-45.webm, a poster and contact-sheet.webp for the site (`npm run sync-labs` there).
 **Next:** case-study MDX at /builds/reel-shell in the site (contact sheet + a failing-preflight demo), native video with the .vtt
 on /explainers. Firm approval before any social posting. Stretch: one rights-checked archive photo beat, a French cut.
 
