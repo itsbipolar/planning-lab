@@ -10,6 +10,7 @@ export const CARD_TYPES = ['hook', 'date', 'stat', 'chart', 'sources', 'end'];
 // The end card carries only the fixed education and AI lines, so it is the one type without a fact.
 const NEEDS_FACT = new Set(['hook', 'date', 'stat', 'chart', 'sources']);
 const STATS = new Set(['span_years']);
+const ART = new Set(['cheque', 'form', 'paystub', 'passbook', 'key']); // the drawings in art.mjs
 const TEXT_FIELDS = ['text', 'beat', 'today', 'name', 'short', 'ai'];
 
 export const readJSON = p => JSON.parse(readFileSync(p, 'utf8'));
@@ -50,6 +51,7 @@ export function preflight(reel, facts) {
       if (['date', 'chart', 'stat', 'hook'].includes(c.type) && yearOf(f) === null) errors.push(`${where}: fact "${id}" has no year in its value`);
     }
     if (c.type === 'date' && fids.length !== 1) errors.push(`${where}: a date card shows exactly one fact`);
+    if (c.art !== undefined && !ART.has(c.art)) errors.push(`${where}: no drawing called "${c.art}"`);
     if (c.type === 'stat' && !STATS.has(c.stat)) errors.push(`${where}: unknown stat "${c.stat}"`);
   });
   for (const id of reel.carousel ?? []) if (!ids.has(id)) errors.push(`carousel: no card "${id}"`);
@@ -57,7 +59,7 @@ export function preflight(reel, facts) {
 }
 
 const HOSTS = {
-  'laws-lois.justice.gc.ca': 'Justice Laws (Government of Canada)',
+  'laws-lois.justice.gc.ca': 'Justice Laws Website',
   'www.osfi-bsif.gc.ca': 'Office of the Chief Actuary, OSFI',
   'www150.statcan.gc.ca': 'Statistics Canada',
   'www.canada.ca': 'Government of Canada',

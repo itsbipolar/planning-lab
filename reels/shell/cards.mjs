@@ -3,6 +3,7 @@
 // house dark ground). Years are set in Source Serif 4, everything else in Archivo; amber is a mark only.
 import { readJSON, ROOT } from './lib.mjs';
 import { join } from 'node:path';
+import { art, moves, ART_KINDS } from './art.mjs';
 
 const tokens = readJSON(join(ROOT, 'shared', 'tokens.json'));
 export const FORMATS = {
@@ -15,6 +16,7 @@ export const LOOKS = {
 };
 const INK = tokens.dark.ground, INK2 = tokens.light.ink2, RULE = '#CFC5B4', POINT = tokens.dark.point;
 
+export { ART_KINDS };
 export const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export function fontFaces(prefix = 'assets/fonts/') {
@@ -42,6 +44,16 @@ ${sel} mark{background:${POINT};color:${INK};font-weight:700;padding:0 .16em;box
 ${sel} .short{font-size:${big ? 96 : 84}px;font-weight:700;margin-top:${big ? 44 : 30}px;line-height:1}
 ${sel} .name{font-size:${big ? 56 : 48}px;font-weight:500;color:${INK2};margin-top:18px;line-height:1.15}
 ${sel} .year{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:${big ? 300 : 250}px;line-height:.86;letter-spacing:-.02em;margin-top:${big ? 34 : 20}px}
+${sel} .yr{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-top:${big ? 30 : 18}px}
+${sel} .yr .year{margin-top:0}
+${sel} .art{width:${big ? 286 : 270}px;height:${big ? 278 : 262}px;flex:none;overflow:visible}
+${sel} .icons{display:flex;justify-content:space-between;margin-top:${big ? 70 : 44}px}
+${sel} .icons .icon{width:${big ? 150 : 140}px;height:${big ? 146 : 136}px;overflow:visible}
+${sel} .plate{position:absolute;left:${F.left - L.inset}px;right:${F.left - L.inset}px;top:${F.h - F.bottom - L.inset + 14}px;bottom:${big ? 46 : 0}px;
+  border-top:3px solid ${INK};display:flex;justify-content:center;align-items:center;gap:10px}
+${sel} .plate .art{width:auto;height:100%}
+${sel} .plate .icon{width:19%;height:auto}
+${sel} .grain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:multiply}
 ${sel} .qual{font-size:${big ? 46 : 42}px;color:${INK2};margin-top:14px}
 ${sel} .beat{font-size:${big ? 68 : 56}px;font-weight:650;line-height:1.16;margin-top:${big ? 40 : 28}px}
 ${sel} .today{font-size:${big ? 60 : 50}px;line-height:1.22;color:${INK2};margin-top:20px}
@@ -102,10 +114,11 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
   let body = '';
   switch (c.type) {
     case 'hook':
-      body = `<div class="hook r">${esc(c.text)}</div><div class="range r">${c.from}<span class="to">–${c.to}</span></div>`; break;
+      const icons = model.cards.filter(x => x.type === 'date' && x.art).map((x, i) => art(x.art, `${p}-i${i}`, 'icon')).join('');
+      body = `<div class="hook r">${esc(c.text)}</div>${fmt === 'reel' ? '' : `<div class="icons r">${icons}</div>`}<div class="range r">${c.from}<span class="to">–${c.to}</span></div>`; break;
     case 'date':
       body = `<div class="short r"><mark>${esc(c.short)}</mark></div><div class="name r">${esc(c.name)}</div>
-<div class="year r" id="${p}-year">${c.year}</div>${c.qualifier ? `<div class="qual r">In law: ${esc(c.qualifier)}</div>` : ''}
+<div class="yr r"><div class="year" id="${p}-year">${c.year}</div>${c.art && fmt !== 'reel' ? art(c.art, `${p}-art`) : ''}</div>${c.qualifier ? `<div class="qual r">In law: ${esc(c.qualifier)}</div>` : ''}
 <div class="beat r">${esc(c.beat)}</div><div class="today r">${esc(c.today)}</div>
 <div class="src r">Source: ${esc(c.source)}</div>${ruler(c, model, p)}`; break;
     case 'chart':
@@ -118,7 +131,11 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
     case 'end':
       body = `<div class="edu r">${esc(c.text)}</div><div class="ai r">${esc(c.ai)}</div>`; break;
   }
-  return `<div class="page" id="${p}-page"><span class="spine"></span><div class="band">${head}${body}${foot}</div><span class="shade" id="${p}-shade"></span></div>`;
+  const grain = `<svg class="grain" aria-hidden="true"><filter id="${p}-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .26  0 0 0 0 .2  0 0 0 .08 0"/></filter><rect width="100%" height="100%" filter="url(#${p}-grain)"/></svg>`;
+  let plate = '';
+  if (fmt === 'reel' && c.type === 'date' && c.art) plate = `<div class="plate">${art(c.art, `${p}-art`)}</div>`;
+  if (fmt === 'reel' && c.type === 'hook') plate = `<div class="plate">${model.cards.filter(x => x.type === 'date' && x.art).map((x, i) => art(x.art, `${p}-i${i}`, 'icon')).join('')}</div>`;
+  return `<div class="page" id="${p}-page">${grain}<span class="spine"></span><div class="band">${head}${body}${foot}</div>${plate}<span class="shade" id="${p}-shade"></span></div>`;
 }
 
 // GSAP tweens for one card, at scene-local seconds. `turn` is the page-turn length; 0 for the first card.
@@ -133,6 +150,7 @@ export function cardTweens(c, model, p, turn, sel) {
     const dx = (pos(model.dates[c.index - 1].year, model.range) - pos(c.year, model.range)) / 100 * width;
     t.push(`tl.fromTo("#${p}-marker",{x:${dx.toFixed(1)}},{x:0,duration:.7,ease:"power2.inOut"},${(turn + 0.5).toFixed(2)});`);
   }
+  if (c.type === 'date' && c.art) t.push(moves(c.art, `${p}-art`, turn + 0.15));
   if (c.type === 'chart') {
     t.push(`tl.fromTo("#${p}-aline",{scaleX:0},{scaleX:1,duration:1.1,ease:"power1.inOut"},${(turn + 0.2).toFixed(2)});`);
     model.dates.forEach((d, i) => {

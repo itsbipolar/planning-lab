@@ -5,8 +5,10 @@
 carousel slides, PDF, WebVTT captions, contact sheet and safe-zone overlay. 12 reel tests: preflight fails on a missing,
 unconfirmed or absent fact, on a digit typed into reel.json, and the render command refuses; no fact year in the code.
 Pinned: code-video 6e806a5 (read, scripts not run), hyperframes 0.8.217 (lint and render only, telemetry off), zzfx 1.4.0,
-gsap 3.14.2, Source Serif 4. Two 10-second strips rendered (A Paper, B Sheet on dark) and checked at 390 px phone width.
-**Next:** Mo picks A or B from `reels/history-45/out/strips-contact-sheet.png`; then `npm run reel -- reels/history-45 --look <x>`
+gsap 3.14.2, Source Serif 4. Mo asked for pictures (2026-11-10): he chose code-drawn print pictures (no photos or stock). `shell/art.mjs` draws one per
+account (cheque, stamped form, pay stub, passbook, house key) with a small motion; reel shows it as a plate in the lower
+(no-text) zone, carousel beside the year; hook shows all five. Strips re-rendered, all six cards checked at 390 px.
+**Next:** Mo picks A or B from `reels/history-45/out/contact-sheet-strips-and-pictures.png`; then `npm run reel -- reels/history-45 --look <x>`
 (full reel, carousel, captions, contact sheet; at most 2 fix rounds). Then the case-study MDX in the site.
 
 **Done:** `labs/money-milestones` (P7): single-file page built by `npm run build` into `labs/money-milestones/dist/index.html`
