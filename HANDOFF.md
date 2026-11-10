@@ -53,3 +53,8 @@ and 3 no-hard-coded-figure tests. `shared/drag-number.js` is the reusable drag-n
 pointer drag); every number also has a plain slider. Amounts (CPP $1,000, OAS $700, other $40,000) are illustrative, in
 `story.json`. The OAS recovery tax itself is not computed (its rate is not in the facts), only the threshold flag.
 6 browser tests at 2 widths: keyboard rewrite, pointer drag, axe both themes, sources, print to PDF, reduced motion.
+
+**P4 Money Year 2026, step 0 (2026-11-10):** Mo chose: the budget as P4's last chapter, public measures only. `npm run fetch-data`
+now also writes `shared/data/money-year-2026.json` (Valet V39079, V80691335, FXUSDCAD, CPI_TRIM, CPI_MEDIAN from 2025-12-01;
+refresh around Dec 1). 11 Budget 2026 proposals drafted in canada-planning-facts (unverified, `budget_proposal`); they reach
+`shared/facts.json` only once Mo confirms. Budget Day's date: no quotable line on budget.canada.ca yet. Next: the graphed page.

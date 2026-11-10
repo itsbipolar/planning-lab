@@ -1,5 +1,6 @@
 // Fetches dated snapshots of the public data the builds use into shared/data/ (never at page load):
 //  - Statistics Canada, Table 18-10-0004-01 Consumer Price Index, monthly, Canada, all-items (vector v41690973)
+//  - Bank of Canada Valet, V39079 policy rate, V80691335 5-year posted mortgage, FXUSDCAD, CPI_TRIM, CPI_MEDIAN (P4, from the year before)
 //  - Bank of Canada Valet, V80691311 Prime rate (weekly, from 1975; the older monthly prime and 5-year mortgage series stop in 2019)
 // Run: node scripts/fetch-data.mjs   Then commit the changed files: the date inside each file is the "retrieved" date.
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -21,5 +22,18 @@ writeFileSync('shared/data/prime-rate-weekly.json', JSON.stringify({
   title: 'Prime rate, weekly (the rate a financial institution uses as a base for loan products)', source: 'Bank of Canada Valet API, series V80691311', source_url: 'https://www.bankofcanada.ca/valet/observations/V80691311/json',
   terms_url: 'https://www.bankofcanada.ca/terms/', attribution: 'Source: Bank of Canada. Not affiliated with or endorsed by the Bank of Canada.',
   retrieved: today, weeks: bcj.observations.filter((o) => o.V80691311?.v).map((o) => [o.d, Number(o.V80691311.v)]),
+}) + '\n');
+// P4 Money Year: the year's series from the Bank of Canada Valet API, from 1 December of the year before (for the start values).
+const YEAR = Number(process.env.MONEY_YEAR ?? today.slice(0, 4));
+const SERIES = ['V39079', 'V80691335', 'FXUSDCAD', 'CPI_TRIM', 'CPI_MEDIAN'];
+const mv = await (await fetch(`https://www.bankofcanada.ca/valet/observations/${SERIES.join(',')}/json?start_date=${YEAR - 1}-12-01`)).json();
+writeFileSync(`shared/data/money-year-${YEAR}.json`, JSON.stringify({
+  title: `Canada's money year ${YEAR}: policy rate, 5-year posted mortgage rate, USD/CAD, core inflation`,
+  source: `Bank of Canada Valet API, series ${SERIES.join(', ')}`,
+  source_url: `https://www.bankofcanada.ca/valet/observations/${SERIES.join(',')}/json`,
+  terms_url: 'https://www.bankofcanada.ca/terms/', attribution: 'Source: Bank of Canada. Not affiliated with or endorsed by the Bank of Canada.',
+  retrieved: today, year: YEAR,
+  series: Object.fromEntries(SERIES.map((k) => [k, { label: mv.seriesDetail[k].label, description: mv.seriesDetail[k].description,
+    points: mv.observations.filter((o) => o[k]?.v != null && o[k].v !== '').map((o) => [o.d, Number(o[k].v)]) }])),
 }) + '\n');
 console.log('snapshots written', today);
