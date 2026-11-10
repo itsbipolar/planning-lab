@@ -90,3 +90,20 @@ test('the end card discloses the AI voice', () => {
   const end = reel.cards.find(c => c.type === 'end');
   assert.ok(reel.voice && /AI-generated/.test(end.voice_note ?? ''));
 });
+
+test('speech recognition heard every spoken year in its clip, and nothing stray is kept', async () => {
+  const { readFileSync } = await import('node:fs');
+  const cuts = JSON.parse(readFileSync(join(ROOT, 'reels', 'history-45', 'voice', 'cuts.json'), 'utf8'));
+  const m = resolve(reel, facts);
+  const words = s => s.toLowerCase().replace(/-/g, ' ').replace(/[^a-z' ]/g, ' ').split(/\s+/).filter(Boolean);
+  for (const c of m.cards.filter(x => x.say)) {
+    assert.ok(cuts[c.id], `${c.id}: no speech window`);
+    assert.ok(cuts[c.id].end > cuts[c.id].start, c.id);
+    if (c.type === 'date') {
+      const heard = ` ${words(cuts[c.id].heard).join(' ')} `;
+      // "two thousand nine" may be heard as "two thousand and nine"; every word of the year must be there in order.
+      const yw = words(yearWords(c.year));
+      assert.ok(new RegExp(yw.join(' (?:and )?')).test(heard), `${c.id}: heard "${cuts[c.id].heard}"`);
+    }
+  }
+});

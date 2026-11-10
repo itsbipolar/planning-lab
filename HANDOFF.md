@@ -11,7 +11,11 @@ Pinned: code-video 6e806a5 (read only), hyperframes 0.8.217 (lint and render, te
 SOURCE.md); the script was tightened with the vox repo's virality playbook and approved by Mo. Years are filled from the facts
 and spoken as words (`spoken()`, tested). `shell/voice.mjs` trims silence, caps pauses at 0.45 s (never changes speed), times
 each card to its line and mixes the voice over the ticks; captions follow the voice. Reel now 61.9 s, 17.6 MiB, -17.9 LUFS.
-Spend: 9 clips, about 5 Higgsfield credits. End card: "This voice is AI-generated." 17 reel tests pass.
+Spend: 9 clips, 4.70 Higgsfield credits.
+**Voice fix (Mo: "moaning between transitions"):** the voice model had added stray sounds before or after four lines (OAS, span,
+closing line, hook); silence trimming kept them. `shell/tools/align.py` (Vosk speech recognition, offline) now finds each line's
+first and last real word and writes `voice/cuts.json`; the shell keeps only that window, with 12 ms fades at every cut. A test
+checks every spoken year was heard. The finished mix transcribes as the nine lines and nothing else. Reel 59.4 s, 16.9 MiB. End card: "This voice is AI-generated." 17 reel tests pass.
 **Web copies:** `--web` makes history-45.webm, a poster and contact-sheet.webp for the site (`npm run sync-labs` there).
 **Next:** case-study MDX at /builds/reel-shell in the site (contact sheet + a failing-preflight demo), native video with the .vtt
 on /explainers. Firm approval before any social posting. Stretch: one rights-checked archive photo beat, a French cut.
