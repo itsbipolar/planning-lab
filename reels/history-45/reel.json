@@ -2,6 +2,7 @@
   "id": "history-45",
   "title": "Canadian money history in 45 seconds",
   "series": "Canadian money history",
+  "look": "paper",
   "fps": 30,
   "turn": 0.6,
   "cards": [

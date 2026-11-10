@@ -99,7 +99,9 @@ async function carousel(look) {
   console.log(`wrote ${pngs.length} carousel slides and carousel.pdf`);
 }
 
-if (opt('strip')) {
+if (flag('carousel')) {
+  await carousel(opt('look', reel.look ?? 'paper'));
+} else if (opt('strip')) {
   const sec = Number(opt('strip'));
   const looks = opt('look') ? [opt('look')] : Object.keys(LOOKS);
   const rows = [];

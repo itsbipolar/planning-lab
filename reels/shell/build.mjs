@@ -105,7 +105,7 @@ export function buildCarousel(model, look, dir) {
     const c = model.cards.find(x => x.id === id);
     const last = i === model.reel.carousel.length - 1;
     const end = model.cards.find(x => x.type === 'end');
-    const extra = last && end ? `<div class="ai r" style="margin-top:28px">${esc(end.ai)}</div>` : '';
+    const extra = last && end ? `<div class="ai r" style="margin-top:20px">${esc(end.ai)}</div>` : '';
     let html = cardHTML(c, model, 'carousel', 's', { showFoot: true });
     if (extra) html = html.replace('<div class="foot">', `${extra}<div class="foot">`);
     const name = `slide-${String(i + 1).padStart(2, '0')}-${id}.html`;

@@ -64,28 +64,27 @@ ${sel} .ruler .dot{position:absolute;top:16px;width:24px;height:24px;margin-left
 ${sel} .ruler .dot.on{background:${INK}}
 ${sel} .ruler .marker{position:absolute;top:0;width:6px;height:56px;margin-left:-3px;background:${INK}}
 ${sel} .hook{font-size:${big ? 96 : 84}px;font-weight:700;line-height:1.06;letter-spacing:-.01em;margin-top:${big ? 120 : 70}px}
-${sel} .range{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:${big ? 170 : 150}px;line-height:1;margin-top:auto;letter-spacing:-.02em}
+${sel} .range{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:${big ? 170 : 150}px;line-height:1;margin-top:auto;margin-bottom:${big ? 34 : 0}px;letter-spacing:-.02em}
 ${sel} .range .to{color:${INK2};font-weight:400}
 ${sel} .lede{font-size:${big ? 72 : 62}px;font-weight:650;line-height:1.12;margin-top:${big ? 64 : 40}px}
-${sel} .axis{position:relative;height:${big ? 420 : 360}px;margin-top:auto;margin-bottom:${big ? 40 : 10}px}
-${sel} .axis .line{position:absolute;left:0;right:0;top:50%;height:5px;background:${INK};transform-origin:0 50%}
-${sel} .axis .pt{position:absolute;top:50%;width:0;height:0}
-${sel} .axis .pt i{position:absolute;left:-13px;top:-11px;width:26px;height:26px;border-radius:50%;background:${INK}}
-${sel} .axis .lab{position:absolute;white-space:nowrap;line-height:1}
-${sel} .axis .lab b{display:block;font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:${big ? 64 : 56}px}
-${sel} .axis .lab span{display:block;font-size:${big ? 46 : 42}px;font-weight:600;color:${INK2};margin-top:6px}
-${sel} .axis .up .lab{bottom:34px}
-${sel} .axis .dn .lab{top:34px}
+${sel} .axis{position:relative;margin:${big ? 70 : 44}px 0 0 6px}
+${sel} .axis .line{position:absolute;left:18px;top:0;width:5px;background:${INK};transform-origin:50% 0}
+${sel} .axis .lead{position:absolute;left:0;top:0}
+${sel} .axis .pt{position:absolute;left:20px;width:0;height:0}
+${sel} .axis .pt i{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;background:${INK}}
+${sel} .axis .lab{position:absolute;left:118px;transform:translateY(-50%);white-space:nowrap;line-height:1;display:flex;align-items:baseline;gap:22px}
+${sel} .axis .lab b{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:${big ? 84 : 72}px}
+${sel} .axis .lab span{font-size:${big ? 54 : 48}px;font-weight:700;color:${INK2}}
 ${sel} .stat{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:${big ? 420 : 340}px;line-height:.9;margin-top:auto;letter-spacing:-.03em}
 ${sel} .stattext{font-size:${big ? 72 : 62}px;font-weight:650;line-height:1.12;margin:${big ? 24 : 16}px 0 auto}
-${sel} .rows{margin-top:${big ? 48 : 30}px;display:flex;flex-direction:column;gap:${big ? 30 : 22}px}
-${sel} .rows div{border-top:2px solid ${RULE};padding-top:${big ? 16 : 12}px}
+${sel} .rows{margin-top:${big ? 34 : 22}px;display:flex;flex-direction:column;gap:${big ? 18 : 10}px}
+${sel} .rows div{border-top:2px solid ${RULE};padding-top:${big ? 12 : 8}px}
 ${sel} .rows b{font-size:${big ? 54 : 48}px;font-weight:700}
 ${sel} .rows b em{font-style:normal;font-family:"Source Serif 4",Georgia,serif;font-weight:600;margin-left:.3em}
 ${sel} .rows span{display:block;font-size:${big ? 44 : 40}px;color:${INK2};margin-top:4px}
 ${sel} .edu{font-size:${big ? 84 : 72}px;font-weight:700;line-height:1.08;margin-top:${big ? 120 : 70}px}
-${sel} .ai{font-size:${big ? 52 : 46}px;line-height:1.25;color:${INK2};margin-top:${big ? 48 : 32}px}
-${sel} .foot{font-size:40px;color:${INK2};margin-top:auto;padding-top:16px;border-top:2px solid ${RULE}}
+${sel} .ai{font-size:${big ? 52 : 42}px;line-height:1.25;color:${INK2};margin-top:${big ? 48 : 32}px}
+${sel} .foot{font-size:40px;color:${INK2};margin-top:auto;padding-top:10px;border-top:2px solid ${RULE}}
 ${sel} .folio{position:absolute;left:${F.left - L.inset}px;right:${F.right - L.inset}px;bottom:${big ? 120 : 40}px;font-size:40px;color:${INK2};
   display:flex;justify-content:space-between;letter-spacing:.06em}
 `;
@@ -98,13 +97,23 @@ function ruler(c, model, p) {
   return `<div class="ruler r"><span class="line" id="${p}-rline"></span>${dots}<span class="marker" id="${p}-marker" style="left:${pos(c.year, model.range)}%"></span></div>`;
 }
 
-function axis(model, p) {
-  const pts = model.dates.map((d, i) => {
-    const x = pos(d.year, model.range);
-    const align = x < 8 ? 'left:-13px' : x > 92 ? 'right:-13px' : 'left:0;transform:translateX(-50%)';
-    return `<div class="pt ${i % 2 ? 'dn' : 'up'}" style="left:${x}%" id="${p}-pt${i}"><i></i><div class="lab" style="${align}"><b>${d.year}</b><span>${esc(d.short)}</span></div></div>`;
-  }).join('');
-  return `<div class="axis r"><span class="line" id="${p}-aline"></span>${pts}</div>`;
+// A vertical timeline: dots at true proportional positions, labels pushed apart so they never overlap,
+// each joined to its dot by a leader line.
+const AXIS = { reel: { h: 620, gap: 96 }, carousel: { h: 600, gap: 84 } };
+export function axisLayout(model, fmt) {
+  const { h, gap } = AXIS[fmt];
+  const dots = model.dates.map(d => pos(d.year, model.range) / 100 * h);
+  const labs = [];
+  dots.forEach((y, i) => labs.push(i ? Math.max(y, labs[i - 1] + gap) : y));
+  for (let i = labs.length - 1; i >= 0; i--) labs[i] = Math.min(labs[i], i === labs.length - 1 ? h : labs[i + 1] - gap);
+  return { h, dots, labs };
+}
+function axis(model, p, fmt) {
+  const { h, dots, labs } = axisLayout(model, fmt);
+  const lead = dots.map((y, i) => `<path id="${p}-ld${i}" d="M20 ${y} H48 L84 ${labs[i]} H104" fill="none" stroke="${INK}" stroke-width="3"/>`).join('');
+  const pts = model.dates.map((d, i) => `<div class="pt" id="${p}-pt${i}" style="top:${dots[i]}px"><i></i></div>
+<div class="lab" id="${p}-lb${i}" style="top:${labs[i]}px"><b>${d.year}</b><span>${esc(d.short)}</span></div>`).join('');
+  return `<div class="axis r" style="height:${h}px"><span class="line" id="${p}-aline" style="height:${h}px"></span><svg class="lead" width="120" height="${h}" overflow="visible">${lead}</svg>${pts}</div>`;
 }
 
 // The inner markup of one card. `fmt` is "reel" or "carousel"; `p` prefixes every id.
@@ -122,7 +131,7 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
 <div class="beat r">${esc(c.beat)}</div><div class="today r">${esc(c.today)}</div>
 <div class="src r">Source: ${esc(c.source)}</div>${ruler(c, model, p)}`; break;
     case 'chart':
-      body = `<div class="lede r">${esc(c.text)}</div>${axis(model, p)}`; break;
+      body = `<div class="lede r">${esc(c.text)}</div>${axis(model, p, fmt)}`; break;
     case 'stat':
       body = `<div class="stat r">${c.value}</div><div class="stattext r">${esc(c.text)}</div>`; break;
     case 'sources':
@@ -134,7 +143,7 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
   const grain = `<svg class="grain" aria-hidden="true"><filter id="${p}-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .26  0 0 0 0 .2  0 0 0 .08 0"/></filter><rect width="100%" height="100%" filter="url(#${p}-grain)"/></svg>`;
   let plate = '';
   if (fmt === 'reel' && c.type === 'date' && c.art) plate = `<div class="plate">${art(c.art, `${p}-art`)}</div>`;
-  if (fmt === 'reel' && c.type === 'hook') plate = `<div class="plate">${model.cards.filter(x => x.type === 'date' && x.art).map((x, i) => art(x.art, `${p}-i${i}`, 'icon')).join('')}</div>`;
+  if (fmt === 'reel' && (c.type === 'hook' || c.type === 'end')) plate = `<div class="plate">${model.cards.filter(x => x.type === 'date' && x.art).map((x, i) => art(x.art, `${p}-i${i}`, 'icon')).join('')}</div>`;
   return `<div class="page" id="${p}-page">${grain}<span class="spine"></span><div class="band">${head}${body}${foot}</div>${plate}<span class="shade" id="${p}-shade"></span></div>`;
 }
 
@@ -152,10 +161,11 @@ export function cardTweens(c, model, p, turn, sel) {
   }
   if (c.type === 'date' && c.art) t.push(moves(c.art, `${p}-art`, turn + 0.15));
   if (c.type === 'chart') {
-    t.push(`tl.fromTo("#${p}-aline",{scaleX:0},{scaleX:1,duration:1.1,ease:"power1.inOut"},${(turn + 0.2).toFixed(2)});`);
+    const t0 = turn + 0.2, run = 1.6;
+    t.push(`tl.fromTo("#${p}-aline",{scaleY:0},{scaleY:1,duration:${run},ease:"none"},${t0.toFixed(2)});`);
     model.dates.forEach((d, i) => {
-      const at = turn + 0.2 + 1.1 * pos(d.year, model.range) / 100;
-      t.push(`tl.fromTo("#${p}-pt${i}",{opacity:0,scale:.6},{opacity:1,scale:1,duration:.25,ease:"back.out(2)"},${at.toFixed(2)});`);
+      const at = t0 + run * pos(d.year, model.range) / 100;
+      t.push(`tl.fromTo(["#${p}-pt${i}","#${p}-ld${i}","#${p}-lb${i}"],{opacity:0},{opacity:1,duration:.25},${at.toFixed(2)});`);
     });
   }
   return t.join('\n');

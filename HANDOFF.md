@@ -1,15 +1,14 @@
 # Handoff (2026-11-10)
 
-**P3 reel shell (reels/), 2026-11-10:** dates confirmed by Mo (OAS 1952, RRSP 1957, CPP 1966; TFSA, FHSA already) and synced.
-`reels/shell/`: reel.json -> preflight -> HyperFrames project (one scene per card, page turns over the last page) -> MP4, plus
-carousel slides, PDF, WebVTT captions, contact sheet and safe-zone overlay. 12 reel tests: preflight fails on a missing,
-unconfirmed or absent fact, on a digit typed into reel.json, and the render command refuses; no fact year in the code.
-Pinned: code-video 6e806a5 (read, scripts not run), hyperframes 0.8.217 (lint and render only, telemetry off), zzfx 1.4.0,
-gsap 3.14.2, Source Serif 4. Mo asked for pictures (2026-11-10): he chose code-drawn print pictures (no photos or stock). `shell/art.mjs` draws one per
-account (cheque, stamped form, pay stub, passbook, house key) with a small motion; reel shows it as a plate in the lower
-(no-text) zone, carousel beside the year; hook shows all five. Strips re-rendered, all six cards checked at 390 px.
-**Next:** Mo picks A or B from `reels/history-45/out/contact-sheet-strips-and-pictures.png`; then `npm run reel -- reels/history-45 --look <x>`
-(full reel, carousel, captions, contact sheet; at most 2 fix rounds). Then the case-study MDX in the site.
+**P3 reel shell and history reel (reels/), 2026-11-10, done:** `reels/history-45/out/`: history-45.mp4 (45.5 s, 1080x1920,
+H.264+AAC, 13.9 MiB), history-45.vtt, contact-sheet.png, safe-zone-overlay.png and safe-zone-check.png, 7 carousel PNGs, carousel.pdf.
+Mo's calls: dates confirmed (OAS 1952, RRSP 1957, CPP 1966 drafted here), beats approved, code-drawn print pictures (no photos
+or stock, `shell/art.mjs`), look A "Paper" (`reel.json` "look"). Two render rounds: round 2 fixed the chart (vertical, labels never
+collide) and put the drawings on the end card. 14 reel tests: preflight (missing, unconfirmed or absent fact; digit in text; the
+render refuses), no fact year in code, every word inside the phone-app safe band, every carousel slide fits. All 39+42 checks pass.
+Pinned: code-video 6e806a5 (read only), hyperframes 0.8.217 (lint and render, telemetry off), zzfx 1.4.0, gsap 3.14.2.
+**Next:** case-study MDX at /builds/reel-shell in the site (contact sheet + a failing-preflight demo), native video with the .vtt
+on /explainers. Firm approval before any social posting. Stretch: one rights-checked archive photo beat, a French cut.
 
 **Done:** `labs/money-milestones` (P7): single-file page built by `npm run build` into `labs/money-milestones/dist/index.html`
 (styles, script, fonts and the facts inlined). Birth year in, 4,940 weeks out, four rules (TFSA from the minimum age,
