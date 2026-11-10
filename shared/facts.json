@@ -803,6 +803,48 @@
       "authority": "official_publication",
       "as_of": "2026-11-10",
       "status": "confirmed"
+    },
+    {
+      "id": "oas_start_year",
+      "series": "oas_start_year",
+      "title": "Year the Old Age Security Act came into force (OAS basic pension first paid)",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "1952",
+      "unit": "text",
+      "source_url": "https://www.osfi-bsif.gc.ca/en/oca/actuarial-reports/actuarial-report-18th-old-age-security-program-31-december-2021",
+      "authority": "official_publication",
+      "as_of": "2026-11-10",
+      "status": "confirmed"
+    },
+    {
+      "id": "rrsp_introduced_year",
+      "series": "rrsp_introduced_year",
+      "title": "Year registered retirement savings plans were introduced",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "1957",
+      "unit": "text",
+      "source_url": "https://www150.statcan.gc.ca/n1/pub/13f0026m/2010001/section1-eng.htm",
+      "authority": "official_publication",
+      "as_of": "2026-11-10",
+      "status": "confirmed"
+    },
+    {
+      "id": "cpp_start_year",
+      "series": "cpp_start_year",
+      "title": "Year the Canada Pension Plan began (inception)",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "1966",
+      "unit": "text",
+      "source_url": "https://www.osfi-bsif.gc.ca/en/oca/actuarial-reports/actuarial-report-32nd-canada-pension-plan-revised-version",
+      "authority": "official_publication",
+      "as_of": "2026-11-10",
+      "status": "confirmed"
     }
   ]
 }

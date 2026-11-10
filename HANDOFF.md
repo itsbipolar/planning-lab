@@ -1,8 +1,13 @@
 # Handoff (2026-11-10)
 
-**P3 reel (2026-11-10):** paused at Step 0. Drafted OAS 1952, RRSP 1957, CPP 1966 as unverified in `canada-planning-facts`
-(pushed, 62 tests pass; entry cap raised to 50). Beats drafted in `reels/beats-draft.md`. Waiting for Mo to confirm the dates
-and approve the beats; then `npm run sync-facts`, pin code-video, build `reels/` (not started). No dated card renders before that.
+**P3 reel shell (reels/), 2026-11-10:** dates confirmed by Mo (OAS 1952, RRSP 1957, CPP 1966; TFSA, FHSA already) and synced.
+`reels/shell/`: reel.json -> preflight -> HyperFrames project (one scene per card, page turns over the last page) -> MP4, plus
+carousel slides, PDF, WebVTT captions, contact sheet and safe-zone overlay. 12 reel tests: preflight fails on a missing,
+unconfirmed or absent fact, on a digit typed into reel.json, and the render command refuses; no fact year in the code.
+Pinned: code-video 6e806a5 (read, scripts not run), hyperframes 0.8.217 (lint and render only, telemetry off), zzfx 1.4.0,
+gsap 3.14.2, Source Serif 4. Two 10-second strips rendered (A Paper, B Sheet on dark) and checked at 390 px phone width.
+**Next:** Mo picks A or B from `reels/history-45/out/strips-contact-sheet.png`; then `npm run reel -- reels/history-45 --look <x>`
+(full reel, carousel, captions, contact sheet; at most 2 fix rounds). Then the case-study MDX in the site.
 
 **Done:** `labs/money-milestones` (P7): single-file page built by `npm run build` into `labs/money-milestones/dist/index.html`
 (styles, script, fonts and the facts inlined). Birth year in, 4,940 weeks out, four rules (TFSA from the minimum age,
