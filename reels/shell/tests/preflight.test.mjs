@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { ROOT, loadFacts, loadReel, preflight, resolve, captionsVTT, yearOf } from '../lib.mjs';
+import { ROOT, loadFacts, loadReel, preflight, resolve, captionsVTT, yearOf, yearWords, under100, spoken } from '../lib.mjs';
 
 const facts = loadFacts();
 const reel = loadReel(join(ROOT, 'reels', 'history-45'));
@@ -63,7 +63,30 @@ test('every year on screen equals a confirmed fact', () => {
   }
 });
 
-test('the reel runs about 45 seconds', () => {
+test('years and numbers are spoken as words', () => {
+  assert.equal(yearWords(1952), 'nineteen fifty-two');
+  assert.equal(yearWords(2009), 'two thousand nine');
+  assert.equal(yearWords(2023), 'twenty twenty-three');
+  assert.equal(yearWords(1905), 'nineteen oh five');
+  assert.equal(under100(71), 'seventy-one');
+});
+
+test('every spoken year is the confirmed fact, said as words, and the captions show the same year', () => {
   const m = resolve(reel, facts);
-  assert.ok(m.total >= 40 && m.total <= 50, `total ${m.total}`);
+  for (const c of m.cards.filter(x => x.type === 'date')) {
+    const y = yearOf(facts.facts.find(f => f.id === c.fact_ids[0]));
+    assert.ok(spoken(c).toLowerCase().includes(yearWords(y)), `${c.id}: "${spoken(c)}"`);
+    assert.ok(spoken(c, { numerals: true }).includes(String(y)), c.id);
+    assert.ok(!/\d/.test(spoken(c)), `${c.id}: the voice text has digits`);
+  }
+});
+
+test('an unknown placeholder in a spoken line fails', () => {
+  const r = clone(reel); r.cards[1].say = 'In {amount}, something happened.';
+  assert.match(preflight(r, facts).join('\n'), /unknown placeholder \{amount\}/);
+});
+
+test('the end card discloses the AI voice', () => {
+  const end = reel.cards.find(c => c.type === 'end');
+  assert.ok(reel.voice && /AI-generated/.test(end.voice_note ?? ''));
 });

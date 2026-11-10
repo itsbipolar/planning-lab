@@ -11,7 +11,8 @@ export const CARD_TYPES = ['hook', 'date', 'stat', 'chart', 'sources', 'end'];
 const NEEDS_FACT = new Set(['hook', 'date', 'stat', 'chart', 'sources']);
 const STATS = new Set(['span_years']);
 const ART = new Set(['cheque', 'form', 'paystub', 'passbook', 'key']); // the drawings in art.mjs
-const TEXT_FIELDS = ['text', 'beat', 'today', 'name', 'short', 'ai'];
+const TEXT_FIELDS = ['text', 'beat', 'today', 'name', 'short', 'ai', 'say', 'voice_note'];
+const SLOTS = { date: ['year', 'Year'], stat: ['value', 'Value'] }; // the only placeholders a spoken line may hold
 
 export const readJSON = p => JSON.parse(readFileSync(p, 'utf8'));
 export const loadFacts = (p = join(ROOT, 'shared', 'facts.json')) => readJSON(p);
@@ -38,6 +39,9 @@ export function preflight(reel, facts) {
     if (!(c.duration > 0)) errors.push(`${where}: duration must be a positive number of seconds`);
     for (const k of TEXT_FIELDS) {
       if (c[k] !== undefined && /\d/.test(c[k])) errors.push(`${where}: "${k}" has a digit; figures come only from facts.json`);
+    }
+    for (const m of String(c.say ?? '').matchAll(/\{(\w+)\}/g)) {
+      if (!(SLOTS[c.type] ?? []).includes(m[1])) errors.push(`${where}: "say" has an unknown placeholder {${m[1]}}`);
     }
     const fids = c.fact_ids ?? [];
     if (NEEDS_FACT.has(c.type) && fids.length === 0) errors.push(`${where}: a ${c.type} card needs at least one fact_id`);
@@ -107,14 +111,40 @@ export function screenText(c) {
     case 'chart': return [c.text];
     case 'stat': return [`${c.value} ${c.text}`];
     case 'sources': return [c.text, ...c.lines.map(l => `${l.short} ${l.year}: ${l.source}`)];
-    case 'end': return [c.text, c.ai];
+    case 'end': return [c.text, c.ai, ...(c.voice_note ? [c.voice_note] : [])];
     default: return [];
   }
 }
 
 const vttTime = s => { const ms = Math.round(s * 1000); const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, sec = Math.floor(ms / 1000) % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`; };
+// With a voice, a voiced card's cue is what the voice says, from when it starts; other cards show their words.
 export function captionsVTT(model) {
-  const cues = model.cards.map((c, i) => `${i + 1}\n${vttTime(c.start)} --> ${vttTime(c.start + c.duration)}\n${screenText(c).join('\n')}`);
+  const cues = model.cards.map((c, i) => {
+    const voiced = c.voiceLead !== undefined && c.say;
+    const from = voiced ? c.start + c.voiceLead : c.start;
+    const words = voiced ? [spoken(c, { numerals: true })] : screenText(c);
+    return `${i + 1}\n${vttTime(from)} --> ${vttTime(c.start + c.duration)}\n${words.join('\n')}`;
+  });
   return `WEBVTT\n\n${cues.join('\n\n')}\n`;
+}
+
+// Numbers as a narrator says them, so the voice never reads digits: 1987 -> "nineteen eighty-seven",
+// 2004 -> "two thousand four", 2031 -> "twenty thirty-one", 45 -> "forty-five".
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+  'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+export function under100(n) { return n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : ''); }
+export function yearWords(y) {
+  const hi = Math.floor(y / 100), lo = y % 100;
+  if (y >= 2000 && y < 2010) return lo ? `two thousand ${ONES[lo]}` : 'two thousand';
+  return `${under100(hi)} ${lo === 0 ? 'hundred' : lo < 10 ? 'oh ' + ONES[lo] : under100(lo)}`;
+}
+const cap = s => s[0].toUpperCase() + s.slice(1);
+// A card's spoken line, filled from the facts: as words for the voice, or with numerals for the captions.
+export function spoken(c, { numerals = false } = {}) {
+  if (!c.say) return null;
+  const v = c.type === 'date' ? c.year : c.value;
+  const w = numerals ? String(v) : c.type === 'date' ? yearWords(v) : under100(v);
+  return c.say.replace(/\{(year|value)\}/g, w).replace(/\{(Year|Value)\}/g, cap(w));
 }

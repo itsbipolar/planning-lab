@@ -6,26 +6,152 @@
   "fps": 30,
   "turn": 0.6,
   "cards": [
-    { "type": "hook", "id": "hook", "duration": 4, "fact_ids": ["oas_start_year", "rrsp_introduced_year", "cpp_start_year", "tfsa_first_year", "fhsa_first_available"],
-      "text": "How Canada built its retirement savings, in five dates." },
-    { "type": "date", "id": "oas", "duration": 5.4, "fact_ids": ["oas_start_year"], "short": "OAS", "art": "cheque", "name": "Old Age Security",
-      "beat": "A basic pension for older Canadians.", "today": "Today it is the base layer many retirement incomes start from." },
-    { "type": "date", "id": "rrsp", "duration": 5.4, "fact_ids": ["rrsp_introduced_year"], "short": "RRSP", "art": "form", "name": "Registered Retirement Savings Plan",
-      "beat": "A tax break for people with no workplace pension.", "today": "Today it is one common way to build the private layer." },
-    { "type": "date", "id": "cpp", "duration": 5.4, "fact_ids": ["cpp_start_year"], "short": "CPP", "art": "paystub", "name": "Canada Pension Plan",
-      "beat": "A pension earned through work and contributions.", "today": "Today it adds a layer that follows a person's work history." },
-    { "type": "date", "id": "tfsa", "duration": 5.4, "fact_ids": ["tfsa_first_year"], "short": "TFSA", "art": "passbook", "name": "Tax-Free Savings Account",
-      "beat": "Savings that grow without tax on the growth.", "today": "Today it is a flexible place to save beside the RRSP." },
-    { "type": "date", "id": "fhsa", "duration": 5.4, "fact_ids": ["fhsa_first_available"], "short": "FHSA", "art": "key", "name": "First Home Savings Account",
-      "beat": "Savings aimed at a first home.", "today": "Today it is the newest account, built for one goal." },
-    { "type": "chart", "id": "line", "duration": 4, "fact_ids": ["oas_start_year", "rrsp_introduced_year", "cpp_start_year", "tfsa_first_year", "fhsa_first_available"],
-      "text": "Five accounts, one system, built a layer at a time." },
-    { "type": "stat", "id": "span", "duration": 3, "fact_ids": ["oas_start_year", "fhsa_first_available"], "stat": "span_years",
-      "text": "years from the first account to the newest." },
-    { "type": "sources", "id": "sources", "duration": 4, "fact_ids": ["oas_start_year", "rrsp_introduced_year", "cpp_start_year", "tfsa_first_year", "fhsa_first_available"],
-      "text": "Every date, checked at its official source." },
-    { "type": "end", "id": "end", "duration": 3.5,
-      "text": "Education only, not advice.", "ai": "Made with AI assistance. I directed and reviewed the work and checked every figure against its source." }
+    {
+      "type": "hook",
+      "id": "hook",
+      "duration": 4,
+      "fact_ids": [
+        "oas_start_year",
+        "rrsp_introduced_year",
+        "cpp_start_year",
+        "tfsa_first_year",
+        "fhsa_first_available"
+      ],
+      "text": "Your retirement savings, in five steps.",
+      "say": "Canada built your retirement savings in five steps. The fifth isn't about retirement at all."
+    },
+    {
+      "type": "date",
+      "id": "oas",
+      "duration": 5.4,
+      "fact_ids": [
+        "oas_start_year"
+      ],
+      "short": "OAS",
+      "art": "cheque",
+      "name": "Old Age Security",
+      "beat": "A basic pension for older Canadians.",
+      "today": "Today it is the base layer many retirement incomes start from.",
+      "say": "Step one, {year}: Old Age Security, a basic pension in old age."
+    },
+    {
+      "type": "date",
+      "id": "rrsp",
+      "duration": 5.4,
+      "fact_ids": [
+        "rrsp_introduced_year"
+      ],
+      "short": "RRSP",
+      "art": "form",
+      "name": "Registered Retirement Savings Plan",
+      "beat": "A tax break for people with no workplace pension.",
+      "today": "Today it is one common way to build the private layer.",
+      "say": "But a basic pension is only a floor. So in {year}, the RRSP: a tax break for saving on your own."
+    },
+    {
+      "type": "date",
+      "id": "cpp",
+      "duration": 5.4,
+      "fact_ids": [
+        "cpp_start_year"
+      ],
+      "short": "CPP",
+      "art": "paystub",
+      "name": "Canada Pension Plan",
+      "beat": "A pension earned through work and contributions.",
+      "today": "Today it adds a layer that follows a person's work history.",
+      "say": "{Year}: the Canada Pension Plan, a pension you earn by working."
+    },
+    {
+      "type": "date",
+      "id": "tfsa",
+      "duration": 5.4,
+      "fact_ids": [
+        "tfsa_first_year"
+      ],
+      "short": "TFSA",
+      "art": "passbook",
+      "name": "Tax-Free Savings Account",
+      "beat": "Savings that grow without tax on the growth.",
+      "today": "Today it is a flexible place to save beside the RRSP.",
+      "say": "{Year}: the TFSA, where your savings grow tax-free."
+    },
+    {
+      "type": "date",
+      "id": "fhsa",
+      "duration": 5.4,
+      "fact_ids": [
+        "fhsa_first_available"
+      ],
+      "short": "FHSA",
+      "art": "key",
+      "name": "First Home Savings Account",
+      "beat": "Savings aimed at a first home.",
+      "today": "Today it is the newest account, built for one goal.",
+      "say": "And the fifth, {year}: the FHSA, savings for your first home."
+    },
+    {
+      "type": "stat",
+      "id": "span",
+      "duration": 3,
+      "fact_ids": [
+        "oas_start_year",
+        "fhsa_first_available"
+      ],
+      "stat": "span_years",
+      "text": "years from the first account to the newest.",
+      "say": "{Value} years, from the first to the newest."
+    },
+    {
+      "type": "sources",
+      "id": "sources",
+      "duration": 4,
+      "fact_ids": [
+        "oas_start_year",
+        "rrsp_introduced_year",
+        "cpp_start_year",
+        "tfsa_first_year",
+        "fhsa_first_available"
+      ],
+      "text": "Every date, checked at its official source.",
+      "say": "Every date here is checked at its official source."
+    },
+    {
+      "type": "chart",
+      "id": "line",
+      "duration": 4,
+      "fact_ids": [
+        "oas_start_year",
+        "rrsp_introduced_year",
+        "cpp_start_year",
+        "tfsa_first_year",
+        "fhsa_first_available"
+      ],
+      "text": "Five accounts, one system, built a layer at a time.",
+      "say": "Five accounts, one system, built a layer at a time."
+    },
+    {
+      "type": "end",
+      "id": "end",
+      "duration": 3.5,
+      "text": "Education only, not advice.",
+      "ai": "Made with AI assistance. I directed and reviewed the work and checked every figure against its source.",
+      "voice_note": "This voice is AI-generated."
+    }
   ],
-  "carousel": ["hook", "oas", "rrsp", "cpp", "tfsa", "fhsa", "sources"]
+  "carousel": [
+    "hook",
+    "oas",
+    "rrsp",
+    "cpp",
+    "tfsa",
+    "fhsa",
+    "sources"
+  ],
+  "voice": {
+    "engine": "Higgsfield seed_audio",
+    "voice": "Archie (Higgsfield preset)",
+    "voice_id": "bd072316-f77c-588b-b6e5-e46b9b03d008",
+    "dir": "voice"
+  }
 }

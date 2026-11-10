@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { ROOT, loadFacts, loadReel, preflight, resolve } from './lib.mjs';
 import { buildProject, buildCarousel, writeCaptions, slots } from './build.mjs';
 import { FORMATS, LOOKS } from './cards.mjs';
+import { hasVoice, prepareVoice, timeToVoice } from './voice.mjs';
 
 const args = process.argv.slice(2);
 const flag = k => args.includes(`--${k}`);
@@ -27,8 +28,11 @@ if (problems.length) {
 console.log(`preflight passed: ${reel.cards.length} cards, every fact confirmed in shared/facts.json`);
 if (flag('preflight')) process.exit(0);
 
-const model = resolve(reel, facts);
 const out = join(reelDir, 'out'), work = join(reelDir, '.build');
+// A voiced reel is timed to its narration: each card lasts as long as its spoken line.
+const voiceDir = hasVoice(reel, reelDir) && !opt('strip') ? join(work, 'voice') : null;
+const model = resolve(voiceDir ? timeToVoice(reel, prepareVoice(reel, reelDir, voiceDir)) : reel, facts);
+if (voiceDir) console.log(`timed to the voice: ${model.total.toFixed(1)} s`);
 mkdirSync(out, { recursive: true });
 const HEADLESS = '/opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell';
 const env = { ...process.env, HYPERFRAMES_NO_TELEMETRY: '1', DO_NOT_TRACK: '1',
@@ -43,7 +47,7 @@ const ff = (...a) => { const r = spawnSync('ffmpeg', ['-loglevel', 'error', '-y'
 
 async function renderLook(look, { duration, name }) {
   const dir = join(work, `${name}`);
-  await buildProject(model, look, dir, { duration });
+  await buildProject(model, look, dir, { duration, voiceDir });
   hf(dir, 'lint', '.');
   const mp4 = join(out, `${name}.mp4`);
   hf(dir, 'render', '-o', mp4, '--quiet');

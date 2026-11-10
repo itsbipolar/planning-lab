@@ -138,7 +138,7 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
       body = `<div class="lede r">${esc(c.text)}</div><div class="rows">${c.lines.map(l =>
         `<div class="r"><b>${esc(l.short)}<em>${l.year}</em></b><span>${esc(l.source)}</span></div>`).join('')}</div>`; break;
     case 'end':
-      body = `<div class="edu r">${esc(c.text)}</div><div class="ai r">${esc(c.ai)}</div>`; break;
+      body = `<div class="edu r">${esc(c.text)}</div><div class="ai r">${esc(c.ai)}</div>${c.voice_note ? `<div class="ai r">${esc(c.voice_note)}</div>` : ''}`; break;
   }
   const grain = `<svg class="grain" aria-hidden="true"><filter id="${p}-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .26  0 0 0 0 .2  0 0 0 .08 0"/></filter><rect width="100%" height="100%" filter="url(#${p}-grain)"/></svg>`;
   let plate = '';
@@ -160,6 +160,9 @@ export function cardTweens(c, model, p, turn, sel) {
     t.push(`tl.fromTo("#${p}-marker",{x:${dx.toFixed(1)}},{x:0,duration:.7,ease:"power2.inOut"},${(turn + 0.5).toFixed(2)});`);
   }
   if (c.type === 'date' && c.art) t.push(moves(c.art, `${p}-art`, turn + 0.15));
+  // The first card is the thumbnail and the hook: its drawings are already moving on frame 0.
+  if (c.type === 'hook') model.cards.filter(x => x.type === 'date' && x.art).forEach((x, i) =>
+    t.push(`tl.fromTo("#${p}-i${i}",{y:-22,rotation:-5},{y:0,rotation:0,duration:.55,ease:"back.out(2.2)"},${(i * 0.14).toFixed(2)});`));
   if (c.type === 'chart') {
     const t0 = turn + 0.2, run = 1.6;
     t.push(`tl.fromTo("#${p}-aline",{scaleY:0},{scaleY:1,duration:${run},ease:"none"},${t0.toFixed(2)});`);

@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { ROOT, captionsVTT } from './lib.mjs';
 import { FORMATS, LOOKS, cardCSS, cardHTML, cardTweens, fontFaces, esc } from './cards.mjs';
 import { buildTicks } from './sound.mjs';
+import { mixSound } from './voice.mjs';
 
 const NM = join(ROOT, 'node_modules');
 const FONT_FILES = [
@@ -28,7 +29,7 @@ export function slots(model) {
     duration: c.duration + (i < model.cards.length - 1 ? turn : 0), turn: i === 0 ? 0 : turn }));
 }
 
-export async function buildProject(model, look, dir, { duration } = {}) {
+export async function buildProject(model, look, dir, { duration, voiceDir } = {}) {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(join(dir, 'compositions'), { recursive: true });
   copyFonts(join(dir, 'assets', 'fonts'));
@@ -36,7 +37,10 @@ export async function buildProject(model, look, dir, { duration } = {}) {
   const F = FORMATS.reel, L = LOOKS[look];
   const total = duration ?? model.total;
   const ss = slots(model).filter(s => s.start < total);
-  await buildTicks(ss.filter(s => s.turn > 0).map(s => s.start), total, LANDING, join(dir, 'assets', 'ticks.wav'));
+  await buildTicks(ss.filter(s => s.turn > 0).map(s => s.start), total, LANDING, join(dir, 'assets', 'ticks.wav'), { tickAt: [0] });
+  // With a voice, the sound is the voice over the ticks; otherwise the ticks alone.
+  const sound = voiceDir && !duration ? 'sound.wav' : 'ticks.wav';
+  if (sound === 'sound.wav') mixSound(model, voiceDir, join(dir, 'assets', 'ticks.wav'), join(dir, 'assets', 'sound.wav'));
 
   for (const [i, s] of ss.entries()) {
     const sel = `#${s.id}-card`;
@@ -81,7 +85,7 @@ ${cardCSS(sel, look, 'reel')}
     <div id="root" data-composition-id="main" data-start="0" data-duration="${total.toFixed(3)}" data-width="${F.w}" data-height="${F.h}">
       <div id="ground">${L.stack ? [10, 22].map((o, k) => `<i style="left:${L.inset + o}px;top:${L.inset - o / 2}px;right:${L.inset - o}px;bottom:${L.inset - o / 2}px;opacity:${0.5 - k * 0.22}"></i>`).reverse().join('') : ''}</div>
 ${hosts}
-      <audio id="ticks" class="clip" src="assets/ticks.wav" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="0" data-volume="1"></audio>
+      <audio id="sound" class="clip" src="assets/${sound}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="0" data-volume="1"></audio>
     </div>
     <script>
       window.__timelines = window.__timelines || {};

@@ -7,6 +7,11 @@ or stock, `shell/art.mjs`), look A "Paper" (`reel.json` "look"). Two render roun
 collide) and put the drawings on the end card. 14 reel tests: preflight (missing, unconfirmed or absent fact; digit in text; the
 render refuses), no fact year in code, every word inside the phone-app safe band, every carousel slide fits. All 39+42 checks pass.
 Pinned: code-video 6e806a5 (read only), hyperframes 0.8.217 (lint and render, telemetry off), zzfx 1.4.0, gsap 3.14.2.
+**Voice (Mo, 2026-11-10):** Archie (Higgsfield preset, seed_audio), one clip per card in `reels/history-45/voice/` (job ids in
+SOURCE.md); the script was tightened with the vox repo's virality playbook and approved by Mo. Years are filled from the facts
+and spoken as words (`spoken()`, tested). `shell/voice.mjs` trims silence, caps pauses at 0.45 s (never changes speed), times
+each card to its line and mixes the voice over the ticks; captions follow the voice. Reel now 61.9 s, 17.6 MiB, -17.9 LUFS.
+Spend: 9 clips, about 5 Higgsfield credits. End card: "This voice is AI-generated." 17 reel tests pass.
 **Web copies:** `--web` makes history-45.webm, a poster and contact-sheet.webp for the site (`npm run sync-labs` there).
 **Next:** case-study MDX at /builds/reel-shell in the site (contact sheet + a failing-preflight demo), native video with the .vtt
 on /explainers. Firm approval before any social posting. Stretch: one rights-checked archive photo beat, a French cut.

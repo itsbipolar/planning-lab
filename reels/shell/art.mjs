@@ -81,7 +81,7 @@ export const ART_KINDS = Object.keys(DRAW);
 const VIEW = { key: '84 14 244 296' };
 export function art(kind, p, cls = 'art') {
   if (!DRAW[kind]) throw new Error(`no drawing called "${kind}"`);
-  return `<svg class="${cls}" viewBox="${VIEW[kind] ?? '0 0 330 320'}" aria-hidden="true" overflow="visible">${defs(p)}${DRAW[kind](p)}</svg>`;
+  return `<svg class="${cls}" id="${p}" viewBox="${VIEW[kind] ?? '0 0 330 320'}" aria-hidden="true" overflow="visible">${defs(p)}${DRAW[kind](p)}</svg>`;
 }
 
 // Small motions, starting when the page has landed (`at`, scene-local seconds).

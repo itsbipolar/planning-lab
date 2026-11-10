@@ -19,7 +19,7 @@ function seeded(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0
 const FLICK = [0.5, 0, 260, 0.01, 0.04, 0.16, 4, 1.4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.6, 0.02];
 const TICK = [0.7, 0, 1500, 0, 0.004, 0.035, 1, 1.8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0];
 
-export async function buildTicks(turnTimes, total, landing, out) {
+export async function buildTicks(turnTimes, total, landing, out, { tickAt = [] } = {}) {
   const Z = await zz();
   const rnd = Math.random; Math.random = seeded(7);
   const flick = Z.buildSamples(...FLICK), tick = Z.buildSamples(...TICK);
@@ -27,6 +27,7 @@ export async function buildTicks(turnTimes, total, landing, out) {
   const mix = new Float32Array(Math.ceil(total * RATE));
   const add = (s, at, gain) => { const o = Math.round(at * RATE); for (let i = 0; i < s.length && o + i < mix.length; i++) mix[o + i] += s[i] * gain; };
   for (const t of turnTimes) { add(flick, t, 0.55); add(tick, t + landing, 0.6); }
+  for (const t of tickAt) add(tick, t, 0.6);
   let peak = 0; for (const v of mix) peak = Math.max(peak, Math.abs(v));
   const g = peak > 0 ? 0.5 / peak : 1; // peak at about -6 dBFS
   const pcm = Buffer.alloc(44 + mix.length * 2);
