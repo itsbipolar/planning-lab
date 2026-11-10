@@ -1,6 +1,7 @@
-// Draws the Money Year from the embedded model: four small panels on one shared time axis (one measure each, never
-// two scales on one chart), callouts computed from the data, a crosshair that follows the pointer or the slider,
-// the Budget 2026 proposals as a timeline, and the numbers as a table. No request after load; nothing stored.
+// Draws the Money Year from the embedded model: the policy rate as the hero chart and three smaller panels on one shared
+// time axis (one measure each, never two scales on one chart), callouts computed from the data, a Budget 2026 line
+// through every chart, a crosshair that follows the pointer or the slider, the proposals grouped by the year they
+// would start, and the numbers as a table. No request after load; nothing stored.
 const M = JSON.parse(document.getElementById('data').textContent);
 const NS = 'http://www.w3.org/2000/svg';
 const DAY = 864e5;
@@ -9,9 +10,11 @@ const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
 const T0 = t(M.start), T1 = t(M.end), LAST = t(M.retrieved);
 const DAYS = Math.round((Math.min(LAST, T1) - T0) / DAY);
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const longDate = (d) => { const [y, m, day] = d.split('-').map(Number); return `${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][m - 1]} ${day}, ${y}`; };
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const longDate = (d) => { const [y, m, day] = d.split('-').map(Number); return `${MONTHS[m - 1]} ${day}, ${y}`; };
 const fmt = (p, v) => v.toFixed(p.digits) + p.unit;
 const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); parent?.appendChild(e); return e; };
+const html = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 // The value in force on a day: the last observation on or before it.
 const valueAt = (pts, d) => { let r = null; for (const p of pts) { if (p[0] <= d) r = p; else break; } return r; };
 
@@ -25,75 +28,77 @@ function draw() {
   views.length = 0;
   const W = Math.max(300, panelsRoot.clientWidth);
   const narrow = W < 700;
-  const L = narrow ? 40 : 52, R = narrow ? 12 : 150, PH = narrow ? 118 : 150, B = 26;
+  const L = narrow ? 40 : 56, R = narrow ? 12 : 160, B = 28;
   const x = (d) => L + ((t(d) - T0) / (T1 - T0)) * (W - L - R);
   M.panels.forEach((p) => {
-    const box = document.createElement('section');
-    box.className = 'panel';
+    const PH = p.hero ? (narrow ? 230 : 340) : (narrow ? 130 : 170);
+    const box = html('section', p.hero ? 'panel hero' : 'panel');
     box.setAttribute('aria-labelledby', `h-${p.id}`);
-    const h = document.createElement('h3'); h.id = `h-${p.id}`; h.textContent = p.title; box.appendChild(h);
+    // The header: the measure's name, and where it started and where it is now, large.
+    const head = html('div', 'panel-head');
+    const h = html('h3', null, p.title); h.id = `h-${p.id}`; head.appendChild(h);
+    if (p.summary) {
+      const s = html('p', 'delta');
+      s.append(html('span', 'from', p.summary.from), html('span', 'arrow', ' to '), html('span', 'to', p.summary.to));
+      if (p.summary.label) s.append(html('span', 'what', ` ${p.summary.label}`));
+      head.appendChild(s);
+    }
+    box.appendChild(head);
     if (p.lines.length > 1) {
-      const lg = document.createElement('p'); lg.className = 'legend';
+      const lg = html('p', 'legend');
       lg.innerHTML = p.lines.map((l) => `<span class="key${l.dashed ? ' dashed' : ''}" aria-hidden="true"></span>${l.label}`).join('<span class="sep"></span>');
       box.appendChild(lg);
     }
     const all = p.lines.flatMap((l) => l.points.map((q) => q[1]));
     let lo = Math.min(...all), hi = Math.max(...all);
-    const pad = Math.max((hi - lo) * 0.25, hi * 0.02);
+    const pad = Math.max((hi - lo) * 0.3, hi * 0.02);
     lo -= pad; hi += pad;
-    const y = (v) => 10 + (1 - (v - lo) / (hi - lo)) * (PH - 10);
+    const y = (v) => 14 + (1 - (v - lo) / (hi - lo)) * (PH - 14);
     const svg = el('svg', { width: W, height: PH + B, viewBox: `0 0 ${W} ${PH + B}`, role: 'img', 'aria-label': `${p.title}: ${p.note}` });
     box.appendChild(svg);
     panelsRoot.appendChild(box); // on the page before drawing, so text can be measured
-    // Recessive grid: three levels, labelled on the left.
     for (let i = 0; i <= 2; i++) {
       const v = lo + pad + ((hi - lo - 2 * pad) * i) / 2;
       el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'grid' }, svg);
-      el('text', { x: L - 6, y: y(v) + 4, class: 'tick', 'text-anchor': 'end' }, svg).textContent = v.toFixed(p.digits === 4 ? 2 : p.digits === 2 ? 2 : 1);
+      el('text', { x: L - 8, y: y(v) + 4, class: 'tick', 'text-anchor': 'end' }, svg).textContent = v.toFixed(p.digits === 1 ? 1 : 2);
     }
-    // Months along the bottom of every panel (initials on phones).
     MON.forEach((m, i) => {
       const d = `${M.year}-${String(i + 1).padStart(2, '0')}-01`;
-      el('line', { x1: x(d), x2: x(d), y1: PH, y2: PH + 4, class: 'axis' }, svg);
-      if (!narrow || i % 2 === 0) el('text', { x: x(d) + 2, y: PH + 18, class: 'tick' }, svg).textContent = narrow ? m[0] + m.slice(1, 3) : m;
+      el('line', { x1: x(d), x2: x(d), y1: PH, y2: PH + 5, class: 'axis' }, svg);
+      if (!narrow || i % 2 === 0) el('text', { x: x(d) + 2, y: PH + 20, class: 'tick' }, svg).textContent = m;
     });
     el('line', { x1: L, x2: W - R, y1: PH, y2: PH, class: 'axis' }, svg);
-    // Where the data stops: the rest of the year isn't in yet.
-    if (LAST < T1) {
-      const lx = x(M.retrieved);
-      el('rect', { x: lx, y: 0, width: W - R - lx, height: PH, class: 'future' }, svg);
+    if (LAST < T1) { const lx = x(M.retrieved); el('rect', { x: lx, y: 0, width: W - R - lx, height: PH, class: 'future' }, svg); }
+    // Budget 2026: one line through every chart, joining the year to what's proposed next.
+    if (M.budgetDay) {
+      const bx = x(M.budgetDay);
+      el('line', { x1: bx, x2: bx, y1: 0, y2: PH, class: 'budget' }, svg);
+      if (p.hero) el('text', { x: bx - 6, y: 12, class: 'budget-label', 'text-anchor': 'end' }, svg).textContent = 'Budget 2026';
     }
-    // The lines: a step for the policy rate (it changes on decision days), straight segments otherwise.
     for (const l of p.lines) {
-      let dpath = '';
-      l.points.forEach((q, i) => {
-        const X = Math.max(L, x(q[0])), Y = y(q[1]);
-        dpath += i === 0 ? `M${X},${Y}` : p.step ? `H${X}V${Y}` : `L${X},${Y}`;
-      });
-      if (p.step) dpath += `H${x(M.retrieved)}`;
-      el('path', { d: dpath, class: `line${l.dashed ? ' dashed' : ''}` }, svg);
-      if (!narrow) el('text', { x: Math.max(x(l.points.at(-1)[0]) + 14, x(M.retrieved) + 10), y: y(l.points.at(-1)[1]) + 4, class: 'endlabel' }, svg).textContent = `${fmt(p, l.points.at(-1)[1])}${p.lines.length > 1 ? ' ' + l.label : ''}`;
+      const pts = l.points.map((q) => [Math.max(L, x(q[0])), y(q[1])]);
+      let d = '';
+      pts.forEach(([X, Y], i) => { d += i === 0 ? `M${X},${Y}` : p.step ? `H${X}V${Y}` : `L${X},${Y}`; });
+      if (p.step) d += `H${x(M.retrieved)}`;
+      if (!l.dashed) el('path', { d: `${d}V${PH}H${pts[0][0]}Z`, class: 'area' }, svg);
+      el('path', { d, class: `line${l.dashed ? ' dashed' : ''}${p.hero ? ' heavy' : ''}` }, svg);
+      if (!narrow) el('text', { x: Math.max(x(l.points.at(-1)[0]) + 14, x(M.retrieved) + 10), y: y(l.points.at(-1)[1]) + 5, class: 'endlabel' }, svg).textContent = `${fmt(p, l.points.at(-1)[1])}${p.lines.length > 1 ? ' ' + l.label : ''}`;
     }
-    // Callouts: a ring on the point, a short leader, the words. A decision gets the amber mark.
     for (const c of p.callouts) {
-      const cx = x(c.d), cy = y(c.v), dy = c.below ? 26 : -18;
-      el('circle', { cx, cy, r: 5, class: 'ring' }, svg);
-      el('line', { x1: cx, x2: cx, y1: cy + (c.below ? 6 : -6), y2: cy + dy + (c.below ? -12 : 4), class: 'leader' }, svg);
-      const anchor = cx > W - R - 90 ? 'end' : cx < L + 90 ? 'start' : 'middle';
-      const tx = el('text', { x: cx, y: cy + dy, class: c.mark ? 'callout marked' : 'callout', 'text-anchor': anchor }, svg);
+      const cx = x(c.d), cy = y(c.v), dy = c.below ? 30 : -22;
+      el('circle', { cx, cy, r: p.hero ? 7 : 5.5, class: 'ring' }, svg);
+      el('line', { x1: cx, x2: cx, y1: cy + (c.below ? 7 : -7), y2: cy + dy + (c.below ? -14 : 5), class: 'leader' }, svg);
+      const anchor = cx > W - R - 110 ? 'end' : cx < L + 110 ? 'start' : 'middle';
+      const tx = el('text', { x: cx, y: cy + dy, class: `callout${c.mark ? ' marked' : ''}${p.hero ? ' big' : ''}`, 'text-anchor': anchor }, svg);
       tx.textContent = c.text;
-      if (c.mark) {
-        const b = tx.getBBox();
-        const r = el('rect', { x: b.x - 4, y: b.y - 2, width: b.width + 8, height: b.height + 4, class: 'mark' }, svg);
-        svg.insertBefore(r, tx);
-      }
+      if (c.mark) { const b = tx.getBBox(); svg.insertBefore(el('rect', { x: b.x - 6, y: b.y - 3, width: b.width + 12, height: b.height + 6, class: 'mark' }), tx); }
     }
     const cross = el('line', { y1: 0, y2: PH, class: 'cross', visibility: 'hidden' }, svg);
-    const dots = p.lines.map(() => el('circle', { r: 4, class: 'dot', visibility: 'hidden' }, svg));
+    const dots = p.lines.map(() => el('circle', { r: 4.5, class: 'dot', visibility: 'hidden' }, svg));
     const hit = el('rect', { x: L, y: 0, width: W - R - L, height: PH, class: 'hit' }, svg);
     hit.addEventListener('pointermove', (e) => { const r = svg.getBoundingClientRect(); setDay(Math.round(((e.clientX - r.left - L) / (W - R - L)) * ((T1 - T0) / DAY))); });
     hit.addEventListener('pointerdown', (e) => hit.dispatchEvent(new PointerEvent('pointermove', e)));
-    const note = document.createElement('p'); note.className = 'note'; note.textContent = p.note; box.appendChild(note);
+    box.appendChild(html('p', 'note', p.note));
     views.push({ p, x, y, cross, dots });
   });
   setDay(Number(slider.value));
@@ -121,21 +126,26 @@ function setDay(n) {
 }
 
 slider.max = DAYS;
-document.getElementById('asof').textContent = `Data to ${longDate(M.retrieved)}. The shaded end of each chart is the part of the year that isn't in yet.`;
 slider.value = DAYS;
+document.getElementById('asof').textContent = `Data to ${longDate(M.retrieved)}. The shaded end of each chart is the part of the year that isn't in yet.${M.budgetDay ? ` The dashed line marks Budget 2026, ${longDate(M.budgetDay)}.` : ''}`;
 slider.addEventListener('input', () => setDay(Number(slider.value)));
 new ResizeObserver(() => draw()).observe(panelsRoot);
 
-// The proposals timeline: in date order; an item without a confirmed date sits first, said in words.
+// The proposals, grouped by the year they would start; an item without a confirmed date goes in the first group.
 const lane = document.getElementById('lane');
-for (const p of M.proposals) {
-  const li = document.createElement('li');
-  li.innerHTML = `<p class="when"></p><h3></h3><p class="value"></p><p class="detail"></p><p class="stamp">Proposed, not law</p>`;
-  li.querySelector('.when').textContent = p.when;
-  li.querySelector('h3').textContent = p.title;
-  li.querySelector('.value').textContent = p.value;
-  li.querySelector('.detail').textContent = p.detail;
-  lane.appendChild(li);
+const groups = new Map();
+for (const p of M.proposals) { const yr = p.at ? p.at.slice(0, 4) : String(M.year); (groups.get(yr) ?? groups.set(yr, []).get(yr)).push(p); }
+for (const [yr, items] of groups) {
+  const col = html('li', 'year-col');
+  col.appendChild(html('p', 'year', yr));
+  const ol = html('ol', 'cards');
+  for (const p of items) {
+    const li = html('li', 'card');
+    li.append(html('p', 'when', p.when), html('h3', null, p.title), html('p', 'value', p.value), html('p', 'detail', p.detail), html('p', 'stamp', 'Proposed, not law'));
+    ol.appendChild(li);
+  }
+  col.appendChild(ol);
+  lane.appendChild(col);
 }
 if (!M.proposals.length) document.getElementById('budget').hidden = true;
 if (M.budgetUrl) document.getElementById('budget-link').href = M.budgetUrl;

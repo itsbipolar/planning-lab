@@ -14,7 +14,8 @@ for (const width of [390, 1440]) {
       await page.goto(url); await page.waitForLoadState('load');
       page.on('request', (r) => requests.push(r.url()));
       await expect(page.locator('.panel')).toHaveCount(4);
-      await expect(page.locator('#lane li')).toHaveCount(6);
+      await expect(page.locator('#lane .card')).toHaveCount(6);
+      await expect(page.locator('#lane .year')).toHaveText(['2026', '2027', '2028']);
       await expect(page.locator('#lane .stamp').first()).toHaveText('Proposed, not law');
       await page.locator('#when').focus();
       await page.keyboard.press('Home');

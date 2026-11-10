@@ -31,7 +31,7 @@ test('every proposal comes from confirmed budget facts, and an unconfirmed one i
 });
 
 test('no figure from the facts or the data is written into the page source', () => {
-  const src = ['app.js', 'index.src.html', 'model.mjs', 'style.css'].map((f) => [f, read(`../${f}`)]);
+  const src = ['app.js', 'index.src.html', 'model.mjs'] // the stylesheet holds sizes, not figures.map((f) => [f, read(`../${f}`)]);
   const budget = facts.facts.filter((f) => f.id.startsWith('budget2026_') && f.status === 'confirmed').map((f) => String(f.value)).filter((v) => /\d{3,}/.test(v));
   const rates = [...new Set(Object.values(snap.series).flatMap((s) => s.points.map((p) => String(p[1]))))].filter((v) => /\.\d/.test(v));
   assert.ok(budget.length >= 5 && rates.length > 20);

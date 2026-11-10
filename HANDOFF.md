@@ -63,4 +63,6 @@ facts (rate decisions, highs and lows, notes; proposals only from confirmed `bud
 shared time axis (no dual axis), callouts, a crosshair driven by pointer or slider, the proposals as a dated timeline stamped
 "Proposed, not law", and a numbers table. 5 data tests (incl. no typed figures, proven able to fail) and 8 browser tests.
 Budget Day stays unconfirmed (only the page's "Date modified" line), so the Growth Incentive reads "From Budget Day".
+**Bolder (Mo):** the policy rate is the hero chart (area fill, heavier line, big callout), each chart shows start "to" now large,
+a dashed Budget 2026 line (Budget Day confirmed by Mo) runs through every chart, and the proposals sit in 2026/2027/2028 columns.
 Next: the P4 reel and carousel through the shell (data cards), the site case study, refresh around Dec 1.

@@ -999,6 +999,20 @@
       "authority": "budget_proposal",
       "as_of": "2026-11-10",
       "status": "confirmed"
+    },
+    {
+      "id": "budget2026_budget_day",
+      "series": "budget2026_budget_day",
+      "title": "Date Budget 2026 was presented (Budget Day)",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "2026-11-05",
+      "unit": "date",
+      "source_url": "https://budget.canada.ca/2026/report-rapport/toc-tdm-en.html",
+      "authority": "official_publication",
+      "as_of": "2026-11-10",
+      "status": "confirmed"
     }
   ]
 }

@@ -32,7 +32,8 @@ export function buildModel(snap, factsFile) {
     note: firstChange
       ? `Held at ${polStart[1].toFixed(2)}% from January 1 until ${longDate(firstChange.d)}. ${decisions.length === 1 ? 'One change' : `${decisions.length} changes`} so far this year.`
       : `Held at ${polStart[1].toFixed(2)}% all year so far.`,
-    decisions,
+    decisions, hero: true,
+    summary: { from: `${polStart[1].toFixed(2)}%`, to: `${polYear.at(-1)[1].toFixed(2)}%` },
   };
 
   // 2. Posted 5-year mortgage rate (weekly): start, end, high and low.
@@ -41,6 +42,7 @@ export function buildModel(snap, factsFile) {
     id: 'mortgage', title: 'Posted 5-year mortgage rate', unit: '%', digits: 2,
     lines: [{ id: 'V80691335', label: 'Conventional mortgage, 5-year', points: mor }],
     callouts: [{ d: mHi[0], v: mHi[1], text: `High ${mHi[1].toFixed(2)}%` }, { d: mLo[0], v: mLo[1], text: `Low ${mLo[1].toFixed(2)}%`, below: true }],
+    summary: { from: `${mor[0][1].toFixed(2)}%`, to: `${mor.at(-1)[1].toFixed(2)}%` },
     note: `${mor[0][1].toFixed(2)}% in the first week of January, ${mor.at(-1)[1].toFixed(2)}% on ${longDate(mor.at(-1)[0])}. The posted rate is the banks' advertised rate; many borrowers pay less.`,
   };
 
@@ -51,6 +53,7 @@ export function buildModel(snap, factsFile) {
     id: 'inflation', title: 'Core inflation', unit: '%', digits: 1, monthly: true,
     lines: [{ id: 'CPI_TRIM', label: 'CPI-trim', points: trim }, { id: 'CPI_MEDIAN', label: 'CPI-median', points: med, dashed: true }],
     callouts: [], // the end labels already give the latest month's values
+    summary: { from: `${trim[0][1].toFixed(1)}%`, to: `${trim.at(-1)[1].toFixed(1)}%`, label: 'CPI-trim' },
     note: `Year-over-year change in the Bank of Canada's two preferred core measures, which set aside the most volatile prices. CPI-trim went from ${trim[0][1].toFixed(1)}% (${monthName(trim[0][0])} ${trim[0][0].slice(0, 4)}) to ${trim.at(-1)[1].toFixed(1)}% (${monthName(trim.at(-1)[0])}).`,
   };
 
@@ -60,6 +63,7 @@ export function buildModel(snap, factsFile) {
     id: 'loonie', title: 'Canadian dollars for one US dollar', unit: '', digits: 4,
     lines: [{ id: 'FXUSDCAD', label: 'USD/CAD', points: fx }],
     callouts: [{ d: fHi[0], v: fHi[1], text: `Weakest loonie: ${fHi[1].toFixed(4)}` }, { d: fLo[0], v: fLo[1], text: `Strongest: ${fLo[1].toFixed(4)}`, below: true }],
+    summary: { from: fx[0][1].toFixed(4), to: fx.at(-1)[1].toFixed(4) },
     note: `Higher means one US dollar costs more Canadian dollars, so a weaker loonie. ${fx[0][1].toFixed(4)} on ${longDate(fx[0][0])}, ${fx.at(-1)[1].toFixed(4)} on ${longDate(fx.at(-1)[0])}.`,
   };
 
@@ -91,7 +95,7 @@ export function buildModel(snap, factsFile) {
   proposals.sort((a, b) => (a.at ?? '').localeCompare(b.at ?? ''));
 
   return {
-    year: Y, start, end, retrieved: snap.retrieved, panels: [policy, mortgage, inflation, loonie], proposals,
+    year: Y, start, end, retrieved: snap.retrieved, budgetDay, panels: [policy, mortgage, inflation, loonie], proposals,
     budgetUrl: proposals.length ? F.get(proposals[0].facts[0]).source_url : null,
     source: { attribution: snap.attribution, terms_url: snap.terms_url, source_url: snap.source_url, retrieved: snap.retrieved },
   };
