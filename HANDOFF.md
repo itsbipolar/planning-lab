@@ -25,3 +25,11 @@ NaN or negatives, flex and buffer rules, input checks). Page: six scenes with Ba
 browser tests (keyboard-only playthrough, banned phrases, axe on every scene in both schemes, reduced motion, no request,
 nothing stored). Finding worth keeping: with both levers on, Sam runs out a year earlier, because cash earns nothing in the
 model; the page says each lever has a cost. Not done: the P6 drag-number component (native sliders instead), the 9:16 capture.
+
+**P6 A letter you can argue with (labs/two-number-letter), Opus 2026-11-10, built on Claude's judgement at Mo's request:**
+`calc.mjs` reads every CPP/OAS rule from facts.json (start ages, 0.6/0.7 and OAS deferral per month, the latest OAS
+threshold); 6 calc tests, including five cases computed independently in `tests/golden.py` (Claude, not Mo, computed them)
+and 3 no-hard-coded-figure tests. `shared/drag-number.js` is the reusable drag-number (role=slider, arrows, Home/End,
+pointer drag); every number also has a plain slider. Amounts (CPP $1,000, OAS $700, other $40,000) are illustrative, in
+`story.json`. The OAS recovery tax itself is not computed (its rate is not in the facts), only the threshold flag.
+6 browser tests at 2 widths: keyboard rewrite, pointer drag, axe both themes, sources, print to PDF, reduced motion.
