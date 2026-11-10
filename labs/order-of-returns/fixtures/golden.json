@@ -1,0 +1,71 @@
+{
+  "_note": "Golden case, computed independently of engine.mjs (Python, step by step, in tests/golden.py) and checked against a written-out year table. Synthetic: not historical, not a forecast.",
+  "input": {
+    "start": 300000,
+    "withdrawal": 30000,
+    "indexation": 0.02,
+    "returns": [
+      0.1,
+      -0.2,
+      0.05,
+      0.15,
+      -0.05
+    ],
+    "flexRule": null,
+    "cashBuffer": null
+  },
+  "expected": {
+    "balances": [
+      297000.0,
+      213120.0,
+      191003.4,
+      183042.234,
+      143040.80574
+    ],
+    "paid": [
+      30000.0,
+      30600.0,
+      31212.0,
+      31836.24,
+      32472.9648
+    ],
+    "depletionYear": null,
+    "years": [
+      {
+        "year": 1,
+        "withdrawal": 30000.0,
+        "paid": 30000.0,
+        "return": 0.1,
+        "end_balance": 297000.0
+      },
+      {
+        "year": 2,
+        "withdrawal": 30600.0,
+        "paid": 30600.0,
+        "return": -0.2,
+        "end_balance": 213120.0
+      },
+      {
+        "year": 3,
+        "withdrawal": 31212.0,
+        "paid": 31212.0,
+        "return": 0.05,
+        "end_balance": 191003.4
+      },
+      {
+        "year": 4,
+        "withdrawal": 31836.24,
+        "paid": 31836.24,
+        "return": 0.15,
+        "end_balance": 183042.234
+      },
+      {
+        "year": 5,
+        "withdrawal": 32472.9648,
+        "paid": 32472.9648,
+        "return": -0.05,
+        "end_balance": 143040.80574
+      }
+    ]
+  }
+}
