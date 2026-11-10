@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Money stripes · Mohammed El Chayeb</title>
+<meta name="description" content="A century of Canadian prices as one band of colour, a stripe for each year, with the prime rate since 1975. Public data, dated and sourced. Education only, not advice.">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<div class="page">
+  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/money-stripes/">About this build</a></header>
+  <main>
+    <h1>Money stripes</h1>
+    <p class="lede">A century of Canadian prices, one stripe for each year. The colour shows how fast prices rose that year. Below it, the prime rate, the base rate banks lend from, since the year it starts in this data.</p>
+    <p class="status-tag"><span data-status>demo</span></p>
+
+    <section aria-labelledby="h-prices">
+      <h2 id="h-prices">Prices</h2>
+      <div class="stripes" id="s-cpi" aria-hidden="true"></div>
+      <div class="decades" id="d-cpi" aria-hidden="true"></div>
+      <div class="legend" id="legend-cpi" aria-hidden="true"></div>
+      <p class="small" id="note-cpi"></p>
+    </section>
+
+    <section aria-labelledby="h-rate">
+      <h2 id="h-rate">Borrowing costs</h2>
+      <div class="stripes" id="s-rate" aria-hidden="true"></div>
+      <div class="decades" id="d-rate" aria-hidden="true"></div>
+      <div class="legend" id="legend-rate" aria-hidden="true"></div>
+      <p class="small" id="note-rate"></p>
+    </section>
+
+    <section aria-labelledby="h-pick">
+      <h2 id="h-pick">Pick a year</h2>
+      <label for="year">Year</label>
+      <input id="year" type="range" step="1">
+      <p id="readout" class="readout" role="status"></p>
+    </section>
+
+    <section aria-labelledby="h-nums">
+      <h2 id="h-nums">The numbers</h2>
+      <details>
+        <summary>Show every year as a table</summary>
+        <table class="nums"><caption>Annual price change and prime rate, by year</caption><thead><tr><th scope="col">Year</th><th scope="col">Prices rose by</th><th scope="col">Prime rate, average</th></tr></thead><tbody id="rows"></tbody></table>
+      </details>
+    </section>
+
+    <section aria-labelledby="h-data">
+      <h2 id="h-data">About the data</h2>
+      <div class="prose" id="about"></div>
+    </section>
+
+    <p class="foot-note">Education only; rules can change and your situation may differ.</p>
+  </main>
+  <footer class="foot">
+    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
+    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
+  </footer>
+</div>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>

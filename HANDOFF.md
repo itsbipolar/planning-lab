@@ -10,3 +10,10 @@ bad input refused, very old and very young years, axe in both schemes at 390 and
 `npm run sync-labs` there. Update `shared/facts.json` with `npm run sync-facts` whenever `canada-planning-facts` changes.
 **Mo:** push protection on for this repo (secret scanning).
 **Later (stretch):** inflation tint from the P8 snapshot, a couple mode, a French version.
+
+**P8 Money Stripes (labs/money-stripes):** single-file page like P7, built from dated snapshots in `shared/data/`
+(`npm run fetch-data` refreshes them; the date inside each file is the retrieved date). Prices: annual change in the average
+consumer price index, complete years 1915 to 2025. Second stripe: the Bank of Canada's weekly prime rate, annual average,
+1975 to 2025. Note for Mo: the plan said "posted mortgage rate since 1975", but the Bank of Canada's mortgage and older
+monthly prime series both stop in September 2019, so the current weekly prime series is used instead (it starts in 1975 and
+continues). 8 data tests and 10 browser tests pass. Seeded covers and OG images from it are still to do (site v1).
