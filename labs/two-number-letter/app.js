@@ -41,8 +41,11 @@
   const sliders = $('#sliders');
   for (const [key, s] of Object.entries(spec)) {
     const id = `s-${key}`;
-    sliders.insertAdjacentHTML('beforeend', `<div class="slider"><label for="${id}">${s.label}: <output id="${id}-o"></output></label><input type="range" id="${id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${state[key]}"></div>`);
+    sliders.insertAdjacentHTML('beforeend', `<div class="slider"><label for="${id}">${s.label}: <output id="${id}-o"></output></label><div class="row"><button type="button" class="step" data-dir="-1" aria-label="Less: ${s.label}">−</button><input type="range" id="${id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${state[key]}"><button type="button" class="step" data-dir="1" aria-label="More: ${s.label}">+</button></div></div>`);
     const input = $(`#${id}`);
+    input.parentElement.querySelectorAll('.step').forEach((b) => b.addEventListener('click', () => {
+      state[key] = Math.min(s.max, Math.max(s.min, state[key] + Number(b.dataset.dir) * s.step)); render();
+    }));
     input.addEventListener('input', () => { state[key] = Number(input.value); render(); });
     controls[key] = { input, out: $(`#${id}-o`), drags: [] };
   }
@@ -91,8 +94,8 @@
     const w = Math.max(260, Math.min(440, holder.clientWidth || 320)), h = Math.round(w * 0.8);
     const pad = { l: 46, r: 64, t: 12, b: 28 };
     const std = r.cpp.standard, age = state.cppAge, from = r.cpp.earliest, to = story.chart.toAge;
-    const lines = [{ start: std, m: state.cppAt65, cls: 'l-std', label: `From ${std}` }];
-    if (age !== std) lines.unshift({ start: age, m: out.cppMonthly, cls: 'l-you', label: `From ${age}` });
+    const lines = [{ start: std, m: state.cppAt65, you: false, label: `From ${std}` }];
+    if (age !== std) lines.unshift({ start: age, m: out.cppMonthly, you: true, label: `From ${age}` });
     const maxY = Math.max(...lines.map((l) => total(l.start, l.m, to)), 1);
     const X = (a) => pad.l + ((a - from) / (to - from)) * (w - pad.l - pad.r);
     const Y = (v) => h - pad.b - (v / maxY) * (h - pad.t - pad.b);
@@ -105,12 +108,12 @@
     for (let a = from; a <= to; a += 5) svg += `<text class="axis" x="${X(a)}" y="${h - 8}" text-anchor="middle">${a}</text>`;
     const ends = [];
     for (const l of lines) {
-      svg += `<polyline class="${l.cls}" fill="none" stroke-width="2" points="${X(from)},${Y(0)} ${X(l.start)},${Y(0)} ${X(to)},${Y(total(l.start, l.m, to))}"/>`;
+      svg += `<polyline ${l.you ? 'class="l-you"' : 'class="l-std"'} fill="none" stroke-width="2" points="${X(from)},${Y(0)} ${X(l.start)},${Y(0)} ${X(to)},${Y(total(l.start, l.m, to))}"/>`;
       ends.push({ y: Y(total(l.start, l.m, to)), l });
     }
     ends.sort((a, b) => a.y - b.y);
     for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 16) ends[i].y = ends[i - 1].y + 16;
-    for (const e of ends) svg += `<text class="lab ${e.l.cls === 'l-you' ? 'lab-you' : 'lab-std'}" x="${w - pad.r + 6}" y="${e.y + 4}">${e.l.label}</text>`;
+    for (const e of ends) svg += `<text ${e.l.you ? 'class="lab lab-you"' : 'class="lab lab-std"'} x="${w - pad.r + 6}" y="${e.y + 4}">${e.l.label}</text>`;
     if (out.cppCrossing !== null && out.cppCrossing <= to) {
       svg += `<circle class="dot" cx="${X(out.cppCrossing)}" cy="${Y(total(std, state.cppAt65, out.cppCrossing))}" r="5"/>`;
     }

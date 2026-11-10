@@ -39,6 +39,8 @@ for (const width of [390, 1440]) {
       // the plain slider is the single-pointer alternative and drives the same numbers
       await page.locator('#s-cppAge').fill(String(std));
       await expect(age).toHaveText(String(std));
+      await page.getByRole('button', { name: 'More: CPP start age' }).click();
+      await expect(age).toHaveText(String(std + 1));
       expect(await page.evaluate(() => localStorage.length + sessionStorage.length + document.cookie.length)).toBe(0);
       expect(requests).toEqual([]); expect(errors).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);

@@ -44,7 +44,11 @@ mark{background:var(--t-point);color:var(--t-ground);font-weight:600;padding:0 2
 .sliders{display:grid;gap:1rem;max-width:40rem;margin-top:1rem}
 .slider label{display:block;font-weight:600}
 .slider output{font-weight:400;font-variant-numeric:tabular-nums}
-.slider input[type=range]{width:100%;min-height:44px;accent-color:var(--t-ink)}
+.slider .row{display:flex;gap:.6rem;align-items:center}
+.slider input[type=range]{flex:1;min-width:0;min-height:44px;accent-color:var(--t-ink)}
+.step{font:inherit;font-weight:700;font-size:1.2rem;color:var(--t-ink);background:transparent;border:0;outline:1px solid var(--t-rule);outline-offset:-1px;border-radius:2px;min-width:44px;min-height:44px;cursor:pointer}
+.step:focus-visible{outline:2px solid var(--t-ink);outline-offset:2px}
+:root[data-theme="dark"] .step:focus-visible{outline-color:var(--t-point)}
 .credit{margin-top:2rem}
 .foot{margin-top:3rem;padding:2rem 0 3rem;font-size:16px;color:var(--t-ink2)}
 .foot p{max-width:66ch;margin:0 0 .75rem}
