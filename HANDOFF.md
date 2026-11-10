@@ -16,7 +16,7 @@ Spend: 9 clips, 4.70 Higgsfield credits.
 closing line, hook); silence trimming kept them. `shell/tools/align.py` (Vosk speech recognition, offline) now finds each line's
 first and last real word and writes `voice/cuts.json`; the shell keeps only that window, with 12 ms fades at every cut. A test
 checks every spoken year was heard. The finished mix transcribes as the nine lines and nothing else. Reel 59.4 s, 16.9 MiB. End card: "This voice is AI-generated." 17 reel tests pass.
-**Web copies:** `--web` makes history-45.webm, a poster and contact-sheet.webp for the site (`npm run sync-labs` there).
+**Web copies:** `--web` makes history-45.webm, a poster, contact-sheet.webp and the carousel as WebP slides with slides.json (descriptions) for the site (`npm run sync-labs` there).
 **Next:** case-study MDX at /builds/reel-shell in the site (contact sheet + a failing-preflight demo), native video with the .vtt
 on /explainers. Firm approval before any social posting. Stretch: one rights-checked archive photo beat, a French cut.
 

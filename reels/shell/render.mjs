@@ -109,6 +109,21 @@ if (flag('web')) {
   ff('-i', mp4, '-c:v', 'libvpx-vp9', '-crf', '34', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2', '-c:a', 'libopus', '-b:a', '96k', join(out, `${reel.id}.webm`));
   ff('-ss', '0.2', '-i', mp4, '-frames:v', '1', '-vf', 'scale=720:-2', '-c:v', 'libwebp', '-quality', '85', join(out, `${reel.id}-poster.webp`));
   ff('-i', join(out, 'contact-sheet.png'), '-vf', 'scale=1600:-2', '-c:v', 'libwebp', '-quality', '85', join(out, 'contact-sheet.webp'));
+  // Carousel slides for the web (WebP) and their descriptions, from the same words the cards show.
+  const { readdirSync } = await import('node:fs');
+  const { screenText } = await import('./lib.mjs');
+  const cw = join(out, 'carousel-web'); rmSync(cw, { recursive: true, force: true }); mkdirSync(cw, { recursive: true });
+  const end = model.cards.find(c => c.type === 'end');
+  const slides = readdirSync(join(out, 'carousel')).filter(f => f.endsWith('.png')).sort().map((f, i, all) => {
+    const id = f.replace(/^slide-\d+-/, '').replace('.png', '');
+    const c = model.cards.find(x => x.id === id);
+    const words = [...screenText(c), ...(i === all.length - 1 && end ? [end.ai, end.text] : [])];
+    const file = f.replace('.png', '.webp');
+    ff('-i', join(out, 'carousel', f), '-c:v', 'libwebp', '-quality', '86', join(cw, file));
+    return { file, alt: `Slide ${i + 1} of ${all.length}. ${words.join('. ').replace(/\.\./g, '.')}` };
+  });
+  writeFileSync(join(cw, 'slides.json'), JSON.stringify(slides, null, 2) + '\n');
+  console.log(`wrote ${slides.length} web slides and slides.json`);
   const sz = statSync(join(out, `${reel.id}.webm`)).size;
   if (sz > MAX_BYTES) throw new Error(`webm is ${(sz / 1048576).toFixed(1)} MiB, over 25 MiB`);
   console.log(`wrote ${reel.id}.webm (${(sz / 1048576).toFixed(2)} MiB), ${reel.id}-poster.webp, contact-sheet.webp`);
