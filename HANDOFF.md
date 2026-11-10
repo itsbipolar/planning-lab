@@ -17,3 +17,11 @@ consumer price index, complete years 1915 to 2025. Second stripe: the Bank of Ca
 1975 to 2025. Note for Mo: the plan said "posted mortgage rate since 1975", but the Bank of Canada's mortgage and older
 monthly prime series both stop in September 2019, so the current weekly prime series is used instead (it starts in 1975 and
 continues). 8 data tests and 10 browser tests pass. Seeded covers and OG images from it are still to do (site v1).
+
+**P2 The Order of Returns (labs/order-of-returns), Opus session 2026-11-10:** Mo asked for it to be built on Claude's
+judgement, so there was no interview; the decisions are in `SPEC.md` section 2. Engine `engine.mjs` (plain JS, node:test):
+8 tests (commutativity property, independent golden case from `tests/golden.py`, depletion years, 2,000 random runs with no
+NaN or negatives, flex and buffer rules, input checks). Page: six scenes with Back and Next, deal-the-cards, sandbox; 8
+browser tests (keyboard-only playthrough, banned phrases, axe on every scene in both schemes, reduced motion, no request,
+nothing stored). Finding worth keeping: with both levers on, Sam runs out a year earlier, because cash earns nothing in the
+model; the page says each lever has a cost. Not done: the P6 drag-number component (native sliders instead), the 9:16 capture.

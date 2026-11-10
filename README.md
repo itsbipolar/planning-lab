@@ -4,6 +4,7 @@ Small browser builds on Canadian planning rules, each a standalone static page. 
 
 | Build | What it is | Status |
 |---|---|---|
+| [`labs/order-of-returns`](labs/order-of-returns) | Same average return, a different retirement: a playable explainer of sequence-of-returns risk in six scenes, with two fictional retirees and synthetic market years. A tested withdrawal engine. | demo |
 | [`labs/money-stripes`](labs/money-stripes) | A century of Canadian prices as one band of colour, a stripe for each year, plus the prime rate since 1975. Data snapshots from Statistics Canada and the Bank of Canada, dated and credited. | demo |
 | [`labs/money-milestones`](labs/money-milestones) | Type a birth year: the rules for the TFSA, CPP, OAS and RRSP appear on the weeks of a life, each with its source and the date it was read. | demo |
 
@@ -21,6 +22,6 @@ Small browser builds on Canadian planning rules, each a standalone static page. 
 `shared/tokens.css`, `shared/tokens.json` and `shared/DESIGN.md` are the design rules the builds follow (copied from the portfolio site until this repo becomes their home).
 
 ## Credits
-Inspired by *Life in Weeks* by Gina Trapani (MIT licence); no code from it is used. Money stripes borrows the visual idea of the #ShowYourStripes warming stripes by Professor Ed Hawkins, University of Reading (CC BY 4.0, showyourstripes.info); it has nothing to do with climate data. Price data: adapted from Statistics Canada, Consumer Price Index, Table 18-10-0004-01 (Statistics Canada Open Licence; this does not constitute an endorsement by Statistics Canada). Prime rate: Bank of Canada Valet API (terms at bankofcanada.ca/terms; not affiliated with or endorsed by the Bank of Canada). Fonts: Archivo and Instrument Serif, SIL Open Font License 1.1, embedded in the built page.
+The Order of Returns follows the scene-by-scene format of Nicky Case's *The Evolution of Trust* (CC0); its engine, words and numbers are new. Inspired by *Life in Weeks* by Gina Trapani (MIT licence); no code from it is used. Money stripes borrows the visual idea of the #ShowYourStripes warming stripes by Professor Ed Hawkins, University of Reading (CC BY 4.0, showyourstripes.info); it has nothing to do with climate data. Price data: adapted from Statistics Canada, Consumer Price Index, Table 18-10-0004-01 (Statistics Canada Open Licence; this does not constitute an endorsement by Statistics Canada). Prime rate: Bank of Canada Valet API (terms at bankofcanada.ca/terms; not affiliated with or endorsed by the Bank of Canada). Fonts: Archivo and Instrument Serif, SIL Open Font License 1.1, embedded in the built page.
 
 Education only, not personal financial, tax, legal or investment advice. A personal project, not affiliated with or endorsed by any employer. MIT licence.
