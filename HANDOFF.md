@@ -58,3 +58,9 @@ pointer drag); every number also has a plain slider. Amounts (CPP $1,000, OAS $7
 now also writes `shared/data/money-year-2026.json` (Valet V39079, V80691335, FXUSDCAD, CPI_TRIM, CPI_MEDIAN from 2025-12-01;
 refresh around Dec 1). 11 Budget 2026 proposals drafted in canada-planning-facts (unverified, `budget_proposal`); they reach
 `shared/facts.json` only once Mo confirms. Budget Day's date: no quotable line on budget.canada.ca yet. Next: the graphed page.
+**P4 page (labs/money-year):** Mo confirmed all 11 budget entries. `model.mjs` computes everything from the snapshot and the confirmed
+facts (rate decisions, highs and lows, notes; proposals only from confirmed `budget2026_*`); `app.js` draws four small panels on one
+shared time axis (no dual axis), callouts, a crosshair driven by pointer or slider, the proposals as a dated timeline stamped
+"Proposed, not law", and a numbers table. 5 data tests (incl. no typed figures, proven able to fail) and 8 browser tests.
+Budget Day stays unconfirmed (only the page's "Date modified" line), so the Growth Incentive reads "From Budget Day".
+Next: the P4 reel and carousel through the shell (data cards), the site case study, refresh around Dec 1.

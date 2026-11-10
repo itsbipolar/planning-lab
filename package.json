@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "sync-facts": "node scripts/sync-facts.mjs",
-    "build": "node labs/money-milestones/build.mjs && node labs/money-stripes/build.mjs && node labs/order-of-returns/build.mjs && node labs/two-number-letter/build.mjs",
-    "test": "npm run build && node --test labs/money-milestones/tests/no-hardcoded.test.mjs labs/money-stripes/tests/data.test.mjs labs/order-of-returns/tests/engine.test.mjs labs/two-number-letter/tests/calc.test.mjs labs/two-number-letter/tests/no-hardcoded.test.mjs reels/shell/tests/preflight.test.mjs reels/shell/tests/no-hardcoded.test.mjs reels/shell/tests/safe-zone.test.mjs && npx playwright test",
+    "build": "node labs/money-milestones/build.mjs && node labs/money-stripes/build.mjs && node labs/order-of-returns/build.mjs && node labs/two-number-letter/build.mjs && node labs/money-year/build.mjs",
+    "test": "npm run build && node --test labs/money-milestones/tests/no-hardcoded.test.mjs labs/money-stripes/tests/data.test.mjs labs/order-of-returns/tests/engine.test.mjs labs/two-number-letter/tests/calc.test.mjs labs/two-number-letter/tests/no-hardcoded.test.mjs labs/money-year/tests/data.test.mjs reels/shell/tests/preflight.test.mjs reels/shell/tests/no-hardcoded.test.mjs reels/shell/tests/safe-zone.test.mjs && npx playwright test",
     "check": "npm run build && npm test",
     "fetch-data": "NODE_USE_ENV_PROXY=1 node scripts/fetch-data.mjs",
     "reel": "node reels/shell/render.mjs",

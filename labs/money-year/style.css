@@ -1,0 +1,64 @@
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
+body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 18px/1.55 var(--font-ui)}
+@media (min-width:1100px){body{font-size:19px}}
+.page{max-width:76rem;margin:0 auto;padding:0 20px}
+@media (min-width:1100px){.page{padding:0 32px}}
+.top{display:flex;gap:1.5rem;align-items:baseline;padding:20px 0;font-weight:500}
+.brand{font-family:var(--font-display);font-size:1.9rem;line-height:1;text-decoration:none;color:inherit;margin-right:auto}
+.back{color:inherit}
+h1,h2{font-family:var(--font-display);font-weight:400;letter-spacing:-.01em;margin:0}
+h1{font-size:clamp(2.6rem,5vw + .8rem,4.6rem);line-height:1}
+h2{font-size:2.3rem;line-height:1.05;margin:3rem 0 1rem}
+h3{font-size:1.05rem;font-weight:700;margin:0}
+a{color:inherit;text-underline-offset:4px}
+a:focus-visible,summary:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--t-ink);outline-offset:2px}
+:root[data-theme="dark"] a:focus-visible,:root[data-theme="dark"] summary:focus-visible,:root[data-theme="dark"] input:focus-visible,:root[data-theme="dark"] [tabindex]:focus-visible{outline-color:var(--t-point)}
+.lede{max-width:62ch;color:var(--t-ink2);margin:1.5rem 0 .5rem}
+.status-tag{margin:0 0 1rem;color:var(--t-ink3);font-size:16px}
+label{display:block;font-weight:600;margin-bottom:.4rem}
+input[type=range]{width:100%;max-width:62rem;min-height:44px;accent-color:var(--t-ink)}
+.readout{max-width:66ch;min-height:3.2em;margin:.5rem 0 1rem;color:var(--t-ink2);font-variant-numeric:tabular-nums}
+.panels{max-width:62rem}
+.panel{margin:0 0 1.75rem}
+.panel h3{margin-bottom:.35rem}
+.panel svg{display:block;overflow:visible;font-family:var(--font-ui);touch-action:pan-y}
+.note{font-size:16px;color:var(--t-ink2);max-width:66ch;margin:.35rem 0 0}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-size:15px;color:var(--t-ink2);margin:0 0 .35rem}
+.legend .key{display:inline-block;width:1.6rem;border-top:2px solid var(--t-ink)}
+.legend .key.dashed{border-top:2px dashed var(--t-ink3)}
+.legend .sep{width:1rem}
+.grid{stroke:var(--t-rule);stroke-width:1}
+.axis{stroke:var(--t-ink3);stroke-width:1}
+.tick{fill:var(--t-ink3);font-size:13px;font-variant-numeric:tabular-nums}
+.future{fill:var(--t-raised);opacity:.55}
+.line{fill:none;stroke:var(--t-ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.line.dashed{stroke:var(--t-ink3);stroke-dasharray:6 4}
+.endlabel{fill:var(--t-ink2);font-size:14px;font-variant-numeric:tabular-nums}
+.ring{fill:var(--t-ground);stroke:var(--t-ink);stroke-width:2}
+.leader{stroke:var(--t-ink3);stroke-width:1}
+.callout{fill:var(--t-ink);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.mark{fill:var(--t-point)}
+.callout.marked{fill:var(--t-ground)}
+:root[data-theme="light"] .callout.marked{fill:var(--t-ink)}
+.cross{stroke:var(--t-ink2);stroke-width:1;stroke-dasharray:3 3}
+.dot{fill:var(--t-ink);stroke:var(--t-ground);stroke-width:2}
+.hit{fill:transparent;cursor:crosshair}
+details{max-width:62rem;margin-top:.5rem}
+summary{cursor:pointer;font-weight:600;padding:.5rem 0;min-height:44px}
+.table-wrap{overflow-x:auto}
+.nums{width:100%;border-collapse:collapse;font-size:16px;font-variant-numeric:tabular-nums;margin-top:.5rem}
+.nums caption{text-align:left;font-weight:700;padding-bottom:.5rem}
+.nums th,.nums td{text-align:left;padding:.35rem .75rem .35rem 0;border-top:1px solid var(--t-rule);white-space:nowrap}
+.nums thead th{border-top:0;color:var(--t-ink2)}
+.lane{list-style:none;margin:1.5rem 0 0;padding:0;max-width:46rem;border-left:2px solid var(--t-ink3)}
+.lane li{position:relative;padding:0 0 1.75rem 1.5rem}
+.lane li::before{content:"";position:absolute;left:-7px;top:.45rem;width:12px;height:12px;border-radius:50%;background:var(--t-ground);border:2px solid var(--t-ink)}
+.lane .when{margin:0;font-size:16px;color:var(--t-ink2);font-variant-numeric:tabular-nums}
+.lane h3{font-size:1.15rem;margin:.15rem 0}
+.lane .value{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.lane .detail{margin:.15rem 0 0;color:var(--t-ink2);font-size:16px}
+.lane .stamp{display:inline-block;margin:.5rem 0 0;padding:.05rem .5rem;border:1.5px dashed var(--t-ink3);color:var(--t-ink2);font-size:14px;font-weight:600}
+.prose{max-width:66ch}.prose p{margin:0 0 1rem}
+.foot{margin-top:4rem;padding:2rem 0 3rem;font-size:16px;color:var(--t-ink2)}
+.foot p{max-width:66ch;margin:0 0 .75rem}
