@@ -77,3 +77,8 @@ transcribes as the ten lines only. **Web cut:** `--web45` renders the reel at 10
 app buttons) for the site, for both reels; data cards are larger in that layout. Next: site page + case study; refresh ~Dec 1.
 **Posters (2026-11-11):** a reel's poster is now its opening card once settled (drawings complete), not frame 0; `--posters` rewrites
 the posters from videos already rendered. Both reels' posters redone. Site: P4's page, 4:5 reel, slides and case study synced (mo-portfolio-site HANDOFF).
+**Fix (2026-11-11, Mo heard mistakes in the P4 voice):** T1135 applies to tax years that END AFTER the fact's year, so it now sits in the
+next year's column (it was wrongly in this year's); the RRSP-for-life consultation (open from Budget Day) moved to this year; instalments
+read "Tax years starting on or after". Page rebuilt and synced. Reel and carousel NOT yet re-rendered: they still say T1135 "from this
+year" and need a revised script (Mo to approve) and new clips for next0/next1/next2 (clip faults: "posed", stretched "twenty-eight").
+`tools/lines.mjs` now works for data reels.

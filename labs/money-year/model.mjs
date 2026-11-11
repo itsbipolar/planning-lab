@@ -77,10 +77,12 @@ export function buildModel(snap, factsFile) {
     when: budgetDay ? `From ${longDate(budgetDay)}` : 'From Budget Day',
     title: 'Canada Growth Incentive exemption', value: `Up to ${money(v('budget2026_cgi_limit'))} per person, per business`,
     detail: `For qualifying shares ${v('budget2026_cgi_issue_window')}. Narrow: many conditions, and many kinds of business are excluded.`, facts: ['budget2026_cgi_limit', 'budget2026_cgi_issue_window'] });
-  if (has('budget2026_t1135_threshold', 'budget2026_t1135_start')) proposals.push({ id: 't1135', at: `${Y}-12-31`, dated: false,
-    when: `Tax years that end after ${Y}`, title: 'Foreign property form T1135', value: `Filed above ${money(v('budget2026_t1135_threshold'))}`,
+  // "Taxation years that end after <year>": the first such tax year is the next one, so it sits in that year's column.
+  const t1135After = has('budget2026_t1135_start') ? Number((String(v('budget2026_t1135_start')).match(/\b\d{4}\b/) ?? [])[0]) : NaN;
+  if (has('budget2026_t1135_threshold', 'budget2026_t1135_start') && t1135After) proposals.push({ id: 't1135', at: `${t1135After + 1}-01-01`, dated: false,
+    when: `Tax years that end after ${t1135After}`, title: 'Foreign property form T1135', value: `Filed above ${money(v('budget2026_t1135_threshold'))}`,
     detail: `Applies to ${v('budget2026_t1135_start')}.`, facts: ['budget2026_t1135_threshold', 'budget2026_t1135_start'] });
-  if (has('budget2026_rrsp_for_life_consultation_deadline')) proposals.push({ id: 'rrsp', at: v('budget2026_rrsp_for_life_consultation_deadline'), dated: true,
+  if (has('budget2026_rrsp_for_life_consultation_deadline')) proposals.push({ id: 'rrsp', at: budgetDay ?? v('budget2026_rrsp_for_life_consultation_deadline'), dated: Boolean(budgetDay), // open from Budget Day until its deadline, so it sits with this year's items
     when: `Comments due ${longDate(v('budget2026_rrsp_for_life_consultation_deadline'))}`, title: 'RRSP for life', value: 'A consultation on one account instead of an RRSP and a RRIF',
     detail: 'A consultation, not yet a proposal with a start date.', facts: ['budget2026_rrsp_for_life_consultation_deadline'] });
   if (has('budget2026_t1_filing_date', 'budget2026_t1_filing_date_start')) proposals.push({ id: 'filing', at: `${v('budget2026_t1_filing_date_start')}-01-01`, dated: false,
@@ -90,7 +92,7 @@ export function buildModel(snap, factsFile) {
     when: `From the ${v('budget2026_caregiver_refundable_start')} tax year`, title: 'Canada Caregiver Credit becomes refundable', value: `Up to ${money(v('budget2026_caregiver_max_relief_2027'))} of relief for an infirm adult relative`,
     detail: 'Refundable means it can be paid even with little or no tax to pay.', facts: ['budget2026_caregiver_refundable_start', 'budget2026_caregiver_max_relief_2027'] });
   if (has('budget2026_instalment_threshold', 'budget2026_instalment_start')) proposals.push({ id: 'instalments', at: v('budget2026_instalment_start'), dated: true,
-    when: `From ${longDate(v('budget2026_instalment_start'))}`, title: 'Tax instalments, outside Quebec', value: `Required above ${money(v('budget2026_instalment_threshold'))} owing`,
+    when: `Tax years starting on or after ${longDate(v('budget2026_instalment_start'))}`, title: 'Tax instalments, outside Quebec', value: `Required above ${money(v('budget2026_instalment_threshold'))} owing`,
     detail: 'The threshold for paying tax in instalments during the year.', facts: ['budget2026_instalment_threshold', 'budget2026_instalment_start'] });
   proposals.sort((a, b) => (a.at ?? '').localeCompare(b.at ?? ''));
 
