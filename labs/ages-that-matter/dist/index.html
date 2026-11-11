@@ -74,7 +74,8 @@ label[for$="-pick"]{display:block;font-weight:600;margin:1rem 0 .2rem}
 .grid-box{max-width:52rem;margin:1rem 0 .25rem}
 .grid-box svg{display:block;font-family:var(--font-ui);overflow:visible;touch-action:pan-y}
 .cell{shape-rendering:crispEdges;cursor:pointer}
-.none{fill:var(--t-raised)}
+.none{stroke:var(--t-ink3);stroke-width:1}
+.none-line{stroke:var(--t-ink3);stroke-width:1.5}
 .lab{fill:var(--t-ink2);font-size:13px;font-variant-numeric:tabular-nums}
 .v{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;pointer-events:none}
 .v.lo{fill:var(--t-ink)}
@@ -200,7 +201,7 @@ section{margin-bottom:1rem}
   const months = (k) => (k === 1 ? '1 month' : `${k} months`);
   const C = M.cpp, O = M.oas, R = M.rrif;
 
-  $('lede').textContent = `Three of Canada's retirement rules, square by square. In the first two, each square is a month someone could start the pension, shaded by how much the pension changes against the standard start. The third shows the RRIF minimum at each age. Deep blue is less, pale green is more; every value comes from the verified facts file.`;
+  $('lede').textContent = `Three of Canada's retirement rules, square by square. In the first two, each square is a month someone could start the pension, shaded by how much the pension changes against the standard start. The third shows the RRIF minimum at each age. The stronger the shade, the higher the value; the key under each grid gives its range. Every value comes from the verified facts file.`;
   $('cpp-rule').textContent = `The CPP retirement pension can start from ${C.lo} to ${C.hi}. Against starting at ${C.std}, it is ${pct(C.red)} less for each month earlier and ${pct(C.inc)} more for each month later: from ${pct(C.range[0], 0)} less at ${C.lo} to ${pct(C.range[1], 0)} more at ${C.hi}.`;
   $('oas-rule').textContent = `OAS starts at ${O.start}. Each month of waiting adds ${pct(O.inc)}, up to ${O.max}: ${pct(O.range[1], 0)} more for the full wait.`;
   $('rrif-rule').textContent = `An RRSP must mature by the end of the year its holder turns ${R.maturity}, often into a RRIF. From then on, a minimum share of the fund at the start of each year has to be paid out: ${pct(R.range[0] * 100, 2)} at ${R.rows[0].age}, rising to ${pct(R.range[1] * 100, 0)} at ${R.rows.at(-1).age} or older.`;
@@ -208,22 +209,23 @@ section{margin-bottom:1rem}
   // A grid of start months: rows are ages, columns months after the birthday.
   function monthGrid(id, P, picked, onPick) {
     const box = $(id); box.textContent = '';
-    const W = Math.min(box.clientWidth || 360, 832), left = 34, gap = 3, cell = Math.max(16, Math.min(40, Math.floor((W - left) / 12) - gap)), st = cell + gap;
-    const ages = [...new Set(P.cells.map((c) => c.age))], H = 18 + ages.length * st + 4;
+    const W = Math.min(box.clientWidth || 360, 832), left = 34, gap = 3, top = 24, cell = Math.max(16, Math.min(44, Math.floor((W - left) / 12) - gap)), st = cell + gap;
+    const ages = [...new Set(P.cells.map((c) => c.age))], H = top + ages.length * st + 4;
     const svg = s('svg', { width: left + 12 * st, height: H, role: 'img', 'aria-label': `${id === 'cpp' ? 'CPP' : 'OAS'} start months as a grid; the values are in the readout and the table below.` });
     for (const c of P.cells) {
-      const x = left + c.month * st, y = 18 + (c.age - ages[0]) * st;
+      const x = left + c.month * st, y = top + (c.age - ages[0]) * st;
       const r = s('rect', { class: `cell h${stepOf(c.pct, P.range)}`, x, y, width: cell, height: cell });
       r.addEventListener('click', () => onPick(c));
       svg.append(r);
       if (c.k === 0) svg.append(s('rect', { class: 'std', x: x - 2, y: y - 2, width: cell + 4, height: cell + 4 }));
       if (c === picked) svg.append(s('rect', { class: 'pick', x: x - 2.5, y: y - 2.5, width: cell + 5, height: cell + 5 }));
     }
-    const lastAge = ages.at(-1);
-    for (let m = 1; m < 12; m++) svg.append(s('rect', { class: 'none', x: left + m * st, y: 18 + (lastAge - ages[0]) * st, width: cell, height: cell }));
-    ages.forEach((a, i) => svg.append(s('text', { class: 'lab', x: 0, y: 18 + i * st + cell / 2 + 5 }, String(a))));
+    const lastAge = ages.at(-1), defs = s('defs'), pat = s('pattern', { id: `${id}-none`, width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
+    pat.append(s('line', { class: 'none-line', x1: 0, y1: 0, x2: 0, y2: 6 })); defs.append(pat); svg.append(defs);
+    for (let m = 1; m < 12; m++) svg.append(s('rect', { class: 'none', x: left + m * st, y: top + (lastAge - ages[0]) * st, width: cell, height: cell, fill: `url(#${id}-none)` }));
+    ages.forEach((a, i) => svg.append(s('text', { class: 'lab', x: 0, y: top + i * st + cell / 2 + 5 }, String(a))));
     for (let m = 0; m < 12; m += cell < 26 ? 2 : 1) svg.append(s('text', { class: 'lab', x: left + m * st + cell / 2, y: 13, 'text-anchor': 'middle' }, `+${m}`));
-    box.append(svg, el('p', { class: 'note' }, 'Columns: months after the birthday. Dashed outline: the standard start. Dark grey: no start that late.'));
+    box.append(svg, el('p', { class: 'note' }, 'Columns: months after the birthday. Dashed outline: the standard start. Lined squares: no start that late.'));
     const key = el('div', { class: 'key' }), k = s('svg', { width: 120, height: 14, 'aria-hidden': 'true' });
     for (let i = 0; i < 10; i++) k.append(s('rect', { class: `cell h${Math.round((N - 1) * i / 9)}`, x: i * 12, y: 0, width: 10, height: 14 }));
     key.append(document.createTextNode(P.range[0] < 0 ? `${pct(P.range[0], 0)} less` : 'no change'), k, document.createTextNode(`${pct(P.range[1], 0)} more`));
@@ -252,14 +254,14 @@ section{margin-bottom:1rem}
   let rrifPick = R.rows.find((r) => r.age % 10 === 0) ?? R.rows[0];
   function drawRrif() {
     const box = $('rrif'); box.textContent = '';
-    const W = Math.min(box.clientWidth || 360, 832), left = 44, gap = 3, cell = Math.max(28, Math.min(64, Math.floor((W - left) / 10) - gap)), st = cell + gap;
+    const W = Math.min(box.clientWidth || 360, 832), left = 34, gap = 2, cell = Math.max(28, Math.min(64, Math.floor((W - left) / 10) - gap)), st = cell + gap, fs = Math.max(11, Math.min(16, Math.round(cell * 0.3)));
     const decades = [...new Set(R.rows.map((r) => Math.floor(r.age / 10)))], H = 18 + decades.length * st + 4;
     const svg = s('svg', { width: left + 10 * st, height: H, role: 'img', 'aria-label': 'RRIF minimum by age as a grid; the values are in the readout and the table below.' });
     for (const r of R.rows) {
       const x = left + (r.age % 10) * st, y = 18 + (Math.floor(r.age / 10) - decades[0]) * st, k = stepOf(r.factor, R.range);
       const rect = s('rect', { class: `cell h${k}`, x, y, width: cell, height: cell });
       rect.addEventListener('click', () => rrifSet(r));
-      svg.append(rect, s('text', { class: `v ${k >= N / 2 ? 'hi' : 'lo'}`, x: x + cell / 2, y: y + cell / 2 + 4, 'text-anchor': 'middle', style: cell < 40 ? 'font-size:10px' : '' }, (r.factor * 100).toFixed(1)));
+      svg.append(rect, s('text', { class: `v ${k >= N / 2 ? 'hi' : 'lo'}`, x: x + cell / 2, y: y + cell / 2 + 4, 'text-anchor': 'middle', style: `font-size:${fs}px` }, (r.factor * 100).toFixed(1)));
       if (r === rrifPick) svg.append(s('rect', { class: 'pick', x: x - 2.5, y: y - 2.5, width: cell + 5, height: cell + 5 }));
     }
     decades.forEach((d, i) => svg.append(s('text', { class: 'lab', x: 0, y: 18 + i * st + cell / 2 + 5 }, `${d * 10}s`)));

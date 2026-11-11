@@ -35,7 +35,8 @@ label[for$="-pick"]{display:block;font-weight:600;margin:1rem 0 .2rem}
 .grid-box{max-width:52rem;margin:1rem 0 .25rem}
 .grid-box svg{display:block;font-family:var(--font-ui);overflow:visible;touch-action:pan-y}
 .cell{shape-rendering:crispEdges;cursor:pointer}
-.none{fill:var(--t-raised)}
+.none{stroke:var(--t-ink3);stroke-width:1}
+.none-line{stroke:var(--t-ink3);stroke-width:1.5}
 .lab{fill:var(--t-ink2);font-size:13px;font-variant-numeric:tabular-nums}
 .v{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;pointer-events:none}
 .v.lo{fill:var(--t-ink)}
