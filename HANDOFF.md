@@ -103,3 +103,9 @@ from the CPP start-age facts, business/trust filters, comparison table, rules ta
 pending list, CSV download, sources. 12 Playwright tests (390/1440, axe both schemes). With today's facts 8 of 12 task types are
 pending (the six drafts); `PREVIEW_FACTS=labs/planning-year/fixtures/facts-with-drafts.json OUT=<file> node labs/planning-year/build.mjs`
 builds a look-ahead copy outside dist. Site case study waits for Mo's confirmations.
+**P5 split (Mo, 2026-11-11):** the practice-workload heatmap read as too close to a firm's own operations; Mo kept the heatmap idea
+and asked for three P5 subprojects, each treated as its own project: P5a The retirement wave, P5b The planning calendar by
+household (replaces the practice version; needs the six facts), P5c The ages that matter. `labs/planning-year` stays unpublished.
+**P5a The retirement wave (Mo approved the sketch):** `labs/retirement-wave/` + `scripts/fetch-population.mjs` (StatCan 17-10-0005-01,
+1971-2026, ages 50-89, released 2026-09-23). Heatmap with rule-age lines from facts, a generation slider, one-age line chart, tables,
+StatCan attribution/citation/notes. 6 data tests + 8 browser tests. Next: site case study on a branch, Mo looks before it goes live.
