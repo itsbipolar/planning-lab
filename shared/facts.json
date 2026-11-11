@@ -1153,6 +1153,76 @@
       "authority": "official_publication",
       "as_of": "2026-11-11",
       "status": "pending"
+    },
+    {
+      "id": "superficial_loss_period",
+      "series": "superficial_loss_period",
+      "title": "The period around a sale in which buying the same property back makes the loss superficial",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "30 calendar days before the sale to 30 calendar days after the sale",
+      "unit": "text",
+      "source_url": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/personal-income/line-12700-capital-gains/capital-losses-deductions.html",
+      "authority": "cra_position",
+      "as_of": "2026-11-11",
+      "status": "confirmed"
+    },
+    {
+      "id": "fhsa_contribution_period",
+      "series": "fhsa_contribution_period",
+      "title": "FHSA contribution period (contributions are deductible for the calendar year they are made in)",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "January 1 to December 31 of the same year",
+      "unit": "text",
+      "source_url": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/first-home-savings-account/tax-deductions-fhsa-contributions.html",
+      "authority": "cra_position",
+      "as_of": "2026-11-11",
+      "status": "confirmed"
+    },
+    {
+      "id": "rrif_minimum_payment_timing",
+      "series": "rrif_minimum_payment_timing",
+      "title": "When the first RRIF minimum amount must be paid",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "in the year following the year the RRIF is entered into",
+      "unit": "text",
+      "source_url": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-retirement-income-fund-rrif.html",
+      "authority": "cra_position",
+      "as_of": "2026-11-11",
+      "status": "confirmed"
+    },
+    {
+      "id": "donations_claim_year",
+      "series": "donations_claim_year",
+      "title": "Donations claimed on a year's return are the ones made in that year (unused amounts can be carried forward)",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "donations and gifts made in the year",
+      "unit": "text",
+      "source_url": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-34900-donations-gifts/how-claim.html",
+      "authority": "cra_position",
+      "as_of": "2026-11-11",
+      "status": "confirmed"
+    },
+    {
+      "id": "cesg_basic_rate",
+      "series": "cesg_basic_rate",
+      "title": "Basic Canada Education Savings Grant, figured on each year's contributions",
+      "kind": "fixed",
+      "jurisdiction": "federal",
+      "tax_year": null,
+      "value": "20% of annual personal contributions",
+      "unit": "text",
+      "source_url": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-education-savings-plans-resps/canada-education-savings-programs-cesp/canada-education-savings-grant-cesg.html",
+      "authority": "official_publication",
+      "as_of": "2026-11-11",
+      "status": "confirmed"
     }
   ]
 }
