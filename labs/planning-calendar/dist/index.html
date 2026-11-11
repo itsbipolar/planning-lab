@@ -235,16 +235,16 @@ section{margin-bottom:1rem}
     const box = $('overview'); box.textContent = '';
     const W = Math.min(box.clientWidth || 360, 1056), narrow = W < 700, halves = narrow ? 2 : 1, per = Math.ceil(weeks / halves);
     const left = narrow ? 0 : 300, gap = 2, cell = Math.max(6, Math.min(14, Math.floor((W - left - 4) / per) - gap)), stepX = cell + gap;
-    const rowH = narrow ? cell + 24 : cell + 10, top = 22, blockH = top + M.households.length * rowH + (narrow ? 18 : 4);
+    const rowH = narrow ? cell + 24 : cell + 10, top = 22, blockH = top + M.households.length * rowH + (narrow ? 17 : 4);
     const svg = s('svg', { width: W, height: halves * blockH, role: 'img', 'aria-label': `Every household's dates in ${Y}, week by week. The dates are listed for each household below.` });
     hatchDefs(svg);
     for (let half = 0; half < halves; half++) {
       const y0 = half * blockH;
       for (let m = 0; m < 12; m++) { const k = (Date.UTC(Y, m, 1) - start) / DAY, w = Math.floor((k + off) / 7); if (Math.floor(w / per) !== half) continue; svg.append(s('text', { class: 'lab', x: left + (w - half * per) * stepX, y: y0 + 13 }, new Date(Date.UTC(Y, m, 1)).toLocaleDateString('en-CA', { month: 'short', timeZone: 'UTC' }))); }
       M.households.forEach((h, r) => {
-        const y = y0 + top + r * rowH + (narrow ? 18 : 0);
+        const y = y0 + top + r * rowH + (narrow ? 17 : 0);
         svg.append(s('text', { class: 'row-lab', x: 0, y: narrow ? y - 6 : y + cell - 2 }, h.label));
-        if (h.id === picked) svg.append(s('rect', { class: 'pick-row', x: narrow ? W - 4 : left - 10, y: narrow ? y - 18 : y, width: 4, height: narrow ? 14 : cell }));
+        if (h.id === picked) svg.append(s('rect', { class: 'pick-row', x: narrow ? W - 4 : left - 10, y: narrow ? y - 17 : y, width: 4, height: narrow ? 14 : cell }));
         for (let w = half * per; w < Math.min(weeks, (half + 1) * per); w++) {
           let best = Infinity, hit = false, win = false;
           for (let k = 0; k < 7; k++) { const i = w * 7 - off + k; if (i < 0 || i >= days) continue; const c = h.countdown[i] ?? Infinity; best = Math.min(best, c === null ? Infinity : c); if (c === 0) hit = true; if (inWin(h, start + i * DAY)) win = true; }
