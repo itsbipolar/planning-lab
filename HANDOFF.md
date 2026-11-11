@@ -116,3 +116,5 @@ Rule lines carry a ground-colour edge so they show on every shade. P5b facts con
 tax-loss selling). 11 households incl. RRIF, FHSA, RESP, donations and the superficial-loss period; 8 engine + 8 browser tests.
 Five new facts are drafted (canada-planning-facts branch `p5b-facts-draft`): until Mo confirms them those rows show as pending.
 Look-ahead preview: PREVIEW_FACTS=labs/planning-calendar/fixtures/facts-with-drafts.json OUT=<file> node labs/planning-calendar/build.mjs
+**P5c The ages that matter (2026-11-11):** `labs/ages-that-matter/` (Mo approved the sketch and the RRIF example fund). CPP start
+months, OAS deferral months, RRIF minimum by age; pickers with readouts; 5 data + 8 browser tests. Next: site branch, Mo's go.

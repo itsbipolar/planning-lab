@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The ages that matter · Mohammed El Chayeb</title>
+<meta name="description" content="Three Canadian retirement rules laid out square by square: every CPP start month, every OAS deferral month, and the RRIF minimum at every age. From the verified facts file. Education only, not advice.">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<div class="page">
+  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/ages-that-matter/">About this build</a></header>
+  <main>
+    <h1>The ages that matter</h1>
+    <p class="lede" id="lede"></p>
+    <p class="status-tag"><span data-status>demo</span></p>
+
+    <section aria-labelledby="h-cpp">
+      <h2 id="h-cpp">Starting CPP</h2>
+      <p class="note" id="cpp-rule"></p>
+      <div id="cpp" class="grid-box"></div>
+      <label for="cpp-pick">Pick a start month</label>
+      <input id="cpp-pick" type="range" step="1">
+      <p id="cpp-read" class="readout" aria-live="polite"></p>
+      <details><summary>Every CPP start month, as a table</summary><div class="table-wrap" tabindex="0" role="region" aria-label="Every CPP start month, scrolls sideways"><table class="nums"><caption id="cpp-cap"></caption><thead id="cpp-head"></thead><tbody id="cpp-body"></tbody></table></div></details>
+    </section>
+
+    <section aria-labelledby="h-oas">
+      <h2 id="h-oas">Starting OAS</h2>
+      <p class="note" id="oas-rule"></p>
+      <div id="oas" class="grid-box"></div>
+      <label for="oas-pick">Pick a start month</label>
+      <input id="oas-pick" type="range" step="1">
+      <p id="oas-read" class="readout" aria-live="polite"></p>
+      <details><summary>Every OAS start month, as a table</summary><div class="table-wrap" tabindex="0" role="region" aria-label="Every OAS start month, scrolls sideways"><table class="nums"><caption id="oas-cap"></caption><thead id="oas-head"></thead><tbody id="oas-body"></tbody></table></div></details>
+    </section>
+
+    <section aria-labelledby="h-rrif">
+      <h2 id="h-rrif">The RRIF minimum</h2>
+      <p class="note" id="rrif-rule"></p>
+      <div id="rrif" class="grid-box"></div>
+      <label for="rrif-pick">Pick an age</label>
+      <input id="rrif-pick" type="range" step="1">
+      <p id="rrif-read" class="readout" aria-live="polite"></p>
+      <details><summary>The RRIF minimum at every age, as a table</summary><div class="table-wrap" tabindex="0" role="region" aria-label="The RRIF minimum at every age, scrolls sideways"><table class="nums"><caption id="rrif-cap"></caption><thead><tr><th scope="col">Age at the start of the year</th><th scope="col">Minimum, share of the fund</th><th scope="col">On the example fund</th></tr></thead><tbody id="rrif-body"></tbody></table></div></details>
+    </section>
+
+    <section id="about" class="prose" aria-labelledby="h-about">
+      <h2 id="h-about">Sources and notes</h2>
+      <ul id="sources" class="sources"></ul>
+      <p>General rules only. Each square shows how a rule works, not what anyone should choose: the right start depends on a person's health, other income, taxes and plans. The example fund is an illustration, not anyone's amount.</p>
+    </section>
+  </main>
+  <footer class="foot">
+    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
+    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
+  </footer>
+</div>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>
