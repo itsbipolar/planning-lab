@@ -41,15 +41,6 @@
     const step = W < 600 ? 10 : 5;
     for (let y = y0; y <= y1; y += step) svg.append(s('text', { class: 'lab', x: X(y), y: H - 6 }, String(y)));
     if ((y1 - y0) % step >= step * 0.7) svg.append(s('text', { class: 'lab', x: X(y1) + cw, y: H - 6, 'text-anchor': 'end' }, String(y1)));
-    // The callout: where the youngest rule age peaked.
-    if (youngest) {
-      const cx = X(youngest.peak[0]) + cw / 2, cy = Yp(youngest.age) + ch / 2;
-      svg.append(s('circle', { class: 'ring', cx, cy, r: Math.max(6, ch * 0.75) }));
-      const txt = `${youngest.age}: peaked in ${youngest.peak[0]}`;
-      const tx = Math.min(cx, left + cols * cw - txt.length * 7.4), ty = topPad - 14;
-      svg.append(s('line', { class: 'leader', x1: cx, x2: cx, y1: ty + 4, y2: cy - Math.max(6, ch * 0.75) }));
-      svg.append(s('text', { class: 'callout', x: tx, y: ty }, txt));
-    }
     // The generation being followed: one diagonal, outlined.
     const path = cohortCells(state.born);
     if (path.length) {
@@ -58,6 +49,15 @@
       const last = path.at(-1); pts.push([X(last[0]) + cw, Yp(last[1]) + ch]);
       const up = [...path].reverse().map(([y, a]) => [[X(y) + cw, Yp(a)], [X(y), Yp(a)]]).flat();
       svg.append(s('polygon', { class: 'gen', points: [...pts, ...up.slice(0, -1)].map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' ') }));
+    }
+    // The callout: where the youngest rule age peaked.
+    if (youngest) {
+      const cx = X(youngest.peak[0]) + cw / 2, cy = Yp(youngest.age) + ch / 2;
+      svg.append(s('circle', { class: 'ring-halo', cx, cy, r: Math.max(6, ch * 0.75) }), s('circle', { class: 'ring', cx, cy, r: Math.max(6, ch * 0.75) }));
+      const txt = `${youngest.age}: peaked in ${youngest.peak[0]}`;
+      const tx = Math.min(cx, left + cols * cw - txt.length * 7.4), ty = topPad - 14;
+      svg.append(s('line', { class: 'leader', x1: cx, x2: cx, y1: ty + 4, y2: cy - Math.max(6, ch * 0.75) }));
+      svg.append(s('text', { class: 'callout', x: tx, y: ty }, txt));
     }
     // Pointer readout.
     svg.addEventListener('pointermove', (e) => {

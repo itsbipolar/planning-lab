@@ -62,3 +62,4 @@ label[for=born]{display:block;font-weight:600;margin:1.5rem 0 .2rem}
 .grid th,.grid td{padding:.25rem .6rem .25rem 0;font-size:14px}
 section{margin-bottom:1rem}
 .leader{stroke:var(--t-ink2);stroke-width:1}
+.ring-halo{fill:none;stroke:var(--t-ground);stroke-width:5}
