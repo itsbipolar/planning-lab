@@ -141,7 +141,7 @@ for (const [yr, items] of groups) {
   const ol = html('ol', 'cards');
   for (const p of items) {
     const li = html('li', 'card');
-    li.append(html('p', 'when', p.when), html('h3', null, p.title), html('p', 'value', p.value), html('p', 'detail', p.detail), html('p', 'stamp', 'Proposed, not law'));
+    li.append(html('p', 'when', p.when), html('h3', null, p.title), html('p', 'value', p.value), html('p', 'detail', p.detail), html('p', 'stamp', p.stamp ?? 'Proposed, not law'));
     ol.appendChild(li);
   }
   col.appendChild(ol);

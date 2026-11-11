@@ -190,7 +190,7 @@ ${seriesSVG(pn, model.data, p, { w, h: fmt === 'reel' ? 470 : 620 })}<div class=
       body = `<div class="kicker r">${esc(c.text)}</div><div class="when-big r">${esc(c.when)}</div>${c.sub ? `<div class="sub r">${esc(c.sub)}</div>` : ''}`; break;
     case 'proposals':
       body = `<div class="bigyear r" style="font-size:${c.items.length > 2 ? (fmt === 'reel' ? 150 : 120) : (fmt === 'reel' ? 200 : 160)}px">${c.year}</div><div class="props${c.items.length > 2 ? ' dense' : ''}">${c.items.map((it, i) =>
-        `<div class="prop r"><div class="pw">${esc(it.when)}</div><div class="pt">${esc(it.title)}</div><div class="pv">${esc(it.value)}</div><div class="stamp" id="${p}-st${i}">Proposed, not law</div></div>`).join('')}</div>`; break;
+        `<div class="prop r"><div class="pw">${esc(it.when)}</div><div class="pt">${esc(it.title)}</div><div class="pv">${esc(it.value)}</div><div class="stamp" id="${p}-st${i}">${esc(it.stamp ?? 'Proposed, not law')}</div></div>`).join('')}</div>`; break;
     case 'end':
       body = `<div class="edu r">${esc(c.text)}</div><div class="ai r">${esc(c.ai)}</div>${c.voice_note ? `<div class="ai r">${esc(c.voice_note)}</div>` : ''}`; break;
   }

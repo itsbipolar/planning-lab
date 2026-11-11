@@ -83,7 +83,7 @@ export function buildModel(snap, factsFile) {
     when: `Tax years that end after ${t1135After}`, title: 'Foreign property form T1135', value: `Filed above ${money(v('budget2026_t1135_threshold'))}`,
     detail: `Applies to ${v('budget2026_t1135_start')}.`, facts: ['budget2026_t1135_threshold', 'budget2026_t1135_start'] });
   if (has('budget2026_rrsp_for_life_consultation_deadline')) proposals.push({ id: 'rrsp', at: budgetDay ?? v('budget2026_rrsp_for_life_consultation_deadline'), dated: Boolean(budgetDay), // open from Budget Day until its deadline, so it sits with this year's items
-    when: `Comments due ${longDate(v('budget2026_rrsp_for_life_consultation_deadline'))}`, title: 'RRSP for life', value: 'A consultation on one account instead of an RRSP and a RRIF',
+    when: `Comments due ${longDate(v('budget2026_rrsp_for_life_consultation_deadline'))}`, stamp: 'Consultation', title: 'RRSP for life', value: 'A consultation on one account instead of an RRSP and a RRIF',
     detail: 'A consultation, not yet a proposal with a start date.', facts: ['budget2026_rrsp_for_life_consultation_deadline'] });
   if (has('budget2026_t1_filing_date', 'budget2026_t1_filing_date_start')) proposals.push({ id: 'filing', at: `${v('budget2026_t1_filing_date_start')}-01-01`, dated: false,
     when: `From the ${v('budget2026_t1_filing_date_start')} tax year`, title: 'Tax-filing deadline', value: `${v('budget2026_t1_filing_date')} for all individuals`,

@@ -149,7 +149,7 @@ export function screenText(c) {
     case 'hook': return c.from !== null ? [c.text, `${c.from} to ${c.to}`] : [c.text];
     case 'series': return [c.panel.title, `${c.panel.summary.from} to ${c.panel.summary.to}`, c.panel.note];
     case 'section': return [c.text, c.when, ...(c.sub ? [c.sub] : [])];
-    case 'proposals': return [String(c.year), ...c.items.flatMap(i => [i.when, i.title, i.value]), 'Proposed, not law'];
+    case 'proposals': return [String(c.year), ...c.items.flatMap(i => [i.when, i.title, i.value, i.stamp ?? 'Proposed, not law'])];
     case 'date': return [`${c.short}, ${c.year}`, c.name, ...(c.qualifier ? [`In law: ${c.qualifier}`] : []), c.beat, c.today];
     case 'chart': return [c.text];
     case 'stat': return [`${c.value} ${c.text}`];

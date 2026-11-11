@@ -17,6 +17,7 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#lane .card')).toHaveCount(6);
       await expect(page.locator('#lane .year')).toHaveText(['2026', '2027', '2028']);
       await expect(page.locator('#lane .stamp').first()).toHaveText('Proposed, not law');
+      await expect(page.locator('#lane .card', { hasText: 'RRSP for life' }).locator('.stamp')).toHaveText('Consultation');
       await page.locator('#when').focus();
       await page.keyboard.press('Home');
       await expect(page.locator('#readout')).toContainText('January 1, 2026');
