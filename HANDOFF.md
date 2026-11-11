@@ -85,3 +85,7 @@ year" and need a revised script (Mo to approve) and new clips for next0/next1/ne
 **Re-voiced (Mo approved the corrected lines, 2026-11-11):** loonie "slipped", next0 "From Budget Day: … consultation on an RRSP for
 life", next1 "From the {year} tax year: … foreign-property form", next2 "And from the {year} tax year". 5 new clips (one retake of next0),
 3.70 credits (72.92 to 69.22); every new clip and the final mix transcribe as the approved lines only. Reel 66.0 s; carousel, web and 4:5 cuts redone.
+**Cut-off words (Mo, 2026-11-11: "the federal budget…" was cut off):** the voice model had ended four files mid-word (P4 budget, next1,
+sources; history rrsp). Re-recorded (budget at speech_rate 10: at normal pace the model stopped mid-word twice); align.py now records
+`cut_off`/`tail_db`, the render refuses a cut-off clip, and a test checks both reels. Both reels re-rendered (P4 66.2 s, history 60.0 s);
+the P4 slides carry the "Consultation" stamp. Spend this round: see the session report.
