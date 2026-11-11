@@ -89,3 +89,11 @@ life", next1 "From the {year} tax year: … foreign-property form", next2 "And f
 sources; history rrsp). Re-recorded (budget at speech_rate 10: at normal pace the model stopped mid-word twice); align.py now records
 `cut_off`/`tail_db`, the render refuses a cut-off clip, and a test checks both reels. Both reels re-rendered (P4 66.2 s, history 60.0 s);
 the P4 slides carry the "Consultation" stamp. Spend this round: see the session report.
+**P5 The Planning Year, session 1 (2026-11-11):** `labs/planning-year/`: SPEC.md, a seeded synthetic book (400 households, IDs only),
+`triggers.json` (12 trigger types: each cites its facts; hours and lead weeks are assumptions; reviews are the one service item),
+`engine.mjs` (dates from confirmed facts only, a type with an unconfirmed fact is pending; hours spread over weekdays; Q1 / birth-month /
+client-quarter policies; CSV safe from formula injection). 16 tests (RRIF year, 21-year date, same seed, facts cited, pending, CSV,
+no figures in code); rule tests use `fixtures/facts-with-drafts.json` (the six drafts as if confirmed; never read by a build). With the
+drafts, Q1 reviews: peak 220 h/wk, 17 weeks over an 80 h assumption; by birth month: 158, 6 weeks. **Waiting on Mo** to confirm the six
+facts (canada-planning-facts branch `p5-facts-draft`). Next: the page (heatmap drawn in SVG, filters, capacity line, policy panel,
+assumptions, CSV download), then the site case study.

@@ -1,0 +1,27 @@
+{
+  "year": 2027,
+  "seed": 2027,
+  "households": 400,
+  "assumptionLabel": "assumption, not an industry benchmark",
+  "capacity": { "hoursPerWeek": 80, "note": "Team hours per week available for this work." },
+  "policies": [
+    { "id": "q1", "label": "Reviews clustered in Q1" },
+    { "id": "birthMonth", "label": "Reviews spread by birth month" },
+    { "id": "clientQuarter", "label": "Reviews spread by a client-chosen quarter" }
+  ],
+  "types": [
+    { "id": "review", "label": "Annual review", "kind": "service", "facts": [], "rule": "policy", "who": "all", "hours": 3, "leadWeeks": 1 },
+    { "id": "rrsp_deadline", "label": "RRSP contributions for last year", "kind": "rule", "facts": ["rrsp_contribution_deadline.{prev}"], "rule": "fact_date", "who": "rrsp_contributors", "hours": 0.5, "leadWeeks": 4 },
+    { "id": "t1_returns", "label": "Tax returns: balance due", "kind": "rule", "facts": ["t1_balance_due_date.{prev}"], "rule": "fact_date", "who": "not_self_employed", "hours": 2, "leadWeeks": 6 },
+    { "id": "t1_self_employed", "label": "Tax returns: self-employed filing", "kind": "rule", "facts": ["t1_self_employed_filing_deadline.{prev}"], "rule": "fact_date", "who": "self_employed", "hours": 3, "leadWeeks": 6 },
+    { "id": "instalments", "label": "Tax instalment", "kind": "rule", "facts": ["individual_instalment_due_dates"], "rule": "fact_dates_in_year", "who": "instalment_payers", "hours": 0.25, "leadWeeks": 1 },
+    { "id": "t3_return", "label": "Trust return (T3)", "kind": "rule", "facts": ["t3_filing_deadline_rule"], "rule": "days_after_trust_year_end", "who": "trust", "hours": 4, "leadWeeks": 6 },
+    { "id": "corp_year_end", "label": "Corporate year-end planning", "kind": "rule", "facts": ["t2_filing_deadline_rule"], "rule": "corp_year_end", "who": "holdco", "hours": 2, "leadWeeks": 4 },
+    { "id": "t2_return", "label": "Corporate return (T2)", "kind": "rule", "facts": ["t2_filing_deadline_rule"], "rule": "months_after_corp_year_end", "who": "holdco", "hours": 3, "leadWeeks": 6 },
+    { "id": "rrif_conversion", "label": "RRSP must mature (RRIF or annuity)", "kind": "rule", "facts": ["rrsp_maturity_age"], "rule": "end_of_year_at_age", "who": "rrsp_holders", "hours": 3, "leadWeeks": 10 },
+    { "id": "cpp_opens", "label": "CPP can start", "kind": "rule", "facts": ["cpp_earliest_start_age"], "rule": "birthday_at_age", "who": "members", "hours": 1, "leadWeeks": 4 },
+    { "id": "standard_start", "label": "Standard CPP and OAS start age", "kind": "rule", "facts": ["cpp_standard_start_age", "oas_start_age"], "rule": "birthday_at_age", "who": "members", "hours": 1.5, "leadWeeks": 6 },
+    { "id": "last_deferral", "label": "Last CPP and OAS deferral age", "kind": "rule", "facts": ["cpp_latest_start_age", "oas_deferral_max_age"], "rule": "birthday_at_age", "who": "members", "hours": 1, "leadWeeks": 6 },
+    { "id": "trust_21", "label": "Trust deemed-disposition date", "kind": "rule", "facts": ["trust_deemed_disposition_years"], "rule": "trust_anniversary", "who": "trust", "hours": 6, "leadWeeks": 26 }
+  ]
+}
