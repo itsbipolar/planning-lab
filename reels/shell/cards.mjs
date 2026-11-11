@@ -77,19 +77,19 @@ ${sel} .bigyear{font-size:${big ? 230 : 190}px;font-weight:800;line-height:.9;le
 ${sel} .sparks{display:grid;grid-template-columns:1fr 1fr;gap:${big ? '34px 40px' : '22px 30px'};margin-top:auto;margin-bottom:${big ? 30 : 0}px}
 ${sel} .sparks b{display:block;font-size:${big ? 36 : 32}px;font-weight:700;line-height:1.1;margin-bottom:8px}
 ${sel} .sparks .chart{margin-top:0}
-${sel} .kicker{font-size:${big ? 58 : 50}px;font-weight:700;line-height:1.1;margin-top:${big ? 110 : 60}px}
-${sel} .when-big{font-size:${big ? 120 : 104}px;font-weight:800;line-height:1;letter-spacing:-.02em;margin-top:${big ? 30 : 20}px;font-variant-numeric:tabular-nums}
-${sel} .sub{font-size:${big ? 54 : 46}px;line-height:1.22;color:${INK2};margin-top:${big ? 40 : 24}px}
-${sel} .props{display:flex;flex-direction:column;gap:${big ? 22 : 14}px;margin-top:${big ? 24 : 14}px}
+${sel} .kicker{font-size:${big ? 58 : 60}px;font-weight:700;line-height:1.1;margin-top:${big ? 110 : 150}px}
+${sel} .when-big{font-size:${big ? 120 : 130}px;font-weight:800;line-height:1;letter-spacing:-.02em;margin-top:${big ? 30 : 20}px;font-variant-numeric:tabular-nums}
+${sel} .sub{font-size:${big ? 54 : 54}px;line-height:1.22;color:${INK2};margin-top:${big ? 40 : 24}px}
+${sel} .props{display:flex;flex-direction:column;gap:${big ? 22 : 30}px;margin-top:${big ? 24 : 30}px}
 ${sel} .prop{border-top:3px solid ${INK};padding-top:${big ? 18 : 12}px}
-${sel} .prop .pw{font-size:${big ? 40 : 36}px;color:${INK2};font-variant-numeric:tabular-nums}
-${sel} .prop .pt{font-size:${big ? 50 : 44}px;font-weight:700;line-height:1.12;margin-top:6px}
-${sel} .prop .pv{font-size:${big ? 46 : 40}px;font-weight:800;line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums}
-${sel} .props.dense{gap:${big ? 14 : 10}px}
+${sel} .prop .pw{font-size:${big ? 40 : 40}px;color:${INK2};font-variant-numeric:tabular-nums}
+${sel} .prop .pt{font-size:${big ? 50 : 52}px;font-weight:700;line-height:1.12;margin-top:6px}
+${sel} .prop .pv{font-size:${big ? 46 : 48}px;font-weight:800;line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums}
+${sel} .props.dense{gap:${big ? 14 : 24}px}
 ${sel} .props.dense .prop{padding-top:${big ? 12 : 8}px}
-${sel} .props.dense .pw{font-size:${big ? 38 : 34}px}
-${sel} .props.dense .pt{font-size:${big ? 46 : 40}px}
-${sel} .props.dense .pv{font-size:${big ? 42 : 38}px}
+${sel} .props.dense .pw{font-size:${big ? 38 : 38}px}
+${sel} .props.dense .pt{font-size:${big ? 46 : 48}px}
+${sel} .props.dense .pv{font-size:${big ? 42 : 44}px}
 ${sel} .props.dense .stamp{margin-top:8px;font-size:${big ? 32 : 28}px}
 ${sel} .stamp{display:inline-block;margin-top:${big ? 14 : 10}px;padding:4px 16px;border:4px dashed ${INK2};font-size:${big ? 36 : 32}px;font-weight:700;color:${INK2};transform:rotate(-2deg)}
 ${sel} .grain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:multiply}
@@ -165,7 +165,7 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
       if (model.data) {
         const dm = model.data, sw = (FORMATS[fmt].w - FORMATS[fmt].left - FORMATS[fmt].right - 40) / 2;
         body = `<div class="hook r">${esc(c.text)}</div><div class="bigyear r">${dm.year}</div><div class="sparks r">${dm.panels.map((pn, i) =>
-          `<div><b>${esc(pn.title)}</b>${seriesSVG(pn, dm, `${p}-s${i}`, { w: Math.round(sw), h: fmt === 'reel' ? 150 : 110, big: false })}</div>`).join('')}</div>`; break;
+          `<div><b>${esc(pn.title)}</b>${seriesSVG(pn, dm, `${p}-s${i}`, { w: Math.round(sw), h: fmt === 'reel' ? 150 : 210, big: false })}</div>`).join('')}</div>`; break;
       }
       const icons = model.cards.filter(x => x.type === 'date' && x.art).map((x, i) => art(x.art, `${p}-i${i}`, 'icon')).join('');
       body = `<div class="hook r">${esc(c.text)}</div>${fmt === 'reel' ? '' : `<div class="icons r">${icons}</div>`}<div class="range r">${c.from}<span class="to">–${c.to}</span></div>`; break;
@@ -184,7 +184,7 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
     case 'series': {
       const pn = c.panel, w = FORMATS[fmt].w - FORMATS[fmt].left - FORMATS[fmt].right;
       body = `<div class="stitle r">${esc(pn.title)}</div><div class="sdelta r"><span class="from">${esc(pn.summary.from)}</span><span class="arrow">to</span>${esc(pn.summary.to)}${pn.summary.label ? `<span class="what">${esc(pn.summary.label)}</span>` : ''}</div>
-${seriesSVG(pn, model.data, p, { w, h: fmt === 'reel' ? 470 : 380 })}<div class="snote r">${esc(pn.note)}</div>`; break;
+${seriesSVG(pn, model.data, p, { w, h: fmt === 'reel' ? 470 : 620 })}<div class="snote r">${esc(pn.note)}</div>`; break;
     }
     case 'section':
       body = `<div class="kicker r">${esc(c.text)}</div><div class="when-big r">${esc(c.when)}</div>${c.sub ? `<div class="sub r">${esc(c.sub)}</div>` : ''}`; break;
@@ -203,14 +203,14 @@ ${seriesSVG(pn, model.data, p, { w, h: fmt === 'reel' ? 470 : 380 })}<div class=
 }
 
 // GSAP tweens for one card, at scene-local seconds. `turn` is the page-turn length; 0 for the first card.
-export function cardTweens(c, model, p, turn, sel) {
+export function cardTweens(c, model, p, turn, sel, fmt = 'reel') {
   const t = [];
   if (turn > 0) {
     t.push(`tl.fromTo("#${p}-page",{rotationY:-104},{rotationY:0,duration:${turn},ease:"power2.out"},0);`);
     t.push(`tl.fromTo("#${p}-shade",{opacity:.35},{opacity:0,duration:${turn},ease:"power1.out"},0);`);
   }
   if (c.type === 'date' && c.index > 0) {
-    const F = FORMATS.reel, width = F.w - F.left - F.right;
+    const F = FORMATS[fmt], width = F.w - F.left - F.right;
     const dx = (pos(model.dates[c.index - 1].year, model.range) - pos(c.year, model.range)) / 100 * width;
     t.push(`tl.fromTo("#${p}-marker",{x:${dx.toFixed(1)}},{x:0,duration:.7,ease:"power2.inOut"},${(turn + 0.5).toFixed(2)});`);
   }

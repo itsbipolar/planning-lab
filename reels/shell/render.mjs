@@ -47,9 +47,9 @@ const hf = (cwd, ...a) => {
 const ff = (...a) => { const r = spawnSync('ffmpeg', ['-loglevel', 'error', '-y', ...a], { encoding: 'utf8' });
   if (r.status !== 0) throw new Error(`ffmpeg failed: ${r.stderr}`); };
 
-async function renderLook(look, { duration, name }) {
+async function renderLook(look, { duration, name, fmt = 'reel' }) {
   const dir = join(work, `${name}`);
-  await buildProject(model, look, dir, { duration, voiceDir });
+  await buildProject(model, look, dir, { duration, voiceDir, fmt });
   hf(dir, 'lint', '.');
   const mp4 = join(out, `${name}.mp4`);
   hf(dir, 'render', '-o', mp4, '--quiet');
@@ -105,7 +105,15 @@ async function carousel(look) {
   console.log(`wrote ${pngs.length} carousel slides and carousel.pdf`);
 }
 
-if (flag('web')) {
+if (flag('web45')) {
+  // The web cut: the same reel at 1080x1350 in the carousel's layout, with no empty band for app buttons (Mo asked for it on the site).
+  const look = opt('look', reel.look ?? 'paper');
+  const mp4 = await renderLook(look, { name: `${reel.id}-web45`, fmt: 'carousel' });
+  ff('-i', mp4, '-c:v', 'libvpx-vp9', '-crf', '34', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2', '-c:a', 'libopus', '-b:a', '96k', join(out, `${reel.id}-web45.webm`));
+  ff('-ss', '0.2', '-i', mp4, '-frames:v', '1', '-vf', 'scale=720:-2', '-c:v', 'libwebp', '-quality', '85', join(out, `${reel.id}-web45-poster.webp`));
+  contactSheet(mp4, settledTimes(model.total), join(out, 'contact-sheet-web45.png'), 5);
+  console.log(`wrote ${reel.id}-web45 webm, poster and contact sheet`);
+} else if (flag('web')) {
   // Web copies of the finished reel for the site: VP9 WebM (with Opus sound) and a WebP poster from the first frame.
   const mp4 = join(out, `${reel.id}.mp4`);
   ff('-i', mp4, '-c:v', 'libvpx-vp9', '-crf', '34', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2', '-c:a', 'libopus', '-b:a', '96k', join(out, `${reel.id}.webm`));

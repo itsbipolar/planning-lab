@@ -13,7 +13,10 @@ const NEEDS_FACT = new Set(['hook', 'date', 'stat', 'chart', 'sources', 'section
 const STATS = new Set(['span_years']);
 const ART = new Set(['cheque', 'form', 'paystub', 'passbook', 'key']); // the drawings in art.mjs
 const TEXT_FIELDS = ['text', 'beat', 'today', 'name', 'short', 'ai', 'say', 'voice_note'];
-const SLOTS = { date: ['year', 'Year'], stat: ['value', 'Value'] }; // the only placeholders a spoken line may hold
+// The only placeholders a spoken line may hold, by card type. A series line may also hold {up:words|words}: the first
+// words when the measure ended higher than it started, the second when lower.
+const SLOTS = { date: ['year', 'Year'], stat: ['value', 'Value'], series: ['from', 'to', 'decision', 'From', 'To', 'Decision'],
+  section: ['date', 'Date'], proposals: ['year', 'Year'] };
 
 export const readJSON = p => JSON.parse(readFileSync(p, 'utf8'));
 export const loadFacts = (p = join(ROOT, 'shared', 'facts.json')) => readJSON(p);
@@ -54,7 +57,8 @@ export function preflight(reel, facts, dm = null) {
     for (const k of TEXT_FIELDS) {
       if (c[k] !== undefined && /\d/.test(c[k])) errors.push(`${where}: "${k}" has a digit; figures come only from facts.json`);
     }
-    for (const m of String(c.say ?? '').matchAll(/\{(\w+)\}/g)) {
+    for (const m of String(c.say ?? '').matchAll(/\{([^}]*)\}/g)) {
+      if (c.type === 'series' && /^up:[^|]+\|[^|]+$/.test(m[1])) continue;
       if (!(SLOTS[c.type] ?? []).includes(m[1])) errors.push(`${where}: "say" has an unknown placeholder {${m[1]}}`);
     }
     const fids = c.fact_ids ?? [];
@@ -181,9 +185,39 @@ export function yearWords(y) {
 }
 const cap = s => s[0].toUpperCase() + s.slice(1);
 // A card's spoken line, filled from the facts: as words for the voice, or with numerals for the captions.
+const ORD = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth',
+  'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth'];
+const ordinal = n => n <= 20 ? ORD[n] : n % 10 === 0 ? TENS[n / 10].replace(/y$/, 'ieth') : `${TENS[Math.floor(n / 10)]}-${ORD[n % 10]}`;
+// "October 29" said as "October twenty-ninth".
+export function dayWords(d, { numerals = false } = {}) {
+  const [, m, day] = d.split('-').map(Number);
+  return `${MONTHS[m - 1]} ${numerals ? day : ordinal(day)}`;
+}
+// A rate or price as a narrator says it: "2.25%" -> "two and a quarter percent", "2.7%" -> "two point seven percent",
+// "1.4181" -> "one point four two" (prices to two places).
+export function amountWords(str) {
+  const pct = str.endsWith('%'), n = parseFloat(str);
+  const whole = Math.floor(n), frac = Math.round((n - whole) * 100);
+  const unit = pct ? ' percent' : '';
+  if (pct && [0, 25, 50, 75].includes(frac) && /\.\d\d%$/.test(str)) return `${under100(whole)}${['', ' and a quarter', ' and a half', ' and three quarters'][frac / 25]}${unit}`;
+  const digits = pct ? str.replace('%', '').split('.')[1] ?? '' : (Math.round(n * 100) / 100).toFixed(2).split('.')[1];
+  return `${under100(whole)}${digits ? ' point ' + [...digits].map(d => ONES[Number(d)]).join(' ') : ''}${unit}`;
+}
 export function spoken(c, { numerals = false } = {}) {
   if (!c.say) return null;
+  const fill = (s, key, val) => s.replace(new RegExp(`\\{${key}\\}`, 'g'), val).replace(new RegExp(`\\{${cap(key)}\\}`, 'g'), cap(val));
+  let s = c.say;
+  if (c.type === 'series') {
+    const { from, to } = c.panel.summary;
+    s = s.replace(/\{up:([^|}]+)\|([^}]+)\}/g, (_, up, down) => (parseFloat(to) > parseFloat(from) ? up : down));
+    s = fill(s, 'from', numerals ? from : amountWords(from));
+    s = fill(s, 'to', numerals ? to : amountWords(to));
+    if (c.panel.decisions?.length) s = fill(s, 'decision', dayWords(c.panel.decisions[0].d, { numerals }));
+    return s;
+  }
+  if (c.type === 'section') return fill(s, 'date', dayWords(String(c.facts[0].value), { numerals }));
+  if (c.type === 'proposals') return fill(s, 'year', numerals ? String(c.year) : yearWords(c.year));
   const v = c.type === 'date' ? c.year : c.value;
   const w = numerals ? String(v) : c.type === 'date' ? yearWords(v) : under100(v);
-  return c.say.replace(/\{(year|value)\}/g, w).replace(/\{(Year|Value)\}/g, cap(w));
+  return s.replace(/\{(year|value)\}/g, w).replace(/\{(Year|Value)\}/g, cap(w));
 }

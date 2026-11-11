@@ -69,4 +69,9 @@ a dashed Budget 2026 line (Budget Day confirmed by Mo) runs through every chart,
 "{year}" = newest) and three card types: `series` (a measure: start to now, the chart drawing in, callouts landing), `section`
 (Budget Day from the facts), `proposals` (one year's confirmed proposals by `offset` from the data year, stamps landing). 52.5 s,
 14.6 MiB, 10-slide carousel + PDF, web copies. Preflight fails on an unknown measure, an empty proposals year or a missing model.
-Safe-band and carousel-fit tests cover both reels. No voice yet (Mo to decide). Next: site page + case study; refresh around Dec 1.
+Safe-band and carousel-fit tests cover both reels. **Voice (Mo, 2026-11-11):** Archie narrates P4 from a script Mo approved; `say` lines fill figures, dates, years and
+direction words ({up:edged up|eased}) from the data and facts (`spoken()`, `amountWords`, `dayWords`). 10 clips (about 5.7 credits;
+rate-limited submissions charged nothing), align.py now needs two expected words in a row to start (a garble before the loonie
+line contained "the") and accepts partial words ("posed" for "proposed"); history cuts unchanged. Reel 68.3 s, 19.4 MiB; the mix
+transcribes as the ten lines only. **Web cut:** `--web45` renders the reel at 1080x1350 in the carousel layout (no empty band for
+app buttons) for the site, for both reels; data cards are larger in that layout. Next: site page + case study; refresh ~Dec 1.

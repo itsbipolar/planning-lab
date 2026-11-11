@@ -1,0 +1,72 @@
+{
+  "hook": {
+    "start": 0.03,
+    "end": 3.69,
+    "heard": "your money year in canada in four lines and one budget",
+    "dropped": "",
+    "expected": "Your money year in Canada, in four lines and one budget."
+  },
+  "policy": {
+    "start": 0.42,
+    "end": 8.61,
+    "heard": "the bank of canada held it's rate at two and a quarter percent then on october twenty ninth it raised it to two and a half percent",
+    "dropped": "",
+    "expected": "The Bank of Canada held its rate at two and a quarter percent. Then on October twenty-ninth, it raised it to two and a half percent."
+  },
+  "mortgage": {
+    "start": 0.06,
+    "end": 3.24,
+    "heard": "posted five year mortgage rates edged up to",
+    "dropped": "",
+    "expected": "Posted five-year mortgage rates edged up too."
+  },
+  "inflation": {
+    "start": 1.11,
+    "end": 7.11,
+    "heard": "but core inflation cooled from two point seven percent to one point eight percent",
+    "dropped": "p",
+    "expected": "But core inflation cooled, from two point seven percent to one point eight percent."
+  },
+  "loonie": {
+    "start": 2.52,
+    "end": 5.43,
+    "heard": "and the loony ended weaker against the us dollar",
+    "dropped": "two thousand hunt the law of in length",
+    "expected": "And the loonie ended weaker against the US dollar."
+  },
+  "budget": {
+    "start": 1.38,
+    "end": 4.8,
+    "heard": "then on november fifth the federal budget",
+    "dropped": "the teen",
+    "expected": "Then, on November fifth, the federal budget."
+  },
+  "next0": {
+    "start": 0.06,
+    "end": 10.08,
+    "heard": "posed from this year a new exemption for some growth company shares and a higher bar before you file the for and property form",
+    "dropped": "",
+    "expected": "Proposed from this year: a new exemption for some growth-company shares, and a higher bar before you file the foreign-property form."
+  },
+  "next1": {
+    "start": 0.03,
+    "end": 9.21,
+    "heard": "for twenty twenty seven a new tax filing date a refundable caregiver credit and a consultation on an r r s p for life",
+    "dropped": "",
+    "expected": "For twenty twenty-seven: a new tax-filing date, a refundable caregiver credit, and a consultation on an RRSP for life."
+  },
+  "next2": {
+    "start": 0.06,
+    "end": 6.72,
+    "heard": "and for twenty twenty eight a higher threshold before tax installments are required",
+    "dropped": "",
+    "expected": "And for twenty twenty-eight: a higher threshold before tax instalments are required."
+  },
+  "sources": {
+    "start": 0.27,
+    "end": 5.58,
+    "heard": "every figure here is from it's official source the proposals are not law unless they're enacted",
+    "dropped": "",
+    "expected": "Every figure here is from its official source. The proposals are not law unless they're enacted."
+  }
+}

@@ -17,31 +17,36 @@
       "fact_ids": [
         "budget2026_budget_day"
       ],
-      "text": "Canada's money year, graphed."
+      "text": "Canada's money year, graphed.",
+      "say": "Your money year in Canada, in four lines and one budget."
     },
     {
       "type": "series",
       "id": "policy",
       "duration": 5.5,
-      "panel": "policy"
+      "panel": "policy",
+      "say": "The Bank of Canada held its rate at {from}. Then on {decision}, it {up:raised|cut} it to {to}."
     },
     {
       "type": "series",
       "id": "mortgage",
       "duration": 5.5,
-      "panel": "mortgage"
+      "panel": "mortgage",
+      "say": "Posted five-year mortgage rates {up:edged up|eased} too."
     },
     {
       "type": "series",
       "id": "inflation",
       "duration": 5.5,
-      "panel": "inflation"
+      "panel": "inflation",
+      "say": "But core inflation {up:rose|cooled}, from {from} to {to}."
     },
     {
       "type": "series",
       "id": "loonie",
       "duration": 5.5,
-      "panel": "loonie"
+      "panel": "loonie",
+      "say": "And the loonie ended {up:weaker|stronger} against the US dollar."
     },
     {
       "type": "section",
@@ -51,25 +56,29 @@
         "budget2026_budget_day"
       ],
       "text": "Then the federal budget, presented",
-      "sub": "What it proposes, in the order it would start. Proposals are not law unless enacted."
+      "sub": "What it proposes, in the order it would start. Proposals are not law unless enacted.",
+      "say": "Then, on {date}, the federal budget."
     },
     {
       "type": "proposals",
       "id": "next0",
       "duration": 5,
-      "offset": 0
+      "offset": 0,
+      "say": "Proposed from this year: a new exemption for some growth-company shares, and a higher bar before you file the foreign-property form."
     },
     {
       "type": "proposals",
       "id": "next1",
       "duration": 6.5,
-      "offset": 1
+      "offset": 1,
+      "say": "For {year}: a new tax-filing date, a refundable caregiver credit, and a consultation on an RRSP for life."
     },
     {
       "type": "proposals",
       "id": "next2",
       "duration": 4,
-      "offset": 2
+      "offset": 2,
+      "say": "And for {year}: a higher threshold before tax instalments are required."
     },
     {
       "type": "sources",
@@ -89,14 +98,16 @@
         "budget2026_instalment_threshold",
         "budget2026_instalment_start"
       ],
-      "text": "Every figure, from its official source."
+      "text": "Every figure, from its official source.",
+      "say": "Every figure here is from its official source. The proposals are not law unless they're enacted."
     },
     {
       "type": "end",
       "id": "end",
       "duration": 3.5,
       "text": "Education only, not advice.",
-      "ai": "Made with AI assistance. I directed and reviewed the work and checked every figure against its source."
+      "ai": "Made with AI assistance. I directed and reviewed the work and checked every figure against its source.",
+      "voice_note": "This voice is AI-generated."
     }
   ],
   "carousel": [
@@ -110,5 +121,11 @@
     "next1",
     "next2",
     "sources"
-  ]
+  ],
+  "voice": {
+    "engine": "Higgsfield seed_audio",
+    "voice": "Archie (Higgsfield preset)",
+    "voice_id": "bd072316-f77c-588b-b6e5-e46b9b03d008",
+    "dir": "voice"
+  }
 }

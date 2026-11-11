@@ -35,8 +35,15 @@ cuts = {}
 for card, line in lines.items():
     exp = norm(line)
     words = recognise(os.path.join(voice_dir, f'{card}.wav'))
-    first = next(i for i, w in enumerate(words) if w['word'] in exp[:3])
-    last = max(i for i, w in enumerate(words) if w['word'] in exp[-3:])
+    # A recognised word matches an expected one if they are equal, or one holds the other ("posed" in "proposed").
+    like = lambda a, b: a == b or (min(len(a), len(b)) >= 4 and (a in b or b in a))
+    hit = lambda w, pool: any(like(w['word'], e) for e in pool)
+    # The line starts at two expected words in a row (a stray sound can contain a common word like "the"),
+    # and ends at the last pair in a row; a one-word line falls back to a single match.
+    pairs = [i for i in range(len(words) - 1) if hit(words[i], exp[:3]) and hit(words[i + 1], exp[:4])]
+    first = pairs[0] if pairs else next(i for i, w in enumerate(words) if hit(w, exp[:3]))
+    tails = [i for i in range(1, len(words)) if hit(words[i], exp[-3:]) and hit(words[i - 1], exp[-4:])]
+    last = tails[-1] if tails else max(i for i, w in enumerate(words) if hit(w, exp[-3:]))
     # A misheard real word runs on from its neighbour; a stray sound sits behind a pause. Extend over short gaps.
     while first > 0 and words[first]['start'] - words[first - 1]['end'] < GAP: first -= 1
     while last < len(words) - 1 and words[last + 1]['start'] - words[last]['end'] < GAP: last += 1

@@ -29,12 +29,13 @@ export function slots(model) {
     duration: c.duration + (i < model.cards.length - 1 ? turn : 0), turn: i === 0 ? 0 : turn }));
 }
 
-export async function buildProject(model, look, dir, { duration, voiceDir } = {}) {
+// `fmt` is the card layout and frame size: 'reel' (1080x1920, for the apps) or 'carousel' (1080x1350, the web cut).
+export async function buildProject(model, look, dir, { duration, voiceDir, fmt = 'reel' } = {}) {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(join(dir, 'compositions'), { recursive: true });
   copyFonts(join(dir, 'assets', 'fonts'));
   copyFileSync(join(NM, 'gsap', 'dist', 'gsap.min.js'), join(dir, 'assets', 'gsap.min.js'));
-  const F = FORMATS.reel, L = LOOKS[look];
+  const F = FORMATS[fmt], L = LOOKS[look];
   const total = duration ?? model.total;
   const ss = slots(model).filter(s => s.start < total);
   await buildTicks(ss.filter(s => s.turn > 0).map(s => s.start), total, LANDING, join(dir, 'assets', 'ticks.wav'), { tickAt: [0] });
@@ -48,14 +49,14 @@ export async function buildProject(model, look, dir, { duration, voiceDir } = {}
   <style>
 ${fontFaces()}
 #root{position:absolute;inset:0}
-${cardCSS(sel, look, 'reel')}
+${cardCSS(sel, look, fmt)}
   </style>
   <div id="root" data-composition-id="${s.id}" data-width="${F.w}" data-height="${F.h}">
-    <div id="${s.id}-card">${cardHTML(s.card, model, 'reel', s.id)}</div>
+    <div id="${s.id}-card">${cardHTML(s.card, model, fmt, s.id)}</div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    ${cardTweens(s.card, model, s.id, s.turn, sel)}
+    ${cardTweens(s.card, model, s.id, s.turn, sel, fmt)}
     tl.to({}, { duration: ${s.duration} }, 0);
     window.__timelines["${s.id}"] = tl;
   </script>
