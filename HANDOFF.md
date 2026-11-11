@@ -97,3 +97,9 @@ no figures in code); rule tests use `fixtures/facts-with-drafts.json` (the six d
 drafts, Q1 reviews: peak 220 h/wk, 17 weeks over an 80 h assumption; by birth month: 158, 6 weeks. **Waiting on Mo** to confirm the six
 facts (canada-planning-facts branch `p5-facts-draft`). Next: the page (heatmap drawn in SVG, filters, capacity line, policy panel,
 assumptions, CSV download), then the site case study.
+**P5 page (2026-11-11):** `labs/planning-year/dist/index.html` (181 KiB, self-contained): heatmap drawn in SVG (weekdays x weeks;
+two halves on phones), weekly bars with the capacity line, week slider with a breakdown, review-policy radios, life-stage filter
+from the CPP start-age facts, business/trust filters, comparison table, rules table with editable hours (assumption labels),
+pending list, CSV download, sources. 12 Playwright tests (390/1440, axe both schemes). With today's facts 8 of 12 task types are
+pending (the six drafts); `PREVIEW_FACTS=labs/planning-year/fixtures/facts-with-drafts.json OUT=<file> node labs/planning-year/build.mjs`
+builds a look-ahead copy outside dist. Site case study waits for Mo's confirmations.

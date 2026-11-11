@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The planning year · Mohammed El Chayeb</title>
+<meta name="description" content="A fictional planning practice's year of dated work, as a heatmap: tax deadlines, RRIF conversions, CPP and OAS ages, trust and corporate dates, from sourced rules. Synthetic data. Education only, not advice.">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<div class="page">
+  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/planning-year/">About this build</a></header>
+  <main>
+    <h1>The planning year</h1>
+    <p class="lede" id="lede"></p>
+    <p class="banner" id="banner"></p>
+    <p class="status-tag"><span data-status>prototype</span></p>
+
+    <section aria-labelledby="h-year">
+      <h2 id="h-year">The year at a glance</h2>
+      <div class="controls">
+        <fieldset>
+          <legend>When annual reviews happen</legend>
+          <div id="policies" class="choices"></div>
+        </fieldset>
+        <div class="filters">
+          <label for="segment">Households</label>
+          <select id="segment"></select>
+          <label class="check"><input type="checkbox" id="business"> Business owners only</label>
+          <label class="check"><input type="checkbox" id="trust"> With a family trust only</label>
+        </div>
+      </div>
+      <p id="summary" class="summary" role="status" aria-live="polite"></p>
+      <div id="heat" class="heat"></div>
+      <p class="note" id="heat-note"></p>
+      <h3 class="sub">Hours each week, against the team's capacity</h3>
+      <div id="bars" class="bars"></div>
+      <label for="week">Look at one week</label>
+      <input id="week" type="range" min="0" step="1">
+      <p id="readout" class="readout" aria-live="polite"></p>
+      <details>
+        <summary>The weeks, as a table</summary>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="The weeks, as a table, scrolls sideways"><table class="nums"><caption>Hours of dated work in each week (Monday to Friday)</caption><thead><tr><th scope="col">Week of</th><th scope="col">Hours</th><th scope="col">Over capacity</th></tr></thead><tbody id="weeks"></tbody></table></div>
+      </details>
+    </section>
+
+    <section aria-labelledby="h-compare">
+      <h2 id="h-compare">Three ways to schedule reviews</h2>
+      <p class="lede">The same households, rules and hours. Only the review dates move.</p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Policy comparison, scrolls sideways"><table class="nums compare"><thead><tr><th scope="col">Reviews</th><th scope="col">Busiest week</th><th scope="col">Average week</th><th scope="col">Busiest ÷ average</th><th scope="col">Weeks over capacity</th></tr></thead><tbody id="compare"></tbody></table></div>
+    </section>
+
+    <section aria-labelledby="h-rules">
+      <h2 id="h-rules">The rules and the assumptions</h2>
+      <p class="lede">Each dated task comes from a rule in the verified facts file. The hours and lead times are mine: change them and the year redraws.</p>
+      <div class="capacity">
+        <label for="capacity">Team hours per week for this work <span class="assume" data-assume></span></label>
+        <input id="capacity" type="number" min="1" max="1000" step="1" inputmode="numeric">
+      </div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Rules and assumptions, scrolls sideways"><table class="nums rules"><caption id="rules-caption"></caption><thead><tr><th scope="col">Task</th><th scope="col">The rule, from the facts file</th><th scope="col">Tasks this year</th><th scope="col">Hours per task</th><th scope="col">Lead weeks</th></tr></thead><tbody id="rules"></tbody></table></div>
+      <div id="pending" class="pending"></div>
+      <p><button id="csv" type="button">Download the task list (CSV)</button></p>
+    </section>
+
+    <section id="about" class="prose" aria-labelledby="h-about">
+      <h2 id="h-about">Sources</h2>
+      <ul id="sources" class="sources"></ul>
+      <p>The households are invented, with IDs only, and the same every time the page loads. A task's hours are spread evenly over the weekdays between its lead start and its deadline. Weeks run Monday to Friday. Left out, because the facts file has no confirmed rule for them: the year-end tax-loss selling window and the timing of RRIF minimum payments.</p>
+      <p>The heatmap layout is inspired by GitHub's contribution graph.</p>
+    </section>
+  </main>
+  <footer class="foot">
+    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
+    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
+  </footer>
+</div>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@ENGINE@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>
