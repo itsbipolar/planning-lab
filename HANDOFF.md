@@ -109,3 +109,6 @@ household (replaces the practice version; needs the six facts), P5c The ages tha
 **P5a The retirement wave (Mo approved the sketch):** `labs/retirement-wave/` + `scripts/fetch-population.mjs` (StatCan 17-10-0005-01,
 1971-2026, ages 50-89, released 2026-09-23). Heatmap with rule-age lines from facts, a generation slider, one-age line chart, tables,
 StatCan attribution/citation/notes. 6 data tests + 8 browser tests. Next: site case study on a branch, Mo looks before it goes live.
+**P5 heatmap colours (Mo, 2026-11-11: "C: Blue into green", one shared scale):** `shared/heat-scale.mjs` (Money Stripes blue into the
+"money" green, mixed in OKLab; light mode reversed in lightness), written as .h0-.h23 classes at build. P5a uses it; P5b and P5c will.
+Rule lines carry a ground-colour edge so they show on every shade. P5b facts confirmed by Mo and synced.

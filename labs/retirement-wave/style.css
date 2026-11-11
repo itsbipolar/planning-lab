@@ -42,7 +42,7 @@ input[type=range]{display:block;width:100%;max-width:62rem;min-height:44px;accen
 label[for=born]{display:block;font-weight:600;margin:1.5rem 0 .2rem}
 .heat,.line-chart{max-width:66rem}
 .heat svg,.line-chart svg{display:block;font-family:var(--font-ui);overflow:visible;touch-action:pan-y}
-.cell{fill:var(--t-ink);shape-rendering:crispEdges}
+.cell{shape-rendering:crispEdges}
 .rule{stroke:var(--t-ink);stroke-width:1.25;stroke-dasharray:5 4;opacity:.85}
 .rule-n{fill:var(--t-ink);font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
 .lab{fill:var(--t-ink2);font-size:13px;font-variant-numeric:tabular-nums}
@@ -63,3 +63,5 @@ label[for=born]{display:block;font-weight:600;margin:1.5rem 0 .2rem}
 section{margin-bottom:1rem}
 .leader{stroke:var(--t-ink2);stroke-width:1}
 .ring-halo{fill:none;stroke:var(--t-ground);stroke-width:5}
+.rule-halo{stroke:var(--t-ground);stroke-width:3.5;opacity:.75}
+.rule{opacity:1}

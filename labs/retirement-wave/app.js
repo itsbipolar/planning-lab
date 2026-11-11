@@ -9,7 +9,8 @@
   const s = (tag, attrs = {}, text) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
   const n = (x) => Math.round(x).toLocaleString('en-CA');
   const count = (y, a) => M.values[y][a - a0];
-  const shade = (v) => 0.07 + 0.93 * Math.pow((v - M.min[2]) / (M.max[2] - M.min[2]), 1.25);
+  // The shared P5 colour scale: classes .h0 (fewest) to .h{steps-1} (most), defined for both schemes at build.
+  const level = (v) => Math.round((M.heatSteps - 1) * Math.pow((v - M.min[2]) / (M.max[2] - M.min[2]), 1.1));
   const state = { born: M.defaultBorn, age: M.rules[0]?.age };
 
   $('lede').textContent = `How many Canadians were each age from ${a0} to ${a1}, on July 1 of every year from ${y0} to ${y1}. Each column is a year and each row an age; the stronger the shade, the more people. The dashed lines are the ages where Canada's retirement rules change.`;
@@ -30,11 +31,11 @@
     const H = topPad + rows * ch + bottomPad;
     const X = (y) => left + (y - y0) * cw, Yp = (a) => topPad + (a1 - a) * ch;
     const svg = s('svg', { width: W, height: H, role: 'img', 'aria-label': `Heatmap: Canadians by age (${a0} to ${a1}) and year (${y0} to ${y1}). ${$('summary').textContent} The counts are in the table below.` });
-    for (let y = y0; y <= y1; y++) for (let a = a0; a <= a1; a++) svg.append(s('rect', { class: 'cell', x: X(y).toFixed(2), y: Yp(a).toFixed(2), width: (cw > 8 ? cw - 1 : cw + 0.4).toFixed(2), height: (cw > 8 ? ch - 1 : ch + 0.4).toFixed(2), opacity: shade(count(y, a)).toFixed(3) }));
+    for (let y = y0; y <= y1; y++) for (let a = a0; a <= a1; a++) svg.append(s('rect', { class: `cell h${level(count(y, a))}`, x: X(y).toFixed(2), y: Yp(a).toFixed(2), width: (cw > 8 ? cw - 1 : cw + 0.4).toFixed(2), height: (cw > 8 ? ch - 1 : ch + 0.4).toFixed(2) }));
     // Rule lines; ages one row apart share a label when the rows are short.
     const groups = [];
     for (const r of M.rules) { const g = groups.at(-1); if (g && r.age - g.at(-1) === 1 && ch < 13) g.push(r.age); else groups.push([r.age]); }
-    for (const r of M.rules) { const yy = Yp(r.age) + ch / 2; svg.append(s('line', { class: 'rule', x1: left, x2: left + cols * cw, y1: yy, y2: yy })); }
+    for (const r of M.rules) { const yy = Yp(r.age) + ch / 2; svg.append(s('line', { class: 'rule-halo', x1: left, x2: left + cols * cw, y1: yy, y2: yy }), s('line', { class: 'rule', x1: left, x2: left + cols * cw, y1: yy, y2: yy })); }
     for (const [k, g] of groups.entries()) {
       // Single-age labels one row from a neighbour are nudged apart so they don't touch.
       const near = (j) => groups[j] && Math.abs(groups[j][0] - g[0]) === 1;
@@ -75,7 +76,7 @@
     // Key
     const key = $('key'); key.textContent = '';
     const k = s('svg', { width: 120, height: 14, 'aria-hidden': 'true' });
-    for (let i = 0; i < 12; i++) k.append(s('rect', { class: 'cell', x: i * 10, y: 0, width: 9, height: 14, opacity: (0.07 + 0.93 * Math.pow(i / 11, 1.25)).toFixed(3) }));
+    for (let i = 0; i < 12; i++) k.append(s('rect', { class: `cell h${Math.round((M.heatSteps - 1) * i / 11)}`, x: i * 10, y: 0, width: 9, height: 14 }));
     key.append(document.createTextNode(`${n(M.min[2])} people`), k, document.createTextNode(`${n(M.max[2])} people`));
   }
 
