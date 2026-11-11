@@ -75,3 +75,5 @@ rate-limited submissions charged nothing), align.py now needs two expected words
 line contained "the") and accepts partial words ("posed" for "proposed"); history cuts unchanged. Reel 68.3 s, 19.4 MiB; the mix
 transcribes as the ten lines only. **Web cut:** `--web45` renders the reel at 1080x1350 in the carousel layout (no empty band for
 app buttons) for the site, for both reels; data cards are larger in that layout. Next: site page + case study; refresh ~Dec 1.
+**Posters (2026-11-11):** a reel's poster is now its opening card once settled (drawings complete), not frame 0; `--posters` rewrites
+the posters from videos already rendered. Both reels' posters redone. Site: P4's page, 4:5 reel, slides and case study synced (mo-portfolio-site HANDOFF).

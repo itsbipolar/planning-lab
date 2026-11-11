@@ -63,6 +63,10 @@ async function renderLook(look, { duration, name, fmt = 'reel' }) {
 function settledTimes(limit) {
   return model.cards.filter(c => c.start < limit).map(c => Math.min(c.start + c.duration, limit) - 0.25);
 }
+// The poster is the opening card once it has settled (its drawings complete), not the first frame.
+function poster(mp4, name) {
+  ff('-ss', settledTimes(model.total)[0].toFixed(2), '-i', mp4, '-frames:v', '1', '-vf', 'scale=720:-2', '-c:v', 'libwebp', '-quality', '85', join(out, name));
+}
 function contactSheet(mp4, times, file, cols, cellW = 360) {
   const tmp = join(work, 'cs'); rmSync(tmp, { recursive: true, force: true }); mkdirSync(tmp, { recursive: true });
   times.forEach((t, i) => ff('-ss', t.toFixed(3), '-i', mp4, '-frames:v', '1', '-vf', `scale=${cellW}:-2`, join(tmp, `f${String(i).padStart(3, '0')}.png`)));
@@ -105,20 +109,24 @@ async function carousel(look) {
   console.log(`wrote ${pngs.length} carousel slides and carousel.pdf`);
 }
 
-if (flag('web45')) {
+if (flag('posters')) {
+  // Only the posters, from videos already rendered.
+  for (const n of [reel.id, `${reel.id}-web45`]) if (existsSync(join(out, `${n}.mp4`))) poster(join(out, `${n}.mp4`), `${n}-poster.webp`);
+  console.log('wrote posters');
+} else if (flag('web45')) {
   // The web cut: the same reel at 1080x1350 in the carousel's layout, with no empty band for app buttons (Mo asked for it on the site).
   const look = opt('look', reel.look ?? 'paper');
   const mp4 = await renderLook(look, { name: `${reel.id}-web45`, fmt: 'carousel' });
   ff('-i', mp4, '-c:v', 'libvpx-vp9', '-crf', '34', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2', '-c:a', 'libopus', '-b:a', '96k', join(out, `${reel.id}-web45.webm`));
-  ff('-ss', '0.2', '-i', mp4, '-frames:v', '1', '-vf', 'scale=720:-2', '-c:v', 'libwebp', '-quality', '85', join(out, `${reel.id}-web45-poster.webp`));
+  poster(mp4, `${reel.id}-web45-poster.webp`);
   contactSheet(mp4, settledTimes(model.total), join(out, 'contact-sheet-web45.png'), 5);
   ff('-i', join(out, 'contact-sheet-web45.png'), '-vf', 'scale=1600:-2', '-c:v', 'libwebp', '-quality', '85', join(out, 'contact-sheet-web45.webp'));
   console.log(`wrote ${reel.id}-web45 webm, poster and contact sheet`);
 } else if (flag('web')) {
-  // Web copies of the finished reel for the site: VP9 WebM (with Opus sound) and a WebP poster from the first frame.
+  // Web copies of the finished reel for the site: VP9 WebM (with Opus sound) and a WebP poster of the settled opening card.
   const mp4 = join(out, `${reel.id}.mp4`);
   ff('-i', mp4, '-c:v', 'libvpx-vp9', '-crf', '34', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2', '-c:a', 'libopus', '-b:a', '96k', join(out, `${reel.id}.webm`));
-  ff('-ss', '0.2', '-i', mp4, '-frames:v', '1', '-vf', 'scale=720:-2', '-c:v', 'libwebp', '-quality', '85', join(out, `${reel.id}-poster.webp`));
+  poster(mp4, `${reel.id}-poster.webp`);
   ff('-i', join(out, 'contact-sheet.png'), '-vf', 'scale=1600:-2', '-c:v', 'libwebp', '-quality', '85', join(out, 'contact-sheet.webp'));
   // Carousel slides for the web (WebP) and their descriptions, from the same words the cards show.
   const { readdirSync } = await import('node:fs');
