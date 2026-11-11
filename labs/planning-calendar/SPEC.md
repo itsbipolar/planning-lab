@@ -1,8 +1,8 @@
 # The planning calendar (P5b): spec
 
 The year's tax and savings dates for different kinds of households (no practice, no hours, no "you"), shaded by how close
-each household's next date is, in the shared P5 colour scale. Replaces the practice-workload version (deleted, never published;
-unpublished), at Mo's request (2026-11-11); Mo approved the sketch and asked for year-end items such as tax-loss selling.
+each household's next date is, in the shared P5 colour scale. Replaces the practice-workload version (never published, then deleted)
+at Mo's request (2026-11-11); Mo approved the sketch and asked for year-end items such as tax-loss selling.
 
 - `calendar.json`: the households and, for each, its dates as rules with the facts they cite; the shading horizon (eight
   weeks, a display choice); rules on each person's own date (CPP, OAS ages; a trust's deemed-disposition years); dates not
