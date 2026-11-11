@@ -74,7 +74,9 @@
     const key = $('key'); key.textContent = '';
     const k = s('svg', { width: 140, height: 14, 'aria-hidden': 'true' });
     for (let i = 0; i < 10; i++) k.append(s('rect', { class: `cell h${Math.max(1, Math.round((N - 1) * i / 9))}`, x: i * 12, y: 0, width: 10, height: 14 }));
-    key.append(document.createTextNode(`${M.horizon / 7} weeks out`), k, document.createTextNode('the date itself'));
+    key.append(document.createTextNode(`${M.horizon / 7} weeks out`), k, document.createTextNode('the date itself.'));
+    const hs = s('svg', { width: 14, height: 14, 'aria-hidden': 'true' }); hatchDefs(hs); hs.append(s('rect', { class: 'cell h-off', width: 14, height: 14 }), s('rect', { class: 'win', width: 14, height: 14 }));
+    key.append(document.createTextNode(' Outlined: a date.'), hs, document.createTextNode('Lines: the superficial-loss period, a span rather than a date.'));
   }
 
   // One household, GitHub style: weekdays down, weeks across (the year in two halves on a phone).

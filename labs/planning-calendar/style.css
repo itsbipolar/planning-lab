@@ -50,5 +50,6 @@ select:focus-visible{outline:2px solid var(--t-ink);outline-offset:2px}
 :root[data-theme="light"] .pick-row{fill:var(--t-point-deep)}
 .dates{list-style:none;padding:0;margin:1rem 0 0;max-width:66ch;display:grid;gap:.75rem}
 .dates b{font-variant-numeric:tabular-nums}
-.dates .src{font-size:15px;color:var(--t-ink2)}
+.dates .src{font-size:16px;color:var(--t-ink2);margin-top:.15rem}
 section{margin-bottom:1rem}
+.key{flex-wrap:wrap}

@@ -89,8 +89,9 @@ select:focus-visible{outline:2px solid var(--t-ink);outline-offset:2px}
 :root[data-theme="light"] .pick-row{fill:var(--t-point-deep)}
 .dates{list-style:none;padding:0;margin:1rem 0 0;max-width:66ch;display:grid;gap:.75rem}
 .dates b{font-variant-numeric:tabular-nums}
-.dates .src{font-size:15px;color:var(--t-ink2)}
+.dates .src{font-size:16px;color:var(--t-ink2);margin-top:.15rem}
 section{margin-bottom:1rem}
+.key{flex-wrap:wrap}
 
 .h0{fill:#1b2a3a}
 :root[data-theme="light"] .h0{fill:#eef5f2}
@@ -260,7 +261,9 @@ section{margin-bottom:1rem}
     const key = $('key'); key.textContent = '';
     const k = s('svg', { width: 140, height: 14, 'aria-hidden': 'true' });
     for (let i = 0; i < 10; i++) k.append(s('rect', { class: `cell h${Math.max(1, Math.round((N - 1) * i / 9))}`, x: i * 12, y: 0, width: 10, height: 14 }));
-    key.append(document.createTextNode(`${M.horizon / 7} weeks out`), k, document.createTextNode('the date itself'));
+    key.append(document.createTextNode(`${M.horizon / 7} weeks out`), k, document.createTextNode('the date itself.'));
+    const hs = s('svg', { width: 14, height: 14, 'aria-hidden': 'true' }); hatchDefs(hs); hs.append(s('rect', { class: 'cell h-off', width: 14, height: 14 }), s('rect', { class: 'win', width: 14, height: 14 }));
+    key.append(document.createTextNode(' Outlined: a date.'), hs, document.createTextNode('Lines: the superficial-loss period, a span rather than a date.'));
   }
 
   // One household, GitHub style: weekdays down, weeks across (the year in two halves on a phone).
