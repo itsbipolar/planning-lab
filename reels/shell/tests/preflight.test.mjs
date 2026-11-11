@@ -107,3 +107,16 @@ test('speech recognition heard every spoken year in its clip, and nothing stray 
     }
   }
 });
+
+test('a data reel: a series card for a measure the data lacks fails, and so does a year with no confirmed proposals', async () => {
+  const { loadDataModel } = await import('../lib.mjs');
+  const r = loadReel(join(ROOT, 'reels', 'money-year'));
+  const dm = await loadDataModel(r, facts);
+  assert.deepEqual(preflight(r, facts, dm), []);
+  const bad = clone(r); bad.cards.find(c => c.type === 'series').panel = 'gold-price';
+  assert.match(preflight(bad, facts, dm).join('\n'), /no measure "gold-price"/);
+  const far = clone(r); far.cards.find(c => c.type === 'proposals').offset = 9;
+  assert.match(preflight(far, facts, dm).join('\n'), /no confirmed proposals starting in year \+9/);
+  const noData = clone(r); delete noData.data;
+  assert.match(preflight(noData, facts, null).join('\n'), /needs the reel's data model/);
+});

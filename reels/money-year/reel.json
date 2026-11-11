@@ -1,0 +1,114 @@
+{
+  "id": "money-year",
+  "title": "Canada's money year, graphed",
+  "series": "Canada's money year",
+  "look": "paper",
+  "fps": 30,
+  "turn": 0.6,
+  "data": {
+    "model": "labs/money-year/model.mjs",
+    "snapshot": "shared/data/money-year-{year}.json"
+  },
+  "cards": [
+    {
+      "type": "hook",
+      "id": "hook",
+      "duration": 4,
+      "fact_ids": [
+        "budget2026_budget_day"
+      ],
+      "text": "Canada's money year, graphed."
+    },
+    {
+      "type": "series",
+      "id": "policy",
+      "duration": 5.5,
+      "panel": "policy"
+    },
+    {
+      "type": "series",
+      "id": "mortgage",
+      "duration": 5.5,
+      "panel": "mortgage"
+    },
+    {
+      "type": "series",
+      "id": "inflation",
+      "duration": 5.5,
+      "panel": "inflation"
+    },
+    {
+      "type": "series",
+      "id": "loonie",
+      "duration": 5.5,
+      "panel": "loonie"
+    },
+    {
+      "type": "section",
+      "id": "budget",
+      "duration": 3.5,
+      "fact_ids": [
+        "budget2026_budget_day"
+      ],
+      "text": "Then the federal budget, presented",
+      "sub": "What it proposes, in the order it would start. Proposals are not law unless enacted."
+    },
+    {
+      "type": "proposals",
+      "id": "next0",
+      "duration": 5,
+      "offset": 0
+    },
+    {
+      "type": "proposals",
+      "id": "next1",
+      "duration": 6.5,
+      "offset": 1
+    },
+    {
+      "type": "proposals",
+      "id": "next2",
+      "duration": 4,
+      "offset": 2
+    },
+    {
+      "type": "sources",
+      "id": "sources",
+      "duration": 4,
+      "fact_ids": [
+        "budget2026_budget_day",
+        "budget2026_cgi_limit",
+        "budget2026_cgi_issue_window",
+        "budget2026_t1135_threshold",
+        "budget2026_t1135_start",
+        "budget2026_t1_filing_date",
+        "budget2026_t1_filing_date_start",
+        "budget2026_caregiver_refundable_start",
+        "budget2026_caregiver_max_relief_2027",
+        "budget2026_rrsp_for_life_consultation_deadline",
+        "budget2026_instalment_threshold",
+        "budget2026_instalment_start"
+      ],
+      "text": "Every figure, from its official source."
+    },
+    {
+      "type": "end",
+      "id": "end",
+      "duration": 3.5,
+      "text": "Education only, not advice.",
+      "ai": "Made with AI assistance. I directed and reviewed the work and checked every figure against its source."
+    }
+  ],
+  "carousel": [
+    "hook",
+    "policy",
+    "mortgage",
+    "inflation",
+    "loonie",
+    "budget",
+    "next0",
+    "next1",
+    "next2",
+    "sources"
+  ]
+}

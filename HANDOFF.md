@@ -65,4 +65,8 @@ shared time axis (no dual axis), callouts, a crosshair driven by pointer or slid
 Budget Day stays unconfirmed (only the page's "Date modified" line), so the Growth Incentive reads "From Budget Day".
 **Bolder (Mo):** the policy rate is the hero chart (area fill, heavier line, big callout), each chart shows start "to" now large,
 a dashed Budget 2026 line (Budget Day confirmed by Mo) runs through every chart, and the proposals sit in 2026/2027/2028 columns.
-Next: the P4 reel and carousel through the shell (data cards), the site case study, refresh around Dec 1.
+**P4 reel (reels/money-year):** the shell now takes a data model (`reel.json` "data": the lab's model.mjs and the snapshot,
+"{year}" = newest) and three card types: `series` (a measure: start to now, the chart drawing in, callouts landing), `section`
+(Budget Day from the facts), `proposals` (one year's confirmed proposals by `offset` from the data year, stamps landing). 52.5 s,
+14.6 MiB, 10-slide carousel + PDF, web copies. Preflight fails on an unknown measure, an empty proposals year or a missing model.
+Safe-band and carousel-fit tests cover both reels. No voice yet (Mo to decide). Next: site page + case study; refresh around Dec 1.

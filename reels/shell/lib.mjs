@@ -6,9 +6,10 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-export const CARD_TYPES = ['hook', 'date', 'stat', 'chart', 'sources', 'end'];
+export const CARD_TYPES = ['hook', 'date', 'stat', 'chart', 'sources', 'end', 'series', 'section', 'proposals'];
 // The end card carries only the fixed education and AI lines, so it is the one type without a fact.
-const NEEDS_FACT = new Set(['hook', 'date', 'stat', 'chart', 'sources']);
+// A series card's figures come from a dated data snapshot (its data model), not from facts.json.
+const NEEDS_FACT = new Set(['hook', 'date', 'stat', 'chart', 'sources', 'section']);
 const STATS = new Set(['span_years']);
 const ART = new Set(['cheque', 'form', 'paystub', 'passbook', 'key']); // the drawings in art.mjs
 const TEXT_FIELDS = ['text', 'beat', 'today', 'name', 'short', 'ai', 'say', 'voice_note'];
@@ -18,6 +19,19 @@ export const readJSON = p => JSON.parse(readFileSync(p, 'utf8'));
 export const loadFacts = (p = join(ROOT, 'shared', 'facts.json')) => readJSON(p);
 export const loadReel = dir => readJSON(join(dir, 'reel.json'));
 
+// A data reel names its model (a module exporting buildModel) and its snapshot; "{year}" picks the newest matching file.
+export async function loadDataModel(reel, facts) {
+  if (!reel.data) return null;
+  const { readdirSync } = await import('node:fs');
+  const { basename } = await import('node:path');
+  const pat = join(ROOT, reel.data.snapshot), dir = dirname(pat);
+  const re = new RegExp('^' + basename(pat).replace('.', '\\.').replace('{year}', '(\\d{4})') + '$');
+  const file = readdirSync(dir).filter(f => re.test(f)).sort().at(-1);
+  if (!file) throw new Error(`no snapshot matching ${reel.data.snapshot}`);
+  const { buildModel } = await import(join(ROOT, reel.data.model));
+  return buildModel(readJSON(join(dir, file)), facts);
+}
+
 // The first four-digit year in a fact's value, e.g. "after March <year>" gives that year.
 export function yearOf(fact) {
   const m = String(fact.value ?? '').match(/\b(1[89]\d\d|20\d\d)\b/);
@@ -25,7 +39,7 @@ export function yearOf(fact) {
 }
 
 // Returns a list of problems; an empty list means the reel may render.
-export function preflight(reel, facts) {
+export function preflight(reel, facts, dm = null) {
   const errors = [];
   const byId = new Map(facts.facts.map(f => [f.id, f]));
   if (!Array.isArray(reel.cards) || reel.cards.length === 0) return ['reel.json has no cards'];
@@ -56,22 +70,36 @@ export function preflight(reel, facts) {
     }
     if (c.type === 'date' && fids.length !== 1) errors.push(`${where}: a date card shows exactly one fact`);
     if (c.art !== undefined && !ART.has(c.art)) errors.push(`${where}: no drawing called "${c.art}"`);
+    if (c.type === 'series') {
+      if (!dm) errors.push(`${where}: a series card needs the reel's data model`);
+      else if (!dm.panels.some(p => p.id === c.panel)) errors.push(`${where}: no measure "${c.panel}" in the data model`);
+    }
+    if (c.type === 'proposals') {
+      // `offset` is years after the data's year (0, 1, 2…), so no year is typed into reel.json.
+      const yr = dm ? String(dm.year + (c.offset ?? 0)) : null;
+      if (!dm) errors.push(`${where}: a proposals card needs the reel's data model`);
+      else if (!dm.proposals.some(p => (p.at ?? String(dm.year)).slice(0, 4) === yr)) errors.push(`${where}: no confirmed proposals starting in year +${c.offset ?? 0}`);
+    }
     if (c.type === 'stat' && !STATS.has(c.stat)) errors.push(`${where}: unknown stat "${c.stat}"`);
   });
   for (const id of reel.carousel ?? []) if (!ids.has(id)) errors.push(`carousel: no card "${id}"`);
   return errors;
 }
 
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+export const longDate = d => { const [y, m, day] = d.split('-').map(Number); return `${MONTHS[m - 1]} ${day}, ${y}`; };
+
 const HOSTS = {
   'laws-lois.justice.gc.ca': 'Justice Laws Website',
   'www.osfi-bsif.gc.ca': 'Office of the Chief Actuary, OSFI',
   'www150.statcan.gc.ca': 'Statistics Canada',
   'www.canada.ca': 'Government of Canada',
+  'budget.canada.ca': 'Department of Finance Canada, federal budget',
 };
 export const sourceName = url => { const h = new URL(url).host; return HOSTS[h] ?? h; };
 
 // Card values resolved from the facts: years, the timeline range, stats and source lines.
-export function resolve(reel, facts) {
+export function resolve(reel, facts, dm = null) {
   const byId = new Map(facts.facts.map(f => [f.id, f]));
   const dates = reel.cards.filter(c => c.type === 'date').map(c => {
     const f = byId.get(c.fact_ids[0]);
@@ -89,28 +117,39 @@ export function resolve(reel, facts) {
       r.source = sourceName(fs[0].source_url);
       r.index = dates.findIndex(d => d.card === c.id);
     }
-    if (c.type === 'hook') { r.from = Math.min(...ys); r.to = Math.max(...ys); }
+    if (c.type === 'hook') { r.from = ys.length && !dm ? Math.min(...ys) : null; r.to = ys.length && !dm ? Math.max(...ys) : null; } // a data reel's hook shows the data's year
+    if (c.type === 'series') r.panel = dm.panels.find(p => p.id === c.panel);
+    if (c.type === 'proposals') { r.year = dm.year + (c.offset ?? 0); r.items = dm.proposals.filter(p => (p.at ?? String(dm.year)).slice(0, 4) === String(r.year)); }
+    if (c.type === 'section') r.when = longDate(String(fs[0].value));
     if (c.type === 'stat' && c.stat === 'span_years') r.value = Math.max(...ys) - Math.min(...ys);
-    if (c.type === 'sources') r.lines = fs.map(f => {
+    if (c.type === 'sources' && dates.length) r.lines = fs.map(f => {
       const d = dates.find(x => x.fact.id === f.id);
       return { short: d?.short ?? f.id, year: yearOf(f), source: sourceName(f.source_url), url: f.source_url, read: f.as_of };
     });
+    // A data reel's sources: the snapshot's own attribution, then each distinct page the facts come from.
+    if (c.type === 'sources' && !dates.length) r.lines = [
+      ...(dm ? [{ short: 'Data', source: dm.source.attribution.replace(/\.$/, ''), read: dm.source.retrieved }] : []),
+      ...[...new Map(fs.map(f => [sourceName(f.source_url), f])).values()].map(f => ({ short: f.authority === 'budget_proposal' ? 'Proposals' : 'Facts', source: sourceName(f.source_url), url: f.source_url, read: f.as_of })),
+    ];
     return r;
   });
   let t = 0;
   for (const c of cards) { c.start = t; t += c.duration; }
   const endText = reel.cards.find(c => c.type === 'end')?.text ?? '';
-  return { reel, cards, dates, range, total: t, endText };
+  return { reel, cards, dates, range, total: t, endText, data: dm };
 }
 
 // The words a card puts on screen, in reading order (used for captions and the alt text).
 export function screenText(c) {
   switch (c.type) {
-    case 'hook': return [c.text, `${c.from} to ${c.to}`];
+    case 'hook': return c.from !== null ? [c.text, `${c.from} to ${c.to}`] : [c.text];
+    case 'series': return [c.panel.title, `${c.panel.summary.from} to ${c.panel.summary.to}`, c.panel.note];
+    case 'section': return [c.text, c.when, ...(c.sub ? [c.sub] : [])];
+    case 'proposals': return [String(c.year), ...c.items.flatMap(i => [i.when, i.title, i.value]), 'Proposed, not law'];
     case 'date': return [`${c.short}, ${c.year}`, c.name, ...(c.qualifier ? [`In law: ${c.qualifier}`] : []), c.beat, c.today];
     case 'chart': return [c.text];
     case 'stat': return [`${c.value} ${c.text}`];
-    case 'sources': return [c.text, ...c.lines.map(l => `${l.short} ${l.year}: ${l.source}`)];
+    case 'sources': return [c.text, ...c.lines.map(l => `${l.short}${l.year ? ' ' + l.year : ''}: ${l.source}`)];
     case 'end': return [c.text, c.ai, ...(c.voice_note ? [c.voice_note] : [])];
     default: return [];
   }

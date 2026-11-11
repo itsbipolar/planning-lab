@@ -6,13 +6,16 @@ import { join } from 'node:path';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { chromium } from 'playwright';
-import { ROOT, loadFacts, loadReel, resolve } from '../lib.mjs';
+import { ROOT, loadFacts, loadReel, resolve, loadDataModel } from '../lib.mjs';
+
+const REELS = ['history-45', 'money-year'];
+const modelOf = async (name) => { const r = loadReel(join(ROOT, 'reels', name)), f = loadFacts(); return resolve(r, f, await loadDataModel(r, f)); };
 import { cardHTML, cardCSS, fontFaces, FORMATS } from '../cards.mjs';
 import { copyFonts } from '../build.mjs';
 
-test('no text on any card leaves the reel safe band', async () => {
+for (const name of REELS) test(`no text on any card leaves the reel safe band: ${name}`, async () => {
   const F = FORMATS.reel;
-  const m = resolve(loadReel(join(ROOT, 'reels', 'history-45')), loadFacts());
+  const m = await modelOf(name);
   const dir = mkdtempSync(join(tmpdir(), 'safe-')); copyFonts(join(dir, 'fonts'));
   const b = await chromium.launch();
   try {
@@ -36,10 +39,10 @@ test('no text on any card leaves the reel safe band', async () => {
   } finally { await b.close(); }
 });
 
-test('every carousel slide fits its 1080x1350 page', async () => {
+for (const name of REELS) test(`every carousel slide fits its 1080x1350 page: ${name}`, async () => {
   const F = FORMATS.carousel;
   const { buildCarousel } = await import('../build.mjs');
-  const m = resolve(loadReel(join(ROOT, 'reels', 'history-45')), loadFacts());
+  const m = await modelOf(name);
   const dir = mkdtempSync(join(tmpdir(), 'car-'));
   const pages = buildCarousel(m, 'paper', dir);
   const b = await chromium.launch();

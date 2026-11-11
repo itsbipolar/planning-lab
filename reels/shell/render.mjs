@@ -7,7 +7,7 @@
 import { mkdirSync, statSync, existsSync, writeFileSync, rmSync } from 'node:fs';
 import { join, resolve as res } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { ROOT, loadFacts, loadReel, preflight, resolve } from './lib.mjs';
+import { ROOT, loadFacts, loadReel, preflight, resolve, loadDataModel } from './lib.mjs';
 import { buildProject, buildCarousel, writeCaptions, slots } from './build.mjs';
 import { FORMATS, LOOKS } from './cards.mjs';
 import { hasVoice, prepareVoice, timeToVoice } from './voice.mjs';
@@ -19,7 +19,9 @@ const reelDir = res(args.find(a => !a.startsWith('--') && !Object.keys(LOOKS).in
 const MAX_BYTES = 25 * 1024 * 1024;
 
 const reel = loadReel(reelDir), facts = loadFacts();
-const problems = preflight(reel, facts);
+let dm = null;
+try { dm = await loadDataModel(reel, facts); } catch (e) { console.error(`PREFLIGHT FAILED for ${reel.id}: ${e.message}`); process.exit(1); }
+const problems = preflight(reel, facts, dm);
 if (problems.length) {
   console.error(`PREFLIGHT FAILED for ${reel.id}: nothing was rendered.`);
   for (const p of problems) console.error(`  - ${p}`);
@@ -31,7 +33,7 @@ if (flag('preflight')) process.exit(0);
 const out = join(reelDir, 'out'), work = join(reelDir, '.build');
 // A voiced reel is timed to its narration: each card lasts as long as its spoken line.
 const voiceDir = hasVoice(reel, reelDir) && !opt('strip') ? join(work, 'voice') : null;
-const model = resolve(voiceDir ? timeToVoice(reel, prepareVoice(reel, reelDir, voiceDir)) : reel, facts);
+const model = resolve(voiceDir ? timeToVoice(reel, prepareVoice(reel, reelDir, voiceDir)) : reel, facts, dm);
 if (voiceDir) console.log(`timed to the voice: ${model.total.toFixed(1)} s`);
 mkdirSync(out, { recursive: true });
 const HEADLESS = '/opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell';
@@ -148,7 +150,7 @@ if (flag('web')) {
   const mp4 = await renderLook(look, { name: reel.id });
   writeCaptions(model, join(out, `${reel.id}.vtt`));
   contactSheet(mp4, settledTimes(model.total), join(out, 'contact-sheet.png'), 5);
-  safeZone(mp4, model.cards.find(c => c.type === 'date').start + 3, join(out, 'safe-zone-check.png'));
+  safeZone(mp4, (model.cards.find(c => c.type === 'date' || c.type === 'series') ?? model.cards[1]).start + 3, join(out, 'safe-zone-check.png'));
   await carousel(look);
   void slots;
 }

@@ -4,6 +4,7 @@
 import { readJSON, ROOT } from './lib.mjs';
 import { join } from 'node:path';
 import { art, moves, ART_KINDS } from './art.mjs';
+import { seriesSVG } from './chart.mjs';
 
 const tokens = readJSON(join(ROOT, 'shared', 'tokens.json'));
 export const FORMATS = {
@@ -53,6 +54,44 @@ ${sel} .plate{position:absolute;left:${F.left - L.inset}px;right:${F.left - L.in
   border-top:3px solid ${INK};display:flex;justify-content:center;align-items:center;gap:10px}
 ${sel} .plate .art{width:auto;height:100%}
 ${sel} .plate .icon{width:19%;height:auto}
+${sel} .stitle{font-size:${big ? 64 : 56}px;font-weight:700;line-height:1.08;margin-top:${big ? 40 : 26}px}
+${sel} .sdelta{font-size:${big ? 104 : 88}px;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:${big ? 22 : 14}px}
+${sel} .sdelta .from{color:${INK2};font-weight:600}
+${sel} .sdelta .arrow{font-size:.45em;font-weight:500;color:${INK2};margin:0 .25em}
+${sel} .sdelta .what{font-size:.38em;font-weight:600;color:${INK2};margin-left:.3em}
+${sel} .chart{display:block;margin-top:${big ? 30 : 18}px;overflow:visible;width:100%;height:auto}
+${sel} .chart .cg{stroke:${RULE};stroke-width:2}
+${sel} .chart .ca{stroke:${INK};stroke-width:3}
+${sel} .chart .ct{fill:${INK2};font-size:${big ? 40 : 36}px;font-variant-numeric:tabular-nums}
+${sel} .chart .cf{fill:${INK};opacity:.06}
+${sel} .chart .cb{stroke:${INK2};stroke-width:3;stroke-dasharray:14 10}
+${sel} .chart .cl{fill:none;stroke:${INK};stroke-width:9;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:1 1}
+${sel} .chart .cl.dashed{stroke:${INK2};stroke-width:6;stroke-dasharray:.018 .012}
+${sel} .chart .cl.thin{stroke-width:5}
+${sel} .chart .cr{fill:${L.paper};stroke:${INK};stroke-width:6}
+${sel} .chart .cd{stroke:${INK2};stroke-width:3}
+${sel} .chart .cc{fill:${INK};font-weight:800;font-variant-numeric:tabular-nums}
+${sel} .chart .cc.marked{paint-order:stroke;stroke:${POINT};stroke-width:30px;stroke-linejoin:round}
+${sel} .snote{font-size:${big ? 44 : 40}px;line-height:1.22;color:${INK2};margin-top:${big ? 26 : 14}px}
+${sel} .bigyear{font-size:${big ? 230 : 190}px;font-weight:800;line-height:.9;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:${big ? 30 : 16}px}
+${sel} .sparks{display:grid;grid-template-columns:1fr 1fr;gap:${big ? '34px 40px' : '22px 30px'};margin-top:auto;margin-bottom:${big ? 30 : 0}px}
+${sel} .sparks b{display:block;font-size:${big ? 36 : 32}px;font-weight:700;line-height:1.1;margin-bottom:8px}
+${sel} .sparks .chart{margin-top:0}
+${sel} .kicker{font-size:${big ? 58 : 50}px;font-weight:700;line-height:1.1;margin-top:${big ? 110 : 60}px}
+${sel} .when-big{font-size:${big ? 120 : 104}px;font-weight:800;line-height:1;letter-spacing:-.02em;margin-top:${big ? 30 : 20}px;font-variant-numeric:tabular-nums}
+${sel} .sub{font-size:${big ? 54 : 46}px;line-height:1.22;color:${INK2};margin-top:${big ? 40 : 24}px}
+${sel} .props{display:flex;flex-direction:column;gap:${big ? 22 : 14}px;margin-top:${big ? 24 : 14}px}
+${sel} .prop{border-top:3px solid ${INK};padding-top:${big ? 18 : 12}px}
+${sel} .prop .pw{font-size:${big ? 40 : 36}px;color:${INK2};font-variant-numeric:tabular-nums}
+${sel} .prop .pt{font-size:${big ? 50 : 44}px;font-weight:700;line-height:1.12;margin-top:6px}
+${sel} .prop .pv{font-size:${big ? 46 : 40}px;font-weight:800;line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums}
+${sel} .props.dense{gap:${big ? 14 : 10}px}
+${sel} .props.dense .prop{padding-top:${big ? 12 : 8}px}
+${sel} .props.dense .pw{font-size:${big ? 38 : 34}px}
+${sel} .props.dense .pt{font-size:${big ? 46 : 40}px}
+${sel} .props.dense .pv{font-size:${big ? 42 : 38}px}
+${sel} .props.dense .stamp{margin-top:8px;font-size:${big ? 32 : 28}px}
+${sel} .stamp{display:inline-block;margin-top:${big ? 14 : 10}px;padding:4px 16px;border:4px dashed ${INK2};font-size:${big ? 36 : 32}px;font-weight:700;color:${INK2};transform:rotate(-2deg)}
 ${sel} .grain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:multiply}
 ${sel} .qual{font-size:${big ? 46 : 42}px;color:${INK2};margin-top:14px}
 ${sel} .beat{font-size:${big ? 68 : 56}px;font-weight:650;line-height:1.16;margin-top:${big ? 40 : 28}px}
@@ -123,6 +162,11 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
   let body = '';
   switch (c.type) {
     case 'hook':
+      if (model.data) {
+        const dm = model.data, sw = (FORMATS[fmt].w - FORMATS[fmt].left - FORMATS[fmt].right - 40) / 2;
+        body = `<div class="hook r">${esc(c.text)}</div><div class="bigyear r">${dm.year}</div><div class="sparks r">${dm.panels.map((pn, i) =>
+          `<div><b>${esc(pn.title)}</b>${seriesSVG(pn, dm, `${p}-s${i}`, { w: Math.round(sw), h: fmt === 'reel' ? 150 : 110, big: false })}</div>`).join('')}</div>`; break;
+      }
       const icons = model.cards.filter(x => x.type === 'date' && x.art).map((x, i) => art(x.art, `${p}-i${i}`, 'icon')).join('');
       body = `<div class="hook r">${esc(c.text)}</div>${fmt === 'reel' ? '' : `<div class="icons r">${icons}</div>`}<div class="range r">${c.from}<span class="to">–${c.to}</span></div>`; break;
     case 'date':
@@ -136,14 +180,25 @@ export function cardHTML(c, model, fmt, p, { showFoot = false } = {}) {
       body = `<div class="stat r">${c.value}</div><div class="stattext r">${esc(c.text)}</div>`; break;
     case 'sources':
       body = `<div class="lede r">${esc(c.text)}</div><div class="rows">${c.lines.map(l =>
-        `<div class="r"><b>${esc(l.short)}<em>${l.year}</em></b><span>${esc(l.source)}</span></div>`).join('')}</div>`; break;
+        `<div class="r"><b>${esc(l.short)}${l.year ? `<em>${l.year}</em>` : ''}</b><span>${esc(l.source)}</span></div>`).join('')}</div>`; break;
+    case 'series': {
+      const pn = c.panel, w = FORMATS[fmt].w - FORMATS[fmt].left - FORMATS[fmt].right;
+      body = `<div class="stitle r">${esc(pn.title)}</div><div class="sdelta r"><span class="from">${esc(pn.summary.from)}</span><span class="arrow">to</span>${esc(pn.summary.to)}${pn.summary.label ? `<span class="what">${esc(pn.summary.label)}</span>` : ''}</div>
+${seriesSVG(pn, model.data, p, { w, h: fmt === 'reel' ? 470 : 380 })}<div class="snote r">${esc(pn.note)}</div>`; break;
+    }
+    case 'section':
+      body = `<div class="kicker r">${esc(c.text)}</div><div class="when-big r">${esc(c.when)}</div>${c.sub ? `<div class="sub r">${esc(c.sub)}</div>` : ''}`; break;
+    case 'proposals':
+      body = `<div class="bigyear r" style="font-size:${c.items.length > 2 ? (fmt === 'reel' ? 150 : 120) : (fmt === 'reel' ? 200 : 160)}px">${c.year}</div><div class="props${c.items.length > 2 ? ' dense' : ''}">${c.items.map((it, i) =>
+        `<div class="prop r"><div class="pw">${esc(it.when)}</div><div class="pt">${esc(it.title)}</div><div class="pv">${esc(it.value)}</div><div class="stamp" id="${p}-st${i}">Proposed, not law</div></div>`).join('')}</div>`; break;
     case 'end':
       body = `<div class="edu r">${esc(c.text)}</div><div class="ai r">${esc(c.ai)}</div>${c.voice_note ? `<div class="ai r">${esc(c.voice_note)}</div>` : ''}`; break;
   }
   const grain = `<svg class="grain" aria-hidden="true"><filter id="${p}-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .26  0 0 0 0 .2  0 0 0 .08 0"/></filter><rect width="100%" height="100%" filter="url(#${p}-grain)"/></svg>`;
   let plate = '';
   if (fmt === 'reel' && c.type === 'date' && c.art) plate = `<div class="plate">${art(c.art, `${p}-art`)}</div>`;
-  if (fmt === 'reel' && (c.type === 'hook' || c.type === 'end')) plate = `<div class="plate">${model.cards.filter(x => x.type === 'date' && x.art).map((x, i) => art(x.art, `${p}-i${i}`, 'icon')).join('')}</div>`;
+  const drawn = model.cards.filter(x => x.type === 'date' && x.art);
+  if (fmt === 'reel' && (c.type === 'hook' || c.type === 'end') && drawn.length) plate = `<div class="plate">${drawn.map((x, i) => art(x.art, `${p}-i${i}`, 'icon')).join('')}</div>`;
   return `<div class="page" id="${p}-page">${grain}<span class="spine"></span><div class="band">${head}${body}${foot}</div>${plate}<span class="shade" id="${p}-shade"></span></div>`;
 }
 
@@ -163,6 +218,15 @@ export function cardTweens(c, model, p, turn, sel) {
   // The first card is the thumbnail and the hook: its drawings are already moving on frame 0.
   if (c.type === 'hook') model.cards.filter(x => x.type === 'date' && x.art).forEach((x, i) =>
     t.push(`tl.fromTo("#${p}-i${i}",{y:-22,rotation:-5},{y:0,rotation:0,duration:.55,ease:"back.out(2.2)"},${(i * 0.14).toFixed(2)});`));
+  if (c.type === 'series') {
+    c.panel.lines.forEach((ln, li) => !ln.dashed && t.push(`tl.fromTo("#${p}-l${li}",{strokeDashoffset:1},{strokeDashoffset:0,duration:1.8,ease:"power1.inOut"},${(turn + 0.15).toFixed(2)});`));
+    c.panel.callouts.forEach((_, ci) => t.push(`tl.fromTo("#${p}-c${ci}",{opacity:0,y:16},{opacity:1,y:0,duration:.35,ease:"back.out(2)"},${(turn + 1.9 + ci * 0.3).toFixed(2)});`));
+  }
+  if (c.type === 'proposals') c.items.forEach((_, i) =>
+    t.push(`tl.fromTo("#${p}-st${i}",{scale:1.6,opacity:0},{scale:1,opacity:1,duration:.22,ease:"power4.in"},${(turn + 0.5 + i * 0.35).toFixed(2)});`));
+  // A data reel's hook is moving on frame 0: its four lines are already drawing.
+  if (c.type === 'hook' && model.data) model.data.panels.forEach((pn, i) => pn.lines.forEach((ln, li) =>
+    !ln.dashed && t.push(`tl.fromTo("#${p}-s${i}-l${li}",{strokeDashoffset:.55},{strokeDashoffset:0,duration:1.4,ease:"power1.out"},${(i * 0.12).toFixed(2)});`)));
   if (c.type === 'chart') {
     const t0 = turn + 0.2, run = 1.6;
     t.push(`tl.fromTo("#${p}-aline",{scaleY:0},{scaleY:1,duration:${run},ease:"none"},${t0.toFixed(2)});`);
