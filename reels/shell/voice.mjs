@@ -34,6 +34,7 @@ export function prepareVoice(reel, reelDir, out) {
     const src = join(vdir, `${c.id}.wav`);
     if (!existsSync(src)) throw new Error(`card "${c.id}" has a spoken line but no clip at ${src}`);
     if (!cuts[c.id]) throw new Error(`card "${c.id}" has no speech window in cuts.json`);
+    if (cuts[c.id].cut_off !== false) throw new Error(`card "${c.id}": its clip ends mid-word or was never checked for it (cuts.json "cut_off"); generate it again and run align.py`);
     // 1. The speech window, with a little air at each end.
     const from = Math.max(0, cuts[c.id].start - 0.06), to = cuts[c.id].end + 0.15;
     const win = join(out, `${c.id}.window.wav`);

@@ -4,62 +4,80 @@
     "end": 6.48,
     "heard": "canada built your retirement savings and five steps the fifth isn't about retirement at all",
     "dropped": "oh",
-    "expected": "Canada built your retirement savings in five steps. The fifth isn't about retirement at all."
+    "expected": "Canada built your retirement savings in five steps. The fifth isn't about retirement at all.",
+    "cut_off": false,
+    "tail_db": -11.5
   },
   "oas": {
     "start": 2.28,
     "end": 9.69,
     "heard": "step one nineteen fifty two old age security a basic pension in old age",
     "dropped": "p lee's world che",
-    "expected": "Step one, nineteen fifty-two: Old Age Security, a basic pension in old age."
+    "expected": "Step one, nineteen fifty-two: Old Age Security, a basic pension in old age.",
+    "cut_off": false,
+    "tail_db": -94.9
   },
   "rrsp": {
-    "start": 0.21,
-    "end": 9.63,
-    "heard": "but a basic pension is only a floor so in nineteen fifty seven the are are s p a tax break for saving on your own",
+    "start": 0.06,
+    "end": 9.78,
+    "heard": "but a basic pension is only a floor so in nineteen fifty seven the r r s p a tax break for saving on your own",
     "dropped": "",
-    "expected": "But a basic pension is only a floor. So in nineteen fifty-seven, the RRSP: a tax break for saving on your own."
+    "expected": "But a basic pension is only a floor. So in nineteen fifty-seven, the RRSP: a tax break for saving on your own.",
+    "cut_off": false,
+    "tail_db": -94.1
   },
   "cpp": {
     "start": 0.99,
     "end": 6.72,
     "heard": "nineteen sixty six the canada pension plan a pension you earned by working",
     "dropped": "",
-    "expected": "Nineteen sixty-six: the Canada Pension Plan, a pension you earn by working."
+    "expected": "Nineteen sixty-six: the Canada Pension Plan, a pension you earn by working.",
+    "cut_off": false,
+    "tail_db": -93.6
   },
   "tfsa": {
     "start": 0.03,
     "end": 5.37,
     "heard": "two thousand and nine the tfs say where your savings grow tax free",
     "dropped": "",
-    "expected": "Two thousand nine: the TFSA, where your savings grow tax-free."
+    "expected": "Two thousand nine: the TFSA, where your savings grow tax-free.",
+    "cut_off": false,
+    "tail_db": -93.6
   },
   "fhsa": {
     "start": 0.0,
     "end": 6.33,
     "heard": "the fifth twenty twenty three the f h s a savings for your first home",
     "dropped": "",
-    "expected": "And the fifth, twenty twenty-three: the FHSA, savings for your first home."
+    "expected": "And the fifth, twenty twenty-three: the FHSA, savings for your first home.",
+    "cut_off": false,
+    "tail_db": -93.7
   },
   "span": {
     "start": 1.17,
     "end": 5.1,
     "heard": "seventy one years from the first to the newest",
     "dropped": "sans but",
-    "expected": "Seventy-one years, from the first to the newest."
+    "expected": "Seventy-one years, from the first to the newest.",
+    "cut_off": false,
+    "tail_db": -67.2
   },
   "sources": {
     "start": 0.03,
     "end": 2.67,
     "heard": "rebate here is checked at it's official source",
     "dropped": "",
-    "expected": "Every date here is checked at its official source."
+    "expected": "Every date here is checked at its official source.",
+    "cut_off": false,
+    "tail_db": -95.6
   },
   "line": {
     "start": 1.08,
     "end": 5.49,
     "heard": "five accounts one system built a layer at a time",
     "dropped": "them",
-    "expected": "Five accounts, one system, built a layer at a time."
+    "expected": "Five accounts, one system, built a layer at a time.",
+    "cut_off": false,
+    "tail_db": -93.9
   }
 }

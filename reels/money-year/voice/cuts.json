@@ -4,69 +4,89 @@
     "end": 3.69,
     "heard": "your money year in canada in four lines and one budget",
     "dropped": "",
-    "expected": "Your money year in Canada, in four lines and one budget."
+    "expected": "Your money year in Canada, in four lines and one budget.",
+    "cut_off": false,
+    "tail_db": -95.7
   },
   "policy": {
     "start": 0.42,
     "end": 8.61,
     "heard": "the bank of canada held it's rate at two and a quarter percent then on october twenty ninth it raised it to two and a half percent",
     "dropped": "",
-    "expected": "The Bank of Canada held its rate at two and a quarter percent. Then on October twenty-ninth, it raised it to two and a half percent."
+    "expected": "The Bank of Canada held its rate at two and a quarter percent. Then on October twenty-ninth, it raised it to two and a half percent.",
+    "cut_off": false,
+    "tail_db": -93.8
   },
   "mortgage": {
     "start": 0.06,
     "end": 3.24,
     "heard": "posted five year mortgage rates edged up to",
     "dropped": "",
-    "expected": "Posted five-year mortgage rates edged up too."
+    "expected": "Posted five-year mortgage rates edged up too.",
+    "cut_off": false,
+    "tail_db": -93.6
   },
   "inflation": {
     "start": 1.11,
     "end": 7.11,
     "heard": "but core inflation cooled from two point seven percent to one point eight percent",
     "dropped": "p",
-    "expected": "But core inflation cooled, from two point seven percent to one point eight percent."
+    "expected": "But core inflation cooled, from two point seven percent to one point eight percent.",
+    "cut_off": false,
+    "tail_db": -94.1
   },
   "loonie": {
     "start": 0.27,
     "end": 2.58,
     "heard": "and the loony slipped against the us dollar",
     "dropped": "",
-    "expected": "And the loonie slipped against the US dollar."
+    "expected": "And the loonie slipped against the US dollar.",
+    "cut_off": false,
+    "tail_db": -95.6
   },
   "budget": {
-    "start": 1.38,
-    "end": 4.8,
+    "start": 0.84,
+    "end": 3.66,
     "heard": "then on november fifth the federal budget",
-    "dropped": "the teen",
-    "expected": "Then, on November fifth, the federal budget."
+    "dropped": "the",
+    "expected": "Then, on November fifth, the federal budget.",
+    "cut_off": false,
+    "tail_db": -95.0
   },
   "next0": {
     "start": 0.24,
     "end": 9.03,
     "heard": "from budget day a proposed exemption for some growth company shares and a consultation on an r r s p for life",
     "dropped": "",
-    "expected": "From Budget Day: a proposed exemption for some growth-company shares, and a consultation on an RRSP for life."
+    "expected": "From Budget Day: a proposed exemption for some growth-company shares, and a consultation on an RRSP for life.",
+    "cut_off": false,
+    "tail_db": -18.2
   },
   "next1": {
     "start": 0.27,
-    "end": 8.76,
+    "end": 8.28,
     "heard": "from the twenty twenty seven tax year a new tax filing date a refundable caregiver credit and a higher bar before you file the foreign property form",
     "dropped": "",
-    "expected": "From the twenty twenty-seven tax year: a new tax-filing date, a refundable caregiver credit, and a higher bar before you file the foreign-property form."
+    "expected": "From the twenty twenty-seven tax year: a new tax-filing date, a refundable caregiver credit, and a higher bar before you file the foreign-property form.",
+    "cut_off": false,
+    "tail_db": -65.7
   },
   "next2": {
     "start": 0.87,
     "end": 7.29,
     "heard": "and from the twenty twenty eight tax year a higher threshold before tax installments are required",
     "dropped": "p said",
-    "expected": "And from the twenty twenty-eight tax year: a higher threshold before tax instalments are required."
+    "expected": "And from the twenty twenty-eight tax year: a higher threshold before tax instalments are required.",
+    "cut_off": false,
+    "tail_db": -13.9
   },
   "sources": {
-    "start": 0.27,
-    "end": 5.58,
+    "start": 2.97,
+    "end": 9.51,
     "heard": "every figure here is from it's official source the proposals are not law unless they're enacted",
-    "dropped": "",
-    "expected": "Every figure here is from its official source. The proposals are not law unless they're enacted."
+    "dropped": "those and he leaped roast source",
+    "expected": "Every figure here is from its official source. The proposals are not law unless they're enacted.",
+    "cut_off": false,
+    "tail_db": -93.6
   }
 }

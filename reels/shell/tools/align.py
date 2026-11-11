@@ -10,7 +10,7 @@ heard, expected}}. The shell keeps only [start, end] of each clip. Run it after 
   node reels/shell/tools/lines.mjs reels/history-45 > /tmp/lines.json
   .asr/bin/python -I reels/shell/tools/align.py <model dir> reels/history-45/voice /tmp/lines.json
 """
-import json, os, re, subprocess, sys, tempfile, wave
+import json, math, os, re, struct, subprocess, sys, tempfile, wave
 from vosk import Model, KaldiRecognizer, SetLogLevel
 
 SetLogLevel(-1)
@@ -28,13 +28,17 @@ def recognise(path):
     while (data := wf.readframes(4000)):
         if rec.AcceptWaveform(data): words += json.loads(rec.Result()).get('result', [])
     words += json.loads(rec.FinalResult()).get('result', [])
+    # How loud the clip's last 60 ms are: a clip the voice model cut off mid-word still sounds at its very end.
+    wf.rewind(); n = wf.getnframes(); wf.setpos(max(0, n - 960)); tail = wf.readframes(960)
+    s = struct.unpack('<%dh' % (len(tail) // 2), tail)
+    tail_db = 20 * math.log10(math.sqrt(sum(x * x for x in s) / max(1, len(s))) / 32768 + 1e-9)
     os.remove(tmp)
-    return words
+    return words, n / 16000, tail_db
 
 cuts = {}
 for card, line in lines.items():
     exp = norm(line)
-    words = recognise(os.path.join(voice_dir, f'{card}.wav'))
+    words, length, tail_db = recognise(os.path.join(voice_dir, f'{card}.wav'))
     # A recognised word matches an expected one if they are equal, or one holds the other ("posed" in "proposed").
     like = lambda a, b: a == b or (min(len(a), len(b)) >= 4 and (a in b or b in a))
     hit = lambda w, pool: any(like(w['word'], e) for e in pool)
@@ -50,6 +54,10 @@ for card, line in lines.items():
     cuts[card] = {'start': round(words[first]['start'], 3), 'end': round(words[last]['end'], 3),
                   'heard': ' '.join(w['word'] for w in words[first:last + 1]),
                   'dropped': ' '.join(w['word'] for w in words[:first] + words[last + 1:]),
-                  'expected': line}
+                  'expected': line,
+                  # Cut off: the speech runs to the end of the file and is still sounding there (a clean clip ends near -90 dB).
+                  'cut_off': length - words[last]['end'] < 0.15 and tail_db > -60, 'tail_db': round(tail_db, 1)}
 json.dump(cuts, open(os.path.join(voice_dir, 'cuts.json'), 'w'), indent=2)
+for card, c in cuts.items():
+    if c['cut_off']: print(f'CUT OFF: {card} ends mid-word ({c["tail_db"]} dB at the end of the file); generate it again', file=sys.stderr)
 print(json.dumps(cuts, indent=1))
