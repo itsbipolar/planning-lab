@@ -46,7 +46,7 @@
       "id": "loonie",
       "duration": 5.5,
       "panel": "loonie",
-      "say": "And the loonie ended {up:weaker|stronger} against the US dollar."
+      "say": "And the loonie {up:slipped|gained} against the US dollar."
     },
     {
       "type": "section",
@@ -64,21 +64,21 @@
       "id": "next0",
       "duration": 5,
       "offset": 0,
-      "say": "Proposed from this year: a new exemption for some growth-company shares, and a higher bar before you file the foreign-property form."
+      "say": "From Budget Day: a proposed exemption for some growth-company shares, and a consultation on an RRSP for life."
     },
     {
       "type": "proposals",
       "id": "next1",
       "duration": 6.5,
       "offset": 1,
-      "say": "For {year}: a new tax-filing date, a refundable caregiver credit, and a consultation on an RRSP for life."
+      "say": "From the {year} tax year: a new tax-filing date, a refundable caregiver credit, and a higher bar before you file the foreign-property form."
     },
     {
       "type": "proposals",
       "id": "next2",
       "duration": 4,
       "offset": 2,
-      "say": "And for {year}: a higher threshold before tax instalments are required."
+      "say": "And from the {year} tax year: a higher threshold before tax instalments are required."
     },
     {
       "type": "sources",
