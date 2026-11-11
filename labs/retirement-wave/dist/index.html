@@ -195,7 +195,13 @@ section{margin-bottom:1rem}
     const groups = [];
     for (const r of M.rules) { const g = groups.at(-1); if (g && r.age - g.at(-1) === 1 && ch < 13) g.push(r.age); else groups.push([r.age]); }
     for (const r of M.rules) { const yy = Yp(r.age) + ch / 2; svg.append(s('line', { class: 'rule', x1: left, x2: left + cols * cw, y1: yy, y2: yy })); }
-    for (const g of groups) { const yy = (Yp(g[0]) + Yp(g.at(-1))) / 2 + ch / 2; svg.append(s('text', { class: 'rule-n', x: left + cols * cw + 5, y: yy + 4 }, g.join('/'))); }
+    for (const [k, g] of groups.entries()) {
+      // Single-age labels one row from a neighbour are nudged apart so they don't touch.
+      const near = (j) => groups[j] && Math.abs(groups[j][0] - g[0]) === 1;
+      const nudge = g.length === 1 ? (near(k + 1) ? 3 : 0) - (near(k - 1) ? 3 : 0) : 0;
+      const yy = (Yp(g[0]) + Yp(g.at(-1))) / 2 + ch / 2 + nudge;
+      svg.append(s('text', { class: 'rule-n', x: left + cols * cw + 5, y: yy + 4 }, g.join('/')));
+    }
     for (let a = a0; a <= a1; a += 10) svg.append(s('text', { class: 'lab', x: left - 6, y: Yp(a) + ch - 1, 'text-anchor': 'end' }, String(a)));
     svg.append(s('text', { class: 'lab', x: left - 6, y: topPad - 8, 'text-anchor': 'end' }, 'Age'));
     const step = W < 600 ? 10 : 5;
@@ -250,7 +256,7 @@ section{margin-bottom:1rem}
 
   const born = $('born');
   born.min = M.born.from; born.max = M.born.to; born.value = state.born;
-  const setGen = () => { const t = genText(); $('gen').textContent = t; born.setAttribute('aria-valuetext', t); };
+  const setGen = () => { const t = genText(); $('gen').textContent = t; born.setAttribute('aria-valuetext', t); $('born-label').textContent = `Follow one generation: born ${state.born - 1} to ${state.born}`; };
   born.addEventListener('input', () => { state.born = Number(born.value); drawHeat(); setGen(); });
 
   // Grid table
@@ -270,7 +276,7 @@ section{margin-bottom:1rem}
   function drawLine() {
     const r = M.rules.find((x) => x.age === state.age); if (!r) return;
     const box = $('line'); box.textContent = '';
-    const W = Math.min(box.clientWidth || 360, 1056), H = 220, left = 8, right = 8, topPad = 30, bottom = 24;
+    const W = Math.min(box.clientWidth || 360, 1056), H = 220, left = 30, right = 40, topPad = 30, bottom = 24;
     const lo = 0, hi = Math.max(...r.series.map((p) => p[1])) * 1.12;
     const X = (y) => left + (y - y0) / (y1 - y0) * (W - left - right), Y = (v) => topPad + (H - topPad - bottom) * (1 - (v - lo) / (hi - lo));
     const svg = s('svg', { width: W, height: H, role: 'img', 'aria-label': `Line: Canadians aged ${r.age} on July 1 of each year from ${y0} to ${y1}. ${$('age-summary').textContent}` });
