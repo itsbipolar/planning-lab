@@ -118,3 +118,4 @@ Five new facts are drafted (canada-planning-facts branch `p5b-facts-draft`): unt
 Look-ahead preview: PREVIEW_FACTS=labs/planning-calendar/fixtures/facts-with-drafts.json OUT=<file> node labs/planning-calendar/build.mjs
 **P5c The ages that matter (2026-11-11):** `labs/ages-that-matter/` (Mo approved the sketch and the RRIF example fund). CPP start
 months, OAS deferral months, RRIF minimum by age; pickers with readouts; 5 data + 8 browser tests. Next: site branch, Mo's go.
+**Removed (Mo, 2026-11-11: "if we're not using it, don't keep it"):** labs/planning-year, the unpublished practice-workload heatmap that P5b replaced.
