@@ -21,7 +21,7 @@
 
   // Words built from the facts, never typed figures.
   const lo = fv('cpp_earliest_start_age'), hi = fv('cpp_latest_start_age');
-  $('lede').textContent = `A fictional planning practice of ${book.households.length.toLocaleString('en-CA')} households, and every dated task its rules create in ${Y}: tax deadlines, RRSPs that must mature, CPP and OAS start ages, trust and corporate dates. One square for each weekday; the darker the square, the more hours.`;
+  $('lede').textContent = `A fictional planning practice of ${book.households.length.toLocaleString('en-CA')} households, and every dated task its rules create in ${Y}: tax deadlines, RRSPs that must mature, CPP and OAS start ages, trust and corporate dates. One square for each weekday, shaded by how many hours of work it holds.`;
   $('banner').textContent = `Synthetic data: invented households with IDs only, not a real practice or real clients. Hours and lead times are assumptions, not industry benchmarks.`;
   document.querySelectorAll('[data-assume]').forEach((e) => { e.textContent = `(${config.assumptionLabel})`; });
 
