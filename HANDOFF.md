@@ -84,4 +84,4 @@ year" and need a revised script (Mo to approve) and new clips for next0/next1/ne
 `tools/lines.mjs` now works for data reels.
 **Re-voiced (Mo approved the corrected lines, 2026-11-11):** loonie "slipped", next0 "From Budget Day: … consultation on an RRSP for
 life", next1 "From the {year} tax year: … foreign-property form", next2 "And from the {year} tax year". 5 new clips (one retake of next0),
-about 2.9 credits; every new clip and the final mix transcribe as the approved lines only. Reel 66.0 s; carousel, web and 4:5 cuts redone.
+3.70 credits (72.92 to 69.22); every new clip and the final mix transcribe as the approved lines only. Reel 66.0 s; carousel, web and 4:5 cuts redone.
