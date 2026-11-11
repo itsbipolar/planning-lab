@@ -112,3 +112,7 @@ StatCan attribution/citation/notes. 6 data tests + 8 browser tests. Next: site c
 **P5 heatmap colours (Mo, 2026-11-11: "C: Blue into green", one shared scale):** `shared/heat-scale.mjs` (Money Stripes blue into the
 "money" green, mixed in OKLab; light mode reversed in lightness), written as .h0-.h23 classes at build. P5a uses it; P5b and P5c will.
 Rule lines carry a ground-colour edge so they show on every shade. P5b facts confirmed by Mo and synced.
+**P5b The planning calendar (2026-11-11):** `labs/planning-calendar/` (Mo approved the sketch; asked for year-end items like
+tax-loss selling). 11 households incl. RRIF, FHSA, RESP, donations and the superficial-loss period; 8 engine + 8 browser tests.
+Five new facts are drafted (canada-planning-facts branch `p5b-facts-draft`): until Mo confirms them those rows show as pending.
+Look-ahead preview: PREVIEW_FACTS=labs/planning-calendar/fixtures/facts-with-drafts.json OUT=<file> node labs/planning-calendar/build.mjs

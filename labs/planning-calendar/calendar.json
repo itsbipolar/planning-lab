@@ -1,0 +1,277 @@
+{
+  "year": 2027,
+  "horizonDays": 56,
+  "horizonNote": "Shading starts eight weeks before a date: a display choice, not a rule.",
+  "households": [
+    {
+      "id": "employee",
+      "label": "Employee or retiree, no instalments",
+      "dates": [
+        {
+          "id": "balance",
+          "label": "Balance owing due",
+          "facts": [
+            "t1_balance_due_date.{prev}"
+          ],
+          "rule": "fact_date"
+        }
+      ]
+    },
+    {
+      "id": "instalments",
+      "label": "Retiree who pays by instalments",
+      "dates": [
+        {
+          "id": "inst",
+          "label": "Instalment due",
+          "facts": [
+            "individual_instalment_due_dates"
+          ],
+          "rule": "fact_dates_in_year"
+        },
+        {
+          "id": "balance",
+          "label": "Balance owing due",
+          "facts": [
+            "t1_balance_due_date.{prev}"
+          ],
+          "rule": "fact_date"
+        }
+      ]
+    },
+    {
+      "id": "self_employed",
+      "label": "Self-employed",
+      "dates": [
+        {
+          "id": "inst",
+          "label": "Instalment due",
+          "facts": [
+            "individual_instalment_due_dates"
+          ],
+          "rule": "fact_dates_in_year"
+        },
+        {
+          "id": "balance",
+          "label": "Balance owing due",
+          "facts": [
+            "t1_balance_due_date.{prev}"
+          ],
+          "rule": "fact_date"
+        },
+        {
+          "id": "return",
+          "label": "Self-employed return due",
+          "facts": [
+            "t1_self_employed_filing_deadline.{prev}"
+          ],
+          "rule": "fact_date"
+        }
+      ]
+    },
+    {
+      "id": "turning_maturity",
+      "label": "Turning the RRSP maturity age this year",
+      "dates": [
+        {
+          "id": "balance",
+          "label": "Balance owing due",
+          "facts": [
+            "t1_balance_due_date.{prev}"
+          ],
+          "rule": "fact_date"
+        },
+        {
+          "id": "mature",
+          "label": "RRSP must mature by year-end",
+          "facts": [
+            "rrsp_maturity_age"
+          ],
+          "rule": "year_end"
+        }
+      ]
+    },
+    {
+      "id": "rrif",
+      "label": "Paying out of a RRIF",
+      "dates": [
+        {
+          "id": "balance",
+          "label": "Balance owing due",
+          "facts": [
+            "t1_balance_due_date.{prev}"
+          ],
+          "rule": "fact_date"
+        },
+        {
+          "id": "minimum",
+          "label": "The year's RRIF minimum paid within the year",
+          "facts": [
+            "rrif_minimum_payment_timing"
+          ],
+          "rule": "year_end"
+        }
+      ]
+    },
+    {
+      "id": "corporation",
+      "label": "Corporation owner, December year-end",
+      "dates": [
+        {
+          "id": "balance",
+          "label": "Personal balance owing due",
+          "facts": [
+            "t1_balance_due_date.{prev}"
+          ],
+          "rule": "fact_date"
+        },
+        {
+          "id": "t2",
+          "label": "Corporation's T2 return due",
+          "facts": [
+            "t2_filing_deadline_rule"
+          ],
+          "rule": "months_after_prev_year_end"
+        },
+        {
+          "id": "ye",
+          "label": "Corporation's year-end",
+          "facts": [
+            "t2_filing_deadline_rule"
+          ],
+          "rule": "year_end"
+        }
+      ]
+    },
+    {
+      "id": "trust",
+      "label": "Family trust, December year-end",
+      "dates": [
+        {
+          "id": "t3",
+          "label": "Trust's T3 return due",
+          "facts": [
+            "t3_filing_deadline_rule"
+          ],
+          "rule": "days_after_prev_year_end"
+        },
+        {
+          "id": "ye",
+          "label": "Trust's year-end",
+          "facts": [
+            "t3_filing_deadline_rule"
+          ],
+          "rule": "year_end"
+        }
+      ]
+    },
+    {
+      "id": "losses",
+      "label": "Selling shares at a loss near year-end",
+      "dates": [
+        {
+          "id": "window",
+          "label": "Superficial-loss period around a sale on the last day of the year",
+          "facts": [
+            "superficial_loss_period"
+          ],
+          "rule": "window_around_year_end"
+        }
+      ]
+    },
+    {
+      "id": "fhsa",
+      "label": "Saving in an FHSA",
+      "dates": [
+        {
+          "id": "fhsa",
+          "label": "End of the FHSA contribution period",
+          "facts": [
+            "fhsa_contribution_period"
+          ],
+          "rule": "year_end"
+        }
+      ]
+    },
+    {
+      "id": "resp",
+      "label": "Saving in an RESP",
+      "dates": [
+        {
+          "id": "cesg",
+          "label": "End of the year whose contributions count for this year's basic grant",
+          "facts": [
+            "cesg_basic_rate"
+          ],
+          "rule": "year_end"
+        }
+      ]
+    },
+    {
+      "id": "donor",
+      "label": "Giving to charity",
+      "dates": [
+        {
+          "id": "gifts",
+          "label": "End of the year whose gifts are claimed on this year's return",
+          "facts": [
+            "donations_claim_year"
+          ],
+          "rule": "year_end"
+        }
+      ]
+    }
+  ],
+  "ownDates": [
+    {
+      "label": "CPP can start",
+      "facts": [
+        "cpp_earliest_start_age"
+      ]
+    },
+    {
+      "label": "Standard CPP start age",
+      "facts": [
+        "cpp_standard_start_age"
+      ]
+    },
+    {
+      "label": "OAS starts",
+      "facts": [
+        "oas_start_age"
+      ]
+    },
+    {
+      "label": "Latest CPP start",
+      "facts": [
+        "cpp_latest_start_age"
+      ]
+    },
+    {
+      "label": "OAS deferral ends",
+      "facts": [
+        "oas_deferral_max_age"
+      ]
+    },
+    {
+      "label": "Trust deemed to dispose of its property",
+      "facts": [
+        "trust_deemed_disposition_years"
+      ]
+    }
+  ],
+  "notPlaced": [
+    {
+      "label": "RRSP contributions for last year",
+      "facts": [
+        "rrsp_contribution_deadline.{prev}"
+      ]
+    },
+    {
+      "label": "Filing date for most individuals' returns",
+      "facts": [
+        "t1_filing_deadline.{prev}"
+      ]
+    }
+  ]
+}

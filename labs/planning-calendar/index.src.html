@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The planning calendar · Mohammed El Chayeb</title>
+<meta name="description" content="The year's tax and savings dates for different kinds of households, from Canada's rules, shaded by how close the next one is. Sourced and dated. Education only, not advice.">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<div class="page">
+  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/planning-calendar/">About this build</a></header>
+  <main>
+    <h1>The planning calendar</h1>
+    <p class="lede" id="lede"></p>
+    <p class="status-tag"><span data-status>demo</span></p>
+
+    <section aria-labelledby="h-all">
+      <h2 id="h-all">Every household, week by week</h2>
+      <div id="overview" class="grid-box"></div>
+      <div class="key" id="key"></div>
+    </section>
+
+    <section aria-labelledby="h-one">
+      <h2 id="h-one">One household, every weekday</h2>
+      <label for="pick">Kind of household</label>
+      <select id="pick"></select>
+      <div id="daily" class="grid-box"></div>
+      <ol id="dates" class="dates"></ol>
+      <div id="pending-one" class="note"></div>
+    </section>
+
+    <section aria-labelledby="h-own" class="prose">
+      <h2 id="h-own">Rules on each person's own date</h2>
+      <p>These depend on a birthday or the day a trust was created, so they have no single date to place on the calendar.</p>
+      <ul id="own" class="sources"></ul>
+      <p id="not-placed"></p>
+    </section>
+
+    <section id="about" class="prose" aria-labelledby="h-about">
+      <h2 id="h-about">Sources</h2>
+      <p>Every date on this page comes from a rule in the verified facts file:</p>
+      <ul id="sources" class="sources"></ul>
+      <p>When a share sale counts for tax at year-end (the trade date or the settlement date) is not in the facts file, so the calendar marks the superficial-loss period only. Due dates that fall on a weekend or holiday can move; the dates here are as the sources state them. General rules only: nothing here says what anyone should do.</p>
+    </section>
+  </main>
+  <footer class="foot">
+    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
+    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
+  </footer>
+</div>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>
