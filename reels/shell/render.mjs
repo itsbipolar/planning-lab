@@ -112,6 +112,7 @@ if (flag('web45')) {
   ff('-i', mp4, '-c:v', 'libvpx-vp9', '-crf', '34', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2', '-c:a', 'libopus', '-b:a', '96k', join(out, `${reel.id}-web45.webm`));
   ff('-ss', '0.2', '-i', mp4, '-frames:v', '1', '-vf', 'scale=720:-2', '-c:v', 'libwebp', '-quality', '85', join(out, `${reel.id}-web45-poster.webp`));
   contactSheet(mp4, settledTimes(model.total), join(out, 'contact-sheet-web45.png'), 5);
+  ff('-i', join(out, 'contact-sheet-web45.png'), '-vf', 'scale=1600:-2', '-c:v', 'libwebp', '-quality', '85', join(out, 'contact-sheet-web45.webp'));
   console.log(`wrote ${reel.id}-web45 webm, poster and contact sheet`);
 } else if (flag('web')) {
   // Web copies of the finished reel for the site: VP9 WebM (with Opus sound) and a WebP poster from the first frame.
