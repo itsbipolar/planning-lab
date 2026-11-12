@@ -140,9 +140,14 @@ button{font:inherit;font-weight:600;color:var(--t-ground);background:var(--t-ink
 
   // The four milestones. A milestone with any missing fact is left out: nothing is ever filled in from memory.
   var MILESTONES = [
-    { key: 'tfsa', name: 'Tax-Free Savings Account', ids: ['tfsa_minimum_age'],
-      from: function () { return n('tfsa_minimum_age'); }, to: function () { return ROWS - 1; },
-      text: function (b) { return 'TFSA contribution room starts in the calendar year you turn ' + n('tfsa_minimum_age') + ', if you live in Canada (' + (b + n('tfsa_minimum_age')) + ' for you).'; } },
+    // Room starts in the later of the year you turn the minimum age and the year the TFSA began.
+    { key: 'tfsa', name: 'Tax-Free Savings Account', ids: ['tfsa_minimum_age', 'tfsa_first_year'],
+      from: function (b) { return Math.max(n('tfsa_minimum_age'), n('tfsa_first_year') - b); }, to: function () { return ROWS - 1; },
+      text: function (b) {
+        var start = b + n('tfsa_minimum_age');
+        if (start >= n('tfsa_first_year')) return 'TFSA contribution room starts in the calendar year you turn ' + n('tfsa_minimum_age') + ', if you live in Canada (' + start + ' for you).';
+        return 'The TFSA began in ' + n('tfsa_first_year') + ', the year you turned ' + (n('tfsa_first_year') - b) + ': your contribution room starts that year, if you lived in Canada.';
+      } },
     { key: 'cpp', name: 'Canada Pension Plan retirement pension', ids: ['cpp_earliest_start_age', 'cpp_standard_start_age', 'cpp_latest_start_age', 'cpp_early_start_reduction', 'cpp_late_start_increase'],
       from: function () { return n('cpp_earliest_start_age'); }, to: function () { return n('cpp_latest_start_age'); },
       text: function (b) { return 'The CPP retirement pension can start from age ' + n('cpp_earliest_start_age') + ' to age ' + n('cpp_latest_start_age') + ' (' + (b + n('cpp_earliest_start_age')) + ' to ' + (b + n('cpp_latest_start_age')) + ' for you); the standard age is ' + n('cpp_standard_start_age') + ', each month earlier reduces it by ' + val('cpp_early_start_reduction') + '% and each month later raises it by ' + val('cpp_late_start_increase') + '%.'; } },
@@ -168,8 +173,8 @@ button{font:inherit;font-weight:600;color:var(--t-ground);background:var(--t-ink
     var age = thisYear - b, passedRows = Math.min(ROWS, age), partial = age < ROWS ? weekOfYear(now) : 0;
     // rows where two or more milestones (other than the open-ended TFSA) land together
     var win = {};
-    MILESTONES.forEach(function (m) { if (m.key !== 'tfsa') for (var r = m.from(); r <= m.to(); r++) win[r] = (win[r] || 0) + 1; });
-    var rrsp = MILESTONES.filter(function (x) { return x.key === 'rrsp'; })[0], deadlineRow = rrsp ? rrsp.from() : -1;
+    MILESTONES.forEach(function (m) { if (m.key !== 'tfsa') for (var r = m.from(b); r <= m.to(); r++) win[r] = (win[r] || 0) + 1; });
+    var rrsp = MILESTONES.filter(function (x) { return x.key === 'rrsp'; })[0], deadlineRow = rrsp ? rrsp.from(b) : -1;
     var frag = document.createDocumentFragment();
     for (var r = 0; r < ROWS; r++) {
       var lab = document.createElement('div'); lab.className = 'age'; lab.textContent = (r % 10 === 0 || r === ROWS - 1) ? String(r) : ''; frag.appendChild(lab);
@@ -182,9 +187,9 @@ button{font:inherit;font-weight:600;color:var(--t-ground);background:var(--t-ink
     // draw each bar as one tall grid item in its own rail column
     var railStart = 1 + 1 + WEEKS + 1 + 1; // age column, 52 weeks, spacer, then rail columns (1-based)
     ['tfsa', 'cpp', 'oas', 'rrsp'].forEach(function (key, i) {
-      var m = MILESTONES.filter(function (x) { return x.key === key; })[0]; if (!m) return;
+      var m = MILESTONES.filter(function (x) { return x.key === key; })[0]; if (!m || m.from(b) > m.to()) return;
       var bar = document.createElement('div'); bar.className = 'bar ' + key;
-      bar.style.gridColumn = String(railStart + i); bar.style.gridRow = (m.from() + 1) + ' / ' + (m.to() + 2);
+      bar.style.gridColumn = String(railStart + i); bar.style.gridRow = (m.from(b) + 1) + ' / ' + (m.to() + 2);
       grid.appendChild(bar);
     });
     // the milestones, as real text: the accessible version of the picture
@@ -193,7 +198,10 @@ button{font:inherit;font-weight:600;color:var(--t-ground);background:var(--t-ink
       var li = document.createElement('li'), h = document.createElement('h3'), p = document.createElement('p'), meta = document.createElement('p');
       var chip = document.createElement('span'); chip.className = 'chip ' + m.key; chip.setAttribute('aria-hidden', 'true');
       h.appendChild(chip); h.appendChild(document.createTextNode(m.name));
-      p.textContent = m.text(b); meta.className = 'meta';
+      p.textContent = m.text(b);
+      // A window that opened in the past: the page shows today's rules, which may not be the ones that applied then.
+      if (m.key !== 'tfsa' && b + m.from(b) < thisYear) p.textContent += ' These are today\u2019s rules; when you reached this age, earlier rules may have applied.';
+      meta.className = 'meta';
       var seen = {}, asOf = '', auth = {};
       m.ids.forEach(function (id) { var f = byId[id]; seen[f.source_url] = seen[f.source_url] || f.title; if (f.as_of > asOf) asOf = f.as_of; auth[f.authority] = true; });
       meta.appendChild(document.createTextNode('Source: '));
