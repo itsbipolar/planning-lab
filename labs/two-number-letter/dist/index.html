@@ -681,6 +681,8 @@ function headline(r, cppAge) {
     el('circle', { class: 'start-pick', cx: X(o.chosen), cy: Y(0), r: 5 }, svg);
     placed.push({ x: X(o.chosen) - 6, y: Y(0) - 6, width: 12, height: 12 });
     const onLine = (b) => pts.some(([px, py]) => px > b.x - 3 && px < b.x + b.width + 3 && py > b.y - 3 && py < b.y + b.height + 3);
+    const gridYs = []; for (let v = step; v <= maxY + 1e-6; v += step) gridYs.push(Y(v));
+    const onGrid = (b) => gridYs.some((g) => g > b.y - 1 && g < b.y + b.height + 1);
 
     // labels at the right-hand end of each line, kept apart
     const ends = starts.map((s) => ({ s, y: Y(o.total(s, to)) + 4 })).sort((p, q) => p.y - q.y);
@@ -710,7 +712,7 @@ function headline(r, cppAge) {
         t.setAttribute('x', cx + dx); t.setAttribute('y', cy + dy); t.setAttribute('text-anchor', anchor);
         const b = t.getBBox();
         const cost = (b.x >= 2 && b.x + b.width <= Wd - 2 && b.y >= 0 && b.y + b.height <= H - pad.b ? 0 : 4)
-          + (placed.some((p) => overlaps(p, b)) ? 2 : 0) + (onLine(b) ? 1 : 0);
+          + (placed.some((p) => overlaps(p, b)) ? 2 : 0) + (onLine(b) ? 1 : 0) + (onGrid(b) ? 0.5 : 0);
         if (!best || cost < best.cost) best = { cost, dx, dy, anchor };
         if (cost === 0) break;
       }

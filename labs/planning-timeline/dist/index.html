@@ -298,6 +298,7 @@ function finding(M, p) {
   // Every label and reading is drawn last, with a ground-coloured halo, so the "you are here" line breaks behind it and
   // no word sits on a bar.
   function halo(attrs) { attrs.stroke = col('ground'); attrs['stroke-width'] = 4; attrs['stroke-linejoin'] = 'round'; attrs['paint-order'] = 'stroke'; return attrs; }
+  function backed(t) { var bb = t.getBBox(), r = el('rect', { 'class': 'backing', x: bb.x - 3, y: bb.y - 1, width: bb.width + 6, height: bb.height + 2, fill: col('ground') }); t.parentNode.insertBefore(r, t); return t; }
   function drawTimeline(p) {
     var svg = $('tl'); clear(svg);
     var W = Math.max(320, $('tl-frame').clientWidth), narrow = W < 640;
@@ -318,8 +319,9 @@ function finding(M, p) {
     function label(y, name, detail) { texts.push(function () {
       var t = el('text', halo({ x: padL, y: y, fill: ink, 'font-size': fs + 1, 'font-weight': 650 }), svg, name);
       if (detail) el('tspan', { fill: ink2, 'font-weight': 400 }, t, '  ' + detail);
+      backed(t);
     }); }
-    function reading(xx, y, str, anchor) { texts.push(function () { el('text', halo({ x: xx, y: y, fill: ink2, 'font-size': fs, 'text-anchor': anchor || 'start', 'class': 'mono' }), svg, str); }); }
+    function reading(xx, y, str, anchor) { texts.push(function () { backed(el('text', halo({ x: xx, y: y, fill: ink2, 'font-size': fs, 'text-anchor': anchor || 'start', 'class': 'mono' }), svg, str)); }); }
     var bar = function (y) { return y + 26; }, below = function (y) { return y + 26 + barH + fs + 9; };
     var lanes = []; var y = top;
     // TFSA
@@ -383,7 +385,7 @@ function finding(M, p) {
       el('rect', { 'class': 'wash', x: x(lo), y: top + 20, width: yx - x(lo), height: H - axisH - top - 14, fill: ground, opacity: 0.62 }, svg);
       if (p.age < hi) {
         el('line', { 'class': 'here', x1: yx, x2: yx, y1: 16, y2: H - axisH + 6, stroke: ink, 'stroke-width': 1.5 }, svg);
-        texts.push(function () { el('text', halo({ x: yx, y: 12, fill: ink, 'font-size': fs + 1, 'font-weight': 700, 'text-anchor': yx > W * 0.8 ? 'end' : yx < W * 0.2 ? 'start' : 'middle' }), svg, (state.example ? 'Example, ' : 'You, ') + p.age); });
+        texts.push(function () { backed(el('text', halo({ x: yx, y: 12, fill: ink, 'font-size': fs + 1, 'font-weight': 700, 'text-anchor': yx > W * 0.8 ? 'end' : yx < W * 0.2 ? 'start' : 'middle' }), svg, (state.example ? 'Example, ' : 'You, ') + p.age)); });
       }
     }
     // the start ages chosen with the sliders: the one marked choice, in the highlight colour
