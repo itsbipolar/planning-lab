@@ -9,41 +9,52 @@
 </head>
 <body>
 <div class="page">
-  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/money-year/">About this build</a></header>
+  <header class="bar">
+    <a class="brand" href="/">Mohammed El Chayeb</a>
+    <a href="/builds/money-then-now/app/">← Money, then and now</a>
+    <a href="/builds/money-then-now/">About this build</a>
+  </header>
   <main>
-    <h1>Canada's money year, graphed</h1>
-    <p class="lede">Four measures of the year in money, on one timeline: what the Bank of Canada set, what banks posted for mortgages, how fast core prices rose, and what the loonie was worth. Then what Budget 2026 proposes next.</p>
-    <p class="status-tag"><span data-status>demo</span></p>
+    <p class="kicker" id="kicker">Canada's money year, graphed</p>
+    <h1 id="finding">Canada's money year, graphed</h1>
+    <p class="lede" id="lede"></p>
 
-    <section aria-labelledby="h-year">
-      <h2 id="h-year">The year so far</h2>
-      <label for="when">Move through the year</label>
-      <input id="when" type="range" min="0" step="1">
-      <p id="readout" class="readout" role="status" aria-live="polite"></p>
+    <section class="yr-sec" aria-labelledby="h-year">
+      <h2 id="h-year">The year so far, on one timeline</h2>
+      <div class="scrub">
+        <label for="when">Move through the year</label>
+        <input id="when" type="range" min="0" step="1">
+        <p id="readout" class="readout" role="status" aria-live="polite"></p>
+      </div>
       <p id="asof" class="note"></p>
       <div id="panels" class="panels"></div>
-      <details>
-        <summary>The numbers</summary>
-        <div class="table-wrap" tabindex="0" role="region" aria-label="The numbers, scrolls sideways"><table class="nums"><caption>Each measure at the end of every month so far (the last value in force that day)</caption><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
+      <details class="fold">
+        <summary>The numbers, month by month</summary>
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-cap"><table class="nums"><caption id="table-cap">Each measure at the end of every month so far (the last value in force that day)</caption><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </details>
     </section>
 
-    <section id="budget" aria-labelledby="h-budget">
+    <section id="budget" class="budget-sec" aria-labelledby="h-budget">
       <h2 id="h-budget">Proposed next</h2>
       <p class="lede">What Budget 2026 proposes, in the order it would start. These are proposals and a consultation: not law unless enacted. Each figure is copied from the <a id="budget-link" href="#">budget's tax measures</a> and confirmed by me against the page.</p>
       <ol id="lane" class="lane"></ol>
     </section>
 
-    <section id="about" class="prose" aria-labelledby="h-about">
-      <h2 id="h-about">Sources</h2>
-      <p id="src"></p>
-      <p>Budget 2026 proposals: Department of Finance Canada, Budget 2026, Tax measures: Supplementary information.</p>
-      <p>Charts show one measure each on a shared timeline, so no chart has two scales. Callouts and figures are computed from the data, never typed in.</p>
-    </section>
+    <details class="fold" id="about">
+      <summary>Sources and how it's made</summary>
+      <div class="prose">
+        <p id="src"></p>
+        <p id="budget-src">Budget 2026 proposals: Department of Finance Canada, Budget 2026, Tax measures: Supplementary information.</p>
+        <p>Charts show one measure each on a shared timeline, so no chart has two scales. Callouts and figures are computed from the data, never typed in.</p>
+      </div>
+    </details>
   </main>
   <footer class="foot">
-    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
-    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
+    <div>
+      <p><strong>Education only, not advice.</strong> Made with AI assistance; every figure is computed from the dated public data named below.</p>
+      <p class="note" id="foot-attr"></p>
+    </div>
+    <p><a href="/">Mohammed El Chayeb</a> · <a href="/builds/">All the work</a></p>
   </footer>
 </div>
 <script type="application/json" id="data">/*@@DATA@@*/</script>
