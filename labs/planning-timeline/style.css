@@ -11,7 +11,7 @@ a{color:inherit;text-underline-offset:4px}
 h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;margin:0;text-wrap:balance}
 h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:28ch;margin-top:.5rem}
 h2{font-size:1.55rem;line-height:1.15;margin:.35rem 0 1rem}
-.kicker{font-family:var(--font-mono);font-size:.8rem;color:var(--t-ink3);margin:2.5rem 0 0}
+.kicker{font-family:var(--font-mono);font-size:.95rem;color:var(--t-ink3);margin:2.5rem 0 0}
 .kicker span{white-space:nowrap}
 .note{font-size:17.5px;color:var(--t-ink3)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

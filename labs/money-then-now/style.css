@@ -7,14 +7,14 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
 .bar{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
 .bar a{white-space:nowrap}
 .bar a:last-child{margin-left:auto}
-@media (max-width:420px){.bar{column-gap:1rem}.bar a:last-child{font-size:.9rem}}
+@media (max-width:420px){.bar{column-gap:1rem}.bar a:last-child{font-size:.95rem}}
 .brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto}
 a{color:inherit;text-underline-offset:4px}
 h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;margin:0;text-wrap:balance}
 h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:24ch;margin-top:.5rem;font-variant-numeric:lining-nums}
 h2{font-size:1.55rem;line-height:1.15;margin:0 0 .8rem}
-.kicker{font-family:var(--font-mono);font-size:.85rem;color:var(--t-ink3);margin:2.5rem 0 0}
-.note{font-size:.9rem;color:var(--t-ink3)}
+.kicker{font-family:var(--font-mono);font-size:.95rem;color:var(--t-ink3);margin:2.5rem 0 0}
+.note{font-size:.95rem;color:var(--t-ink3)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 :focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
 :root[data-theme="light"] :focus-visible{outline-color:var(--t-point-deep)}
@@ -75,12 +75,12 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 .prose{max-width:66ch;font-size:.95rem;color:var(--t-ink2)}
 .table-wrap{overflow-x:auto;max-width:42rem}
 .nums{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.95rem}
-.nums caption{text-align:left;color:var(--t-ink2);font-size:.9rem;padding:.25rem 0 .6rem}
+.nums caption{text-align:left;color:var(--t-ink2);font-size:.95rem;padding:.25rem 0 .6rem}
 .nums th,.nums td{padding:.3rem .6rem;text-align:right;border-bottom:1px solid var(--t-rule)}
 .nums thead th{font-weight:650;vertical-align:bottom}
 .nums th[scope=row],.nums thead th:first-child{text-align:left}
 .nums tr.sel{background:var(--t-raised);font-weight:700}
-.foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:.9rem;color:var(--t-ink2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
+.foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:.95rem;color:var(--t-ink2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
 .foot p{margin:0 0 .4rem}
 .foot > div{max-width:60rem}
 

@@ -11,9 +11,9 @@ a{color:inherit;text-underline-offset:3px}
 .top{display:flex;gap:.4rem 1.5rem;align-items:baseline;flex-wrap:wrap;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
 .top a{white-space:nowrap}
 .top a:last-child{margin-left:auto}
-@media (max-width:420px){.top{column-gap:1rem}.top a:last-child{font-size:.9rem}}
+@media (max-width:420px){.top{column-gap:1rem}.top a:last-child{font-size:.95rem}}
 .brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;margin-right:auto}
-.kicker{font:500 15px/1.4 var(--font-mono);color:var(--t-ink3);margin:2.5rem 0 .6rem}
+.kicker{font:600 17px/1.4 var(--font-ui);color:var(--t-ink3);margin:2.5rem 0 .6rem}
 h1,h2{font-family:var(--font-display);font-weight:650;letter-spacing:-.012em;margin:0;text-wrap:balance}
 h1{font-size:clamp(2rem,1.1rem + 3.4vw,3.9rem);line-height:1.06;max-width:22em}
 h2{font-size:clamp(1.55rem,1.05rem + 1.7vw,2.4rem);line-height:1.12;max-width:30em;margin-bottom:1rem}
@@ -33,7 +33,7 @@ section.opening{margin-top:0}
 .fig{margin:1.25rem 0 .5rem;width:100%;min-width:0}
 .fig-title{font-weight:700;font-size:17px;line-height:1.35;margin:0 0 .6rem}
 .fig svg{display:block;width:100%;height:auto;overflow:visible}
-.syn{font:400 14px/1.4 var(--font-ui);color:var(--t-ink3);margin-top:.4rem}
+.syn{font:400 16.5px/1.4 var(--font-ui);color:var(--t-ink3);margin-top:.4rem}
 .multiples{display:grid;grid-template-columns:minmax(0,1fr);gap:28px 32px;margin:1rem 0}
 @media (min-width:900px){.multiples{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .small-multiple{margin:0}
