@@ -586,12 +586,6 @@
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(out);
   });
 
-  // ---------- theme ----------
-  const themeBtn = $('theme');
-  const setThemeLabel = () => { const light = document.documentElement.dataset.theme === 'light'; themeBtn.setAttribute('aria-pressed', String(light)); };
-  themeBtn.addEventListener('click', () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; setThemeLabel(); });
-  setThemeLabel();
-
   // ---------- first draw, and redraw when the width or the fonts change ----------
   function drawEverything() { drawLead(); drawShuffle(); drawDeal(); drawLevers(); drawMix(); drawRrif(); drawAll(); }
   hand = GOOD.slice(); dealt = [];

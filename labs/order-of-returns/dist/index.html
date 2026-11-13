@@ -117,9 +117,8 @@ td{text-align:right}
 <body>
 <div class="page">
   <header class="top">
-    <a class="brand" href="/">Mo</a>
+    <a class="brand" href="/">Mohammed El Chayeb</a>
     <a class="back" href="/builds/order-of-returns/">About this build</a>
-    <button type="button" id="theme" class="ghost slim" aria-pressed="false">Light theme</button>
   </header>
   <main>
     <article>
@@ -136,7 +135,7 @@ td{text-align:right}
       </figure>
       <p class="summary" id="s-lead"></p>
       <div class="prose">
-        <p>Ruth and Sam are made up. Each retires with <strong data-v="start"></strong> and takes out <strong data-v="withdrawal"></strong> in the first year, <span data-v="indexation"></span> more each year after to keep up with prices. Their first ten years are the same ten market years:</p>
+        <p>Each retires with <strong data-v="start"></strong> and takes out <strong data-v="withdrawal"></strong> in the first year, <span data-v="indexation"></span> more each year after to keep up with prices. Their first ten years are the same ten market years:</p>
         <ul class="cards" id="cards" aria-label="The ten market years"></ul>
         <p>The average of the ten is <strong data-v="avg"></strong> a year. Ruth gets them best first, Sam worst first. From year <span data-v="after"></span> on, every year earns that same average, for both of them.</p>
       </div>
@@ -1181,12 +1180,6 @@ function niceStep(x) {
     img.onerror = () => { $('save-note').textContent = 'This browser could not make the image.'; };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(out);
   });
-
-  // ---------- theme ----------
-  const themeBtn = $('theme');
-  const setThemeLabel = () => { const light = document.documentElement.dataset.theme === 'light'; themeBtn.setAttribute('aria-pressed', String(light)); };
-  themeBtn.addEventListener('click', () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; setThemeLabel(); });
-  setThemeLabel();
 
   // ---------- first draw, and redraw when the width or the fonts change ----------
   function drawEverything() { drawLead(); drawShuffle(); drawDeal(); drawLevers(); drawMix(); drawRrif(); drawAll(); }
