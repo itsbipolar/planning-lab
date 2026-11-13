@@ -21,11 +21,14 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 17px/1.55 v
 .page{max-width:1440px;margin:0 auto;padding:0 16px}
 @media (min-width:768px){.page{padding:0 32px}}
 a{color:inherit;text-underline-offset:3px}
-.top{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--t-rule);font-size:15px;font-weight:500}
-.brand{font-family:var(--font-display);font-weight:700;font-size:1.45rem;line-height:1;text-decoration:none;margin-right:auto}
+.top{display:flex;gap:.4rem 1.5rem;align-items:baseline;flex-wrap:wrap;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
+.top a{white-space:nowrap}
+.top a:last-child{margin-left:auto}
+@media (max-width:420px){.top{column-gap:1rem}.top a:last-child{font-size:.9rem}}
+.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;margin-right:auto}
 .kicker,.label{font:500 13px/1.4 var(--font-mono);color:var(--t-ink3);margin:0 0 .6rem}
 .kicker{margin-top:2.5rem}
-.kicker::before,.label::before{content:'';display:inline-block;width:10px;height:10px;background:var(--t-point);margin-right:.5rem;vertical-align:-1px}
+.label::before{content:'';display:inline-block;width:10px;height:10px;background:var(--t-point);margin-right:.5rem;vertical-align:-1px}
 h1,h2{font-family:var(--font-display);font-weight:650;letter-spacing:-.012em;margin:0;text-wrap:balance}
 h1{font-size:clamp(2rem,1.1rem + 3.4vw,3.9rem);line-height:1.06;max-width:22em}
 h2{font-size:clamp(1.55rem,1.05rem + 1.7vw,2.4rem);line-height:1.12;max-width:30em;margin-bottom:1rem}
@@ -122,7 +125,7 @@ td{text-align:right}
   </header>
   <main>
     <article>
-      <p class="kicker">The order of returns</p>
+      <p class="kicker">Playable explainer · synthetic returns, not a forecast</p>
       <h1 id="headline">Same ten years, same average return, a different ending</h1>
       <p class="deck" id="deck">Two made-up retirees get the same ten market years in a different order.</p>
       <p class="meta">Synthetic sequence: not historical, not a forecast. No taxes, fees, pensions or government benefits. Education only.</p>
@@ -179,7 +182,7 @@ td{text-align:right}
         <h2 id="h-all">Running every possible order of the ten years</h2>
         <div class="prose">
           <p>The ten years can be dealt in <strong data-v="orders"></strong> different orders. This page runs every one of them through the same engine, in your browser, and counts how each one ends.</p>
-          <div class="run" id="run"><progress id="run-bar" max="1" value="0" aria-label="Orders worked out"></progress> <span id="run-text" aria-live="polite">Starting…</span></div>
+          <div class="run" id="run"><progress id="run-bar" max="1" value="0" aria-label="Orders worked out"></progress> <span id="run-text" aria-live="polite">Counting every order…</span></div>
         </div>
         <figure class="fig">
           <p class="fig-title" id="t-all">How the orders end: share of all orders</p>
@@ -868,9 +871,25 @@ function niceStep(x) {
     return m;
   };
 
+  // The two charts of every order are drawn once the count is done; until then each keeps its height and says what it is
+  // waiting for, so the page never shows an empty box.
+  const histH = (W) => W < 600 ? 330 : 420;
+  const heatGeom = (W, y0) => { const narrow = W < 600, T = 88, ch = narrow ? 26 : 32, B = 52; return { T, ch, B, H: T + ch * (HZ - y0 + 2) + B }; };
+  function waiting(svg, H) {
+    const W = widthOf(svg), narrow = W < 600;
+    setup(svg, W, H);
+    el('rect', { x: 0, y: 0, width: W, height: H, class: 'band' }, svg);
+    el('text', { x: W / 2, y: H / 2 + 5, 'text-anchor': 'middle', class: 'ax val', 'font-size': narrow ? 14 : 16 }, svg, `Counting all ${intF.format(ORDERS)} orders…`);
+  }
+  function drawWaiting() {
+    if (BASE) return;
+    waiting($('c-all'), histH(widthOf($('c-all'))));
+    waiting($('c-early'), heatGeom(widthOf($('c-early')), SAM.depletionYear || HZ).H);
+  }
+
   function histChart(sum) {
     const svg = $('c-all'), W = widthOf(svg), narrow = W < 600, fs = narrow ? 11 : 13, lfs = narrow ? 13 : 14;
-    const H = narrow ? 330 : 420, y0 = firstYear(sum), nDep = HZ - y0 + 1;
+    const H = histH(W), y0 = firstYear(sum), nDep = HZ - y0 + 1;
     const buckets = [];
     for (let d = y0; d <= HZ; d++) buckets.push(sum.byYear[d]);
     for (const c of sum.left.counts) buckets.push(c);
@@ -927,8 +946,7 @@ function niceStep(x) {
     const colOf = (avg) => Math.floor(avg / bw + 1e-9) - c0;
     for (const g of gs) { const c = cols[colOf(g.avg)]; c.n += g.n; g.counts.forEach((v, d) => { c.counts[d] += v; }); }
     const rowLab = (d) => d === 0 ? (narrow ? 'Lasts' : `Lasts ${HZ} years`) : (narrow ? 'Year ' + d : 'Runs out, year ' + d);
-    const L = Math.ceil(Math.max(...rows.map((d) => tw(rowLab(d), fs)))) + 12, R = 4, T = 88, ch = narrow ? 26 : 32, B = 52;
-    const H = T + ch * rows.length + B, cw = (W - L - R) / nc;
+    const { T, ch, H } = heatGeom(W, y0), L = Math.ceil(Math.max(...rows.map((d) => tw(rowLab(d), fs)))) + 12, R = 4, cw = (W - L - R) / nc;
     setup(svg, W, H);
     const cx = (i) => L + i * cw;
     const gc = el('g', {}, svg);
@@ -995,7 +1013,7 @@ function niceStep(x) {
   }
 
   function drawAll() {
-    if (!BASE) return;
+    if (!BASE) return drawWaiting();
     histChart(BASE); heatChart(BASE);
     $('s-early').textContent = earlyText(BASE);
   }
@@ -1015,9 +1033,9 @@ function niceStep(x) {
     Runner.rank('base', o, (r) => { $('s-rank').textContent = rankText(r, 'Your order'); });
   }
 
-  $('run-text').textContent = `Working out ${intF.format(ORDERS)} orders…`;
+  $('run-text').textContent = `Counting all ${intF.format(ORDERS)} orders…`;
   Runner.start('base', ENUM, (p) => {
-    $('run-bar').value = p; $('run-text').textContent = `Working out ${intF.format(ORDERS)} orders: ${Math.floor(p * 10) * 10}%`;
+    $('run-bar').value = p; $('run-text').textContent = `Counting all ${intF.format(ORDERS)} orders: ${Math.floor(p * 10) * 10}%`;
   }, (d) => {
     BASE = d.summary; $('run-bar').value = 1;
     $('run-text').textContent = `All ${intF.format(BASE.total)} orders worked out in this browser in ${(d.ms / 1000).toFixed(1)} seconds.`;

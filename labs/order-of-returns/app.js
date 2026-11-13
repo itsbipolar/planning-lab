@@ -273,9 +273,25 @@
     return m;
   };
 
+  // The two charts of every order are drawn once the count is done; until then each keeps its height and says what it is
+  // waiting for, so the page never shows an empty box.
+  const histH = (W) => W < 600 ? 330 : 420;
+  const heatGeom = (W, y0) => { const narrow = W < 600, T = 88, ch = narrow ? 26 : 32, B = 52; return { T, ch, B, H: T + ch * (HZ - y0 + 2) + B }; };
+  function waiting(svg, H) {
+    const W = widthOf(svg), narrow = W < 600;
+    setup(svg, W, H);
+    el('rect', { x: 0, y: 0, width: W, height: H, class: 'band' }, svg);
+    el('text', { x: W / 2, y: H / 2 + 5, 'text-anchor': 'middle', class: 'ax val', 'font-size': narrow ? 14 : 16 }, svg, `Counting all ${intF.format(ORDERS)} orders…`);
+  }
+  function drawWaiting() {
+    if (BASE) return;
+    waiting($('c-all'), histH(widthOf($('c-all'))));
+    waiting($('c-early'), heatGeom(widthOf($('c-early')), SAM.depletionYear || HZ).H);
+  }
+
   function histChart(sum) {
     const svg = $('c-all'), W = widthOf(svg), narrow = W < 600, fs = narrow ? 11 : 13, lfs = narrow ? 13 : 14;
-    const H = narrow ? 330 : 420, y0 = firstYear(sum), nDep = HZ - y0 + 1;
+    const H = histH(W), y0 = firstYear(sum), nDep = HZ - y0 + 1;
     const buckets = [];
     for (let d = y0; d <= HZ; d++) buckets.push(sum.byYear[d]);
     for (const c of sum.left.counts) buckets.push(c);
@@ -332,8 +348,7 @@
     const colOf = (avg) => Math.floor(avg / bw + 1e-9) - c0;
     for (const g of gs) { const c = cols[colOf(g.avg)]; c.n += g.n; g.counts.forEach((v, d) => { c.counts[d] += v; }); }
     const rowLab = (d) => d === 0 ? (narrow ? 'Lasts' : `Lasts ${HZ} years`) : (narrow ? 'Year ' + d : 'Runs out, year ' + d);
-    const L = Math.ceil(Math.max(...rows.map((d) => tw(rowLab(d), fs)))) + 12, R = 4, T = 88, ch = narrow ? 26 : 32, B = 52;
-    const H = T + ch * rows.length + B, cw = (W - L - R) / nc;
+    const { T, ch, H } = heatGeom(W, y0), L = Math.ceil(Math.max(...rows.map((d) => tw(rowLab(d), fs)))) + 12, R = 4, cw = (W - L - R) / nc;
     setup(svg, W, H);
     const cx = (i) => L + i * cw;
     const gc = el('g', {}, svg);
@@ -400,7 +415,7 @@
   }
 
   function drawAll() {
-    if (!BASE) return;
+    if (!BASE) return drawWaiting();
     histChart(BASE); heatChart(BASE);
     $('s-early').textContent = earlyText(BASE);
   }
@@ -420,9 +435,9 @@
     Runner.rank('base', o, (r) => { $('s-rank').textContent = rankText(r, 'Your order'); });
   }
 
-  $('run-text').textContent = `Working out ${intF.format(ORDERS)} orders…`;
+  $('run-text').textContent = `Counting all ${intF.format(ORDERS)} orders…`;
   Runner.start('base', ENUM, (p) => {
-    $('run-bar').value = p; $('run-text').textContent = `Working out ${intF.format(ORDERS)} orders: ${Math.floor(p * 10) * 10}%`;
+    $('run-bar').value = p; $('run-text').textContent = `Counting all ${intF.format(ORDERS)} orders: ${Math.floor(p * 10) * 10}%`;
   }, (d) => {
     BASE = d.summary; $('run-bar').value = 1;
     $('run-text').textContent = `All ${intF.format(BASE.total)} orders worked out in this browser in ${(d.ms / 1000).toFixed(1)} seconds.`;
