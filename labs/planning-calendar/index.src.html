@@ -4,50 +4,69 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The planning calendar · Mohammed El Chayeb</title>
-<meta name="description" content="The year's tax and savings dates for different kinds of households, from Canada's rules, shaded by how close the next one is. Sourced and dated. Education only, not advice.">
+<meta name="description" content="Canada's tax and savings dates for the next twelve months, for the kind of household you build, with each rule in plain words and its official source. Save them to your calendar. Education only, not advice.">
+<meta name="robots" content="noindex, nofollow">
 <style>/*@@CSS@@*/</style>
 </head>
 <body>
 <div class="page">
-  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/planning-calendar/">About this build</a></header>
+  <header class="bar">
+    <a class="brand" href="/">Mohammed El Chayeb</a>
+    <a href="/builds/planning-calendar/">About this build</a>
+  </header>
   <main>
-    <h1>The planning calendar</h1>
-    <p class="lede" id="lede"></p>
-    <p class="status-tag"><span data-status>demo</span></p>
+    <p class="kicker">The planning calendar · Canadian rules · the next twelve months</p>
+    <h1 id="finding" aria-live="polite">The planning calendar</h1>
+    <p class="dek" id="dek"></p>
 
-    <section aria-labelledby="h-all">
-      <h2 id="h-all">Every household, week by week</h2>
-      <div id="overview" class="grid-box"></div>
-      <div class="key" id="key"></div>
+    <section class="build" aria-labelledby="build-h">
+      <h2 id="build-h">Build your household</h2>
+      <div class="picks" role="group" aria-labelledby="picks-l">
+        <span class="picks-l" id="picks-l">Quick picks (examples)</span>
+        <div class="pick-row" id="picks"></div>
+      </div>
+      <fieldset class="sits">
+        <legend>Tick every situation that applies; they combine into one calendar.</legend>
+        <div class="sit-grid" id="sits"></div>
+      </fieldset>
     </section>
 
-    <section aria-labelledby="h-one">
-      <h2 id="h-one">One household, every weekday</h2>
-      <label for="pick">Kind of household</label>
-      <select id="pick"></select>
-      <div id="daily" class="grid-box"></div>
-      <ol id="dates" class="dates"></ol>
-      <div id="pending-one" class="note"></div>
+    <section class="pile" aria-labelledby="pile-h">
+      <h2 id="pile-h">Where the dates pile up, week by week</h2>
+      <div class="frame" id="frame"><svg id="strip" role="img" aria-labelledby="strip-t"><title id="strip-t">How many dates fall in each week</title></svg></div>
+      <p class="legend" id="legend"></p>
     </section>
 
-    <section aria-labelledby="h-own" class="prose">
-      <h2 id="h-own">Rules on each person's own date</h2>
+    <section class="save" aria-labelledby="save-h">
+      <h2 id="save-h" class="sr-only">Add to my calendar</h2>
+      <button type="button" id="ics">Add to my calendar</button>
+      <p class="note" id="ics-note"></p>
+    </section>
+
+    <section class="list" aria-labelledby="list-h">
+      <h2 id="list-h">Each date and the rule behind it</h2>
+      <ol class="dates" id="dates"></ol>
+      <div class="pending" id="pending"></div>
+    </section>
+
+    <section class="own" aria-labelledby="own-h">
+      <h2 id="own-h">Rules on each person's own date</h2>
       <p>These depend on a birthday or the day a trust was created, so they have no single date to place on the calendar.</p>
-      <ul id="own" class="sources"></ul>
-      <p id="not-placed"></p>
+      <ul id="own"></ul>
     </section>
 
-    <section id="about" class="prose" aria-labelledby="h-about">
-      <h2 id="h-about">Sources</h2>
+    <details class="sources">
+      <summary>Sources and assumptions</summary>
       <p>Every date on this page comes from a rule in the verified facts file:</p>
-      <ul id="sources" class="sources"></ul>
-      <p>When a share sale counts for tax at year-end (the trade date or the settlement date) is not in the facts file, so the calendar marks the superficial-loss period only. Due dates that fall on a weekend or holiday can move; the dates here are as the sources state them. General rules only: nothing here says what anyone should do.</p>
-    </section>
+      <ul id="sources"></ul>
+      <p class="note">The twelve months start on this page's own date, from your device's clock. Corporations and trusts are shown with a December year-end. When a share sale counts for tax at year-end (the trade date or the settlement date) is not in the facts file, so only the superficial-loss period is shown. Due dates that fall on a weekend or holiday can move; the dates here are as the sources state them. A date whose rule is not confirmed in the facts file yet is listed as not confirmed and left out of the calendar file. General rules only: nothing here says what anyone should do.</p>
+    </details>
+
+    <footer class="foot">
+      <p><strong>Education only, not advice.</strong> Made with AI assistance; every rule is checked at its official source.</p>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/builds/">All the work</a></p>
+    </footer>
   </main>
-  <footer class="foot">
-    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
-    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
-  </footer>
 </div>
 <script type="application/json" id="data">/*@@DATA@@*/</script>
 <script>/*@@JS@@*/</script>

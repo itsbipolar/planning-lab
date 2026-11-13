@@ -1,132 +1,220 @@
-// The Planning Calendar page: every household's dated rules for the year, week by week, then one household weekday by
-// weekday with each date's rule in words. Shading is days to the next date (the shared P5 scale). Nothing is stored or sent.
-(() => {
-  const M = JSON.parse(document.getElementById('data').textContent);
-  const Y = M.year, N = M.heatSteps, DAY = 864e5, start = Date.UTC(Y, 0, 1), days = M.households[0].countdown.length;
-  const off = (new Date(start).getUTCDay() + 6) % 7, weeks = Math.ceil((days + off) / 7);
+// The planning calendar page. The rules, the facts they cite and the engine (engine.mjs, inlined above this script) are
+// in the page; the twelve months start on the page's own date. The household's situations stay in this page: they are
+// not stored, not put in the address and not sent anywhere. The only file it makes is the calendar the visitor saves.
+(function () {
+  'use strict';
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const C = D.config, FF = D.facts, NS = 'http://www.w3.org/2000/svg', KINDS = Object.keys(C.kinds);
   const $ = (id) => document.getElementById(id);
-  const el = (tag, attrs = {}, text) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
-  const NS = 'http://www.w3.org/2000/svg';
-  const s = (tag, attrs = {}, text) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
-  const ms = (d) => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
-  const long = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-  const short = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { month: 'long', day: 'numeric', timeZone: 'UTC' });
-  const step = (n) => (n > M.horizon ? 0 : Math.max(1, Math.round((N - 1) * (1 - n / M.horizon))));
-  const fact = (id) => M.facts[id];
-  const val = (id) => fact(id)?.value;
-  const inWin = (h, t) => h.windows.some((w) => t >= ms(w.from) && t <= ms(w.to));
-  let picked = M.households.find((h) => h.dates.length > 2)?.id ?? M.households[0].id;
+  const now = new Date(), TODAY = iso(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const example = C.presets.find((p) => p.id === C.example) ?? C.presets[0];
+  const state = { picked: example.situations.slice(), touched: false };
+  const short = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  const weekday = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { weekday: 'long', timeZone: 'UTC' });
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  const sameSet = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+  const presetOf = (picked) => C.presets.find((p) => sameSet(p.situations, picked));
+  function h(tag, attrs, parent, text) {
+    const e = document.createElement(tag);
+    for (const k in attrs || {}) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function s(tag, attrs, parent, text) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs || {}) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  const cal = (picked) => rolling(C, FF, TODAY, picked);
 
-  $('lede').textContent = `The ${Y} tax and savings dates that come with different kinds of households, from Canada's rules. Each square is shaded by how close the household's next date is; outlined squares hold a date. Shading starts ${M.horizon / 7} weeks before a date (a display choice, not a rule).`;
+  // Fixed for the page: every situation at once (for the sources), each situation alone (the count beside its box) and
+  // every quick pick (the range in the subheading).
+  const ALL = cal(C.situations.map((x) => x.id));
+  const alone = Object.fromEntries(C.situations.map((x) => { const c = cal([x.id]); return [x.id, [c.events.length, c.pending.length]]; }));
+  const picks = C.presets.map((p) => ({ p, n: cal(p.situations).events.length })).sort((a, b) => a.n - b.n);
 
-  // The rule behind each date, in words, from its facts.
-  function ruleText(d, h) {
-    const f0 = d.facts[0];
-    switch (d.id) {
-      case 'balance': return `The balance owing for ${Y - 1} is due ${short(d.date)}.`;
-      case 'inst': return `Individuals who pay by instalments pay on ${val(f0)}.`;
-      case 'return': return `Self-employed returns for ${Y - 1} are due ${short(d.date)}.`;
-      case 'mature': return `An RRSP must mature by the end of the year its holder turns ${val(f0)}.`;
-      case 'minimum': return `A RRIF pays out at least a minimum amount; the first must be paid ${val(f0)}.`;
-      case 't2': return `A corporation's T2 return is due ${val(f0)}: for a year ending on the last day of ${Y - 1}, ${short(d.date)}.`;
-      case 't3': return `A trust's T3 return is due ${val(f0)}: for a year ending on the last day of ${Y - 1}, ${short(d.date)}.`;
-      case 'ye': return h.id === 'trust' ? 'The trust\'s tax year ends; its next T3 return is counted from here.' : 'The corporation\'s tax year ends; its next T2 return is counted from here.';
-      case 'window': return `A loss is superficial if the same or identical property is bought in the period from ${val(f0)}, and still owned afterwards. Shaded with lines: that period around a sale on the last day of ${Y - 1} and of ${Y}.`;
-      case 'fhsa': return `FHSA contributions count for the year they are made in: the contribution period is ${val(f0)}.`;
-      case 'cesg': return `The basic grant is ${val(f0)}, so each calendar year's contributions count for that year.`;
-      case 'gifts': return `A year's return claims ${val(f0)}.`;
-      default: return d.label;
-    }
+  // ---------- build your household ----------
+  for (const p of C.presets) {
+    const b = h('button', { type: 'button', 'data-preset': p.id, 'aria-pressed': 'false' }, $('picks'), p.label);
+    b.addEventListener('click', () => { state.picked = p.situations.slice(); state.touched = true; render(); });
+  }
+  for (const x of C.situations) {
+    const l = h('label', { class: 'sit' }, $('sits'));
+    const i = h('input', { type: 'checkbox', value: x.id }, l);
+    h('span', {}, l, x.label);
+    const [n, np] = alone[x.id];
+    h('span', { class: 'n' }, l, np ? (n ? `${plural(n, 'date', 'dates')}, ${np} unconfirmed` : `${np} unconfirmed`) : plural(n, 'date', 'dates'));
+    i.addEventListener('change', () => {
+      state.picked = C.situations.map((y) => y.id).filter((id) => (id === x.id ? i.checked : state.picked.includes(id)));
+      state.touched = true; render();
+    });
   }
 
-  function hatchDefs(svg) {
-    const defs = s('defs'), p = s('pattern', { id: 'hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
-    p.append(s('line', { class: 'hatch-line', x1: 0, y1: 0, x2: 0, y2: 6 })); defs.append(p); svg.append(defs);
-  }
+  // ---------- the pile-up strip ----------
+  function clear(svg) { Array.from(svg.childNodes).forEach((c) => { if (c.nodeName !== 'title') svg.removeChild(c); }); }
+  const box = (t) => { const b = t.getBBox(); return { x: b.x, y: b.y, r: b.x + b.width, b: b.y + b.height }; };
+  const hits = (a, b, pad) => a.x < b.r + pad && b.x < a.r + pad && a.y < b.b && b.y < a.b;
 
-  // Overview: one row per household, one square per week, shaded by the closest date in that week.
-  function drawOverview() {
-    const box = $('overview'); box.textContent = '';
-    const W = Math.min(box.clientWidth || 360, 1056), narrow = W < 700, halves = narrow ? 2 : 1, per = Math.ceil(weeks / halves);
-    const left = narrow ? 0 : 300, gap = 2, cell = Math.max(6, Math.min(14, Math.floor((W - left - 4) / per) - gap)), stepX = cell + gap;
-    const rowH = narrow ? cell + 24 : cell + 10, top = 22, blockH = top + M.households.length * rowH + (narrow ? 17 : 4);
-    const svg = s('svg', { width: W, height: halves * blockH, role: 'img', 'aria-label': `Every household's dates in ${Y}, week by week. The dates are listed for each household below.` });
-    hatchDefs(svg);
-    for (let half = 0; half < halves; half++) {
-      const y0 = half * blockH;
-      for (let m = 0; m < 12; m++) { const k = (Date.UTC(Y, m, 1) - start) / DAY, w = Math.floor((k + off) / 7); if (Math.floor(w / per) !== half) continue; svg.append(s('text', { class: 'lab', x: left + (w - half * per) * stepX, y: y0 + 13 }, new Date(Date.UTC(Y, m, 1)).toLocaleDateString('en-CA', { month: 'short', timeZone: 'UTC' }))); }
-      M.households.forEach((h, r) => {
-        const y = y0 + top + r * rowH + (narrow ? 17 : 0);
-        svg.append(s('text', { class: 'row-lab', x: 0, y: narrow ? y - 6 : y + cell - 2 }, h.label));
-        if (h.id === picked) svg.append(s('rect', { class: 'pick-row', x: narrow ? W - 4 : left - 10, y: narrow ? y - 17 : y, width: 4, height: narrow ? 14 : cell }));
-        for (let w = half * per; w < Math.min(weeks, (half + 1) * per); w++) {
-          let best = Infinity, hit = false, win = false;
-          for (let k = 0; k < 7; k++) { const i = w * 7 - off + k; if (i < 0 || i >= days) continue; const c = h.countdown[i] ?? Infinity; best = Math.min(best, c === null ? Infinity : c); if (c === 0) hit = true; if (inWin(h, start + i * DAY)) win = true; }
-          // A row with a window shows the window itself, not a countdown to it.
-          const x = left + (w - half * per) * stepX, st = h.windows.length ? 0 : step(best);
-          svg.append(s('rect', { class: `cell ${st ? `h${st}` : 'h-off'}`, x, y, width: cell, height: cell }));
-          if (win) svg.append(s('rect', { class: 'win', x, y, width: cell, height: cell }));
-          if (hit) svg.append(s('rect', { class: 'hit', x: x - 1, y: y - 1, width: cell + 2, height: cell + 2 }));
-        }
+  function drawStrip(c) {
+    const svg = $('strip'); clear(svg);
+    const W = Math.max(280, $('frame').clientWidth), narrow = W < 640, wk = c.weeks, n = wk.length;
+    const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 11 : 16, fs = narrow ? 12 : 13;
+    const tall = Math.max(4, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1), H = base + fs * 3 + 16;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    const mon0 = ms(wk[0].monday), X = (d) => ((ms(d) - mon0) / 864e5 / 7) * colW;
+    const defs = s('defs', {}, svg), pat = s('pattern', { id: 'hatch', width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+    s('line', { class: 'hatch-line', x1: 0, y1: 0, x2: 0, y2: 5 }, pat);
+
+    // a slot under every week, then each date as one block, stacked by kind
+    wk.forEach((w, k) => {
+      const x = k * colW + gap / 2;
+      s('rect', { class: 'slot', x, y: base + 1, width: barW, height: 3 }, svg);
+      const es = w.events.slice().sort((a, b) => KINDS.indexOf(a.kind) - KINDS.indexOf(b.kind));
+      es.forEach((e, j) => {
+        const r = s('rect', { class: `k-${e.kind}`, x, y: base - (j + 1) * (u + 1), width: barW, height: u }, svg);
+        s('title', {}, r, `${longDate(e.date)}: ${e.label}`);
       });
+    });
+    // the superficial-loss period, hatched under the weeks it covers
+    for (const w of c.windows) {
+      const x0 = X(w.from), x1 = X(iso(ms(w.to) + 864e5));
+      s('rect', { x: x0, y: base + 6, width: Math.max(2, x1 - x0), height: 7, fill: 'url(#hatch)', class: 'win' }, svg);
     }
-    box.append(svg);
-    const key = $('key'); key.textContent = '';
-    const k = s('svg', { width: 140, height: 14, 'aria-hidden': 'true' });
-    for (let i = 0; i < 10; i++) k.append(s('rect', { class: `cell h${Math.max(1, Math.round((N - 1) * i / 9))}`, x: i * 12, y: 0, width: 10, height: 14 }));
-    key.append(document.createTextNode(`${M.horizon / 7} weeks out`), k, document.createTextNode('the date itself.'));
-    const hs = s('svg', { width: 14, height: 14, 'aria-hidden': 'true' }); hatchDefs(hs); hs.append(s('rect', { class: 'cell h-off', width: 14, height: 14 }), s('rect', { class: 'win', width: 14, height: 14 }));
-    key.append(document.createTextNode(' Outlined: a date.'), hs, document.createTextNode('Lines: the superficial-loss period, a span rather than a date.'));
+    // today: the strip starts here
+    const xt = X(c.today);
+    s('line', { class: 'today', x1: xt, x2: xt, y1: top - 4, y2: base + fs + 12 }, svg);
+
+    // the axis: today's date, then each month's first day, with the year under the first label of each year
+    const labels = [], ay = base + fs + 16, yy = ay + fs + 3;
+    const put = (x, y, text, cls, alt) => {
+      const t = s('text', { x, y, 'font-size': fs, class: cls || '' }, svg, text);
+      let b = box(t);
+      if (b.r > W - 2) { t.setAttribute('text-anchor', 'end'); t.setAttribute('x', W - 2); b = box(t); }
+      if (labels.some((o) => hits(b, o, 4))) {
+        if (alt) { t.textContent = alt; b = box(t); }
+        if (!alt || labels.some((o) => hits(b, o, 4))) { t.remove(); return null; }
+      }
+      labels.push(b); return t;
+    };
+    put(xt + 4, ay, short(c.today), 'read');
+    put(xt + 4, yy, c.today.slice(0, 4), 'yr');
+    const y0 = +c.today.slice(0, 4), m0 = +c.today.slice(5, 7);
+    for (let k = 1; k <= 12; k++) {
+      const first = iso(Date.UTC(y0, m0 - 1 + k, 1));
+      if (first > c.end) break;
+      const name = new Date(ms(first)).toLocaleDateString('en-CA', { month: 'short', timeZone: 'UTC' });
+      const t = put(X(first) + 2, ay, name, '', name.slice(0, 1));
+      if (t && first.slice(5, 7) === '01') put(X(first) + 2, yy, first.slice(0, 4), 'yr');
+    }
+
+    // readings on the chart: the busiest weeks, then the next date, each written just above its own pile when there is
+    // room (else higher up, with a leader line); a reading that fits nowhere is left to the list and the headline.
+    const piles = wk.map((w, k) => ({ k, x: k * colW, r: k * colW + colW, y: base - w.events.length * (u + 1), b: base })).filter((p) => p.y < base);
+    const reads = wk.map((w, k) => ({ w, k, n: w.events.length })).filter((x) => x.n > 1).sort((a, b) => b.n - a.n || a.k - b.k)
+      .slice(0, narrow ? 2 : 3).map((x) => ({ k: x.k, n: x.n, text: narrow ? `${x.n} dates · ${short(x.w.from)}` : `${x.n} dates, week of ${short(x.w.from)}` }));
+    if (c.events.length) {
+      const e = c.events[0], k = wk.findIndex((w) => e.date >= w.from && e.date <= w.to);
+      if (!reads.some((r) => r.k === k)) reads.push({ k, n: wk[k].events.length, text: narrow ? `Next: ${short(e.date)}` : `Next: ${short(e.date)}, in ${plural(e.days, 'day', 'days')}` });
+    }
+    const placed = [];
+    for (const r of reads) {
+      const cx = r.k * colW + colW / 2, pileTop = base - r.n * (u + 1);
+      let done = false;
+      for (let y = pileTop - 6; y >= fs && !done; y -= rowH) {
+        for (const [anchor, x] of [['middle', cx], ['end', cx + colW / 2], ['start', cx - colW / 2]]) {
+          const t = s('text', { x, y, 'font-size': fs, 'text-anchor': anchor, class: 'read' }, svg, r.text);
+          let b = box(t);
+          if (b.x < xt + 4) { t.setAttribute('x', xt + 4); t.setAttribute('text-anchor', 'start'); b = box(t); }
+          if (b.r > W - 2) { t.setAttribute('x', W - 2); t.setAttribute('text-anchor', 'end'); b = box(t); }
+          const far = pileTop - b.b > 8, lead = { x: cx - 1, r: cx + 1, y: b.b, b: pileTop };
+          if (placed.some((o) => hits(b, o, 6) || (far && hits(lead, o, 0))) || piles.some((p) => hits(b, p, 2) || (far && p.k !== r.k && hits(lead, p, 0)))) { t.remove(); continue; }
+          placed.push(b);
+          if (far) s('line', { class: 'lead', x1: cx, x2: cx, y1: b.b + 3, y2: pileTop - 3 }, svg);
+          done = true; break;
+        }
+      }
+    }
+    const most = wk.reduce((a, w) => (w.events.length > a.events.length ? w : a), wk[0]);
+    $('strip-t').textContent = c.events.length
+      ? `${plural(c.events.length, 'date', 'dates')} in the next twelve months, week by week; the busiest week, of ${short(most.from)}, has ${most.events.length}. Every date is listed below.`
+      : 'No confirmed date falls in the next twelve months for this household.';
   }
 
-  // One household, GitHub style: weekdays down, weeks across (the year in two halves on a phone).
-  function drawDaily() {
-    const h = M.households.find((x) => x.id === picked), box = $('daily'); box.textContent = '';
-    const W = Math.min(box.clientWidth || 360, 1056), halves = W < 700 ? 2 : 1, per = Math.ceil(weeks / halves);
-    const left = 34, gap = 3, cell = Math.max(8, Math.min(16, Math.floor((W - left) / per) - gap)), st = cell + gap, blockH = 20 + 5 * st + 12;
-    const svg = s('svg', { width: left + per * st, height: halves * blockH, role: 'img', 'aria-label': `${h.label}: every weekday of ${Y}, shaded by how close the next date is. The dates are listed below.` });
-    hatchDefs(svg);
-    for (let i = 0; i < days; i++) {
-      const t = start + i * DAY, dow = new Date(t).getUTCDay(); if (!dow || dow === 6) continue;
-      const w = Math.floor((i + off) / 7), half = Math.floor(w / per), x = left + (w - half * per) * st, y = half * blockH + 20 + (dow - 1) * st, c = h.countdown[i] ?? Infinity, sv = h.windows.length ? 0 : step(c === null ? Infinity : c);
-      svg.append(s('rect', { class: `cell ${sv ? `h${sv}` : 'h-off'}`, x, y, width: cell, height: cell }));
-      if (inWin(h, t)) svg.append(s('rect', { class: 'win', x, y, width: cell, height: cell }));
-      if (c === 0) svg.append(s('rect', { class: 'hit', x: x - 1.5, y: y - 1.5, width: cell + 3, height: cell + 3 }));
-    }
-    // A date on a weekend is marked on the Friday before it, so it stays visible.
-    for (const d of h.dates) { const dow = new Date(ms(d.date)).getUTCDay(); if (dow && dow !== 6) continue; const i = (ms(d.date) - start) / DAY - (dow === 0 ? 2 : 1), w = Math.floor((i + off) / 7), half = Math.floor(w / per); svg.append(s('rect', { class: 'hit', x: left + (w - half * per) * st - 1.5, y: half * blockH + 20 + 4 * st - 1.5, width: cell + 3, height: cell + 3, 'stroke-dasharray': '3 2' })); }
-    for (let half = 0; half < halves; half++) {
-      ['Mon', 'Wed', 'Fri'].forEach((d, i) => svg.append(s('text', { class: 'lab', x: 0, y: half * blockH + 20 + i * 2 * st + cell - 2 }, d)));
-      for (let m = 0; m < 12; m++) { const k = (Date.UTC(Y, m, 1) - start) / DAY, w = Math.floor((k + off) / 7); if (Math.floor(w / per) !== half) continue; svg.append(s('text', { class: 'lab', x: left + (w - half * per) * st, y: half * blockH + 13 }, new Date(Date.UTC(Y, m, 1)).toLocaleDateString('en-CA', { month: 'short', timeZone: 'UTC' }))); }
-    }
-    box.append(svg);
+  function legend(c) {
+    const p = $('legend'); p.textContent = '';
+    for (const k of KINDS) { const sp = h('span', {}, p); h('i', { class: `sw k-${k}`, 'aria-hidden': 'true' }, sp); sp.append(C.kinds[k]); }
+    const t = h('span', {}, p); h('i', { class: 'sw today', 'aria-hidden': 'true' }, t); t.append('Today: the twelve months start here');
+    if (c.windows.length) { const w = h('span', {}, p); h('i', { class: 'sw hatch', 'aria-hidden': 'true' }, w); w.append('The superficial-loss period around a sale on the year’s last day'); }
+  }
+
+  // ---------- the dates, in words ----------
+  function list(c) {
     const ol = $('dates'); ol.textContent = '';
-    const seen = new Set();
-    for (const d of h.dates) {
-      const key = `${d.id}|${ruleText(d, h)}`, li = el('li');
-      li.append(el('b', {}, long(d.date)), document.createTextNode(`: ${d.label}. `));
-      if (!seen.has(key)) { li.append(document.createTextNode(ruleText(d, h))); seen.add(key); }
-      const src = el('div', { class: 'src' }); d.facts.forEach((id, k) => { if (k) src.append(document.createTextNode('; ')); src.append(el('a', { href: fact(id).source_url }, fact(id).title)); });
-      li.append(src); ol.append(li);
+    const first = {};
+    for (const e of c.events) {
+      const li = h('li', {}, ol), when = h('div', { class: 'when' }, li);
+      when.append(`${weekday(e.date)}, ${longDate(e.date)}`);
+      h('span', { class: 'in' }, when, e.days === 0 ? 'today' : e.days === 1 ? 'tomorrow' : `in ${e.days} days`);
+      const body = h('div', {}, li), what = h('p', { class: 'what' }, body);
+      h('i', { class: `sw k-${e.kind}`, 'aria-hidden': 'true' }, what); what.append(e.label);
+      h('p', {}, body, first[e.rule] ? `The same rule as on ${longDate(first[e.rule])}.` : e.text);
+      first[e.rule] = first[e.rule] || e.date;
+      const src = h('p', { class: 'src' }, body, 'Source: ');
+      e.sources.forEach((x, k) => { if (k) src.append('; '); h('a', { href: x.url }, src, x.title); if (x.authority === 'cra_position') src.append(' (CRA’s position)'); });
     }
-    $('pending-one').textContent = h.pending.length ? `Not placed yet for this household: ${h.pending.map((p) => p.label).join('; ')}. The rule is not confirmed in the facts file yet.` : '';
+    if (!c.events.length) h('li', {}, ol, c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Tick a situation above to see its dates.');
+    const pd = $('pending'); pd.textContent = ''; pd.hidden = !c.pending.length;
+    if (c.pending.length) {
+      h('h3', {}, pd, 'Not confirmed yet');
+      h('p', { class: 'note' }, pd, 'The rule for these dates is not confirmed in the verified facts file yet, so they are not on the strip or in the calendar file.');
+      const ul = h('ul', {}, pd);
+      for (const p of c.pending) {
+        const li = h('li', {}, ul, `${p.label}, in ${p.year}. `);
+        p.sources.forEach((x) => h('a', { href: x.url }, li, x.title));
+      }
+    }
   }
 
-  const pick = $('pick');
-  for (const h of M.households) { const o = el('option', { value: h.id }, h.label); if (h.id === picked) o.selected = true; pick.append(o); }
-  pick.addEventListener('change', () => { picked = pick.value; drawOverview(); drawDaily(); });
+  // ---------- add to my calendar ----------
+  let current = null;
+  $('ics').addEventListener('click', () => {
+    if (!current || !current.events.length) return;
+    const url = URL.createObjectURL(new Blob([toICS(current)], { type: 'text/calendar;charset=utf-8' }));
+    const a = h('a', { href: url, download: `planning-dates-${current.today}.ics` }, document.body);
+    a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
 
-  for (const o of M.own) {
-    if (o.values.some((v) => v === null)) continue;
-    const li = el('li');
-    li.append(document.createTextNode(/years/.test(fact(o.facts[0]).unit) && /dispose/.test(o.label) ? `${o.label}: every ${o.values[0]} years after it was created. ` : `${o.label}: age ${o.values[0]}. `));
-    li.append(el('a', { href: fact(o.facts[0]).source_url }, 'Source'));
-    $('own').append(li);
+  function render() {
+    const c = cal(state.picked), p = presetOf(state.picked);
+    current = c;
+    $('finding').textContent = finding(c, p ? p.noun : null);
+    const lo = picks[0], hi = picks[picks.length - 1];
+    $('dek').textContent = `The twelve months from ${longDate(c.today)} to ${longDate(c.end)}, as this page’s date sets them. ` +
+      (p && p.id === example.id && !state.touched ? `An example to start: ${p.noun}; tick the situations that fit any household. ` : '') +
+      `Among the quick picks, the confirmed dates in these months run from ${lo.n} (${lo.p.noun}) to ${hi.n} (${hi.p.noun}).`;
+    document.querySelectorAll('#picks button').forEach((b) => b.setAttribute('aria-pressed', String(!!p && b.dataset.preset === p.id)));
+    document.querySelectorAll('#sits input').forEach((i) => { i.checked = state.picked.includes(i.value); });
+    drawStrip(c); legend(c); list(c);
+    const np = c.pending.length;
+    $('ics').disabled = !c.events.length;
+    $('ics-note').textContent = c.events.length
+      ? `A file of ${plural(c.events.length, 'all-day date', 'all-day dates')} for any calendar app, each with its rule, its source and “${EDU}” Made in this page; nothing is sent.${np ? ` ${plural(np, 'date', 'dates')} not confirmed yet ${np === 1 ? 'is' : 'are'} left out.` : ''}`
+      : 'Nothing to save yet: no confirmed date falls in these twelve months.';
   }
-  const np = M.notPlaced.filter((n) => !n.confirmed);
-  $('not-placed').textContent = np.length ? `Not on the calendar yet: ${np.map((n) => n.label).join('; ')}. CRA hasn't published those dates for this year.` : '';
-  for (const src of M.sources) { const li = el('li'); li.append(el('a', { href: src.source_url }, src.title), document.createTextNode(`, read ${src.as_of}.`)); $('sources').append(li); }
 
-  drawOverview(); drawDaily();
-  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { drawOverview(); drawDaily(); }, 150); });
+  // ---------- own-date rules and sources ----------
+  for (const o of D.own) {
+    const li = h('li', {}, $('own'), /dispose/.test(o.label) ? `${o.label}: every ${o.value} years after it was created. ` : `${o.label}: age ${o.value}. `);
+    h('a', { href: o.url }, li, 'Source');
+  }
+  const used = new Map();
+  for (const e of ALL.events) for (const x of e.sources) used.set(x.id, x);
+  for (const x of used.values()) { const li = h('li', {}, $('sources')); h('a', { href: x.url }, li, x.title); li.append(`, read ${x.as_of}${x.authority === 'cra_position' ? ' (CRA’s position)' : ''}.`); }
+
+  render();
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => current && drawStrip(current), 150); });
 })();

@@ -4,61 +4,77 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The retirement wave · Mohammed El Chayeb</title>
-<meta name="description" content="How many Canadians were each age from 50 to 89, every year since 1971, with the ages where CPP, OAS and RRSP rules change. Statistics Canada data. Education only, not advice.">
+<meta name="description" content="How many Canadians were each age, year by year, with the ages where CPP, OAS and RRSP rules change drawn across it. Statistics Canada data, by province and gender. Education only, not advice.">
+<meta name="robots" content="noindex, nofollow">
 <style>/*@@CSS@@*/</style>
 </head>
 <body>
 <div class="page">
-  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/retirement-wave/">About this build</a></header>
+  <header class="bar">
+    <a class="brand" href="/">Mohammed El Chayeb</a>
+    <a href="/builds/retirement-wave/">About this build</a>
+  </header>
   <main>
-    <h1>The retirement wave</h1>
+    <p class="kicker" id="kicker">The retirement wave</p>
+    <h1 id="finding" aria-live="polite">The retirement wave</h1>
     <p class="lede" id="lede"></p>
-    <p class="status-tag"><span data-status>demo</span></p>
 
-    <section aria-labelledby="h-wave">
-      <h2 id="h-wave">Every age, every year</h2>
-      <p id="summary" class="summary"></p>
-      <div id="heat" class="heat"></div>
-      <div class="key" id="key"></div>
-      <ul id="rules" class="rules"></ul>
-      <p id="point" class="readout" aria-live="polite"></p>
-      <label for="born" id="born-label">Follow one generation</label>
-      <input id="born" type="range" step="1">
-      <p id="gen" class="readout" aria-live="polite"></p>
-      <details>
-        <summary>Every age, every year, as a table</summary>
-        <div class="table-wrap" tabindex="0" role="region" aria-label="Every age, every year, scrolls sideways"><table class="nums grid"><caption id="grid-caption"></caption><thead><tr id="grid-head"></tr></thead><tbody id="grid-body"></tbody></table></div>
-      </details>
-    </section>
-
-    <section aria-labelledby="h-age">
-      <h2 id="h-age">One rule age, every year</h2>
-      <fieldset>
-        <legend>Pick an age</legend>
-        <div id="ages" class="choices"></div>
+    <form id="controls" class="controls" novalidate>
+      <div class="field place">
+        <label for="place">Place</label>
+        <select id="place"></select>
+      </div>
+      <fieldset class="field seg">
+        <legend>People</legend>
+        <div class="opts" id="genders"></div>
       </fieldset>
-      <p id="age-summary" class="summary"></p>
-      <div id="line" class="line-chart"></div>
-      <details>
-        <summary>This age, every year, as a table</summary>
-        <div class="table-wrap" tabindex="0" role="region" aria-label="This age, every year, scrolls sideways"><table class="nums"><caption id="age-caption"></caption><thead><tr><th scope="col">July 1 of</th><th scope="col">Canadians this age</th></tr></thead><tbody id="age-body"></tbody></table></div>
-      </details>
+      <fieldset class="field seg">
+        <legend>Each square shows</legend>
+        <div class="opts">
+          <label><input type="radio" name="mode" value="count" checked> Number of people</label>
+          <label><input type="radio" name="mode" value="share"> Share of the population</label>
+        </div>
+      </fieldset>
+      <div class="field born">
+        <label for="born">Your diagonal: born in</label>
+        <div class="row"><input id="born" type="number" inputmode="numeric" autocomplete="off"><button type="submit">Draw it</button></div>
+      </div>
+      <p class="note" id="born-note"></p>
+      <p class="error" id="error" role="alert" hidden></p>
+    </form>
+
+    <section class="chart" aria-labelledby="chart-h">
+      <h2 id="chart-h"></h2>
+      <p class="note" id="chart-sub"></p>
+      <div class="legend" id="legend"></div>
+      <div class="frame" id="frame"><svg id="heat" role="img" aria-labelledby="heat-title"><title id="heat-title">Heatmap</title></svg></div>
+      <p class="note point" id="point" aria-live="polite"></p>
+      <h3 class="kicker readings-h" id="readings-h">Your diagonal</h3>
+      <ul class="readings" id="readings"></ul>
+      <p class="actions"><button type="button" id="save" class="ghost">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
     </section>
 
-    <section id="about" class="prose" aria-labelledby="h-about">
-      <h2 id="h-about">Sources and notes</h2>
+    <details class="fold">
+      <summary>The numbers in the chart, as a table</summary>
+      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="grid-caption"><table class="nums"><caption id="grid-caption"></caption><thead><tr id="grid-head"></tr></thead><tbody id="grid-body"></tbody></table></div>
+    </details>
+
+    <details class="fold sources">
+      <summary>Sources and notes</summary>
       <p id="attribution"></p>
       <p id="citation"></p>
-      <p id="notes"></p>
+      <ul id="notes"></ul>
       <p>The ages on the dashed lines come from the verified facts file:</p>
-      <ul id="fact-sources" class="sources"></ul>
-      <p>History only: every count is a published estimate, and nothing here forecasts a year that hasn't happened. It describes the population, not what anyone should do.</p>
-    </section>
+      <ul id="fact-sources"></ul>
+      <p class="note">History only: every number is a published estimate for a July 1 that has passed. The people within a few years of a rule age are counted as they are today, not forecast. Nothing here says what anyone should do.</p>
+    </details>
+
+    <footer class="foot">
+      <p><strong>Education only, not advice.</strong> Made with AI assistance; every figure is computed from the dated public data named below.</p>
+      <p id="foot-src"></p>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/builds/">All the work</a></p>
+    </footer>
   </main>
-  <footer class="foot">
-    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
-    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
-  </footer>
 </div>
 <script type="application/json" id="data">/*@@DATA@@*/</script>
 <script>/*@@JS@@*/</script>

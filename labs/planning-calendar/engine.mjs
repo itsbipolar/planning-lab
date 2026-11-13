@@ -1,14 +1,20 @@
-// The Planning Calendar (P5b): the plan year's dated rules for each kind of household, from confirmed facts only. A date
-// whose fact is not confirmed is pending and is not placed. No date, day count or month count is written here.
+// The planning calendar: the dated rules a household meets in the twelve months from a given day, from confirmed facts
+// only. A date whose fact the file holds but has not confirmed is pending (never guessed); one the file lacks is left out.
+// The same code runs in the build's tests and, inlined, in the page (the page passes in its own date). No date, day count,
+// month count, age or amount is written here: every one is read from the facts file.
 
 const DAY = 864e5;
-const ms = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
-export const iso = (t) => new Date(t).toISOString().slice(0, 10);
+export const ms = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8));
+export const iso = (t) => new Date(t).toISOString().split('T')[0];
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+export const longDate = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+export const monthDay = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { month: 'long', day: 'numeric', timeZone: 'UTC' });
 
 export const factIndex = (file) => new Map(file.facts.filter((f) => f.status === 'confirmed').map((f) => [f.id, f]));
 export const ids = (item, year) => item.facts.map((id) => id.replace('{prev}', String(year - 1)).replace('{year}', String(year)));
+// Fill {name} from the context, then from a confirmed fact of that id; an unknown name is left for the caller to see.
+export const fill = (tpl, ctx, F) => tpl.replace(/\{([\w.]+)\}/g, (m, k) => (ctx[k] ?? F?.get(k)?.value ?? m));
 
 // Readers for values as the facts file states them; each throws if the wording changes, so a test notices.
 function countIn(f, unit) {
@@ -25,59 +31,120 @@ function monthDays(f, year) {
 const lastDayOfMonth = (y, m) => iso(Date.UTC(y, m, 0)); // m 1-12, may run past 12
 const yearEnd = (y) => lastDayOfMonth(y, 12);
 
-// The dates (and windows) one kind of household meets in the plan year. Each comes with the facts it rests on.
-export function householdDates(h, F, year) {
-  const dates = [], windows = [], pending = [];
-  for (const d of h.dates) {
-    const want = ids(d, year), missing = want.filter((id) => !F.has(id));
-    if (missing.length) { pending.push({ id: d.id, label: d.label, missing }); continue; }
-    const f = want.map((id) => F.get(id));
-    const put = (date) => dates.push({ id: d.id, label: d.label, date, facts: want });
-    switch (d.rule) {
-      case 'fact_date': put(String(f[0].value)); break;
-      case 'fact_dates_in_year': for (const x of monthDays(f[0], year)) put(x); break;
-      case 'year_end': put(yearEnd(year)); break;
-      case 'days_after_prev_year_end': put(iso(ms(yearEnd(year - 1)) + countIn(f[0], 'days') * DAY)); break;
-      case 'months_after_prev_year_end': put(lastDayOfMonth(year - 1, 12 + countIn(f[0], 'months'))); break; // a month-end year-end
-      case 'window_around_year_end': {
-        // The superficial-loss period around a sale on the last day of the year before and of this year, inside this year.
-        const n = countIn(f[0], 'days');
-        for (const y of [year - 1, year]) {
-          const a = Math.max(ms(yearEnd(y)) - n * DAY, Date.UTC(year, 0, 1)), b = Math.min(ms(yearEnd(y)) + n * DAY, ms(yearEnd(year)));
-          if (a <= b) windows.push({ id: d.id, label: d.label, from: iso(a), to: iso(b), sale: yearEnd(y), facts: want });
-        }
-        put(yearEnd(year));
-        break;
-      }
-      default: throw new Error(`unknown rule ${d.rule}`);
+// One rule in one calendar year: its dates (every rule here places its dates inside that year), any period around them,
+// or why it has none. `pending` lists the facts held but not confirmed; `absent` the facts the file does not hold.
+export function ruleYear(rule, F, year, held) {
+  const want = ids(rule, year), missing = want.filter((id) => !F.has(id));
+  if (missing.length) return missing.some((id) => held.has(id)) ? { pending: missing } : { absent: missing };
+  const f = want.map((id) => F.get(id)), dates = [], windows = [];
+  switch (rule.rule) {
+    case 'fact_date': dates.push(String(f[0].value)); break;
+    case 'fact_dates_in_year': dates.push(...monthDays(f[0], year)); break;
+    case 'year_end': dates.push(yearEnd(year)); break;
+    case 'days_after_prev_year_end': dates.push(iso(ms(yearEnd(year - 1)) + countIn(f[0], 'days') * DAY)); break;
+    case 'months_after_prev_year_end': dates.push(lastDayOfMonth(year - 1, 12 + countIn(f[0], 'months'))); break; // a month-end year-end
+    case 'window_around_year_end': {
+      // The superficial-loss period around a sale on the last day of the year: the facts file's day count either side.
+      const n = countIn(f[0], 'days'), sale = yearEnd(year);
+      windows.push({ from: iso(ms(sale) - n * DAY), to: iso(ms(sale) + n * DAY), sale });
+      dates.push(sale);
+      break;
     }
+    default: throw new Error(`unknown rule ${rule.rule}`);
   }
-  dates.sort((a, b) => a.date.localeCompare(b.date));
-  return { dates, windows, pending };
+  return { dates, windows, facts: want };
 }
 
-// Days from each day of the plan year to the household's next date (0 on the date itself; Infinity after the last).
-export function countdown(dates, year) {
-  const start = Date.UTC(year, 0, 1), n = (Date.UTC(year + 1, 0, 1) - start) / DAY, at = [...new Set(dates.map((d) => ms(d.date)))].sort((a, b) => a - b);
-  const out = new Array(n);
-  let j = 0;
-  for (let k = 0; k < n; k++) { const t = start + k * DAY; while (j < at.length && at[j] < t) j++; out[k] = j < at.length ? (at[j] - t) / DAY : Infinity; }
+// The rules a set of situations brings, each once, in the config's order.
+export const rulesFor = (config, picked) => {
+  const want = new Set(config.situations.filter((s) => picked.includes(s.id)).flatMap((s) => s.rules));
+  return Object.keys(config.rules).filter((id) => want.has(id));
+};
+
+// Everything the page shows for one household from `today` (YYYY-MM-DD) for twelve months (the end is exclusive).
+export function rolling(config, factsFile, today, picked) {
+  const F = factIndex(factsFile), held = new Set(factsFile.facts.map((f) => f.id));
+  const y0 = +today.slice(0, 4), start = ms(today), end = Date.UTC(y0 + 1, +today.slice(5, 7) - 1, +today.slice(8));
+  const events = [], windows = [], pending = [], seen = new Set();
+  const src = (id) => { const f = F.get(id); return { id, title: f.title, url: f.source_url, authority: f.authority, as_of: f.as_of }; };
+  for (const rid of rulesFor(config, picked)) {
+    const r = config.rules[rid];
+    // The year before only matters for a period that runs into this one; its dates are all before today.
+    for (const y of [y0 - 1, y0, y0 + 1]) {
+      const out = ruleYear(r, F, y, held), ctx = { prev: String(y - 1), year: String(y) };
+      if (out.pending) {
+        const key = `${rid}|${out.pending.join()}`;
+        if (y >= y0 && !seen.has(key)) { seen.add(key); pending.push({ rule: rid, year: y, kind: r.kind, label: fill(r.label, ctx, F), facts: out.pending, sources: out.pending.map((id) => factsFile.facts.find((f) => f.id === id)).filter(Boolean).map((f) => ({ id: f.id, title: f.title, url: f.source_url })) }); }
+        continue;
+      }
+      if (out.absent) continue;
+      for (const w of out.windows) {
+        const a = Math.max(ms(w.from), start), b = Math.min(ms(w.to), end - DAY);
+        if (a <= b) windows.push({ rule: rid, from: iso(a), to: iso(b), sale: w.sale });
+      }
+      for (const date of out.dates) {
+        const t = ms(date), key = `${rid}|${date}`;
+        if (t < start || t >= end || seen.has(key)) continue;
+        seen.add(key);
+        const w = out.windows.find((x) => x.sale === date);
+        const c = { ...ctx, value: String(F.get(out.facts[0]).value), date: longDate(date), prevEnd: longDate(yearEnd(y - 1)), ...(w ? { from: longDate(w.from), to: longDate(w.to) } : {}) };
+        events.push({ key, rule: rid, kind: r.kind, date, days: (t - start) / DAY, label: fill(r.label, c, F), what: r.what, text: fill(r.text, c, F), sources: out.facts.map(src) });
+      }
+    }
+  }
+  events.sort((a, b) => a.date.localeCompare(b.date) || Object.keys(config.rules).indexOf(a.rule) - Object.keys(config.rules).indexOf(b.rule));
+  return { today, end: iso(end - DAY), situations: [...picked], events, windows, pending, weeks: weeks(start, end, events) };
+}
+
+// Monday-to-Sunday weeks covering the twelve months; each holds the dates that fall in it (the first and last are partial).
+export function weeks(start, end, events) {
+  const mon = start - ((new Date(start).getUTCDay() + 6) % 7) * DAY, out = [];
+  for (let t = mon; t < end; t += 7 * DAY) out.push({ monday: iso(t), from: iso(Math.max(t, start)), to: iso(Math.min(t + 6 * DAY, end - DAY)), events: [] });
+  for (const e of events) out[Math.floor((ms(e.date) - mon) / (7 * DAY))].events.push(e);
   return out;
 }
 
-// A shade step (0..steps-1) from days-to-next-date: the last step on the date, nothing beyond the horizon.
-export const step = (days, horizon, steps) => (days > horizon ? 0 : Math.max(1, Math.round((steps - 1) * (1 - days / horizon))));
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-export function buildCalendar(config, factsFile) {
-  const F = factIndex(factsFile), Y = config.year;
-  const households = config.households.map((h) => {
-    const { dates, windows, pending } = householdDates(h, F, Y);
-    const label = h.label.replace('the RRSP maturity age', F.has('rrsp_maturity_age') ? `${F.get('rrsp_maturity_age').value}` : 'the RRSP maturity age');
-    return { id: h.id, label, dates, windows, pending, countdown: countdown(dates, Y) };
-  });
-  const own = config.ownDates.map((o) => ({ label: o.label, facts: ids(o, Y), values: ids(o, Y).map((id) => F.get(id)?.value ?? null) }));
-  const notPlaced = config.notPlaced.map((o) => ({ label: o.label, facts: ids(o, Y), confirmed: ids(o, Y).every((id) => F.has(id)) }));
-  const used = new Set([...config.households.flatMap((h) => h.dates.flatMap((d) => ids(d, Y))), ...own.flatMap((o) => o.facts)]);
-  const sources = [...used].filter((id) => F.has(id)).map((id) => { const f = F.get(id); return { id, title: f.title, source_url: f.source_url, as_of: f.as_of, authority: f.authority }; });
-  return { year: Y, horizon: config.horizonDays, households, own, notPlaced, sources };
+// The page's headline: the household's next confirmed date and how many fall in the twelve months.
+export function finding(cal, noun) {
+  const who = noun ?? 'this household';
+  if (!cal.situations.length) return 'Tick at least one situation to build a household’s calendar.';
+  const p = cal.pending.length, more = p ? `, and ${plural(p, 'more is', 'more are')} not confirmed yet` : '';
+  if (!cal.events.length) return `For ${who}, no confirmed date falls in the next twelve months${more}.`;
+  const first = cal.events[0], same = cal.events.filter((e) => e.date === first.date).length;
+  const when = first.days === 0 ? 'today' : first.days === 1 ? 'tomorrow' : `in ${first.days} days`;
+  const on = first.date.slice(0, 4) === cal.today.slice(0, 4) ? monthDay(first.date) : longDate(first.date);
+  const what = same > 1 ? `${first.what} and ${plural(same - 1, 'other', 'others')}` : first.what;
+  return `For ${who}, the next confirmed date is ${what}, on ${on}, ${when}; ${plural(cal.events.length, 'date falls', 'dates fall')} in the next twelve months${more}.`;
+}
+
+// iCalendar (RFC 5545): text escaped, lines folded at 75 octets without splitting a character, CRLF line ends.
+export const icsEscape = (s) => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+export function icsFold(line) {
+  const enc = new TextEncoder();
+  if (enc.encode(line).length <= 75) return line;
+  const parts = [];
+  let cur = '', n = 0, room = 75;
+  for (const ch of line) {
+    const b = enc.encode(ch).length;
+    if (n + b > room) { parts.push(cur); cur = ''; n = 0; room = 74; } // a continuation line starts with one space
+    cur += ch; n += b;
+  }
+  parts.push(cur);
+  return parts.join('\r\n ');
+}
+export const EDU = 'Education only, not advice.';
+export function toICS(cal) {
+  const compact = (d) => d.replace(/-/g, '');
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mohammed El Chayeb//The planning calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Planning dates'];
+  for (const e of cal.events) {
+    const urls = [...new Set(e.sources.map((s) => s.url))];
+    lines.push('BEGIN:VEVENT', `UID:${e.rule}-${compact(e.date)}@planning-calendar`, `DTSTAMP:${compact(cal.today)}T000000Z`,
+      `DTSTART;VALUE=DATE:${compact(e.date)}`, `DTEND;VALUE=DATE:${compact(iso(ms(e.date) + DAY))}`,
+      `SUMMARY:${icsEscape(e.label)}`, `DESCRIPTION:${icsEscape(`${e.text}\nSource: ${urls.join(' ')}\n${EDU}`)}`,
+      `URL:${urls[0]}`, 'TRANSP:TRANSPARENT', 'END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  return lines.map(icsFold).join('\r\n') + '\r\n';
 }

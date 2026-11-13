@@ -1,277 +1,162 @@
 {
-  "year": 2027,
-  "horizonDays": 56,
-  "horizonNote": "Shading starts eight weeks before a date: a display choice, not a rule.",
-  "households": [
-    {
-      "id": "employee",
-      "label": "Employee or retiree, no instalments",
-      "dates": [
-        {
-          "id": "balance",
-          "label": "Balance owing due",
-          "facts": [
-            "t1_balance_due_date.{prev}"
-          ],
-          "rule": "fact_date"
-        }
-      ]
+  "_note": "The planning calendar: situations a household can combine, the dated rules each one brings, and quick picks (examples). Every value comes from shared/facts.json at build time; placeholders in braces are filled from the facts and the date. No date, age, count or amount is written here.",
+  "kinds": {
+    "pay": "Money due",
+    "file": "A return due",
+    "cutoff": "A cut-off: a year-end or a contribution deadline"
+  },
+  "rules": {
+    "file": {
+      "label": "Personal returns due ({prev} tax year)",
+      "what": "the filing deadline",
+      "kind": "file",
+      "facts": ["t1_filing_deadline.{prev}"],
+      "rule": "fact_date",
+      "text": "Most individuals' income tax returns for the {prev} tax year are due {date}."
     },
-    {
-      "id": "instalments",
-      "label": "Retiree who pays by instalments",
-      "dates": [
-        {
-          "id": "inst",
-          "label": "Instalment due",
-          "facts": [
-            "individual_instalment_due_dates"
-          ],
-          "rule": "fact_dates_in_year"
-        },
-        {
-          "id": "balance",
-          "label": "Balance owing due",
-          "facts": [
-            "t1_balance_due_date.{prev}"
-          ],
-          "rule": "fact_date"
-        }
-      ]
+    "balance": {
+      "label": "Balance owing due ({prev} tax year)",
+      "what": "the balance owing",
+      "kind": "pay",
+      "facts": ["t1_balance_due_date.{prev}"],
+      "rule": "fact_date",
+      "text": "Any balance owing on a personal return for the {prev} tax year is due {date}."
     },
-    {
-      "id": "self_employed",
-      "label": "Self-employed",
-      "dates": [
-        {
-          "id": "inst",
-          "label": "Instalment due",
-          "facts": [
-            "individual_instalment_due_dates"
-          ],
-          "rule": "fact_dates_in_year"
-        },
-        {
-          "id": "balance",
-          "label": "Balance owing due",
-          "facts": [
-            "t1_balance_due_date.{prev}"
-          ],
-          "rule": "fact_date"
-        },
-        {
-          "id": "return",
-          "label": "Self-employed return due",
-          "facts": [
-            "t1_self_employed_filing_deadline.{prev}"
-          ],
-          "rule": "fact_date"
-        }
-      ]
+    "rrsp": {
+      "label": "RRSP contribution deadline ({prev} tax year)",
+      "what": "the RRSP deadline",
+      "kind": "cutoff",
+      "facts": ["rrsp_contribution_deadline.{prev}"],
+      "rule": "fact_date",
+      "text": "Contributions to an RRSP made by {date} can count for the {prev} tax year."
     },
-    {
-      "id": "turning_maturity",
-      "label": "Turning the RRSP maturity age this year",
-      "dates": [
-        {
-          "id": "balance",
-          "label": "Balance owing due",
-          "facts": [
-            "t1_balance_due_date.{prev}"
-          ],
-          "rule": "fact_date"
-        },
-        {
-          "id": "mature",
-          "label": "RRSP must mature by year-end",
-          "facts": [
-            "rrsp_maturity_age"
-          ],
-          "rule": "year_end"
-        }
-      ]
+    "inst": {
+      "label": "Tax instalment due",
+      "what": "an instalment",
+      "kind": "pay",
+      "facts": ["individual_instalment_due_dates"],
+      "rule": "fact_dates_in_year",
+      "text": "People who pay their tax by instalments pay on {value}."
     },
-    {
-      "id": "rrif",
-      "label": "Paying out of a RRIF",
-      "dates": [
-        {
-          "id": "balance",
-          "label": "Balance owing due",
-          "facts": [
-            "t1_balance_due_date.{prev}"
-          ],
-          "rule": "fact_date"
-        },
-        {
-          "id": "minimum",
-          "label": "The year's RRIF minimum paid within the year",
-          "facts": [
-            "rrif_minimum_payment_timing"
-          ],
-          "rule": "year_end"
-        }
-      ]
+    "se_return": {
+      "label": "Self-employed returns due ({prev} tax year)",
+      "what": "the self-employed filing deadline",
+      "kind": "file",
+      "facts": ["t1_self_employed_filing_deadline.{prev}"],
+      "rule": "fact_date",
+      "text": "Returns of self-employed people for the {prev} tax year are due {date}."
     },
-    {
-      "id": "corporation",
-      "label": "Corporation owner, December year-end",
-      "dates": [
-        {
-          "id": "balance",
-          "label": "Personal balance owing due",
-          "facts": [
-            "t1_balance_due_date.{prev}"
-          ],
-          "rule": "fact_date"
-        },
-        {
-          "id": "t2",
-          "label": "Corporation's T2 return due",
-          "facts": [
-            "t2_filing_deadline_rule"
-          ],
-          "rule": "months_after_prev_year_end"
-        },
-        {
-          "id": "ye",
-          "label": "Corporation's year-end",
-          "facts": [
-            "t2_filing_deadline_rule"
-          ],
-          "rule": "year_end"
-        }
-      ]
+    "t2": {
+      "label": "Corporation's T2 return due",
+      "what": "the T2 return",
+      "kind": "file",
+      "facts": ["t2_filing_deadline_rule"],
+      "rule": "months_after_prev_year_end",
+      "text": "A corporation's T2 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."
     },
-    {
-      "id": "trust",
-      "label": "Family trust, December year-end",
-      "dates": [
-        {
-          "id": "t3",
-          "label": "Trust's T3 return due",
-          "facts": [
-            "t3_filing_deadline_rule"
-          ],
-          "rule": "days_after_prev_year_end"
-        },
-        {
-          "id": "ye",
-          "label": "Trust's year-end",
-          "facts": [
-            "t3_filing_deadline_rule"
-          ],
-          "rule": "year_end"
-        }
-      ]
+    "corp_ye": {
+      "label": "Corporation's year-end",
+      "what": "the corporation's year-end",
+      "kind": "cutoff",
+      "facts": ["t2_filing_deadline_rule"],
+      "rule": "year_end",
+      "text": "A corporation with a December year-end closes its tax year; its next T2 return is counted from here."
     },
-    {
-      "id": "losses",
-      "label": "Selling shares at a loss near year-end",
-      "dates": [
-        {
-          "id": "window",
-          "label": "Superficial-loss period around a sale on the last day of the year",
-          "facts": [
-            "superficial_loss_period"
-          ],
-          "rule": "window_around_year_end"
-        }
-      ]
+    "t3": {
+      "label": "Trust's T3 return due",
+      "what": "the T3 return",
+      "kind": "file",
+      "facts": ["t3_filing_deadline_rule"],
+      "rule": "days_after_prev_year_end",
+      "text": "A trust's T3 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."
     },
-    {
-      "id": "fhsa",
-      "label": "Saving in an FHSA",
-      "dates": [
-        {
-          "id": "fhsa",
-          "label": "End of the FHSA contribution period",
-          "facts": [
-            "fhsa_contribution_period"
-          ],
-          "rule": "year_end"
-        }
-      ]
+    "trust_ye": {
+      "label": "Trust's year-end",
+      "what": "the trust's year-end",
+      "kind": "cutoff",
+      "facts": ["t3_filing_deadline_rule"],
+      "rule": "year_end",
+      "text": "A trust with a December year-end closes its tax year; its next T3 return is counted from here."
     },
-    {
-      "id": "resp",
-      "label": "Saving in an RESP",
-      "dates": [
-        {
-          "id": "cesg",
-          "label": "End of the year whose contributions count for this year's basic grant",
-          "facts": [
-            "cesg_basic_rate"
-          ],
-          "rule": "year_end"
-        }
-      ]
+    "mature": {
+      "label": "RRSP maturity: the year-end for a holder turning {value} this year",
+      "what": "the RRSP maturity deadline",
+      "kind": "cutoff",
+      "facts": ["rrsp_maturity_age"],
+      "rule": "year_end",
+      "text": "An RRSP must mature by the end of the year its holder turns {value}."
     },
-    {
-      "id": "donor",
-      "label": "Giving to charity",
-      "dates": [
-        {
-          "id": "gifts",
-          "label": "End of the year whose gifts are claimed on this year's return",
-          "facts": [
-            "donations_claim_year"
-          ],
-          "rule": "year_end"
-        }
-      ]
+    "rrif_min": {
+      "label": "RRIF: the year's minimum paid by year-end",
+      "what": "the RRIF minimum deadline",
+      "kind": "cutoff",
+      "facts": ["rrif_minimum_payment_timing"],
+      "rule": "year_end",
+      "text": "A RRIF pays out at least a minimum amount each year; the first minimum is paid {value}."
+    },
+    "losses": {
+      "label": "A sale at a loss on the year's last day: the superficial-loss period",
+      "what": "a year-end sale at a loss",
+      "kind": "cutoff",
+      "facts": ["superficial_loss_period"],
+      "rule": "window_around_year_end",
+      "text": "A loss is superficial if the same or identical property is bought in the period from {value}, and is still owned at the end of it. For a sale on {date}, that period runs from {from} to {to}."
+    },
+    "fhsa": {
+      "label": "End of the FHSA contribution year",
+      "what": "the end of the FHSA year",
+      "kind": "cutoff",
+      "facts": ["fhsa_contribution_period"],
+      "rule": "year_end",
+      "text": "FHSA contributions count for the year they are made in: the contribution period is {value}."
+    },
+    "resp": {
+      "label": "End of the RESP grant year",
+      "what": "the end of the RESP grant year",
+      "kind": "cutoff",
+      "facts": ["cesg_basic_rate"],
+      "rule": "year_end",
+      "text": "The basic grant is {value}, so each calendar year's contributions count for that year."
+    },
+    "gifts": {
+      "label": "Last day for gifts claimed on this year's return",
+      "what": "the last day for this year's gifts",
+      "kind": "cutoff",
+      "facts": ["donations_claim_year"],
+      "rule": "year_end",
+      "text": "A year's return claims {value}."
     }
+  },
+  "situations": [
+    { "id": "personal", "label": "Files a personal return (employee or retiree)", "rules": ["file", "balance"] },
+    { "id": "self_employed", "label": "Self-employed", "rules": ["se_return", "balance"] },
+    { "id": "instalments", "label": "Pays tax by instalments", "rules": ["inst"] },
+    { "id": "rrsp", "label": "Contributes to an RRSP", "rules": ["rrsp"] },
+    { "id": "corporation", "label": "Owns a corporation (December year-end)", "rules": ["t2", "corp_ye"] },
+    { "id": "trust", "label": "Has a family trust (December year-end)", "rules": ["t3", "trust_ye"] },
+    { "id": "turning", "label": "Turning {rrsp_maturity_age} this year, with an RRSP", "rules": ["mature"] },
+    { "id": "rrif", "label": "Draws from a RRIF", "rules": ["rrif_min"] },
+    { "id": "losses", "label": "Sells shares at a loss near year-end", "rules": ["losses"] },
+    { "id": "fhsa", "label": "Saves in an FHSA", "rules": ["fhsa"] },
+    { "id": "resp", "label": "Saves in an RESP", "rules": ["resp"] },
+    { "id": "donor", "label": "Gives to charity", "rules": ["gifts"] }
   ],
+  "presets": [
+    { "id": "employee", "label": "Employee", "noun": "an employee", "situations": ["personal", "rrsp"] },
+    { "id": "first_home", "label": "First-home saver", "noun": "a first-home saver", "situations": ["personal", "rrsp", "fhsa"] },
+    { "id": "family", "label": "Family with an RESP", "noun": "a family with an RESP", "situations": ["personal", "rrsp", "resp", "donor"] },
+    { "id": "self_employed", "label": "Self-employed", "noun": "a self-employed person", "situations": ["self_employed", "instalments", "rrsp"] },
+    { "id": "owner", "label": "Business owner", "noun": "a business owner", "situations": ["personal", "corporation", "instalments", "rrsp"] },
+    { "id": "owner_trust", "label": "Owner with a family trust", "noun": "an owner with a family trust", "situations": ["personal", "corporation", "trust", "instalments", "rrsp"] },
+    { "id": "retiree", "label": "Retiree with a RRIF", "noun": "a retiree with a RRIF", "situations": ["personal", "rrif", "instalments", "donor", "losses"] }
+  ],
+  "example": "owner",
   "ownDates": [
-    {
-      "label": "CPP can start",
-      "facts": [
-        "cpp_earliest_start_age"
-      ]
-    },
-    {
-      "label": "Standard CPP start age",
-      "facts": [
-        "cpp_standard_start_age"
-      ]
-    },
-    {
-      "label": "OAS starts",
-      "facts": [
-        "oas_start_age"
-      ]
-    },
-    {
-      "label": "Latest CPP start",
-      "facts": [
-        "cpp_latest_start_age"
-      ]
-    },
-    {
-      "label": "OAS deferral ends",
-      "facts": [
-        "oas_deferral_max_age"
-      ]
-    },
-    {
-      "label": "Trust deemed to dispose of its property",
-      "facts": [
-        "trust_deemed_disposition_years"
-      ]
-    }
-  ],
-  "notPlaced": [
-    {
-      "label": "RRSP contributions for last year",
-      "facts": [
-        "rrsp_contribution_deadline.{prev}"
-      ]
-    },
-    {
-      "label": "Filing date for most individuals' returns",
-      "facts": [
-        "t1_filing_deadline.{prev}"
-      ]
-    }
+    { "label": "CPP can start", "facts": ["cpp_earliest_start_age"] },
+    { "label": "Standard CPP start age", "facts": ["cpp_standard_start_age"] },
+    { "label": "OAS starts", "facts": ["oas_start_age"] },
+    { "label": "Latest CPP start", "facts": ["cpp_latest_start_age"] },
+    { "label": "OAS deferral ends", "facts": ["oas_deferral_max_age"] },
+    { "label": "Trust deemed to dispose of its property", "facts": ["trust_deemed_disposition_years"] }
   ]
 }
