@@ -2,13 +2,12 @@
 
 Small browser builds on Canadian planning rules. Read HANDOFF.md first. End each session with a 10-line HANDOFF.md, commit, push.
 
-## Rules
-- Every rule and figure on a page comes from shared/facts.json (confirmed values only). Never write a figure or rule into a build's code; a test checks it. A rule missing from the facts is left out, never filled in.
-- Pages store nothing, send nothing, make no request after load. The birth year (or any input) is never put in the address or in storage.
-- General rules only. No projections, no "you should". Every page carries the education-only line and the AI line.
-- No "CFP" anywhere. No "Financial Planner" or "Financial Advisor" titles. Nothing about hiring or a job search.
-- No model names in files or commits. No firm or employer details. Never any real person's data.
-- Design: shared/DESIGN.md (dark by default, Instrument Serif for H1/H2 only, Archivo for the rest, amber only as a mark).
+## Rules (lightened 2026-11-13, Mo: "OK to all"; see the site's assessment)
+- Rules and official figures come from shared/facts.json (confirmed values only), never typed into a build; the no-hardcoded tests check it. A missing rule is left out, never filled in from memory.
+- Pages make no request after load and keep nothing on a server. Inputs stay out of the address. Files the visitor saves (an image, a calendar) are made in the browser.
+- Illustrations and example projections are fine when they state their assumptions and are labelled as examples. Never a recommendation for a person.
+- No "CFP" as a title, no "Financial Planner"/"Financial Advisor" as Mo's title, nothing about hiring. No model names in files or commits. No firm or employer details. Never any real person's data.
+- Design: the Data desk look in shared/desk/ (desk.mjs: the site's tokens and fonts). Older labs move to it as they are rebuilt. Lead with the finding; charts full width; readings on the chart; colour by data type.
 - Each build is one self-contained file in labs/<name>/dist/ so the portfolio site can copy it in.
 
 ## Checks

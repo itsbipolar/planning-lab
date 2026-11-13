@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your planning timeline · Mohammed El Chayeb</title>
+<meta name="description" content="Type a birth year and see where you stand on Canada's TFSA, CPP, OAS and RRSP rules: what is open, what is closed, and what each start age is worth.">
+<meta name="robots" content="noindex, nofollow">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<div class="page">
+  <header class="bar">
+    <a class="brand" href="/">Mohammed El Chayeb</a>
+    <a href="/builds/planning-timeline/">About this build</a>
+  </header>
+  <main>
+    <p class="kicker" id="kicker">Interactive · Canadian rules</p>
+    <h1 id="finding" aria-live="polite">Your planning timeline</h1>
+
+    <form id="form" class="ask" novalidate>
+      <label for="year">Born in</label>
+      <input id="year" name="year" type="number" inputmode="numeric" autocomplete="off" required>
+      <button type="submit">Show my timeline</button>
+      <p class="note" id="example-note"></p>
+      <p class="error" id="error" role="alert" hidden></p>
+    </form>
+
+    <section class="tl" aria-labelledby="tl-h">
+      <h2 id="tl-h" class="sr-only">The timeline</h2>
+      <div class="tl-frame" id="tl-frame"><svg id="tl" role="img" aria-labelledby="tl-title"><title id="tl-title">Your planning timeline</title></svg></div>
+      <ul class="sr-only" id="tl-text"></ul>
+      <p class="tl-actions"><button type="button" id="save" class="ghost">Save the timeline as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
+    </section>
+
+    <div class="choices">
+      <section class="card" id="cpp" aria-labelledby="cpp-h">
+        <p class="kicker">Canada Pension Plan</p>
+        <h2 id="cpp-h">When to start CPP</h2>
+        <label class="slider"><span>Start at <output id="cpp-age"></output></span><input type="range" id="cpp-range"></label>
+        <p class="big"><output id="cpp-big"></output></p>
+        <p id="cpp-text"></p>
+        <svg class="mini" id="cpp-chart" role="img" aria-labelledby="cpp-chart-t"><title id="cpp-chart-t">Total CPP received by age, for this start age and the standard age</title></svg>
+        <p class="note">Pure arithmetic in "years of the standard pension": no inflation indexing, tax, survivor benefits or investment return.</p>
+      </section>
+
+      <section class="card" id="oas" aria-labelledby="oas-h">
+        <p class="kicker">Old Age Security</p>
+        <h2 id="oas-h">When to start OAS</h2>
+        <label class="slider"><span>Start at <output id="oas-age"></output></span><input type="range" id="oas-range"></label>
+        <p class="big"><output id="oas-big"></output></p>
+        <p id="oas-text"></p>
+        <svg class="mini" id="oas-chart" role="img" aria-labelledby="oas-chart-t"><title id="oas-chart-t">Total OAS received by age, for this start age and the earliest age</title></svg>
+        <div class="recovery">
+          <label for="income">Net income in <span id="rec-year"></span> <span class="note">(an example)</span></label>
+          <input id="income" type="number" inputmode="numeric" step="1000" min="0">
+          <p id="rec-text"></p>
+        </div>
+      </section>
+
+      <section class="card" id="rrif" aria-labelledby="rrif-h">
+        <p class="kicker">RRSP to RRIF</p>
+        <h2 id="rrif-h">The minimum that must come out</h2>
+        <p id="rrif-text"></p>
+        <svg class="mini" id="rrif-chart" role="img" aria-labelledby="rrif-chart-t"><title id="rrif-chart-t">The RRIF minimum withdrawal by age, and the share of a fund left if only the minimum comes out</title></svg>
+        <p class="legend"><span class="key bar"></span>Minimum each year, as a share of the fund (left scale) <span class="key dash"></span>Share of the fund left, if only the minimum comes out and it earns nothing (from all of it to none)</p>
+        <label for="fund">A fund of <span class="note">(an example)</span></label>
+        <input id="fund" type="number" inputmode="numeric" step="10000" min="0">
+        <p id="fund-text"></p>
+      </section>
+    </div>
+
+    <section class="people" id="people" hidden></section>
+
+    <details class="sources">
+      <summary>Sources and assumptions</summary>
+      <ul id="sources"></ul>
+      <p class="note">The rules are today's. Someone who reached an age in the past met the rules of that time. Amounts depend on a person's own contributions, residence and income, which this page does not know.</p>
+    </details>
+
+    <footer class="foot">
+      <p><strong>Education only, not advice.</strong> Made with AI assistance; every rule is checked at its official source.</p>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/builds/">All the work</a></p>
+    </footer>
+  </main>
+</div>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>
