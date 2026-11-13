@@ -12,6 +12,46 @@
 :root,:root[data-theme="dark"]{color-scheme:dark;--t-ground:#0E1318;--t-raised:#151C23;--t-ink:#F2F4F6;--t-ink2:#C7CFD7;--t-ink3:#97A2AD;--t-point:#F2A93B;--t-money:#7FC79A;--t-rule:#26303A;--t-d1:#5AA2E0;--t-d2:#F2A93B;--t-d3:#4FBFAE;--t-d4:#E07A6F;--t-neutral:#3A4652;}
 :root[data-theme="light"]{color-scheme:light;--t-ground:#FCFDFD;--t-raised:#E8EEF3;--t-ink:#10161C;--t-ink2:#36414C;--t-ink3:#56616C;--t-point:#F2A93B;--t-point-deep:#A8690A;--t-money:#2C6E44;--t-rule:#D3D8DD;--t-d1:#1F64A8;--t-d2:#B9740A;--t-d3:#157A6E;--t-d4:#B5473B;--t-neutral:#C3CAD1;}
 :root{--font-display:"Source Serif 4 Variable", Georgia, serif;--font-ui:"Source Sans 3 Variable", system-ui, sans-serif;--font-mono:"Source Sans 3 Variable", system-ui, sans-serif} /* labels use the text face too (Mo, 2026-11-13: no mono labels) */
+
+html{scrollbar-width:thin;scrollbar-color:var(--t-neutral) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--t-neutral);border-radius:10px;border:3px solid var(--t-ground)}
+*::-webkit-scrollbar-thumb:hover{background:var(--t-ink3)}*::-webkit-scrollbar-button{display:none;width:0;height:0}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+[data-chapter]{scroll-margin-top:1.25rem}
+.read-progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:50;pointer-events:none}
+.read-progress span{display:block;height:100%;background:var(--t-point);transform-origin:0 50%;transform:scaleX(0)}
+.rail{display:none}
+@media (min-width:1360px){
+  .rail{display:block;position:fixed;left:12px;top:50%;transform:translateY(-50%);width:2.6rem;z-index:40}
+  .rail ol{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
+  .rail a{display:block;padding:.3rem 0;color:var(--t-ink3);text-decoration:none;font-size:14.5px;line-height:1.25}
+  .rail a b{font-weight:650;font-variant-numeric:tabular-nums}
+  .rail a span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .rail a:hover,.rail a[aria-current="true"]{color:var(--t-ink)}
+  .rail a[aria-current="true"] b{box-shadow:inset 0 -2px 0 var(--t-point)}
+}
+@media (min-width:1700px){
+  .rail{left:max(12px,calc((100vw - 80rem)/2 - 10rem));width:8.5rem}
+  .rail a{display:grid;grid-template-columns:1.6rem 1fr;align-items:baseline;gap:.25rem}
+  .rail a span{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
+}
+.sec-label{position:relative;margin:0 0 .5rem;padding-top:.9rem;font-size:1.05rem;font-weight:650;color:var(--t-ink2);font-variant-numeric:tabular-nums}
+.sec-label::before{content:"";position:absolute;top:0;left:0;width:3rem;height:3px;background:var(--t-point)}
+.sec-label b{color:var(--t-ink);margin-right:.5rem;letter-spacing:.04em}
+.readout{border-left:3px solid var(--t-point);padding:.35rem 0 .35rem 1rem;margin:1rem 0;max-width:46rem}
+.readout-k{margin:0;font-size:15.5px;font-weight:650;color:var(--t-ink3)}
+.readout-v{margin:.15rem 0 .1rem;font-family:var(--font-display);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.1;font-variant-numeric:tabular-nums;color:var(--t-ink)}
+.readout-t{margin:0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+.readout-fine{margin:.35rem 0 0;font-size:15.5px;color:var(--t-ink3)}
+[data-flash]{transition:box-shadow .25s ease}
+[data-flash].flash{box-shadow:inset 0 -3px 0 var(--t-point)}
+@media (prefers-reduced-motion:reduce){[data-flash]{transition:none}}
+.crosshair{pointer-events:none}
+.crosshair line{stroke:var(--t-ink);stroke-width:1;stroke-dasharray:3 3}
+.crosshair rect{fill:var(--t-raised);stroke:var(--t-rule)}
+.crosshair text{fill:var(--t-ink);font-variant-numeric:tabular-nums}
+
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 18.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
@@ -69,6 +109,15 @@ section{margin-top:2.75rem}
 :root[data-theme="light"] .sw.today{background:var(--t-point-deep)}
 .sw.hatch{width:18px;height:10px;background:repeating-linear-gradient(135deg,var(--t-ink2) 0 1.5px,transparent 1.5px 5px);border:1px solid var(--t-ink3)}
 
+/* the answer for the household, under the quick picks */
+.readouts{display:grid;gap:0 2.5rem;margin:1.1rem 0 .25rem}
+@media (min-width:700px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.readouts .readout{margin:.5rem 0}
+.hint{font-size:16.5px;color:var(--t-ink2);margin:.5rem 0 0}
+#strip{touch-action:pan-y}
+#strip .crosshair text{font-size:14px;fill:var(--t-ink)}
+#strip .crosshair tspan{fill:var(--t-ink)}
+
 /* save */
 .save{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:1.5rem}
 .save .note{margin:0;max-width:60ch}
@@ -115,11 +164,16 @@ svg{font-size:17px}
     <h1 id="finding" aria-live="polite">The planning calendar</h1>
     <p class="dek" id="dek"></p>
 
-    <section class="build" aria-labelledby="build-h">
+    <section class="build" data-chapter="Household" aria-labelledby="build-h">
+      <p class="sec-label"><b>01</b>Household</p>
       <h2 id="build-h">Build your household</h2>
       <div class="picks" role="group" aria-labelledby="picks-l">
         <span class="picks-l" id="picks-l">Quick picks (examples)</span>
         <div class="pick-row" id="picks"></div>
+      </div>
+      <div class="readouts" id="readouts">
+        <div class="readout" id="rd-next"><p class="readout-k">The next confirmed date</p><p class="readout-v" id="rd-next-v" data-flash></p><p class="readout-t" id="rd-next-t"></p></div>
+        <div class="readout" id="rd-count"><p class="readout-k">In the next twelve months</p><p class="readout-v" id="rd-count-v" data-flash></p><p class="readout-t" id="rd-count-t"></p><p class="readout-fine" id="rd-count-fine" hidden></p></div>
       </div>
       <fieldset class="sits">
         <legend>Tick every situation that applies; they combine into one calendar.</legend>
@@ -127,19 +181,20 @@ svg{font-size:17px}
       </fieldset>
     </section>
 
-    <section class="pile" aria-labelledby="pile-h">
+    <section class="pile" data-chapter="The year" aria-labelledby="pile-h">
+      <p class="sec-label"><b>02</b>The year</p>
       <h2 id="pile-h">Where the dates pile up, week by week</h2>
       <div class="frame" id="frame"><svg id="strip" role="img" aria-labelledby="strip-t"><title id="strip-t">How many dates fall in each week</title></svg></div>
       <p class="legend" id="legend"></p>
+      <p class="hint">Point at a week, or tap it, to read its dates.</p>
+      <div class="save" role="group" aria-label="Add to my calendar">
+        <button type="button" id="ics">Add to my calendar</button>
+        <p class="note" id="ics-note"></p>
+      </div>
     </section>
 
-    <section class="save" aria-labelledby="save-h">
-      <h2 id="save-h" class="sr-only">Add to my calendar</h2>
-      <button type="button" id="ics">Add to my calendar</button>
-      <p class="note" id="ics-note"></p>
-    </section>
-
-    <section class="list" aria-labelledby="list-h">
+    <section class="list" data-chapter="Each date" aria-labelledby="list-h">
+      <p class="sec-label"><b>03</b>Each date</p>
       <h2 id="list-h">Each date and the rule behind it</h2>
       <ol class="dates" id="dates"></ol>
       <div class="pending" id="pending"></div>
@@ -165,7 +220,67 @@ svg{font-size:17px}
   </main>
 </div>
 <script type="application/json" id="data">{"config":{"_note":"The planning calendar: situations a household can combine, the dated rules each one brings, and quick picks (examples). Every value comes from shared/facts.json at build time; placeholders in braces are filled from the facts and the date. No date, age, count or amount is written here.","kinds":{"pay":"Money due","file":"A return due","cutoff":"A cut-off: a year-end or a contribution deadline"},"rules":{"file":{"label":"Personal returns due ({prev} tax year)","what":"the filing deadline","kind":"file","facts":["t1_filing_deadline.{prev}"],"rule":"fact_date","text":"Most individuals' income tax returns for the {prev} tax year are due {date}."},"balance":{"label":"Balance owing due ({prev} tax year)","what":"the balance owing","kind":"pay","facts":["t1_balance_due_date.{prev}"],"rule":"fact_date","text":"Any balance owing on a personal return for the {prev} tax year is due {date}."},"rrsp":{"label":"RRSP contribution deadline ({prev} tax year)","what":"the RRSP deadline","kind":"cutoff","facts":["rrsp_contribution_deadline.{prev}"],"rule":"fact_date","text":"Contributions to an RRSP made by {date} can count for the {prev} tax year."},"inst":{"label":"Tax instalment due","what":"an instalment","kind":"pay","facts":["individual_instalment_due_dates"],"rule":"fact_dates_in_year","text":"People who pay their tax by instalments pay on {value}."},"se_return":{"label":"Self-employed returns due ({prev} tax year)","what":"the self-employed filing deadline","kind":"file","facts":["t1_self_employed_filing_deadline.{prev}"],"rule":"fact_date","text":"Returns of self-employed people for the {prev} tax year are due {date}."},"t2":{"label":"Corporation's T2 return due","what":"the T2 return","kind":"file","facts":["t2_filing_deadline_rule"],"rule":"months_after_prev_year_end","text":"A corporation's T2 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."},"corp_ye":{"label":"Corporation's year-end","what":"the corporation's year-end","kind":"cutoff","facts":["t2_filing_deadline_rule"],"rule":"year_end","text":"A corporation with a December year-end closes its tax year; its next T2 return is counted from here."},"t3":{"label":"Trust's T3 return due","what":"the T3 return","kind":"file","facts":["t3_filing_deadline_rule"],"rule":"days_after_prev_year_end","text":"A trust's T3 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."},"trust_ye":{"label":"Trust's year-end","what":"the trust's year-end","kind":"cutoff","facts":["t3_filing_deadline_rule"],"rule":"year_end","text":"A trust with a December year-end closes its tax year; its next T3 return is counted from here."},"mature":{"label":"RRSP maturity: the year-end for a holder turning {value} this year","what":"the RRSP maturity deadline","kind":"cutoff","facts":["rrsp_maturity_age"],"rule":"year_end","text":"An RRSP must mature by the end of the year its holder turns {value}."},"rrif_min":{"label":"RRIF: the year's minimum paid by year-end","what":"the RRIF minimum deadline","kind":"cutoff","facts":["rrif_minimum_payment_timing"],"rule":"year_end","text":"A RRIF pays out at least a minimum amount each year; the first minimum is paid {value}."},"losses":{"label":"A sale at a loss on the year's last day: the superficial-loss period","what":"a year-end sale at a loss","kind":"cutoff","facts":["superficial_loss_period"],"rule":"window_around_year_end","text":"A loss is superficial if the same or identical property is bought in the period from {value}, and is still owned at the end of it. For a sale on {date}, that period runs from {from} to {to}."},"fhsa":{"label":"End of the FHSA contribution year","what":"the end of the FHSA year","kind":"cutoff","facts":["fhsa_contribution_period"],"rule":"year_end","text":"FHSA contributions count for the year they are made in: the contribution period is {value}."},"resp":{"label":"End of the RESP grant year","what":"the end of the RESP grant year","kind":"cutoff","facts":["cesg_basic_rate"],"rule":"year_end","text":"The basic grant is {value}, so each calendar year's contributions count for that year."},"gifts":{"label":"Last day for gifts claimed on this year's return","what":"the last day for this year's gifts","kind":"cutoff","facts":["donations_claim_year"],"rule":"year_end","text":"A year's return claims {value}."}},"situations":[{"id":"personal","label":"Files a personal return (employee or retiree)","rules":["file","balance"]},{"id":"self_employed","label":"Self-employed","rules":["se_return","balance"]},{"id":"instalments","label":"Pays tax by instalments","rules":["inst"]},{"id":"rrsp","label":"Contributes to an RRSP","rules":["rrsp"]},{"id":"corporation","label":"Owns a corporation (December year-end)","rules":["t2","corp_ye"]},{"id":"trust","label":"Has a family trust (December year-end)","rules":["t3","trust_ye"]},{"id":"turning","label":"Turning 71 this year, with an RRSP","rules":["mature"]},{"id":"rrif","label":"Draws from a RRIF","rules":["rrif_min"]},{"id":"losses","label":"Sells shares at a loss near year-end","rules":["losses"]},{"id":"fhsa","label":"Saves in an FHSA","rules":["fhsa"]},{"id":"resp","label":"Saves in an RESP","rules":["resp"]},{"id":"donor","label":"Gives to charity","rules":["gifts"]}],"presets":[{"id":"employee","label":"Employee","noun":"an employee","situations":["personal","rrsp"]},{"id":"first_home","label":"First-home saver","noun":"a first-home saver","situations":["personal","rrsp","fhsa"]},{"id":"family","label":"Family with an RESP","noun":"a family with an RESP","situations":["personal","rrsp","resp","donor"]},{"id":"self_employed","label":"Self-employed","noun":"a self-employed person","situations":["self_employed","instalments","rrsp"]},{"id":"owner","label":"Business owner","noun":"a business owner","situations":["personal","corporation","instalments","rrsp"]},{"id":"owner_trust","label":"Owner with a family trust","noun":"an owner with a family trust","situations":["personal","corporation","trust","instalments","rrsp"]},{"id":"retiree","label":"Retiree with a RRIF","noun":"a retiree with a RRIF","situations":["personal","rrif","instalments","donor","losses"]}],"example":"owner","ownDates":[{"label":"CPP can start","facts":["cpp_earliest_start_age"]},{"label":"Standard CPP start age","facts":["cpp_standard_start_age"]},{"label":"OAS starts","facts":["oas_start_age"]},{"label":"Latest CPP start","facts":["cpp_latest_start_age"]},{"label":"OAS deferral ends","facts":["oas_deferral_max_age"]},{"label":"Trust deemed to dispose of its property","facts":["trust_deemed_disposition_years"]}]},"facts":{"facts":[{"id":"rrsp_contribution_deadline.2025","title":"RRSP contribution deadline for the tax year","value":"2026-03-02","unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"confirmed"},{"id":"rrsp_contribution_deadline.2026","title":"RRSP contribution deadline for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"pending"},{"id":"rrsp_contribution_deadline.2027","title":"RRSP contribution deadline for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"pending"},{"id":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","value":"71","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"oas_start_age","title":"Age at which OAS pension eligibility starts (Old Age Security Act 3(1))","value":"65","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"oas_deferral_max_age","title":"Age after whose month the OAS deferral increase stops (Old Age Security Act 7.1(4)(b))","value":"70","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"cpp_standard_start_age","title":"Standard age to start the CPP retirement pension","value":"65","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"cpp_earliest_start_age","title":"Earliest age to start the CPP retirement pension","value":"60","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"cpp_latest_start_age","title":"Latest age to start the CPP retirement pension (no benefit to wait after it)","value":"70","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"t1_filing_deadline.2026","title":"Income tax filing deadline for most individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_self_employed_filing_deadline.2026","title":"Income tax filing deadline for self-employed individuals, for the tax year","value":"2027-06-15","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t1_balance_due_date.2026","title":"Balance-due date for individuals' income tax, for the tax year","value":"2027-04-30","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"individual_instalment_due_dates","title":"Tax instalment due dates for individuals (the same four dates each year)","value":"March 15, June 15, September 15, December 15","unit":"text","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t3_filing_deadline_rule","title":"When a trust's T3 return is due","value":"no later than 90 days after the trust's tax year-end","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/trust-administrators/t3-return/filing-trust-return/when-file.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t2_filing_deadline_rule","title":"When a corporation's T2 return is due","value":"within six months of the end of each tax year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/t4012/t2-corporation-income-tax-guide-before-you-start.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"trust_deemed_disposition_years","title":"Years after a trust's creation at which it is deemed to dispose of its property (Income Tax Act 104(4)(b))","value":"21","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-104.html","as_of":"2026-11-11","authority":"statute","status":"confirmed"},{"id":"t1_filing_deadline.2027","title":"Income tax filing deadline for most individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_self_employed_filing_deadline.2027","title":"Income tax filing deadline for self-employed individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_balance_due_date.2027","title":"Balance-due date for individuals' income tax, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"superficial_loss_period","title":"The period around a sale in which buying the same property back makes the loss superficial","value":"30 calendar days before the sale to 30 calendar days after the sale","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/personal-income/line-12700-capital-gains/capital-losses-deductions.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"fhsa_contribution_period","title":"FHSA contribution period (contributions are deductible for the calendar year they are made in)","value":"January 1 to December 31 of the same year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/first-home-savings-account/tax-deductions-fhsa-contributions.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"rrif_minimum_payment_timing","title":"When the first RRIF minimum amount must be paid","value":"in the year following the year the RRIF is entered into","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-retirement-income-fund-rrif.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"donations_claim_year","title":"Donations claimed on a year's return are the ones made in that year (unused amounts can be carried forward)","value":"donations and gifts made in the year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-34900-donations-gifts/how-claim.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"cesg_basic_rate","title":"Basic Canada Education Savings Grant, figured on each year's contributions","value":"20% of annual personal contributions","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-education-savings-plans-resps/canada-education-savings-programs-cesp/canada-education-savings-grant-cesg.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"}]},"own":[{"label":"CPP can start","value":"60","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"Standard CPP start age","value":"65","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"OAS starts","value":"65","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html"},{"label":"Latest CPP start","value":"70","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"OAS deferral ends","value":"70","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html"},{"label":"Trust deemed to dispose of its property","value":"21","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-104.html"}]}</script>
-<script>// The planning calendar: the dated rules a household meets in the twelve months from a given day, from confirmed facts
+<script>
+(function () {
+  'use strict';
+  // the reading-progress line, on pages at least two screens long
+  var bar = document.createElement('div'); bar.className = 'read-progress'; bar.setAttribute('aria-hidden', 'true');
+  bar.appendChild(document.createElement('span')); document.body.appendChild(bar);
+  var queued = false;
+  function progress() { queued = false; var room = document.documentElement.scrollHeight - innerHeight; bar.hidden = room < innerHeight; bar.firstChild.style.transform = 'scaleX(' + (room > 0 ? Math.min(1, scrollY / room) : 0) + ')'; }
+  addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(progress); } }, { passive: true });
+  addEventListener('resize', progress); addEventListener('load', progress); progress();
+
+  // the chapter rail, from <section data-chapter="...">, when there are three or more
+  var chapters = [].slice.call(document.querySelectorAll('[data-chapter]'));
+  if (chapters.length >= 3) {
+    var nav = document.createElement('nav'); nav.className = 'rail'; nav.setAttribute('aria-label', 'Chapters on this page');
+    var ol = document.createElement('ol'); var links = [];
+    chapters.forEach(function (c, i) {
+      if (!c.id) c.id = 'chapter-' + (i + 1);
+      var li = document.createElement('li'), a = document.createElement('a'), b = document.createElement('b');
+      a.href = '#' + c.id; b.textContent = String(i + 1).padStart(2, '0'); var sp = document.createElement('span'); sp.textContent = c.getAttribute('data-chapter'); a.title = sp.textContent; a.appendChild(b); a.appendChild(sp);
+      li.appendChild(a); ol.appendChild(li); links.push(a);
+    });
+    nav.appendChild(ol); document.body.appendChild(nav);
+    var mark = function () { var at = 0; chapters.forEach(function (c, i) { if (c.getBoundingClientRect().top < innerHeight * 0.35) at = i; }); links.forEach(function (a, i) { a.setAttribute('aria-current', String(i === at)); }); };
+    addEventListener('scroll', function () { requestAnimationFrame(mark); }, { passive: true }); mark();
+  }
+
+  // a short amber underline on any [data-flash] element whose text changes
+  var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var watch = function (el) {
+    var last = el.textContent;
+    new MutationObserver(function () { if (el.textContent === last) return; last = el.textContent; if (still) return; el.classList.add('flash'); clearTimeout(el._f); el._f = setTimeout(function () { el.classList.remove('flash'); }, 1100); }).observe(el, { childList: true, characterData: true, subtree: true });
+  };
+  [].forEach.call(document.querySelectorAll('[data-flash]'), watch);
+  window.deskWatchFlash = watch;
+})();
+
+// A chart crosshair: call deskCrosshair(svg, { x0, x1, y0, y1, read: function (px) { return { x: px, y: py, lines: ['...'] } } })
+// with the plot area in SVG units; it draws a dashed line and a reading box that follow the pointer (and arrow keys when
+// the SVG has focus). Returns a function that removes it (call before a redraw).
+function deskCrosshair(svg, o) {
+  var NS = 'http://www.w3.org/2000/svg', g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'crosshair'); g.style.display = 'none';
+  var line = document.createElementNS(NS, 'line'), box = document.createElementNS(NS, 'rect'), txt = document.createElementNS(NS, 'text');
+  g.appendChild(line); g.appendChild(box); g.appendChild(txt); svg.appendChild(g);
+  function toSvg(e) { var r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal; var sx = vb && vb.width ? vb.width / r.width : 1; return (e.clientX - r.left) * sx + (vb ? vb.x : 0); }
+  function show(px) {
+    px = Math.max(o.x0, Math.min(o.x1, px)); var r = o.read(px); if (!r) { g.style.display = 'none'; return; }
+    g.style.display = ''; line.setAttribute('x1', r.x); line.setAttribute('x2', r.x); line.setAttribute('y1', o.y0); line.setAttribute('y2', o.y1);
+    while (txt.firstChild) txt.removeChild(txt.firstChild);
+    r.lines.forEach(function (s, i) { var t = document.createElementNS(NS, 'tspan'); t.setAttribute('x', 0); t.setAttribute('dy', i ? '1.25em' : '1em'); if (!i) t.setAttribute('font-weight', '650'); t.textContent = s; txt.appendChild(t); });
+    var bb = txt.getBBox(), pad = 6, w = bb.width + pad * 2, h = bb.height + pad * 2, bx = r.x + 10; if (bx + w > o.x1) bx = r.x - 10 - w;
+    var by = Math.max(o.y0, Math.min(o.y1 - h, (r.y || o.y0) - h - 8));
+    box.setAttribute('x', bx); box.setAttribute('y', by); box.setAttribute('width', w); box.setAttribute('height', h); box.setAttribute('rx', 2);
+    txt.setAttribute('transform', 'translate(' + (bx + pad) + ',' + (by + pad) + ')'); [].forEach.call(txt.childNodes, function (t) { t.setAttribute('x', 0); });
+  }
+  function move(e) { show(toSvg(e)); } function hide() { g.style.display = 'none'; }
+  svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide);
+  return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
+}
+
+// The planning calendar: the dated rules a household meets in the twelve months from a given day, from confirmed facts
 // only. A date whose fact the file holds but has not confirmed is pending (never guessed); one the file lacks is left out.
 // The same code runs in the build's tests and, inlined, in the page (the page passes in its own date). No date, day count,
 // month count, age or amount is written here: every one is read from the facts file.
@@ -376,8 +491,11 @@ function toICS(cal) {
   const box = (t) => { const b = t.getBBox(); return { x: b.x, y: b.y, r: b.x + b.width, b: b.y + b.height }; };
   const hits = (a, b, pad) => a.x < b.r + pad && b.x < a.r + pad && a.y < b.b && b.y < a.b;
 
+  let unhair = null;
   function drawStrip(c) {
-    const svg = $('strip'); clear(svg);
+    const svg = $('strip');
+    if (unhair) unhair();
+    clear(svg);
     const W = Math.max(280, $('frame').clientWidth), narrow = W < 640, wk = c.weeks, n = wk.length;
     const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 11 : 16, fs = narrow ? 12 : 13;
     const tall = Math.max(4, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1), H = base + fs * 3 + 16;
@@ -455,6 +573,15 @@ function toICS(cal) {
         }
       }
     }
+    // the week under the pointer: its dates, in a box over its pile
+    unhair = deskCrosshair(svg, { x0: 0, x1: W - 0.01, y0: top - 4, y1: base, read: (px) => {
+      const k = Math.min(n - 1, Math.max(0, Math.floor(px / colW))), w = wk[k], es = w.events, shown = es.slice(0, 4);
+      const lines = [`Week of ${short(w.from)}`];
+      if (!es.length) lines.push('No dates this week');
+      for (const e of shown) lines.push(`${short(e.date)}: ${e.what}`);
+      if (es.length > shown.length) lines.push(`and ${plural(es.length - shown.length, 'more', 'more')}, listed below`);
+      return { x: k * colW + colW / 2, y: base - es.length * (u + 1), lines };
+    } });
     const most = wk.reduce((a, w) => (w.events.length > a.events.length ? w : a), wk[0]);
     $('strip-t').textContent = c.events.length
       ? `${plural(c.events.length, 'date', 'dates')} in the next twelve months, week by week; the busiest week, of ${short(most.from)}, has ${most.events.length}. Every date is listed below.`
@@ -506,9 +633,32 @@ function toICS(cal) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 
+  // the household's answer, under the quick picks: the next date, and how many there are
+  const KIND_WORDS = { pay: ['payment due', 'payments due'], file: ['return due', 'returns due'], cutoff: ['cut-off', 'cut-offs'] };
+  function readouts(c) {
+    const np = c.pending.length, fine = $('rd-count-fine');
+    fine.hidden = !np;
+    if (np) fine.textContent = `${plural(np, 'more date is', 'more dates are')} not confirmed yet; listed under the dates, left out of the calendar file.`;
+    if (!c.events.length) {
+      $('rd-next-v').textContent = 'None';
+      $('rd-next-t').textContent = c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Tick a situation to see its dates.';
+      $('rd-count-v').textContent = plural(0, 'date', 'dates');
+      $('rd-count-t').textContent = 'Nothing to add to a calendar yet.';
+      return;
+    }
+    const e = c.events[0], same = c.events.filter((x) => x.date === e.date).length;
+    $('rd-next-v').textContent = longDate(e.date);
+    $('rd-next-t').textContent = `${e.label}, ${e.days === 0 ? 'today' : e.days === 1 ? 'tomorrow' : `in ${e.days} days`}${same > 1 ? `, with ${plural(same - 1, 'other date', 'other dates')} the same day` : ''}.`;
+    $('rd-count-v').textContent = plural(c.events.length, 'date', 'dates');
+    const parts = KINDS.map((k) => [k, c.events.filter((x) => x.kind === k).length]).filter(([, m]) => m)
+      .map(([k, m]) => (KIND_WORDS[k] ? `${m} ${KIND_WORDS[k][m === 1 ? 0 : 1]}` : `${m}: ${C.kinds[k]}`));
+    $('rd-count-t').textContent = `${parts.join(', ')}, from ${longDate(c.today)} to ${longDate(c.end)}.`;
+  }
+
   function render() {
     const c = cal(state.picked), p = presetOf(state.picked);
     current = c;
+    readouts(c);
     $('finding').textContent = finding(c, p ? p.noun : null);
     const lo = picks[0], hi = picks[picks.length - 1];
     $('dek').textContent = `The twelve months from ${longDate(c.today)} to ${longDate(c.end)}, as this page’s date sets them. ` +
@@ -534,6 +684,8 @@ function toICS(cal) {
   for (const x of used.values()) { const li = h('li', {}, $('sources')); h('a', { href: x.url }, li, x.title); li.append(`, read ${x.as_of}${x.authority === 'cra_position' ? ' (CRA’s position)' : ''}.`); }
 
   render();
+  // the first fill is not a change: no underline on load
+  requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => current && drawStrip(current), 150); });
 })();
 </script>

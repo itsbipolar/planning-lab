@@ -11,6 +11,46 @@
 :root,:root[data-theme="dark"]{color-scheme:dark;--t-ground:#0E1318;--t-raised:#151C23;--t-ink:#F2F4F6;--t-ink2:#C7CFD7;--t-ink3:#97A2AD;--t-point:#F2A93B;--t-money:#7FC79A;--t-rule:#26303A;--t-d1:#5AA2E0;--t-d2:#F2A93B;--t-d3:#4FBFAE;--t-d4:#E07A6F;--t-neutral:#3A4652;}
 :root[data-theme="light"]{color-scheme:light;--t-ground:#FCFDFD;--t-raised:#E8EEF3;--t-ink:#10161C;--t-ink2:#36414C;--t-ink3:#56616C;--t-point:#F2A93B;--t-point-deep:#A8690A;--t-money:#2C6E44;--t-rule:#D3D8DD;--t-d1:#1F64A8;--t-d2:#B9740A;--t-d3:#157A6E;--t-d4:#B5473B;--t-neutral:#C3CAD1;}
 :root{--font-display:"Source Serif 4 Variable", Georgia, serif;--font-ui:"Source Sans 3 Variable", system-ui, sans-serif;--font-mono:"Source Sans 3 Variable", system-ui, sans-serif} /* labels use the text face too (Mo, 2026-11-13: no mono labels) */
+
+html{scrollbar-width:thin;scrollbar-color:var(--t-neutral) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--t-neutral);border-radius:10px;border:3px solid var(--t-ground)}
+*::-webkit-scrollbar-thumb:hover{background:var(--t-ink3)}*::-webkit-scrollbar-button{display:none;width:0;height:0}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+[data-chapter]{scroll-margin-top:1.25rem}
+.read-progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:50;pointer-events:none}
+.read-progress span{display:block;height:100%;background:var(--t-point);transform-origin:0 50%;transform:scaleX(0)}
+.rail{display:none}
+@media (min-width:1360px){
+  .rail{display:block;position:fixed;left:12px;top:50%;transform:translateY(-50%);width:2.6rem;z-index:40}
+  .rail ol{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
+  .rail a{display:block;padding:.3rem 0;color:var(--t-ink3);text-decoration:none;font-size:14.5px;line-height:1.25}
+  .rail a b{font-weight:650;font-variant-numeric:tabular-nums}
+  .rail a span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .rail a:hover,.rail a[aria-current="true"]{color:var(--t-ink)}
+  .rail a[aria-current="true"] b{box-shadow:inset 0 -2px 0 var(--t-point)}
+}
+@media (min-width:1700px){
+  .rail{left:max(12px,calc((100vw - 80rem)/2 - 10rem));width:8.5rem}
+  .rail a{display:grid;grid-template-columns:1.6rem 1fr;align-items:baseline;gap:.25rem}
+  .rail a span{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
+}
+.sec-label{position:relative;margin:0 0 .5rem;padding-top:.9rem;font-size:1.05rem;font-weight:650;color:var(--t-ink2);font-variant-numeric:tabular-nums}
+.sec-label::before{content:"";position:absolute;top:0;left:0;width:3rem;height:3px;background:var(--t-point)}
+.sec-label b{color:var(--t-ink);margin-right:.5rem;letter-spacing:.04em}
+.readout{border-left:3px solid var(--t-point);padding:.35rem 0 .35rem 1rem;margin:1rem 0;max-width:46rem}
+.readout-k{margin:0;font-size:15.5px;font-weight:650;color:var(--t-ink3)}
+.readout-v{margin:.15rem 0 .1rem;font-family:var(--font-display);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.1;font-variant-numeric:tabular-nums;color:var(--t-ink)}
+.readout-t{margin:0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+.readout-fine{margin:.35rem 0 0;font-size:15.5px;color:var(--t-ink3)}
+[data-flash]{transition:box-shadow .25s ease}
+[data-flash].flash{box-shadow:inset 0 -3px 0 var(--t-point)}
+@media (prefers-reduced-motion:reduce){[data-flash]{transition:none}}
+.crosshair{pointer-events:none}
+.crosshair line{stroke:var(--t-ink);stroke-width:1;stroke-dasharray:3 3}
+.crosshair rect{fill:var(--t-raised);stroke:var(--t-rule)}
+.crosshair text{fill:var(--t-ink);font-variant-numeric:tabular-nums}
+
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 18.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
@@ -28,7 +68,7 @@ h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:24ch;mar
 h2{font-size:1.55rem;line-height:1.15;margin:0 0 .8rem}
 h3{font-size:1.05rem;font-weight:650;margin:0}
 .crumb{font-size:.9rem;margin:1.5rem 0 0;color:var(--t-ink2)}
-.kicker{font-family:var(--font-mono);font-size:.8rem;color:var(--t-ink3);margin:2.5rem 0 0}
+.kicker{font-family:var(--font-mono);font-size:.85rem;color:var(--t-ink3);margin:2.5rem 0 0}
 .crumb + .kicker{margin-top:.6rem}
 .lede{max-width:62ch;color:var(--t-ink2);font-size:1.1rem;margin:1.1rem 0 0;font-variant-numeric:tabular-nums}
 .note{font-size:.9rem;color:var(--t-ink3);max-width:70ch}
@@ -40,7 +80,6 @@ h3{font-size:1.05rem;font-weight:650;margin:0}
 .scrub{border-top:1px solid var(--t-rule);border-bottom:1px solid var(--t-rule);padding:.8rem 0 .6rem}
 .scrub label{display:block;font-weight:650;margin-bottom:.2rem}
 input[type=range]{display:block;width:100%;min-height:44px;margin:0;accent-color:var(--t-ink)}
-.readout{margin:.2rem 0 0;min-height:3.1em;color:var(--t-ink2);font-size:.95rem;font-variant-numeric:tabular-nums}
 #asof{margin:.7rem 0 1.5rem}
 .panels{width:100%}
 .panel{--c:var(--t-d1);margin:0 0 2.25rem;padding-top:.9rem;border-top:1px solid var(--t-rule)}
@@ -105,7 +144,8 @@ input[type=range]{display:block;width:100%;min-height:44px;margin:0;accent-color
 .nums th[scope=row],.nums thead th:first-child{text-align:left}
 
 /* Proposed next */
-.budget-sec{margin-top:3.5rem}
+.budget-sec,.src-sec{margin-top:4.5rem}
+.src-sec .fold{margin-top:.5rem}
 .budget-sec > .lede{margin-top:0}
 .lane{list-style:none;margin:1.75rem 0 0;padding:0;display:grid;gap:2rem}
 @media (min-width:900px){.lane{grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem}}
@@ -126,6 +166,16 @@ input[type=range]{display:block;width:100%;min-height:44px;margin:0;accent-color
 
 /* Chart text keeps the size its label placement was tuned for; the page text around it is larger. */
 svg{font-size:17px}
+
+/* The premium layer (shared/desk/desk-ui.mjs): the day's readout under the slider */
+.scrub .readout{margin:.6rem 0 .3rem;max-width:none}
+.readout-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(10.5rem,1fr));gap:.6rem 2rem;margin:.4rem 0 .5rem}
+.readout-row .cell{display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.readout-row dd{margin:0;width:fit-content;max-width:100%}
+.readout-row .c-d1 dd{color:var(--t-d1)}.readout-row .c-d3 dd{color:var(--t-d3)}.readout-row .c-d4 dd{color:var(--t-d4)}
+@media (max-width:639px){.readout-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem 1rem}}
+.readout-when{font-family:var(--font-ui);font-size:15.5px;font-weight:500;color:var(--t-ink3);white-space:nowrap}
+.crosshair text{font-size:13.5px}
 </style>
 </head>
 <body>
@@ -140,12 +190,17 @@ svg{font-size:17px}
     <h1 id="finding">Canada's money year, graphed</h1>
     <p class="lede" id="lede"></p>
 
-    <section class="yr-sec" aria-labelledby="h-year">
-      <h2 id="h-year">The year so far, on one timeline</h2>
+    <section class="yr-sec" data-chapter="The year" aria-labelledby="h-year">
+      <p class="sec-label"><b>01</b>The year so far</p>
+      <h2 id="h-year">Four measures on one timeline</h2>
       <div class="scrub">
         <label for="when">Move through the year</label>
         <input id="when" type="range" min="0" step="1">
-        <p id="readout" class="readout" role="status" aria-live="polite"></p>
+        <div id="readout" class="readout" role="status" aria-live="polite">
+          <p class="readout-k" id="rk-day" data-flash></p>
+          <dl class="readout-row" id="rr-day"></dl>
+          <p class="readout-t" id="rt-day"></p>
+        </div>
       </div>
       <p id="asof" class="note"></p>
       <div id="panels" class="panels"></div>
@@ -155,12 +210,15 @@ svg{font-size:17px}
       </details>
     </section>
 
-    <section id="budget" class="budget-sec" aria-labelledby="h-budget">
+    <section id="budget" class="budget-sec" data-chapter="Proposed next" aria-labelledby="h-budget">
+      <p class="sec-label"><b>02</b>Proposed next</p>
       <h2 id="h-budget">Proposed next</h2>
       <p class="lede">What Budget 2026 proposes, in the order it would start. These are proposals and a consultation: not law unless enacted. Each figure is copied from the <a id="budget-link" href="#">budget's tax measures</a> and confirmed by me against the page.</p>
       <ol id="lane" class="lane"></ol>
     </section>
 
+    <section class="src-sec" data-chapter="Sources" aria-labelledby="h-src">
+    <p class="sec-label" id="h-src"><b>03</b>Sources</p>
     <details class="fold" id="about">
       <summary>Sources and how it's made</summary>
       <div class="prose">
@@ -169,6 +227,7 @@ svg{font-size:17px}
         <p>Charts show one measure each on a shared timeline, so no chart has two scales. Callouts and figures are computed from the data, never typed in.</p>
       </div>
     </details>
+    </section>
   </main>
   <footer class="foot">
     <div>
@@ -179,7 +238,67 @@ svg{font-size:17px}
   </footer>
 </div>
 <script type="application/json" id="data">{"year":2026,"start":"2026-01-01","end":"2026-12-31","retrieved":"2026-11-10","budgetDay":"2026-11-05","panels":[{"id":"policy","title":"Bank of Canada policy rate","unit":"%","step":true,"digits":2,"lines":[{"id":"V39079","label":"Target for the overnight rate","points":[["2026-01-01",2.25],["2026-01-02",2.25],["2026-01-05",2.25],["2026-01-06",2.25],["2026-01-07",2.25],["2026-01-08",2.25],["2026-01-09",2.25],["2026-01-12",2.25],["2026-01-13",2.25],["2026-01-14",2.25],["2026-01-15",2.25],["2026-01-16",2.25],["2026-01-19",2.25],["2026-01-20",2.25],["2026-01-21",2.25],["2026-01-22",2.25],["2026-01-23",2.25],["2026-01-26",2.25],["2026-01-27",2.25],["2026-01-28",2.25],["2026-01-29",2.25],["2026-01-30",2.25],["2026-02-02",2.25],["2026-02-03",2.25],["2026-02-04",2.25],["2026-02-05",2.25],["2026-02-06",2.25],["2026-02-09",2.25],["2026-02-10",2.25],["2026-02-11",2.25],["2026-02-12",2.25],["2026-02-13",2.25],["2026-02-16",2.25],["2026-02-17",2.25],["2026-02-18",2.25],["2026-02-19",2.25],["2026-02-20",2.25],["2026-02-23",2.25],["2026-02-24",2.25],["2026-02-25",2.25],["2026-02-26",2.25],["2026-02-27",2.25],["2026-03-02",2.25],["2026-03-03",2.25],["2026-03-04",2.25],["2026-03-05",2.25],["2026-03-06",2.25],["2026-03-09",2.25],["2026-03-10",2.25],["2026-03-11",2.25],["2026-03-12",2.25],["2026-03-13",2.25],["2026-03-16",2.25],["2026-03-17",2.25],["2026-03-18",2.25],["2026-03-19",2.25],["2026-03-20",2.25],["2026-03-23",2.25],["2026-03-24",2.25],["2026-03-25",2.25],["2026-03-26",2.25],["2026-03-27",2.25],["2026-03-30",2.25],["2026-03-31",2.25],["2026-04-01",2.25],["2026-04-02",2.25],["2026-04-03",2.25],["2026-04-06",2.25],["2026-04-07",2.25],["2026-04-08",2.25],["2026-04-09",2.25],["2026-04-10",2.25],["2026-04-13",2.25],["2026-04-14",2.25],["2026-04-15",2.25],["2026-04-16",2.25],["2026-04-17",2.25],["2026-04-20",2.25],["2026-04-21",2.25],["2026-04-22",2.25],["2026-04-24",2.25],["2026-04-27",2.25],["2026-04-28",2.25],["2026-04-29",2.25],["2026-04-30",2.25],["2026-05-01",2.25],["2026-05-04",2.25],["2026-05-05",2.25],["2026-05-06",2.25],["2026-05-07",2.25],["2026-05-08",2.25],["2026-05-11",2.25],["2026-05-12",2.25],["2026-05-13",2.25],["2026-05-14",2.25],["2026-05-15",2.25],["2026-05-18",2.25],["2026-05-19",2.25],["2026-05-20",2.25],["2026-05-21",2.25],["2026-05-22",2.25],["2026-05-25",2.25],["2026-05-26",2.25],["2026-05-27",2.25],["2026-05-28",2.25],["2026-05-29",2.25],["2026-06-01",2.25],["2026-06-02",2.25],["2026-06-03",2.25],["2026-06-04",2.25],["2026-06-05",2.25],["2026-06-08",2.25],["2026-06-09",2.25],["2026-06-10",2.25],["2026-06-11",2.25],["2026-06-12",2.25],["2026-06-15",2.25],["2026-06-16",2.25],["2026-06-17",2.25],["2026-06-18",2.25],["2026-06-19",2.25],["2026-06-22",2.25],["2026-06-23",2.25],["2026-06-24",2.25],["2026-06-25",2.25],["2026-06-26",2.25],["2026-06-29",2.25],["2026-06-30",2.25],["2026-07-01",2.25],["2026-07-02",2.25],["2026-07-03",2.25],["2026-07-06",2.25],["2026-07-07",2.25],["2026-07-08",2.25],["2026-07-09",2.25],["2026-07-10",2.25],["2026-07-13",2.25],["2026-07-14",2.25],["2026-07-15",2.25],["2026-07-16",2.25],["2026-07-17",2.25],["2026-07-20",2.25],["2026-07-21",2.25],["2026-07-22",2.25],["2026-07-23",2.25],["2026-07-24",2.25],["2026-07-27",2.25],["2026-07-28",2.25],["2026-07-29",2.25],["2026-07-30",2.25],["2026-07-31",2.25],["2026-08-03",2.25],["2026-08-04",2.25],["2026-08-05",2.25],["2026-08-06",2.25],["2026-08-07",2.25],["2026-08-10",2.25],["2026-08-11",2.25],["2026-08-12",2.25],["2026-08-13",2.25],["2026-08-14",2.25],["2026-08-17",2.25],["2026-08-18",2.25],["2026-08-19",2.25],["2026-08-20",2.25],["2026-08-21",2.25],["2026-08-24",2.25],["2026-08-25",2.25],["2026-08-26",2.25],["2026-08-27",2.25],["2026-08-28",2.25],["2026-08-31",2.25],["2026-09-01",2.25],["2026-09-02",2.25],["2026-09-03",2.25],["2026-09-04",2.25],["2026-09-07",2.25],["2026-09-08",2.25],["2026-09-09",2.25],["2026-09-10",2.25],["2026-09-11",2.25],["2026-09-14",2.25],["2026-09-15",2.25],["2026-09-16",2.25],["2026-09-17",2.25],["2026-09-18",2.25],["2026-09-21",2.25],["2026-09-22",2.25],["2026-09-23",2.25],["2026-09-24",2.25],["2026-09-25",2.25],["2026-09-28",2.25],["2026-09-29",2.25],["2026-09-30",2.25],["2026-10-01",2.25],["2026-10-02",2.25],["2026-10-05",2.25],["2026-10-06",2.25],["2026-10-07",2.25],["2026-10-08",2.25],["2026-10-09",2.25],["2026-10-12",2.25],["2026-10-13",2.25],["2026-10-14",2.25],["2026-10-15",2.25],["2026-10-16",2.25],["2026-10-19",2.25],["2026-10-20",2.25],["2026-10-21",2.25],["2026-10-22",2.25],["2026-10-23",2.25],["2026-10-26",2.25],["2026-10-27",2.25],["2026-10-28",2.25],["2026-10-29",2.5],["2026-10-30",2.5],["2026-11-02",2.5],["2026-11-03",2.5],["2026-11-04",2.5],["2026-11-05",2.5],["2026-11-06",2.5],["2026-11-09",2.5]]}],"callouts":[{"d":"2026-10-29","v":2.5,"mark":true,"text":"Oct 29: raised to 2.50%"}],"note":"Held at 2.25% from January 1 until October 29, 2026. One change so far this year.","decisions":[{"d":"2026-10-29","from":2.25,"to":2.5}],"hero":true,"summary":{"from":"2.25%","to":"2.50%"}},{"id":"mortgage","title":"Posted 5-year mortgage rate","unit":"%","digits":2,"lines":[{"id":"V80691335","label":"Conventional mortgage, 5-year","points":[["2026-01-07",6.09],["2026-01-14",6.09],["2026-01-21",6.09],["2026-01-28",6.09],["2026-02-04",6.09],["2026-02-11",6.09],["2026-02-18",6.09],["2026-02-25",6.09],["2026-03-04",6.09],["2026-03-11",6.09],["2026-03-18",6.09],["2026-03-25",6.09],["2026-04-01",6.09],["2026-04-08",6.09],["2026-04-15",6.09],["2026-04-22",6.09],["2026-04-29",6.09],["2026-05-06",6.09],["2026-05-13",6.09],["2026-05-20",6.09],["2026-05-27",6.09],["2026-06-03",6.09],["2026-06-10",6.09],["2026-06-17",6.09],["2026-06-24",6.09],["2026-07-01",6.09],["2026-07-08",6.09],["2026-07-15",6.09],["2026-07-22",6.09],["2026-07-29",6.09],["2026-08-05",6.09],["2026-08-12",6.09],["2026-08-19",6.09],["2026-08-26",6.09],["2026-09-02",6.09],["2026-09-09",6.09],["2026-09-16",6.09],["2026-09-23",6.09],["2026-09-30",6.09],["2026-10-07",6.19],["2026-10-14",6.19],["2026-10-21",6.19],["2026-10-28",6.19],["2026-11-04",6.19]]}],"callouts":[{"d":"2026-10-07","v":6.19,"text":"High 6.19%"},{"d":"2026-01-07","v":6.09,"text":"Low 6.09%","below":true}],"summary":{"from":"6.09%","to":"6.19%"},"note":"6.09% in the first week of January, 6.19% on November 4, 2026. The posted rate is the banks' advertised rate; many borrowers pay less."},{"id":"inflation","title":"Core inflation","unit":"%","digits":1,"monthly":true,"lines":[{"id":"CPI_TRIM","label":"CPI-trim","points":[["2025-12-01",2.7],["2026-01-01",2.4],["2026-02-01",2.3],["2026-03-01",2.2],["2026-04-01",2],["2026-05-01",2],["2026-06-01",1.9],["2026-07-01",1.9],["2026-08-01",1.9],["2026-09-01",1.8]]},{"id":"CPI_MEDIAN","label":"CPI-median","points":[["2025-12-01",2.6],["2026-01-01",2.5],["2026-02-01",2.3],["2026-03-01",2.3],["2026-04-01",2.1],["2026-05-01",2.1],["2026-06-01",1.9],["2026-07-01",2],["2026-08-01",2],["2026-09-01",1.9]],"dashed":true}],"callouts":[],"summary":{"from":"2.7%","to":"1.8%","label":"CPI-trim"},"note":"Year-over-year change in the Bank of Canada's two preferred core measures, which set aside the most volatile prices. CPI-trim went from 2.7% (December 2025) to 1.8% (September)."},{"id":"loonie","title":"Canadian dollars for one US dollar","unit":"","digits":4,"lines":[{"id":"FXUSDCAD","label":"USD/CAD","points":[["2026-01-02",1.3737],["2026-01-05",1.3768],["2026-01-06",1.3789],["2026-01-07",1.3823],["2026-01-08",1.3866],["2026-01-09",1.3896],["2026-01-12",1.3875],["2026-01-13",1.3886],["2026-01-14",1.3877],["2026-01-15",1.3899],["2026-01-16",1.3913],["2026-01-19",1.387],["2026-01-20",1.3829],["2026-01-21",1.3814],["2026-01-22",1.3798],["2026-01-23",1.3732],["2026-01-26",1.3702],["2026-01-27",1.362],["2026-01-28",1.3571],["2026-01-29",1.3515],["2026-01-30",1.3562],["2026-02-02",1.3676],["2026-02-03",1.3652],["2026-02-04",1.3668],["2026-02-05",1.3676],["2026-02-06",1.3648],["2026-02-09",1.3576],["2026-02-10",1.3544],["2026-02-11",1.3574],["2026-02-12",1.3605],["2026-02-13",1.3614],["2026-02-17",1.3656],["2026-02-18",1.3678],["2026-02-19",1.3696],["2026-02-20",1.3689],["2026-02-23",1.3689],["2026-02-24",1.3708],["2026-02-25",1.3685],["2026-02-26",1.3688],["2026-02-27",1.3642],["2026-03-02",1.3688],["2026-03-03",1.3684],["2026-03-04",1.3664],["2026-03-05",1.3677],["2026-03-06",1.3613],["2026-03-09",1.3574],["2026-03-10",1.3567],["2026-03-11",1.3587],["2026-03-12",1.3617],["2026-03-13",1.3716],["2026-03-16",1.3675],["2026-03-17",1.3699],["2026-03-18",1.3706],["2026-03-19",1.3728],["2026-03-20",1.3718],["2026-03-23",1.3717],["2026-03-24",1.3761],["2026-03-25",1.3801],["2026-03-26",1.3844],["2026-03-27",1.3875],["2026-03-30",1.3926],["2026-03-31",1.3939],["2026-04-01",1.3888],["2026-04-02",1.3918],["2026-04-06",1.3916],["2026-04-07",1.3907],["2026-04-08",1.3851],["2026-04-09",1.3821],["2026-04-10",1.3825],["2026-04-13",1.3812],["2026-04-14",1.3757],["2026-04-15",1.3746],["2026-04-16",1.371],["2026-04-17",1.3671],["2026-04-20",1.366],["2026-04-21",1.3653],["2026-04-22",1.3662],["2026-04-23",1.3688],["2026-04-24",1.3678],["2026-04-27",1.3615],["2026-04-28",1.3678],["2026-04-29",1.3682],["2026-04-30",1.3624],["2026-05-01",1.3576],["2026-05-04",1.3611],["2026-05-05",1.3617],["2026-05-06",1.3625],["2026-05-07",1.3635],["2026-05-08",1.3686],["2026-05-11",1.3667],["2026-05-12",1.371],["2026-05-13",1.3703],["2026-05-14",1.3725],["2026-05-15",1.3752],["2026-05-19",1.3757],["2026-05-20",1.3751],["2026-05-21",1.3783],["2026-05-22",1.3809],["2026-05-25",1.3804],["2026-05-26",1.3812],["2026-05-27",1.3831],["2026-05-28",1.3809],["2026-05-29",1.3798],["2026-06-01",1.3837],["2026-06-02",1.3834],["2026-06-03",1.3884],["2026-06-04",1.3896],["2026-06-05",1.3924],["2026-06-08",1.3947],["2026-06-09",1.3947],["2026-06-10",1.393],["2026-06-11",1.3993],["2026-06-12",1.3977],["2026-06-15",1.3982],["2026-06-16",1.3996],["2026-06-17",1.4034],["2026-06-18",1.4131],["2026-06-19",1.4171],["2026-06-22",1.4162],["2026-06-23",1.42],["2026-06-24",1.4234],["2026-06-25",1.4204],["2026-06-26",1.4186],["2026-06-29",1.4206],["2026-06-30",1.421],["2026-07-02",1.4181],["2026-07-03",1.4201],["2026-07-06",1.4219],["2026-07-07",1.4199],["2026-07-08",1.4174],["2026-07-09",1.4169],["2026-07-10",1.4146],["2026-07-13",1.4145],["2026-07-14",1.4067],["2026-07-15",1.4049],["2026-07-16",1.4038],["2026-07-17",1.4014],["2026-07-20",1.4054],["2026-07-21",1.4095],["2026-07-22",1.4088],["2026-07-23",1.4083],["2026-07-24",1.4093],["2026-07-27",1.4114],["2026-07-28",1.4102],["2026-07-29",1.4083],["2026-07-30",1.4014],["2026-07-31",1.4029],["2026-08-04",1.4068],["2026-08-05",1.4026],["2026-08-06",1.4018],["2026-08-07",1.3943],["2026-08-10",1.3942],["2026-08-11",1.3927],["2026-08-12",1.393],["2026-08-13",1.3938],["2026-08-14",1.3875],["2026-08-17",1.3865],["2026-08-18",1.3889],["2026-08-19",1.3824],["2026-08-20",1.3785],["2026-08-21",1.376],["2026-08-24",1.3842],["2026-08-25",1.3839],["2026-08-26",1.3876],["2026-08-27",1.3861],["2026-08-28",1.3888],["2026-08-31",1.3866],["2026-09-01",1.3896],["2026-09-02",1.3863],["2026-09-03",1.3789],["2026-09-04",1.384],["2026-09-08",1.3784],["2026-09-09",1.3798],["2026-09-10",1.3822],["2026-09-11",1.3866],["2026-09-14",1.3909],["2026-09-15",1.3917],["2026-09-16",1.3947],["2026-09-17",1.3988],["2026-09-18",1.4002],["2026-09-21",1.4021],["2026-09-22",1.4064],["2026-09-23",1.4096],["2026-09-24",1.4136],["2026-09-25",1.4145],["2026-09-28",1.4168],["2026-09-29",1.4188],["2026-10-01",1.4243],["2026-10-02",1.4246],["2026-10-05",1.4254],["2026-10-06",1.4226],["2026-10-07",1.4257],["2026-10-08",1.424],["2026-10-09",1.4271],["2026-10-13",1.4222],["2026-10-14",1.4263],["2026-10-15",1.4196],["2026-10-16",1.4154],["2026-10-19",1.4097],["2026-10-20",1.4054],["2026-10-21",1.4057],["2026-10-22",1.4021],["2026-10-23",1.3993],["2026-10-26",1.4025],["2026-10-27",1.4038],["2026-10-28",1.4036],["2026-10-29",1.3985],["2026-10-30",1.396],["2026-11-02",1.3978],["2026-11-03",1.3994],["2026-11-04",1.3961],["2026-11-05",1.3989],["2026-11-06",1.4113],["2026-11-09",1.4123],["2026-11-10",1.4181]]}],"callouts":[{"d":"2026-10-09","v":1.4271,"text":"Weakest loonie: 1.4271"},{"d":"2026-01-29","v":1.3515,"text":"Strongest: 1.3515","below":true}],"summary":{"from":"1.3737","to":"1.4181"},"note":"Higher means one US dollar costs more Canadian dollars, so a weaker loonie. 1.3737 on January 2, 2026, 1.4181 on November 10, 2026."}],"proposals":[{"id":"cgi","at":"2026-11-05","dated":true,"when":"From November 5, 2026","title":"Canada Growth Incentive exemption","value":"Up to $15,000,000 per person, per business","detail":"For qualifying shares issued on or after Budget Day and before 2037. Narrow: many conditions, and many kinds of business are excluded.","facts":["budget2026_cgi_limit","budget2026_cgi_issue_window"]},{"id":"rrsp","at":"2026-11-05","dated":true,"when":"Comments due January 8, 2027","stamp":"Consultation","title":"RRSP for life","value":"A consultation on one account instead of an RRSP and a RRIF","detail":"A consultation, not yet a proposal with a start date.","facts":["budget2026_rrsp_for_life_consultation_deadline"]},{"id":"t1135","at":"2027-01-01","dated":false,"when":"Tax years that end after 2026","title":"Foreign property form T1135","value":"Filed above $200,000","detail":"Applies to taxation years or fiscal periods that end after 2026.","facts":["budget2026_t1135_threshold","budget2026_t1135_start"]},{"id":"filing","at":"2027-01-01","dated":false,"when":"From the 2027 tax year","title":"Tax-filing deadline","value":"May 15 for all individuals","detail":"The filing and balance-due dates, including for the self-employed.","facts":["budget2026_t1_filing_date","budget2026_t1_filing_date_start"]},{"id":"caregiver","at":"2027-01-01","dated":false,"when":"From the 2027 tax year","title":"Canada Caregiver Credit becomes refundable","value":"Up to $1,260 of relief for an infirm adult relative","detail":"Refundable means it can be paid even with little or no tax to pay.","facts":["budget2026_caregiver_refundable_start","budget2026_caregiver_max_relief_2027"]},{"id":"instalments","at":"2028-01-01","dated":true,"when":"Tax years starting on or after January 1, 2028","title":"Tax instalments, outside Quebec","value":"Required above $7,500 owing","detail":"The threshold for paying tax in instalments during the year.","facts":["budget2026_instalment_threshold","budget2026_instalment_start"]}],"budgetUrl":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","source":{"attribution":"Source: Bank of Canada. Not affiliated with or endorsed by the Bank of Canada.","terms_url":"https://www.bankofcanada.ca/terms/","source_url":"https://www.bankofcanada.ca/valet/observations/V39079,V80691335,FXUSDCAD,CPI_TRIM,CPI_MEDIAN/json","retrieved":"2026-11-10"}}</script>
-<script>// Draws the Money Year from the embedded model: a headline that states the year's finding, then four charts across the
+<script>
+(function () {
+  'use strict';
+  // the reading-progress line, on pages at least two screens long
+  var bar = document.createElement('div'); bar.className = 'read-progress'; bar.setAttribute('aria-hidden', 'true');
+  bar.appendChild(document.createElement('span')); document.body.appendChild(bar);
+  var queued = false;
+  function progress() { queued = false; var room = document.documentElement.scrollHeight - innerHeight; bar.hidden = room < innerHeight; bar.firstChild.style.transform = 'scaleX(' + (room > 0 ? Math.min(1, scrollY / room) : 0) + ')'; }
+  addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(progress); } }, { passive: true });
+  addEventListener('resize', progress); addEventListener('load', progress); progress();
+
+  // the chapter rail, from <section data-chapter="...">, when there are three or more
+  var chapters = [].slice.call(document.querySelectorAll('[data-chapter]'));
+  if (chapters.length >= 3) {
+    var nav = document.createElement('nav'); nav.className = 'rail'; nav.setAttribute('aria-label', 'Chapters on this page');
+    var ol = document.createElement('ol'); var links = [];
+    chapters.forEach(function (c, i) {
+      if (!c.id) c.id = 'chapter-' + (i + 1);
+      var li = document.createElement('li'), a = document.createElement('a'), b = document.createElement('b');
+      a.href = '#' + c.id; b.textContent = String(i + 1).padStart(2, '0'); var sp = document.createElement('span'); sp.textContent = c.getAttribute('data-chapter'); a.title = sp.textContent; a.appendChild(b); a.appendChild(sp);
+      li.appendChild(a); ol.appendChild(li); links.push(a);
+    });
+    nav.appendChild(ol); document.body.appendChild(nav);
+    var mark = function () { var at = 0; chapters.forEach(function (c, i) { if (c.getBoundingClientRect().top < innerHeight * 0.35) at = i; }); links.forEach(function (a, i) { a.setAttribute('aria-current', String(i === at)); }); };
+    addEventListener('scroll', function () { requestAnimationFrame(mark); }, { passive: true }); mark();
+  }
+
+  // a short amber underline on any [data-flash] element whose text changes
+  var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var watch = function (el) {
+    var last = el.textContent;
+    new MutationObserver(function () { if (el.textContent === last) return; last = el.textContent; if (still) return; el.classList.add('flash'); clearTimeout(el._f); el._f = setTimeout(function () { el.classList.remove('flash'); }, 1100); }).observe(el, { childList: true, characterData: true, subtree: true });
+  };
+  [].forEach.call(document.querySelectorAll('[data-flash]'), watch);
+  window.deskWatchFlash = watch;
+})();
+
+// A chart crosshair: call deskCrosshair(svg, { x0, x1, y0, y1, read: function (px) { return { x: px, y: py, lines: ['...'] } } })
+// with the plot area in SVG units; it draws a dashed line and a reading box that follow the pointer (and arrow keys when
+// the SVG has focus). Returns a function that removes it (call before a redraw).
+function deskCrosshair(svg, o) {
+  var NS = 'http://www.w3.org/2000/svg', g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'crosshair'); g.style.display = 'none';
+  var line = document.createElementNS(NS, 'line'), box = document.createElementNS(NS, 'rect'), txt = document.createElementNS(NS, 'text');
+  g.appendChild(line); g.appendChild(box); g.appendChild(txt); svg.appendChild(g);
+  function toSvg(e) { var r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal; var sx = vb && vb.width ? vb.width / r.width : 1; return (e.clientX - r.left) * sx + (vb ? vb.x : 0); }
+  function show(px) {
+    px = Math.max(o.x0, Math.min(o.x1, px)); var r = o.read(px); if (!r) { g.style.display = 'none'; return; }
+    g.style.display = ''; line.setAttribute('x1', r.x); line.setAttribute('x2', r.x); line.setAttribute('y1', o.y0); line.setAttribute('y2', o.y1);
+    while (txt.firstChild) txt.removeChild(txt.firstChild);
+    r.lines.forEach(function (s, i) { var t = document.createElementNS(NS, 'tspan'); t.setAttribute('x', 0); t.setAttribute('dy', i ? '1.25em' : '1em'); if (!i) t.setAttribute('font-weight', '650'); t.textContent = s; txt.appendChild(t); });
+    var bb = txt.getBBox(), pad = 6, w = bb.width + pad * 2, h = bb.height + pad * 2, bx = r.x + 10; if (bx + w > o.x1) bx = r.x - 10 - w;
+    var by = Math.max(o.y0, Math.min(o.y1 - h, (r.y || o.y0) - h - 8));
+    box.setAttribute('x', bx); box.setAttribute('y', by); box.setAttribute('width', w); box.setAttribute('height', h); box.setAttribute('rx', 2);
+    txt.setAttribute('transform', 'translate(' + (bx + pad) + ',' + (by + pad) + ')'); [].forEach.call(txt.childNodes, function (t) { t.setAttribute('x', 0); });
+  }
+  function move(e) { show(toSvg(e)); } function hide() { g.style.display = 'none'; }
+  svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide);
+  return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
+}
+
+// Draws the Money Year from the embedded model: a headline that states the year's finding, then four charts across the
 // full width on one shared time axis (one measure each, never two scales on one chart), coloured by the kind of data
 // (interest rates, prices, the currency). Readings sit on the charts: the decisions, highs and lows, the latest values
 // and, as the slider or pointer moves, the value on that day. A Budget 2026 line runs through every chart; the proposals
@@ -254,10 +373,11 @@ svg{font-size:17px}
 
   const panelsRoot = $('panels');
   const slider = $('when');
-  const readout = $('readout');
   const views = [];
+  const removers = []; // the crosshairs on the charts, removed before each redraw
 
   function draw() {
+    removers.splice(0).forEach((off) => off());
     panelsRoot.textContent = '';
     views.length = 0;
     const W = Math.max(300, Math.floor(panelsRoot.clientWidth)), narrow = W < 640, fs = narrow ? 12 : 13, dy = fs + 4;
@@ -372,17 +492,52 @@ svg{font-size:17px}
       const cross = el('line', { y1: 0, y2: PH, class: 'cross', visibility: 'hidden' }, marks);
       const dots = p.lines.map(() => el('circle', { r: narrow ? 4 : 4.5, class: 'dot', visibility: 'hidden' }, marks));
       const live = el('g', { class: 'live' }, svg);
-      const hitArea = el('rect', { x: 0, y: 0, width: W, height: PH, class: 'hit' }, svg);
-      hitArea.addEventListener('pointermove', (e) => { const r = svg.getBoundingClientRect(); setDay(Math.round(((e.clientX - r.left) / r.width) * ((T1 - T0) / DAY))); });
-      hitArea.addEventListener('pointerdown', (e) => hitArea.dispatchEvent(new PointerEvent('pointermove', e)));
+      el('rect', { x: 0, y: 0, width: W, height: PH, class: 'hit' }, svg);
       box.appendChild(html('p', 'note', p.note));
-      views.push({ p, x, y, cross, dots, live, W, PH, fs, dy, seed: P.boxes.slice() });
+      const view = { p, x, y, cross, dots, live, W, PH, fs, dy, seed: P.boxes.slice() };
+      views.push(view);
+      // The crosshair (shared deskCrosshair): pointing at a chart picks that day for every chart and the slider, and
+      // the reading box gives the date and every measure on it.
+      removers.push(deskCrosshair(svg, { x0: 0, x1: Math.min(W, xr), y0: 0, y1: PH, read: (px) => {
+        const n = setDay(Math.round((px / W) * ((T1 - T0) / DAY))), d = iso(T0 + n * DAY), q = valueAt(p.lines[0].points, d);
+        return { x: x(d), y: q ? y(q[1]) : PH, lines: [longDate(d)].concat(dayValues(d).map((r) => `${r.label} ${r.said}`)) };
+      } }));
     });
     setDay(Number(slider.value));
   }
 
+  // Every measure's value in force on a day, in words.
+  function dayValues(d) {
+    const out = [];
+    for (const p of M.panels) for (const l of p.lines) {
+      const q = valueAt(l.points, d);
+      if (q) { const mon = p.monthly ? MONTHS[Number(q[0].slice(5, 7)) - 1] : null; out.push({ p, l, q, label: l.label, v: fmt(p, q[1]), mon, said: `${fmt(p, q[1])}${mon ? ` (${mon.slice(0, 3)})` : ''}` }); }
+    }
+    return out;
+  }
+  // The readout under the slider: the day, each measure's value (one cell per line, built once), and what has changed
+  // for the policy rate since that day.
+  const cells = new Map();
+  function readoutCells() {
+    const dl = $('rr-day');
+    for (const p of M.panels) for (const l of p.lines) {
+      const div = html('div', `cell c-${COLOUR[p.id] || 'd1'}`), dt = html('dt', 'readout-k', l.label), dd = html('dd', 'readout-v');
+      dd.setAttribute('data-flash', ''); if (window.deskWatchFlash) window.deskWatchFlash(dd);
+      div.append(dt, dd); dl.appendChild(div); cells.set(l, dd);
+    }
+  }
+  function sinceText(d) {
+    const pol = panel('policy');
+    if (!pol) return '';
+    const l = pol.lines[0], q = valueAt(l.points, d), last = l.points.at(-1);
+    if (!q) return '';
+    if (d >= M.retrieved) return `The latest day in the data. Move the slider back to compare any earlier day with it.`;
+    if (q[1] === last[1]) return `The policy rate has not changed since this day: ${fmt(pol, q[1])} then and on ${longDate(M.retrieved)}.`;
+    return `Since this day the policy rate has ${last[1] > q[1] ? 'risen' : 'fallen'} from ${fmt(pol, q[1])} to ${fmt(pol, last[1])} (${longDate(M.retrieved)}).`;
+  }
+
   // One day picked, by pointer or slider: every chart shows it and writes its value there, and the readout says it all
-  // in words. A line's latest value is already written at its end, so it isn't repeated.
+  // in words. A line's latest value is already written at its end, so it isn't repeated. Returns the day's number.
   function setDay(n) {
     n = Math.max(0, Math.min(DAYS, n));
     slider.value = n;
@@ -405,8 +560,12 @@ svg{font-size:17px}
       });
     }
     const text = `${longDate(d)}: ${parts.join(', ')}.`;
-    readout.textContent = text;
+    $('rk-day').textContent = `On ${longDate(d)}`;
+    for (const r of dayValues(d)) { const dd = cells.get(r.l); dd.textContent = r.v; if (r.mon) dd.appendChild(html('span', 'readout-when', ` for ${r.mon}`)); }
+    for (const [l, dd] of cells) if (!valueAt(l.points, d)) dd.textContent = '–';
+    $('rt-day').textContent = sinceText(d);
     slider.setAttribute('aria-valuetext', text);
+    return n;
   }
 
   // The headline states the year's finding, from the policy rate's decisions; the lede gives the other three.
@@ -455,6 +614,8 @@ svg{font-size:17px}
       col.appendChild(ol);
       root.appendChild(col);
     }
+    const yrs = [...groups.keys()].sort(), n = M.proposals.length;
+    if (n) $('h-budget').textContent = `${count(n)} ${n === 1 ? 'measure' : 'measures'} that would start ${yrs.length > 1 ? `between ${yrs[0]} and ${yrs.at(-1)}` : `in ${yrs[0]}`}`;
     if (!M.proposals.length) $('budget').hidden = true;
     if (M.budgetUrl) $('budget-link').href = M.budgetUrl;
   }
@@ -490,7 +651,13 @@ svg{font-size:17px}
   slider.value = DAYS;
   $('asof').textContent = `Data to ${longDate(M.retrieved)}. The shaded end of each chart is the part of the year that isn't in yet.${M.budgetDay ? ` The dashed line marks Budget 2026, ${longDate(M.budgetDay)}.` : ''}`;
   slider.addEventListener('input', () => setDay(Number(slider.value)));
-  finding(); lede(); lane(); table(); sources(); draw();
+  const WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const count = (n) => WORDS[n] || String(n);
+  $('h-year').textContent = `${count(M.panels.length)} measures on one timeline`;
+  readoutCells(); finding(); lede(); lane(); table(); sources(); draw();
+  // The first fill is not a change: drop the underline the shared layer gives a readout whose text changes (its observer
+  // runs first, in the same microtask queue), so only what the reader moves is underlined.
+  Promise.resolve().then(() => 0).then(() => document.querySelectorAll('[data-flash].flash').forEach((e) => e.classList.remove('flash')));
   let lastW = panelsRoot.clientWidth;
   new ResizeObserver(() => { if (panelsRoot.clientWidth !== lastW) { lastW = panelsRoot.clientWidth; draw(); } }).observe(panelsRoot);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);

@@ -173,7 +173,39 @@
     $$('[data-who]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.who === state.who)));
     $('#finding').textContent = headlineText(headline(r, state[state.who].cppAge));
     $('#dek').textContent = dekText(state.who, out[state.who]);
+    readouts(state.who, out[state.who]);
     charts();
+  }
+
+  // The readings beside the charts, for the person they show: both crossing ages and the OAS recovered.
+  function readouts(w, s) {
+    const n = name(w), st = state[w];
+    if (s.cppCrossing === null) {
+      $('#rd-cpp-k').textContent = `CPP: ${n}'s standard start`;
+      $('#rd-cpp-v').textContent = 'No crossing';
+      $('#rd-cpp-t').textContent = `${n} starts at the standard age, ${std}: about ${money(s.cppMonthly)} a month, with nothing to compare.`;
+    } else {
+      $('#rd-cpp-k').textContent = `CPP: ${n}'s totals cross at about age`;
+      $('#rd-cpp-v').textContent = ageText(s.cppCrossing);
+      $('#rd-cpp-t').textContent = st.cppAge > std
+        ? `${n}'s start at ${st.cppAge}, about ${money(s.cppMonthly)} a month, catches up with a start at ${std} at this age.`
+        : `${n}'s start at ${st.cppAge}, about ${money(s.cppMonthly)} a month, stays ahead of a start at ${std} until this age.`;
+    }
+    if (s.oasCrossing === null) {
+      $('#rd-oas-k').textContent = `OAS: ${n}'s earliest start`;
+      $('#rd-oas-v').textContent = 'No crossing';
+      $('#rd-oas-t').textContent = `${n} starts at ${r.oas.start}, the earliest age: about ${money(s.oasMonthly)} a month.`;
+    } else {
+      $('#rd-oas-k').textContent = `OAS: ${n}'s totals cross at about age`;
+      $('#rd-oas-v').textContent = ageText(s.oasCrossing);
+      $('#rd-oas-t').textContent = `${n}'s start at ${st.oasAge}, about ${money(s.oasMonthly)} a month, catches up with a start at ${r.oas.start} at this age, counting the rise at ${r.oas.boostAge}.`;
+    }
+    $('#rd-rec-k').textContent = `OAS recovered from ${n}, on the ${r.recovery.year} threshold`;
+    $('#rd-rec-v').textContent = `${money(Math.max(0, s.recovery))} a year`;
+    const her = people[w].possessive;
+    $('#rd-rec-t').textContent = s.recovery <= 0
+      ? `On ${her} example net income of about ${money(s.net)}, below the threshold: none of ${her} OAS is recovered.`
+      : `On ${her} example net income of about ${money(s.net)}, ${money(s.overThreshold)} above the threshold${s.recoveryCapped ? `: all of ${her} OAS is recovered` : ''}.`;
   }
 
   // ---------- the two charts ----------
@@ -203,6 +235,7 @@
   }
 
   function panel(holder, o) {
+    if (holder.unhair) holder.unhair();
     holder.textContent = '';
     const from = r.cpp.earliest, to = story.chart.toAge;
     const Wd = Math.max(280, Math.floor(holder.clientWidth || 320)), narrow = Wd < 520;
@@ -297,6 +330,13 @@
       t.setAttribute('x', cx + best.dx); t.setAttribute('y', cy + best.dy); t.setAttribute('text-anchor', best.anchor);
       placed.push(t.getBBox());
     }
+
+    // the reading under the pointer: the age and each line's total at that age, the largest first
+    holder.unhair = deskCrosshair(svg, { x0: X(from), x1: X(to), y0: pad.t, y1: H - pad.b, read: (px) => {
+      const a = Math.round(from + ((px - pad.l) / (Wd - pad.l - pad.r)) * (to - from));
+      const rows = starts.map((s) => ({ s, v: o.total(s, a) })).sort((p, q) => q.v - p.v);
+      return { x: X(a), y: Y(rows[0].v), lines: [`At age ${a}`, ...rows.map((q) => `${q.s === o.chosen ? `${o.name} · ${q.s}` : `start ${q.s}`}: ${money(q.v)}`)] };
+    } });
   }
 
   // a printed letter carries its sources list open
@@ -305,6 +345,8 @@
   addEventListener('afterprint', () => { details.open = details.dataset.was === 'true'; });
 
   render();
+  // the first fill is not a change: no underline on load
+  requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
   let t;
   addEventListener('resize', () => { clearTimeout(t); t = setTimeout(charts, 120); });
 })();

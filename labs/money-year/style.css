@@ -15,7 +15,7 @@ h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:24ch;mar
 h2{font-size:1.55rem;line-height:1.15;margin:0 0 .8rem}
 h3{font-size:1.05rem;font-weight:650;margin:0}
 .crumb{font-size:.9rem;margin:1.5rem 0 0;color:var(--t-ink2)}
-.kicker{font-family:var(--font-mono);font-size:.8rem;color:var(--t-ink3);margin:2.5rem 0 0}
+.kicker{font-family:var(--font-mono);font-size:.85rem;color:var(--t-ink3);margin:2.5rem 0 0}
 .crumb + .kicker{margin-top:.6rem}
 .lede{max-width:62ch;color:var(--t-ink2);font-size:1.1rem;margin:1.1rem 0 0;font-variant-numeric:tabular-nums}
 .note{font-size:.9rem;color:var(--t-ink3);max-width:70ch}
@@ -27,7 +27,6 @@ h3{font-size:1.05rem;font-weight:650;margin:0}
 .scrub{border-top:1px solid var(--t-rule);border-bottom:1px solid var(--t-rule);padding:.8rem 0 .6rem}
 .scrub label{display:block;font-weight:650;margin-bottom:.2rem}
 input[type=range]{display:block;width:100%;min-height:44px;margin:0;accent-color:var(--t-ink)}
-.readout{margin:.2rem 0 0;min-height:3.1em;color:var(--t-ink2);font-size:.95rem;font-variant-numeric:tabular-nums}
 #asof{margin:.7rem 0 1.5rem}
 .panels{width:100%}
 .panel{--c:var(--t-d1);margin:0 0 2.25rem;padding-top:.9rem;border-top:1px solid var(--t-rule)}
@@ -92,7 +91,8 @@ input[type=range]{display:block;width:100%;min-height:44px;margin:0;accent-color
 .nums th[scope=row],.nums thead th:first-child{text-align:left}
 
 /* Proposed next */
-.budget-sec{margin-top:3.5rem}
+.budget-sec,.src-sec{margin-top:4.5rem}
+.src-sec .fold{margin-top:.5rem}
 .budget-sec > .lede{margin-top:0}
 .lane{list-style:none;margin:1.75rem 0 0;padding:0;display:grid;gap:2rem}
 @media (min-width:900px){.lane{grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem}}
@@ -113,3 +113,13 @@ input[type=range]{display:block;width:100%;min-height:44px;margin:0;accent-color
 
 /* Chart text keeps the size its label placement was tuned for; the page text around it is larger. */
 svg{font-size:17px}
+
+/* The premium layer (shared/desk/desk-ui.mjs): the day's readout under the slider */
+.scrub .readout{margin:.6rem 0 .3rem;max-width:none}
+.readout-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(10.5rem,1fr));gap:.6rem 2rem;margin:.4rem 0 .5rem}
+.readout-row .cell{display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.readout-row dd{margin:0;width:fit-content;max-width:100%}
+.readout-row .c-d1 dd{color:var(--t-d1)}.readout-row .c-d3 dd{color:var(--t-d3)}.readout-row .c-d4 dd{color:var(--t-d4)}
+@media (max-width:639px){.readout-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem 1rem}}
+.readout-when{font-family:var(--font-ui);font-size:15.5px;font-weight:500;color:var(--t-ink3);white-space:nowrap}
+.crosshair text{font-size:13.5px}

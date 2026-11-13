@@ -20,12 +20,17 @@
     <h1 id="finding">Canada's money year, graphed</h1>
     <p class="lede" id="lede"></p>
 
-    <section class="yr-sec" aria-labelledby="h-year">
-      <h2 id="h-year">The year so far, on one timeline</h2>
+    <section class="yr-sec" data-chapter="The year" aria-labelledby="h-year">
+      <p class="sec-label"><b>01</b>The year so far</p>
+      <h2 id="h-year">Four measures on one timeline</h2>
       <div class="scrub">
         <label for="when">Move through the year</label>
         <input id="when" type="range" min="0" step="1">
-        <p id="readout" class="readout" role="status" aria-live="polite"></p>
+        <div id="readout" class="readout" role="status" aria-live="polite">
+          <p class="readout-k" id="rk-day" data-flash></p>
+          <dl class="readout-row" id="rr-day"></dl>
+          <p class="readout-t" id="rt-day"></p>
+        </div>
       </div>
       <p id="asof" class="note"></p>
       <div id="panels" class="panels"></div>
@@ -35,12 +40,15 @@
       </details>
     </section>
 
-    <section id="budget" class="budget-sec" aria-labelledby="h-budget">
+    <section id="budget" class="budget-sec" data-chapter="Proposed next" aria-labelledby="h-budget">
+      <p class="sec-label"><b>02</b>Proposed next</p>
       <h2 id="h-budget">Proposed next</h2>
       <p class="lede">What Budget 2026 proposes, in the order it would start. These are proposals and a consultation: not law unless enacted. Each figure is copied from the <a id="budget-link" href="#">budget's tax measures</a> and confirmed by me against the page.</p>
       <ol id="lane" class="lane"></ol>
     </section>
 
+    <section class="src-sec" data-chapter="Sources" aria-labelledby="h-src">
+    <p class="sec-label" id="h-src"><b>03</b>Sources</p>
     <details class="fold" id="about">
       <summary>Sources and how it's made</summary>
       <div class="prose">
@@ -49,6 +57,7 @@
         <p>Charts show one measure each on a shared timeline, so no chart has two scales. Callouts and figures are computed from the data, never typed in.</p>
       </div>
     </details>
+    </section>
   </main>
   <footer class="foot">
     <div>

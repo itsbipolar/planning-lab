@@ -62,6 +62,17 @@ h3{font-size:1.2rem;line-height:1.2}
 .dot{fill:var(--t-ground);stroke:var(--t-ink);stroke-width:2}
 .dot-pick{stroke:var(--pick);stroke-width:3}
 .chart-note{max-width:80ch;margin:1rem 0 0}
+/* the readings for the person shown, between the switch and the charts */
+.readouts{display:grid;gap:0 2rem;margin:1rem 0 .25rem}
+@media (min-width:900px){.readouts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.readouts .readout{margin:.6rem 0}
+@media (min-width:900px){.readouts .readout-v{font-size:1.8rem}}
+.charts .sec-label{margin-bottom:.35rem}
+.letter-sec{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1.25rem}
+.letter-sec .letter{margin-top:1.25rem}
+.controls .sec-label{margin-bottom:.35rem}
+.plot svg{touch-action:pan-y}
+.plot .crosshair text{font-size:13px}
 
 /* the letter: a readable sheet, with margin notes beside it on wide screens */
 .letter{margin:3rem 0 1rem}
@@ -110,7 +121,7 @@ h3{font-size:1.2rem;line-height:1.2}
 @media print{
   :root,:root[data-theme="dark"],:root[data-theme="light"]{color-scheme:light;--t-ground:#fff;--t-raised:#fff;--t-ink:#000;--t-ink2:#222;--t-ink3:#444;--t-rule:#bbb;--t-d1:#1F64A8;--t-d3:#157A6E;--pick:#A8690A;--pick-text:#000;--pick-bg:transparent;--pick-label:#7A500F}
   body{font-size:11pt;background:#fff;color:#000}
-  .bar,.who,.controls,.credit,noscript,.intro{display:none}
+  .bar,.who,.controls,.credit,noscript,.intro,.rail,.read-progress,.crosshair{display:none}
   .para,.para .txt{display:block;background:none;padding:0}
   .txt{font-size:11pt}
   .side{font-size:9pt;border-left:2px solid #999;padding-left:.6rem;margin:.25rem 0 .75rem}

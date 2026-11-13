@@ -55,6 +55,15 @@ section{margin-top:2.75rem}
 :root[data-theme="light"] .sw.today{background:var(--t-point-deep)}
 .sw.hatch{width:18px;height:10px;background:repeating-linear-gradient(135deg,var(--t-ink2) 0 1.5px,transparent 1.5px 5px);border:1px solid var(--t-ink3)}
 
+/* the answer for the household, under the quick picks */
+.readouts{display:grid;gap:0 2.5rem;margin:1.1rem 0 .25rem}
+@media (min-width:700px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.readouts .readout{margin:.5rem 0}
+.hint{font-size:16.5px;color:var(--t-ink2);margin:.5rem 0 0}
+#strip{touch-action:pan-y}
+#strip .crosshair text{font-size:14px;fill:var(--t-ink)}
+#strip .crosshair tspan{fill:var(--t-ink)}
+
 /* save */
 .save{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:1.5rem}
 .save .note{margin:0;max-width:60ch}

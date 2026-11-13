@@ -6,14 +6,15 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { rules } from './calc.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
+import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
 const all = JSON.parse(read(join(root, 'shared', 'facts.json'))).facts;
 const r = rules(all); // throws if a rule the letter needs is not confirmed
-const css = [deskCSS(), read(join(here, 'style.css'))].join('\n');
+const css = [deskCSS(), deskUICSS(), read(join(here, 'style.css'))].join('\n');
 const strip = (p) => read(p).replace(/^export /gm, '');
-const js = [strip(join(root, 'shared', 'drag-number.js')), strip(join(here, 'calc.mjs')), read(join(here, 'app.js'))].join('\n');
+const js = [deskUIJS(), strip(join(root, 'shared', 'drag-number.js')), strip(join(here, 'calc.mjs')), read(join(here, 'app.js'))].join('\n');
 const facts = JSON.stringify({ facts: all.filter((f) => f.status === 'confirmed') }).replace(/</g, '\\u003c');
 const story = JSON.stringify(JSON.parse(read(join(here, 'story.json')))).replace(/</g, '\\u003c');
 const html = read(join(here, 'index.src.html')).replace('/*@@CSS@@*/', () => css).replace('/*@@FACTS@@*/', () => facts)

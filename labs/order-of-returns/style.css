@@ -13,18 +13,17 @@ a{color:inherit;text-underline-offset:3px}
 .top a:last-child{margin-left:auto}
 @media (max-width:420px){.top{column-gap:1rem}.top a:last-child{font-size:.9rem}}
 .brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;margin-right:auto}
-.kicker,.label{font:500 13px/1.4 var(--font-mono);color:var(--t-ink3);margin:0 0 .6rem}
-.kicker{margin-top:2.5rem}
-.label::before{content:'';display:inline-block;width:10px;height:10px;background:var(--t-point);margin-right:.5rem;vertical-align:-1px}
+.kicker{font:500 15px/1.4 var(--font-mono);color:var(--t-ink3);margin:2.5rem 0 .6rem}
 h1,h2{font-family:var(--font-display);font-weight:650;letter-spacing:-.012em;margin:0;text-wrap:balance}
 h1{font-size:clamp(2rem,1.1rem + 3.4vw,3.9rem);line-height:1.06;max-width:22em}
 h2{font-size:clamp(1.55rem,1.05rem + 1.7vw,2.4rem);line-height:1.12;max-width:30em;margin-bottom:1rem}
 h3{font-size:1.05rem;line-height:1.3;margin:2rem 0 .5rem;font-weight:700}
 .deck{font-size:clamp(1.1rem,1rem + .4vw,1.3rem);line-height:1.5;color:var(--t-ink2);max-width:46em;margin:1.1rem 0 .6rem}
-.meta{font:500 13px/1.5 var(--font-mono);color:var(--t-ink3);margin:0 0 1.5rem;max-width:60em}
+.meta{font:400 16px/1.5 var(--font-ui);color:var(--t-ink3);margin:0 0 1.5rem;max-width:60em}
 .prose p,.prose li,.prose ul{max-width:42rem}
 .prose p,p.summary{margin:0 0 1rem}
-section{border-top:1px solid var(--t-rule);margin-top:3.5rem;padding-top:1.5rem}
+section{margin-top:5rem}
+section.opening{margin-top:0}
 .small,.note{font-size:16.5px;color:var(--t-ink3)}
 .summary{max-width:46rem;color:var(--t-ink2)}
 .you-rank{color:var(--t-ink);font-weight:600}
@@ -34,7 +33,7 @@ section{border-top:1px solid var(--t-rule);margin-top:3.5rem;padding-top:1.5rem}
 .fig{margin:1.25rem 0 .5rem;width:100%;min-width:0}
 .fig-title{font-weight:700;font-size:16px;line-height:1.35;margin:0 0 .6rem}
 .fig svg{display:block;width:100%;height:auto;overflow:visible}
-.syn{font:500 12px/1.4 var(--font-mono);color:var(--t-ink3);margin-top:.4rem}
+.syn{font:400 14px/1.4 var(--font-ui);color:var(--t-ink3);margin-top:.4rem}
 .multiples{display:grid;grid-template-columns:minmax(0,1fr);gap:28px 32px;margin:1rem 0}
 @media (min-width:900px){.multiples{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .small-multiple{margin:0}
@@ -105,3 +104,21 @@ td{text-align:right}
 
 /* Chart text keeps the size its label placement was tuned for; the page text around it is larger. */
 svg{font-size:17px}
+
+/* The premium layer (shared/desk/desk-ui.mjs): each control's readout */
+.control{margin:0}
+.readout{margin:1.1rem 0 1.75rem}
+.readout-row{display:flex;flex-wrap:wrap;gap:.6rem 3rem}
+.readout-row > div{min-width:0}
+.readout-row > div[hidden]{display:none}
+.readout .order-k{margin-top:1rem}
+.cards.mini{margin:.35rem 0 0;width:fit-content;max-width:100%}
+.readout-v{width:fit-content;max-width:100%}
+.cards.mini li{min-width:3.6rem;font-size:15.5px;padding:.3rem .4rem}
+.save-note{margin:0}
+.save-note:empty{display:none}
+.crosshair text{font-size:14px}
+.cards.mini li{box-shadow:inset 0 -3px 0 var(--t-d4)}
+.cards.mini li.down{box-shadow:inset 0 0 0 1px var(--t-ink3),inset 0 -3px 0 var(--t-d4)}
+/* wide screens: clear the slim chapter rail at the left edge */
+@media (min-width:1360px){.page{padding-left:72px}}

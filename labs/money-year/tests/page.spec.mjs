@@ -15,7 +15,7 @@ async function clashes(page) {
     const out = [];
     svgs.forEach((svg, k) => {
       const W = svg.viewBox.baseVal.width, H = svg.viewBox.baseVal.height;
-      const boxes = [...svg.querySelectorAll('text')].filter((t) => t.textContent.trim()).map((t) => { const b = t.getBBox(); return [b.x, b.y, b.width, b.height, t.textContent]; });
+      const boxes = [...svg.querySelectorAll('text')].filter((t) => t.textContent.trim() && !t.closest('.crosshair')).map((t) => { const b = t.getBBox(); return [b.x, b.y, b.width, b.height, t.textContent]; });
       for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
         const [a, b] = [boxes[i], boxes[j]];
         if (a[0] < b[0] + b[2] - 1 && b[0] < a[0] + a[2] - 1 && a[1] < b[1] + b[3] - 1 && b[1] < a[1] + a[3] - 1) out.push(`chart ${k}: ${a[4]} / ${b[4]}`);
@@ -93,6 +93,48 @@ for (const width of [390, 1440]) {
           expect(await clashes(page), `${theme}, day ${Math.round(days * f)}`).toEqual([]);
         }
       }
+    });
+
+    test('the day readout sits under the slider and its values change with the day; the rail; the crosshair reads every chart', async ({ page }) => {
+      await page.goto(url);
+      const c = await page.locator('#when').boundingBox(), r = await page.locator('#readout').boundingBox();
+      expect(r.y).toBeGreaterThanOrEqual(c.y + c.height - 1);
+      expect(r.y - (c.y + c.height)).toBeLessThan(48);
+      const lines = M.panels.flatMap((p) => p.lines);
+      await expect(page.locator('#readout dt')).toHaveText(lines.map((l) => l.label));
+      await expect(page.locator('#readout dd').first()).toHaveText(policy.summary.to);
+      await expect(page.locator('#rk-day')).toHaveText(/^On \w+ \d{1,2}, \d{4}$/);
+      await page.locator('#when').focus(); await page.keyboard.press('Home');
+      await expect(page.locator('#rk-day')).toHaveText('On January 1, 2026');
+      if (policy.decisions.length) {
+        await expect(page.locator('#readout dd').first()).toHaveText(policy.summary.from);
+        await expect(page.locator('#rt-day')).toContainText(`Since this day the policy rate has`);
+      }
+      const sizes = await page.evaluate(() => ['#readout dd', '#rt-day', '#readout dt'].map((s) => parseFloat(getComputedStyle(document.querySelector(s)).fontSize)));
+      expect(sizes[0]).toBeGreaterThan(sizes[1]);
+      expect(sizes[2]).toBeGreaterThanOrEqual(15);
+
+      await expect(page.locator('section[data-chapter]')).toHaveCount(3);
+      if (width >= 1440) {
+        await expect(page.locator('nav.rail')).toBeVisible();
+        expect(await page.locator('nav.rail a').count()).toBeGreaterThanOrEqual(3);
+        const rail = await page.locator('nav.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
+        expect(rail.x + rail.width).toBeLessThan(h1.x);
+      } else await expect(page.locator('nav.rail')).toBeHidden();
+
+      for (const [k, f] of [[0, 0.4], [3, 0.6]]) {
+        const svg = page.locator('.panel svg').nth(k); await svg.scrollIntoViewIfNeeded();
+        const b = await svg.boundingBox(), before = await page.locator('#when').inputValue();
+        await page.mouse.move(b.x + b.width * f, b.y + b.height * 0.4);
+        await expect(svg.locator('.crosshair')).toBeVisible();
+        const text = await svg.locator('.crosshair text').textContent();
+        expect(text).toMatch(/^\w+ \d{1,2}, 2026/);
+        for (const l of lines) expect(text).toContain(l.label);
+        expect(await page.locator('#when').inputValue()).not.toBe(before); // the slider and the readout follow the pointer
+        await expect(page.locator('#rk-day')).toHaveText('On ' + text.match(/^\w+ \d{1,2}, 2026/)[0]);
+      }
+      await page.mouse.move(0, 0);
+      expect(await clashes(page)).toEqual([]);
     });
 
     for (const theme of ['dark', 'light']) {

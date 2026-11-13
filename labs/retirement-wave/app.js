@@ -58,8 +58,14 @@
   }
 
   // ---------- the heatmap ----------
+  // where the pointer is, read before the chart's own listeners (the crosshair reads across; this gives the row)
+  let pointerY = null;
+  for (const ev of ['pointermove', 'pointerdown']) $('frame').addEventListener(ev, (e) => { pointerY = e.clientY; }, true);
+  let unhair = null;
   function drawHeat() {
-    const svg = $('heat'); clear(svg);
+    const svg = $('heat');
+    if (unhair) unhair();
+    clear(svg);
     const W = Math.max(300, $('frame').clientWidth), narrow = W < 640;
     // The grid runs the full width. Wide: the rule names sit inside the grid on a ground-coloured backing, wherever the
     // line is clear of the diagonal's readings. Narrow: a thin gutter on the right holds the rule ages, and the names are
@@ -179,6 +185,14 @@
       if (y < y0 || y > y1 || a < a0 || a > a1) return;
       $('point').textContent = `July 1, ${y}: ${n(V.counts[y][a - a0])} ${who(M, state.place, state.gender)} were ${a}, ${pct(value(M, V, 'share', y, a), 2)} of the population.`;
     };
+    // the reading box over the square under the pointer: its year, age, count and share
+    unhair = deskCrosshair(svg, { x0: left, x1: R - 0.01, y0: top, y1: top + plotH, read: (px) => {
+      if (pointerY == null) return null;
+      const r = svg.getBoundingClientRect(), py = (pointerY - r.top) * (W / r.width);
+      const y = Math.min(y1, y0 + Math.floor((px - left) / cw)), a = a1 - Math.floor((py - top) / ch);
+      if (a < a0 || a > a1) return null;
+      return { x: X(y) + cw / 2, y: Y(a), lines: [`Age ${a}, July 1, ${y}`, `${n(V.counts[y][a - a0])} people`, `${pct(value(M, V, 'share', y, a), 2)} of the population`] };
+    } });
     drawLegend(lo, hi);
     return d;
   }
@@ -231,10 +245,26 @@
     }
     if (d.last && !d.crossings.some((c) => c.year === d.last[0])) ul.appendChild(html('li', `${d.last[1]} in ${d.last[0]}${d.last[0] === y1 ? ', the latest year' : ''}: ${n(V.counts[d.last[0]][d.last[1] - a0])} people, ${pct(value(M, V, 'share', d.last[0], d.last[1]), 2)} of the population.`));
     $('born-note').textContent = state.example
-      ? `An example: born ${EXAMPLE_BIRTH}. The diagonal follows the people born July 2, ${b - 1} to July 1, ${b}. Type your own year; it stays in this page.`
-      : `The diagonal follows the people born July 2, ${b - 1} to July 1, ${b}. The year stays in this page.`;
+      ? `An example: born ${EXAMPLE_BIRTH}. Type your own year; it stays in this page.`
+      : 'The year stays in this page.';
+    bornReadout(d);
     $('point').textContent = 'Point at a square to read it.';
     drawTable(W);
+  }
+
+  // the diagonal's key reading, under the birth year: how many of these people there were in the latest year they appear,
+  // and the rule age they reached most recently (or reach next, after the data ends)
+  function bornReadout(d) {
+    const b = state.born;
+    $('born-k').textContent = `People born July 2, ${b - 1} to July 1, ${b}`;
+    if (!d.last) { $('born-v').textContent = 'Not in the data'; $('born-t').textContent = `The chart covers ages ${a0} to ${a1} on July 1, ${y0} to ${y1}.`; return; }
+    const [ly, la] = d.last, count = V.counts[ly][la - a0], share = value(M, V, 'share', ly, la);
+    $('born-v').textContent = state.mode === 'share' ? `${pct(share, 2)} of the population` : `${n(count)} people`;
+    const past = d.crossings.filter((c) => c.when === 'in').at(-1), next = d.crossings.find((c) => c.when === 'after');
+    let t = `They were ${la} on July 1, ${ly}${ly === y1 ? ', the latest year' : ''}: ${state.mode === 'share' ? `${n(count)} ${who(M, state.place, state.gender)}` : `${pct(share, 2)} of the population`}.`;
+    if (past) t += ` They reached ${past.age} (${past.rule.text}) in ${past.year}.`;
+    if (next) t += ` They reach ${next.age} (${next.rule.text}) in ${next.year}, after the data ends.`;
+    $('born-t').textContent = t;
   }
 
   function drawTable(W) {
@@ -316,4 +346,6 @@
 
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 120); });
   render();
+  // the first fill is not a change: no underline on load
+  requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
 })();

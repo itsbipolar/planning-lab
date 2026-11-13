@@ -30,6 +30,56 @@ for (const width of [390, 1440]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
     });
 
+    test('each result is a readout right under its control, and it changes with the control', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      const under = async (control, readout) => {
+        const c = await page.locator(control).boundingBox(), r = await page.locator(readout).boundingBox();
+        expect(r.y - (c.y + c.height), `${readout} sits under ${control}`).toBeGreaterThanOrEqual(-1);
+        expect(r.y - (c.y + c.height), `${readout} sits under ${control}`).toBeLessThan(48);
+      };
+      await under('#cpp-range', '#cpp-readout'); await under('#oas-range', '#oas-readout');
+      await under('#income', '#rec-readout'); await under('#fund', '#fund-readout');
+      for (const [range, big] of [['#cpp-range', '#cpp-big'], ['#oas-range', '#oas-big']]) {
+        const before = await page.locator(big).textContent();
+        await page.locator(range).focus(); await page.keyboard.press('Home');
+        await expect(page.locator(big)).not.toHaveText(before);
+        await expect(page.locator(big)).toHaveClass(/flash/);
+      }
+      await expect(page.locator('#cpp-text b')).toContainText('age ');
+      for (const [input, big, v] of [['#income', '#rec-big', '150000'], ['#fund', '#fund-big', '250000']]) {
+        const before = await page.locator(big).textContent();
+        await page.fill(input, v);
+        await expect(page.locator(big)).not.toHaveText(before);
+        await expect(page.locator(big)).toHaveText(/^\$[\d,]+$/);
+      }
+      await expect(page.locator('#fund-text')).toContainText('on January 1');
+      await expect(page.locator('#people-big')).toContainText('About');
+    });
+
+    test('the chapter rail shows on wide screens only; each totals chart reads out under the pointer', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expect(page.locator('section[data-chapter]')).toHaveCount(5);
+      await expect(page.locator('.sec-label')).toHaveCount(5);
+      if (width >= 1440) {
+        await expect(page.locator('.rail')).toBeVisible();
+        expect(await page.locator('.rail a').count()).toBeGreaterThanOrEqual(3);
+        // the rail never sits on the page text
+        const rail = await page.locator('.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
+        expect(rail.x + rail.width).toBeLessThan(h1.x);
+      } else await expect(page.locator('.rail')).toBeHidden();
+      for (const id of ['#cpp-chart', '#oas-chart']) {
+        const svg = page.locator(id); await svg.scrollIntoViewIfNeeded();
+        const b = await svg.boundingBox();
+        await page.mouse.move(b.x + b.width * 0.6, b.y + b.height / 2);
+        await expect(page.locator(`${id} .crosshair`)).toBeVisible();
+        await expect(page.locator(`${id} .crosshair text`)).toContainText('At age');
+        await expect(page.locator(`${id} .crosshair text`)).toContainText('years');
+      }
+      // a redraw leaves one crosshair, not two
+      await page.locator('#cpp-range').focus(); await page.keyboard.press('End');
+      await expect(page.locator('#cpp-chart .crosshair')).toHaveCount(1);
+    });
+
     test('labels on the timeline do not overlap', async ({ page }) => {
       await page.goto(url);
       for (const y of ['1965', '1950', '1990', '2008']) {

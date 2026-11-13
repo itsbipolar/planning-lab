@@ -17,7 +17,7 @@ async function open(page) {
   await page.goto(url); await page.waitForLoadState('load');
 }
 async function textClashes(page) {
-  return page.locator('#strip text').evaluateAll((ts) => {
+  return page.locator('#strip text:not(.crosshair text)').evaluateAll((ts) => {
     const b = ts.filter((t) => t.textContent.trim()).map((t) => { const r = t.getBBox(); return [r.x, r.y, r.width, r.height, t.textContent]; });
     const out = [];
     for (let i = 0; i < b.length; i++) for (let j = i + 1; j < b.length; j++) {
@@ -60,6 +60,42 @@ for (const width of [390, 1440]) {
       for (const id of ret.situations) await page.locator(`#sits input[value=${id}]`).uncheck();
       await expect(page.locator('#finding')).toContainText('Tick at least one situation');
       await expect(page.locator('#ics')).toBeDisabled();
+    });
+
+    test('the household\'s answer is a readout under the quick picks; the chapter rail and the strip readings', async ({ page }) => {
+      await open(page);
+      const ex = expected(example.situations);
+      const picks = await page.locator('#picks').boundingBox(), ro = await page.locator('#readouts').boundingBox();
+      expect(ro.y - (picks.y + picks.height)).toBeGreaterThanOrEqual(-1);
+      expect(ro.y - (picks.y + picks.height)).toBeLessThan(48);
+      await expect(page.locator('#rd-count-v')).toHaveText(`${ex.events.length} date${ex.events.length === 1 ? '' : 's'}`);
+      await expect(page.locator('#rd-next-t')).toContainText(ex.events[0].label);
+      const before = await page.locator('#rd-count-v').textContent();
+      const other = config.presets.find((p) => expected(p.situations).events.length !== ex.events.length);
+      await page.locator(`#picks button[data-preset=${other.id}]`).click();
+      await expect(page.locator('#rd-count-v')).not.toHaveText(before);
+      await expect(page.locator('#rd-count-v')).toHaveClass(/flash/);
+      await expect(page.locator('#rd-count-v')).toHaveText(new RegExp(`^${expected(other.situations).events.length} dates?$`));
+      for (const id of other.situations) await page.locator(`#sits input[value=${id}]`).uncheck();
+      await expect(page.locator('#rd-next-v')).toHaveText('None');
+      await page.locator(`#picks button[data-preset=${example.id}]`).click();
+      await expect(page.locator('section[data-chapter]')).toHaveCount(3);
+      await expect(page.locator('.sec-label')).toHaveCount(3);
+      if (width >= 1440) {
+        await expect(page.locator('.rail a')).toHaveCount(3);
+        await expect(page.locator('.rail')).toBeVisible();
+        const rail = await page.locator('.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
+        expect(rail.x + rail.width).toBeLessThan(h1.x);
+      } else await expect(page.locator('.rail')).toBeHidden();
+      // the week of the next date, read under the pointer
+      const strip = page.locator('#strip'); await strip.scrollIntoViewIfNeeded();
+      const k = await page.locator('#strip rect[class^="k-"]').first().boundingBox();
+      await page.mouse.move(k.x + k.width / 2, k.y + k.height / 2);
+      await expect(page.locator('#strip .crosshair')).toBeVisible();
+      await expect(page.locator('#strip .crosshair text')).toContainText('Week of');
+      await expect(page.locator('#strip .crosshair text')).toContainText(ex.events[0].what);
+      await page.locator('#sits input[value=fhsa]').check();
+      await expect(page.locator('#strip .crosshair')).toHaveCount(1);
     });
 
     test('Add to my calendar: an .ics made in the page with the household\'s confirmed dates; nothing sent, stored or put in the address', async ({ page }) => {

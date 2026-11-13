@@ -27,21 +27,25 @@
       <p class="error" id="error" role="alert" hidden></p>
     </form>
 
-    <section class="tl" aria-labelledby="tl-h">
-      <h2 id="tl-h" class="sr-only">The timeline</h2>
+    <section class="tl" data-chapter="Timeline" aria-labelledby="tl-h">
+      <p class="sec-label"><b>01</b>Timeline</p>
+      <h2 id="tl-h">Every rule on one line, by age</h2>
       <div class="tl-frame" id="tl-frame"><svg id="tl" role="img" aria-labelledby="tl-title"><title id="tl-title">Your planning timeline</title></svg></div>
       <ul class="sr-only" id="tl-text"></ul>
       <p class="tl-actions"><button type="button" id="save" class="ghost">Save the timeline as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
     </section>
 
     <div class="choices">
-      <section class="choice" id="cpp" aria-labelledby="cpp-h">
+      <section class="choice" id="cpp" data-chapter="CPP" aria-labelledby="cpp-h">
         <div class="copy">
-          <p class="kicker">Canada Pension Plan</p>
+          <p class="sec-label"><b>02</b>Canada Pension Plan</p>
           <h2 id="cpp-h">When to start CPP</h2>
           <label class="slider"><span>Start at <output id="cpp-age"></output></span><input type="range" id="cpp-range"></label>
-          <p class="big"><output id="cpp-big"></output></p>
-          <p id="cpp-text"></p>
+          <div class="readout" id="cpp-readout">
+            <p class="readout-k">Each month, for life, as a share of the standard amount</p>
+            <p class="readout-v"><output id="cpp-big" data-flash></output></p>
+            <p class="readout-t" id="cpp-text"></p>
+          </div>
         </div>
         <div class="fig">
           <svg class="mini" id="cpp-chart" role="img" aria-labelledby="cpp-chart-t"><title id="cpp-chart-t">Total CPP received by age, for this start age and the standard age</title></svg>
@@ -49,17 +53,24 @@
         </div>
       </section>
 
-      <section class="choice" id="oas" aria-labelledby="oas-h">
+      <section class="choice" id="oas" data-chapter="OAS" aria-labelledby="oas-h">
         <div class="copy">
-          <p class="kicker">Old Age Security</p>
+          <p class="sec-label"><b>03</b>Old Age Security</p>
           <h2 id="oas-h">When to start OAS</h2>
           <label class="slider"><span>Start at <output id="oas-age"></output></span><input type="range" id="oas-range"></label>
-          <p class="big"><output id="oas-big"></output></p>
-          <p id="oas-text"></p>
+          <div class="readout" id="oas-readout">
+            <p class="readout-k" id="oas-k">Each month, for life</p>
+            <p class="readout-v"><output id="oas-big" data-flash></output></p>
+            <p class="readout-t" id="oas-text"></p>
+          </div>
           <div class="recovery">
-            <label for="income">Net income in <span id="rec-year"></span> <span class="note">(an example)</span></label>
+            <label for="income">Net income in <span id="rec-year"></span> <span class="hint">(an example)</span></label>
             <input id="income" type="number" inputmode="numeric" step="1000" min="0">
-            <p id="rec-text"></p>
+            <div class="readout" id="rec-readout">
+              <p class="readout-k">OAS recovered, a year</p>
+              <p class="readout-v"><output id="rec-big" data-flash></output></p>
+              <p class="readout-t" id="rec-text"></p>
+            </div>
           </div>
         </div>
         <div class="fig">
@@ -68,14 +79,19 @@
         </div>
       </section>
 
-      <section class="choice" id="rrif" aria-labelledby="rrif-h">
+      <section class="choice" id="rrif" data-chapter="RRIF" aria-labelledby="rrif-h">
         <div class="copy">
-          <p class="kicker">RRSP to RRIF</p>
+          <p class="sec-label"><b>04</b>RRSP to RRIF</p>
           <h2 id="rrif-h">The minimum that must come out</h2>
           <p id="rrif-text"></p>
-          <label for="fund">A fund of <span class="note">(an example)</span></label>
+          <label for="fund">A fund of <span class="hint">(an example)</span></label>
           <input id="fund" type="number" inputmode="numeric" step="10000" min="0">
-          <p id="fund-text"></p>
+          <div class="readout" id="fund-readout">
+            <p class="readout-k" id="fund-k">The minimum</p>
+            <p class="readout-v"><output id="fund-big" data-flash></output></p>
+            <p class="readout-t" id="fund-text"></p>
+            <p class="readout-fine" id="fund-fine" hidden></p>
+          </div>
         </div>
         <div class="fig">
           <svg class="mini" id="rrif-chart" role="img" aria-labelledby="rrif-chart-t"><title id="rrif-chart-t">The RRIF minimum withdrawal by age, and the share of a fund left if only the minimum comes out</title></svg>
@@ -84,7 +100,15 @@
       </section>
     </div>
 
-    <section class="people" id="people" hidden></section>
+    <section class="people" id="people" data-chapter="Your age" aria-labelledby="people-h" hidden>
+      <p class="sec-label"><b>05</b>People your age</p>
+      <h2 id="people-h">How many Canadians share your age</h2>
+      <div class="readout" id="people-readout">
+        <p class="readout-k" id="people-k">Canadians your age</p>
+        <p class="readout-v"><output id="people-big" data-flash></output></p>
+        <p class="readout-t" id="people-text"></p>
+      </div>
+    </section>
 
     <details class="sources">
       <summary>Sources and assumptions</summary>

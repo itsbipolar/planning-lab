@@ -22,13 +22,18 @@ html{scrollbar-width:thin;scrollbar-color:var(--t-neutral) transparent}
 .read-progress span{display:block;height:100%;background:var(--t-point);transform-origin:0 50%;transform:scaleX(0)}
 .rail{display:none}
 @media (min-width:1360px){
-  .rail{display:block;position:fixed;left:max(12px,calc((100vw - 80rem)/2 - 9.5rem));top:50%;transform:translateY(-50%);width:8.5rem;z-index:40}
+  .rail{display:block;position:fixed;left:12px;top:50%;transform:translateY(-50%);width:2.6rem;z-index:40}
   .rail ol{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
-  .rail a{display:grid;grid-template-columns:1.6rem 1fr;align-items:baseline;gap:.25rem;padding:.3rem 0;color:var(--t-ink3);text-decoration:none;font-size:14.5px;line-height:1.25}
+  .rail a{display:block;padding:.3rem 0;color:var(--t-ink3);text-decoration:none;font-size:14.5px;line-height:1.25}
   .rail a b{font-weight:650;font-variant-numeric:tabular-nums}
-  .rail a:hover{color:var(--t-ink)}
-  .rail a[aria-current="true"]{color:var(--t-ink)}
-  .rail a[aria-current="true"] b{color:var(--t-ink);box-shadow:inset 0 -2px 0 var(--t-point)}
+  .rail a span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .rail a:hover,.rail a[aria-current="true"]{color:var(--t-ink)}
+  .rail a[aria-current="true"] b{box-shadow:inset 0 -2px 0 var(--t-point)}
+}
+@media (min-width:1700px){
+  .rail{left:max(12px,calc((100vw - 80rem)/2 - 10rem));width:8.5rem}
+  .rail a{display:grid;grid-template-columns:1.6rem 1fr;align-items:baseline;gap:.25rem}
+  .rail a span{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
 }
 .sec-label{position:relative;margin:0 0 .5rem;padding-top:.9rem;font-size:1.05rem;font-weight:650;color:var(--t-ink2);font-variant-numeric:tabular-nums}
 .sec-label::before{content:"";position:absolute;top:0;left:0;width:3rem;height:3px;background:var(--t-point)}
@@ -68,7 +73,7 @@ export function deskUIJS() {
     chapters.forEach(function (c, i) {
       if (!c.id) c.id = 'chapter-' + (i + 1);
       var li = document.createElement('li'), a = document.createElement('a'), b = document.createElement('b');
-      a.href = '#' + c.id; b.textContent = String(i + 1).padStart(2, '0'); a.appendChild(b); a.appendChild(document.createTextNode(c.getAttribute('data-chapter')));
+      a.href = '#' + c.id; b.textContent = String(i + 1).padStart(2, '0'); var sp = document.createElement('span'); sp.textContent = c.getAttribute('data-chapter'); a.title = sp.textContent; a.appendChild(b); a.appendChild(sp);
       li.appendChild(a); ol.appendChild(li); links.push(a);
     });
     nav.appendChild(ol); document.body.appendChild(nav);

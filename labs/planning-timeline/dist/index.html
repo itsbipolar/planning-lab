@@ -12,6 +12,46 @@
 :root,:root[data-theme="dark"]{color-scheme:dark;--t-ground:#0E1318;--t-raised:#151C23;--t-ink:#F2F4F6;--t-ink2:#C7CFD7;--t-ink3:#97A2AD;--t-point:#F2A93B;--t-money:#7FC79A;--t-rule:#26303A;--t-d1:#5AA2E0;--t-d2:#F2A93B;--t-d3:#4FBFAE;--t-d4:#E07A6F;--t-neutral:#3A4652;}
 :root[data-theme="light"]{color-scheme:light;--t-ground:#FCFDFD;--t-raised:#E8EEF3;--t-ink:#10161C;--t-ink2:#36414C;--t-ink3:#56616C;--t-point:#F2A93B;--t-point-deep:#A8690A;--t-money:#2C6E44;--t-rule:#D3D8DD;--t-d1:#1F64A8;--t-d2:#B9740A;--t-d3:#157A6E;--t-d4:#B5473B;--t-neutral:#C3CAD1;}
 :root{--font-display:"Source Serif 4 Variable", Georgia, serif;--font-ui:"Source Sans 3 Variable", system-ui, sans-serif;--font-mono:"Source Sans 3 Variable", system-ui, sans-serif} /* labels use the text face too (Mo, 2026-11-13: no mono labels) */
+
+html{scrollbar-width:thin;scrollbar-color:var(--t-neutral) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--t-neutral);border-radius:10px;border:3px solid var(--t-ground)}
+*::-webkit-scrollbar-thumb:hover{background:var(--t-ink3)}*::-webkit-scrollbar-button{display:none;width:0;height:0}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+[data-chapter]{scroll-margin-top:1.25rem}
+.read-progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:50;pointer-events:none}
+.read-progress span{display:block;height:100%;background:var(--t-point);transform-origin:0 50%;transform:scaleX(0)}
+.rail{display:none}
+@media (min-width:1360px){
+  .rail{display:block;position:fixed;left:12px;top:50%;transform:translateY(-50%);width:2.6rem;z-index:40}
+  .rail ol{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
+  .rail a{display:block;padding:.3rem 0;color:var(--t-ink3);text-decoration:none;font-size:14.5px;line-height:1.25}
+  .rail a b{font-weight:650;font-variant-numeric:tabular-nums}
+  .rail a span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .rail a:hover,.rail a[aria-current="true"]{color:var(--t-ink)}
+  .rail a[aria-current="true"] b{box-shadow:inset 0 -2px 0 var(--t-point)}
+}
+@media (min-width:1700px){
+  .rail{left:max(12px,calc((100vw - 80rem)/2 - 10rem));width:8.5rem}
+  .rail a{display:grid;grid-template-columns:1.6rem 1fr;align-items:baseline;gap:.25rem}
+  .rail a span{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
+}
+.sec-label{position:relative;margin:0 0 .5rem;padding-top:.9rem;font-size:1.05rem;font-weight:650;color:var(--t-ink2);font-variant-numeric:tabular-nums}
+.sec-label::before{content:"";position:absolute;top:0;left:0;width:3rem;height:3px;background:var(--t-point)}
+.sec-label b{color:var(--t-ink);margin-right:.5rem;letter-spacing:.04em}
+.readout{border-left:3px solid var(--t-point);padding:.35rem 0 .35rem 1rem;margin:1rem 0;max-width:46rem}
+.readout-k{margin:0;font-size:15.5px;font-weight:650;color:var(--t-ink3)}
+.readout-v{margin:.15rem 0 .1rem;font-family:var(--font-display);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.1;font-variant-numeric:tabular-nums;color:var(--t-ink)}
+.readout-t{margin:0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+.readout-fine{margin:.35rem 0 0;font-size:15.5px;color:var(--t-ink3)}
+[data-flash]{transition:box-shadow .25s ease}
+[data-flash].flash{box-shadow:inset 0 -3px 0 var(--t-point)}
+@media (prefers-reduced-motion:reduce){[data-flash]{transition:none}}
+.crosshair{pointer-events:none}
+.crosshair line{stroke:var(--t-ink);stroke-width:1;stroke-dasharray:3 3}
+.crosshair rect{fill:var(--t-raised);stroke:var(--t-rule)}
+.crosshair text{fill:var(--t-ink);font-variant-numeric:tabular-nums}
+
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 18.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
@@ -26,7 +66,6 @@ h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;mar
 h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:28ch;margin-top:.5rem}
 h2{font-size:1.55rem;line-height:1.15;margin:.35rem 0 1rem}
 .kicker{font-family:var(--font-mono);font-size:.8rem;color:var(--t-ink3);margin:2.5rem 0 0}
-.choice .kicker{margin:0}
 .kicker span{white-space:nowrap}
 .note{font-size:16.5px;color:var(--t-ink3)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -51,21 +90,24 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 .choices{margin-top:3rem}
 .choice{display:grid;gap:.5rem 3.5rem;border-top:1px solid var(--t-rule);padding:1.75rem 0 2.25rem}
 @media (min-width:1000px){.choice{grid-template-columns:minmax(0,25rem) minmax(0,1fr);align-items:start}.choice .fig{padding-top:1.5rem}}
-.choice p{margin:.5rem 0;max-width:62ch}
+.choice .copy>p,.choice .fig>p{margin:.5rem 0;max-width:62ch}
+.choice .sec-label{margin:0 0 .5rem}
 .fig{min-width:0}
 .slider{display:grid;gap:.35rem;font-weight:600}
 .slider output{font-variant-numeric:tabular-nums}
 input[type=range]{width:100%;min-height:44px;accent-color:var(--t-point)}
-.big{font-family:var(--font-display);font-weight:600;font-size:2.1rem;line-height:1.1;margin:.4rem 0 .2rem !important;font-variant-numeric:tabular-nums}
 .mini{display:block;max-width:100%;height:auto;margin:.75rem 0 .25rem;overflow:visible}
 .mini text{font-family:var(--font-ui)}
 .mini .mono,#tl .mono{font-family:var(--font-mono)}
 .recovery{border-top:1px solid var(--t-rule);margin-top:1rem;padding-top:.9rem}
 .recovery label,#rrif label{display:block;font-weight:600;margin:.6rem 0 .35rem}
+.hint{font-weight:400;color:var(--t-ink3)}
+.readout-t b{font-weight:700;font-variant-numeric:tabular-nums}
+.readout output{font:inherit}
+.tl .sec-label{margin-top:0}
+.tl h2{margin-bottom:.75rem}
 
 .people{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1.25rem;max-width:60rem}
-.people p{font-size:1.15rem;margin:.4rem 0}
-.people .kicker{font-size:.8rem}
 .sources{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1rem}
 .sources summary{cursor:pointer;font-weight:650}
 .sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:16.5px;color:var(--t-ink2)}
@@ -79,6 +121,10 @@ h1{max-width:32ch}
 
 /* Chart text keeps the size its label placement was tuned for; the page text around it is larger. */
 svg{font-size:17px}
+
+/* the reading box that follows the pointer on the totals charts */
+.mini{touch-action:pan-y}
+.mini .crosshair text{font-size:14px}
 </style>
 </head>
 <body>
@@ -99,21 +145,25 @@ svg{font-size:17px}
       <p class="error" id="error" role="alert" hidden></p>
     </form>
 
-    <section class="tl" aria-labelledby="tl-h">
-      <h2 id="tl-h" class="sr-only">The timeline</h2>
+    <section class="tl" data-chapter="Timeline" aria-labelledby="tl-h">
+      <p class="sec-label"><b>01</b>Timeline</p>
+      <h2 id="tl-h">Every rule on one line, by age</h2>
       <div class="tl-frame" id="tl-frame"><svg id="tl" role="img" aria-labelledby="tl-title"><title id="tl-title">Your planning timeline</title></svg></div>
       <ul class="sr-only" id="tl-text"></ul>
       <p class="tl-actions"><button type="button" id="save" class="ghost">Save the timeline as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
     </section>
 
     <div class="choices">
-      <section class="choice" id="cpp" aria-labelledby="cpp-h">
+      <section class="choice" id="cpp" data-chapter="CPP" aria-labelledby="cpp-h">
         <div class="copy">
-          <p class="kicker">Canada Pension Plan</p>
+          <p class="sec-label"><b>02</b>Canada Pension Plan</p>
           <h2 id="cpp-h">When to start CPP</h2>
           <label class="slider"><span>Start at <output id="cpp-age"></output></span><input type="range" id="cpp-range"></label>
-          <p class="big"><output id="cpp-big"></output></p>
-          <p id="cpp-text"></p>
+          <div class="readout" id="cpp-readout">
+            <p class="readout-k">Each month, for life, as a share of the standard amount</p>
+            <p class="readout-v"><output id="cpp-big" data-flash></output></p>
+            <p class="readout-t" id="cpp-text"></p>
+          </div>
         </div>
         <div class="fig">
           <svg class="mini" id="cpp-chart" role="img" aria-labelledby="cpp-chart-t"><title id="cpp-chart-t">Total CPP received by age, for this start age and the standard age</title></svg>
@@ -121,17 +171,24 @@ svg{font-size:17px}
         </div>
       </section>
 
-      <section class="choice" id="oas" aria-labelledby="oas-h">
+      <section class="choice" id="oas" data-chapter="OAS" aria-labelledby="oas-h">
         <div class="copy">
-          <p class="kicker">Old Age Security</p>
+          <p class="sec-label"><b>03</b>Old Age Security</p>
           <h2 id="oas-h">When to start OAS</h2>
           <label class="slider"><span>Start at <output id="oas-age"></output></span><input type="range" id="oas-range"></label>
-          <p class="big"><output id="oas-big"></output></p>
-          <p id="oas-text"></p>
+          <div class="readout" id="oas-readout">
+            <p class="readout-k" id="oas-k">Each month, for life</p>
+            <p class="readout-v"><output id="oas-big" data-flash></output></p>
+            <p class="readout-t" id="oas-text"></p>
+          </div>
           <div class="recovery">
-            <label for="income">Net income in <span id="rec-year"></span> <span class="note">(an example)</span></label>
+            <label for="income">Net income in <span id="rec-year"></span> <span class="hint">(an example)</span></label>
             <input id="income" type="number" inputmode="numeric" step="1000" min="0">
-            <p id="rec-text"></p>
+            <div class="readout" id="rec-readout">
+              <p class="readout-k">OAS recovered, a year</p>
+              <p class="readout-v"><output id="rec-big" data-flash></output></p>
+              <p class="readout-t" id="rec-text"></p>
+            </div>
           </div>
         </div>
         <div class="fig">
@@ -140,14 +197,19 @@ svg{font-size:17px}
         </div>
       </section>
 
-      <section class="choice" id="rrif" aria-labelledby="rrif-h">
+      <section class="choice" id="rrif" data-chapter="RRIF" aria-labelledby="rrif-h">
         <div class="copy">
-          <p class="kicker">RRSP to RRIF</p>
+          <p class="sec-label"><b>04</b>RRSP to RRIF</p>
           <h2 id="rrif-h">The minimum that must come out</h2>
           <p id="rrif-text"></p>
-          <label for="fund">A fund of <span class="note">(an example)</span></label>
+          <label for="fund">A fund of <span class="hint">(an example)</span></label>
           <input id="fund" type="number" inputmode="numeric" step="10000" min="0">
-          <p id="fund-text"></p>
+          <div class="readout" id="fund-readout">
+            <p class="readout-k" id="fund-k">The minimum</p>
+            <p class="readout-v"><output id="fund-big" data-flash></output></p>
+            <p class="readout-t" id="fund-text"></p>
+            <p class="readout-fine" id="fund-fine" hidden></p>
+          </div>
         </div>
         <div class="fig">
           <svg class="mini" id="rrif-chart" role="img" aria-labelledby="rrif-chart-t"><title id="rrif-chart-t">The RRIF minimum withdrawal by age, and the share of a fund left if only the minimum comes out</title></svg>
@@ -156,7 +218,15 @@ svg{font-size:17px}
       </section>
     </div>
 
-    <section class="people" id="people" hidden></section>
+    <section class="people" id="people" data-chapter="Your age" aria-labelledby="people-h" hidden>
+      <p class="sec-label"><b>05</b>People your age</p>
+      <h2 id="people-h">How many Canadians share your age</h2>
+      <div class="readout" id="people-readout">
+        <p class="readout-k" id="people-k">Canadians your age</p>
+        <p class="readout-v"><output id="people-big" data-flash></output></p>
+        <p class="readout-t" id="people-text"></p>
+      </div>
+    </section>
 
     <details class="sources">
       <summary>Sources and assumptions</summary>
@@ -171,7 +241,67 @@ svg{font-size:17px}
   </main>
 </div>
 <script type="application/json" id="data">{"model":{"r":{"tfsaAge":18,"tfsaYear":2009,"cppLo":60,"cppStd":65,"cppHi":70,"cppRed":0.6,"cppInc":0.7,"oasLo":65,"oasHi":70,"oasInc":0.6,"oasBoost":10,"oasRecovery":15,"rrsp":71},"oasBoostAge":75,"tfsa":{"2009":5000,"2010":5000,"2011":5000,"2012":5000,"2013":5500,"2014":5500,"2015":10000,"2016":5500,"2017":5500,"2018":5500,"2019":6000,"2020":6000,"2021":6000,"2022":6000,"2023":6500,"2024":7000,"2025":7000,"2026":7000},"thresholds":{"2024":90997,"2025":93454,"2026":95323},"rrif":[{"age":71,"factor":0.0528},{"age":72,"factor":0.054},{"age":73,"factor":0.0553},{"age":74,"factor":0.0567},{"age":75,"factor":0.0582},{"age":76,"factor":0.0598},{"age":77,"factor":0.0617},{"age":78,"factor":0.0636},{"age":79,"factor":0.0658},{"age":80,"factor":0.0682},{"age":81,"factor":0.0708},{"age":82,"factor":0.0738},{"age":83,"factor":0.0771},{"age":84,"factor":0.0808},{"age":85,"factor":0.0851},{"age":86,"factor":0.0899},{"age":87,"factor":0.0955},{"age":88,"factor":0.1021},{"age":89,"factor":0.1099},{"age":90,"factor":0.1192},{"age":91,"factor":0.1306},{"age":92,"factor":0.1449},{"age":93,"factor":0.1634},{"age":94,"factor":0.1879},{"age":95,"factor":0.2}],"pop":{"year":2026,"a0":50,"a1":89,"counts":[498954,496292,482466,478116,483096,498666,492845,484579,477872,478737,501491,532978,544438,547462,532225,533742,522839,506188,497288,481074,462003,449576,425014,399717,377104,361626,346870,331654,321983,309601,256056,229100,211998,193211,170565,154960,136264,120228,105317,90141],"attribution":"Adapted from Statistics Canada, Population estimates on July 1, by age and gender, Table 17-10-0005-01, 1971 to 2026. This does not constitute an endorsement by Statistics Canada of this product.","source_url":"https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000501"},"sources":[{"id":"tfsa_minimum_age","title":"Minimum age for a TFSA dollar limit to apply (Income Tax Act 207.01(1), unused TFSA contribution room)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","as_of":"2026-11-10","authority":"statute"},{"id":"tfsa_first_year","title":"First calendar year a TFSA dollar limit applies (Income Tax Act 207.01(1), TFSA dollar limit)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","as_of":"2026-11-09","authority":"statute"},{"id":"cpp_earliest_start_age","title":"Earliest age to start the CPP retirement pension","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_standard_start_age","title":"Standard age to start the CPP retirement pension","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_latest_start_age","title":"Latest age to start the CPP retirement pension (no benefit to wait after it)","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_early_start_reduction","title":"CPP retirement pension reduction for each month started before 65","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"cpp_late_start_increase","title":"CPP retirement pension increase for each month started after 65","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"oas_start_age","title":"Age at which OAS pension eligibility starts (Old Age Security Act 3(1))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html","as_of":"2026-11-10","authority":"statute"},{"id":"oas_deferral_max_age","title":"Age after whose month the OAS deferral increase stops (Old Age Security Act 7.1(4)(b))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-10","authority":"statute"},{"id":"oas_deferral_increase","title":"OAS pension increase for each month of voluntary deferral (Old Age Security Act 7.1)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-09","authority":"statute"},{"id":"oas_age75_increase","title":"OAS pension increase at age 75","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/payments.html","as_of":"2026-11-13","authority":"official_publication"},{"id":"oas_recovery_rate","title":"OAS recovery tax rate on net income above the threshold","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","as_of":"2026-11-13","authority":"official_publication"},{"id":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","as_of":"2026-11-10","authority":"statute"},{"id":"rrif_minimum_factors","title":"RRIF minimum withdrawal factors by age (Income Tax Regulations 7308(4))","source_url":"https://laws-lois.justice.gc.ca/eng/regulations/C.R.C.,_c._945/section-7308.html","as_of":"2026-11-09","authority":"statute"},{"id":"tfsa_annual_limit.2025","title":"TFSA dollar limit","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"oas_recovery_threshold.2024","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"tfsa_annual_limit.2009","title":"TFSA dollar limit","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","as_of":"2026-11-13","authority":"official_publication"}]}}</script>
-<script>// Your planning timeline: everything the page shows for a birth year, computed from the confirmed facts and the dated
+<script>
+(function () {
+  'use strict';
+  // the reading-progress line, on pages at least two screens long
+  var bar = document.createElement('div'); bar.className = 'read-progress'; bar.setAttribute('aria-hidden', 'true');
+  bar.appendChild(document.createElement('span')); document.body.appendChild(bar);
+  var queued = false;
+  function progress() { queued = false; var room = document.documentElement.scrollHeight - innerHeight; bar.hidden = room < innerHeight; bar.firstChild.style.transform = 'scaleX(' + (room > 0 ? Math.min(1, scrollY / room) : 0) + ')'; }
+  addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(progress); } }, { passive: true });
+  addEventListener('resize', progress); addEventListener('load', progress); progress();
+
+  // the chapter rail, from <section data-chapter="...">, when there are three or more
+  var chapters = [].slice.call(document.querySelectorAll('[data-chapter]'));
+  if (chapters.length >= 3) {
+    var nav = document.createElement('nav'); nav.className = 'rail'; nav.setAttribute('aria-label', 'Chapters on this page');
+    var ol = document.createElement('ol'); var links = [];
+    chapters.forEach(function (c, i) {
+      if (!c.id) c.id = 'chapter-' + (i + 1);
+      var li = document.createElement('li'), a = document.createElement('a'), b = document.createElement('b');
+      a.href = '#' + c.id; b.textContent = String(i + 1).padStart(2, '0'); var sp = document.createElement('span'); sp.textContent = c.getAttribute('data-chapter'); a.title = sp.textContent; a.appendChild(b); a.appendChild(sp);
+      li.appendChild(a); ol.appendChild(li); links.push(a);
+    });
+    nav.appendChild(ol); document.body.appendChild(nav);
+    var mark = function () { var at = 0; chapters.forEach(function (c, i) { if (c.getBoundingClientRect().top < innerHeight * 0.35) at = i; }); links.forEach(function (a, i) { a.setAttribute('aria-current', String(i === at)); }); };
+    addEventListener('scroll', function () { requestAnimationFrame(mark); }, { passive: true }); mark();
+  }
+
+  // a short amber underline on any [data-flash] element whose text changes
+  var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var watch = function (el) {
+    var last = el.textContent;
+    new MutationObserver(function () { if (el.textContent === last) return; last = el.textContent; if (still) return; el.classList.add('flash'); clearTimeout(el._f); el._f = setTimeout(function () { el.classList.remove('flash'); }, 1100); }).observe(el, { childList: true, characterData: true, subtree: true });
+  };
+  [].forEach.call(document.querySelectorAll('[data-flash]'), watch);
+  window.deskWatchFlash = watch;
+})();
+
+// A chart crosshair: call deskCrosshair(svg, { x0, x1, y0, y1, read: function (px) { return { x: px, y: py, lines: ['...'] } } })
+// with the plot area in SVG units; it draws a dashed line and a reading box that follow the pointer (and arrow keys when
+// the SVG has focus). Returns a function that removes it (call before a redraw).
+function deskCrosshair(svg, o) {
+  var NS = 'http://www.w3.org/2000/svg', g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'crosshair'); g.style.display = 'none';
+  var line = document.createElementNS(NS, 'line'), box = document.createElementNS(NS, 'rect'), txt = document.createElementNS(NS, 'text');
+  g.appendChild(line); g.appendChild(box); g.appendChild(txt); svg.appendChild(g);
+  function toSvg(e) { var r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal; var sx = vb && vb.width ? vb.width / r.width : 1; return (e.clientX - r.left) * sx + (vb ? vb.x : 0); }
+  function show(px) {
+    px = Math.max(o.x0, Math.min(o.x1, px)); var r = o.read(px); if (!r) { g.style.display = 'none'; return; }
+    g.style.display = ''; line.setAttribute('x1', r.x); line.setAttribute('x2', r.x); line.setAttribute('y1', o.y0); line.setAttribute('y2', o.y1);
+    while (txt.firstChild) txt.removeChild(txt.firstChild);
+    r.lines.forEach(function (s, i) { var t = document.createElementNS(NS, 'tspan'); t.setAttribute('x', 0); t.setAttribute('dy', i ? '1.25em' : '1em'); if (!i) t.setAttribute('font-weight', '650'); t.textContent = s; txt.appendChild(t); });
+    var bb = txt.getBBox(), pad = 6, w = bb.width + pad * 2, h = bb.height + pad * 2, bx = r.x + 10; if (bx + w > o.x1) bx = r.x - 10 - w;
+    var by = Math.max(o.y0, Math.min(o.y1 - h, (r.y || o.y0) - h - 8));
+    box.setAttribute('x', bx); box.setAttribute('y', by); box.setAttribute('width', w); box.setAttribute('height', h); box.setAttribute('rx', 2);
+    txt.setAttribute('transform', 'translate(' + (bx + pad) + ',' + (by + pad) + ')'); [].forEach.call(txt.childNodes, function (t) { t.setAttribute('x', 0); });
+  }
+  function move(e) { show(toSvg(e)); } function hide() { g.style.display = 'none'; }
+  svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide);
+  return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
+}
+
+// Your planning timeline: everything the page shows for a birth year, computed from the confirmed facts and the dated
 // Statistics Canada snapshot. No age, rate, limit or year from the rules is written here; a missing fact stops the build.
 
 const NEED = ['tfsa_minimum_age', 'tfsa_first_year', 'cpp_earliest_start_age', 'cpp_standard_start_age', 'cpp_latest_start_age',
@@ -422,7 +552,19 @@ function finding(M, p) {
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
     return [W, H];
   }
+  // a sentence with one figure set in bold (and underlined briefly when it changes)
+  // the same three nodes are kept, so the bold figure is the one that is underlined when it changes
+  function sentence(node, before, figure, after) {
+    if (!node._b) {
+      node.textContent = ''; node._pre = document.createTextNode(''); node._b = document.createElement('b'); node._post = document.createTextNode('');
+      node._b.setAttribute('data-flash', ''); node.appendChild(node._pre); node.appendChild(node._b); node.appendChild(node._post);
+      if (window.deskWatchFlash) window.deskWatchFlash(node._b);
+    }
+    node._pre.textContent = before; node._b.textContent = figure == null ? '' : figure; node._post.textContent = after || '';
+  }
+  var oneDp = function (v) { return (Math.round(v * 10) / 10).toLocaleString('en-CA', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); };
   function totalsChart(svg, fa, fb, aLabel, bLabel, startA, startB, cross) {
+    if (svg._unhair) svg._unhair();
     clear(svg);
     var box = chartBox(svg, 230, 300), W = box[0], H = box[1], pl = 34, pr = W < 520 ? 104 : 116, pt = 26, pb = 30;
     var x0 = Math.min(startA, startB), x1 = hi;
@@ -454,35 +596,42 @@ function finding(M, p) {
       var ct = el('text', halo({ x: cx - 9, y: cy - 10, fill: col('ink'), 'font-size': 13, 'font-weight': 650, 'text-anchor': 'end' }), svg, 'about ' + (Math.round(cross * 10) / 10));
       if (ct.getBBox().x < pl) { ct.setAttribute('x', cx + 9); ct.setAttribute('y', cy + 20); ct.setAttribute('text-anchor', 'start'); } // below-right, under both lines
     }
+    // the reading under the pointer: the age, and both totals at that age
+    svg._unhair = deskCrosshair(svg, { x0: pl, x1: W - pr, y0: pt, y1: H - pb, read: function (px) {
+      var age = Math.round(x0 + (px - pl) / (W - pl - pr) * (x1 - x0));
+      var lines = ['At age ' + age, aLabel + ': ' + oneDp(fa(age)) + ' years'];
+      if (!same) lines.push(bLabel + ': ' + oneDp(fb(age)) + ' years');
+      return { x: X(age), y: Y(Math.max(fa(age), same ? 0 : fb(age))), lines: lines };
+    } });
   }
 
   // ---------- the three choices ----------
   function drawCpp() {
     var a = state.cpp, s = cppShareAt(a), ch = (s - 1) * 100;
     $('cpp-age').textContent = ageText(a);
-    $('cpp-big').textContent = pct(s * 100) + ' of the standard amount';
-    var std = R.cppStd, cross = null, txt;
-    if (Math.abs(a - std) < 1e-9) txt = 'The standard start at ' + std + ': the full amount, with no reduction or increase.';
+    $('cpp-big').textContent = pct(s * 100);
+    var std = R.cppStd, cross = null, t = $('cpp-text');
+    if (Math.abs(a - std) < 1e-9) sentence(t, 'The standard start at ' + std + ': the full amount, with no reduction or increase.');
     else if (a < std) {
       cross = crossing(function (v) { return cppTotal(std, v); }, function (v) { return cppTotal(a, v); }, std);
-      txt = 'Starting at ' + ageText(a) + ' pays ' + pct(Math.abs(ch), 1) + ' less every month, for life. In total it stays ahead of starting at ' + std + ' until about age ' + (Math.round(cross * 10) / 10) + '; after that, ' + std + ' is ahead.';
+      sentence(t, 'Starting at ' + ageText(a) + ' pays ' + pct(Math.abs(ch), 1) + ' less every month, for life. In total it stays ahead of starting at ' + std + ' until about ', 'age ' + (Math.round(cross * 10) / 10), '; after that, ' + std + ' is ahead.');
     } else {
       cross = crossing(function (v) { return cppTotal(a, v); }, function (v) { return cppTotal(std, v); }, a);
-      txt = 'Starting at ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + std + ' at about age ' + (Math.round(cross * 10) / 10) + '.';
+      sentence(t, 'Starting at ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + std + ' at about ', 'age ' + (Math.round(cross * 10) / 10), '.');
     }
-    $('cpp-text').textContent = txt;
     totalsChart($('cpp-chart'), function (v) { return cppTotal(a, v); }, function (v) { return cppTotal(std, v); }, 'Start ' + ageShort(a), 'Start ' + std, a, std, Math.abs(a - std) < 1e-9 ? null : cross);
   }
   function drawOas() {
-    var a = state.oas, s = oasShareAt(a), ch = (s - 1) * 100, b = R.oasLo, cross = null, txt;
+    var a = state.oas, s = oasShareAt(a), ch = (s - 1) * 100, b = R.oasLo, cross = null;
     $('oas-age').textContent = ageText(a);
-    $('oas-big').textContent = pct(s * 100) + ' of the amount at ' + b;
-    if (Math.abs(a - b) < 1e-9) txt = 'Starting at ' + b + ', the earliest age. The pension rises by ' + pct(R.oasBoost) + ' from age ' + M.oasBoostAge + ', whenever it started.';
+    $('oas-big').textContent = pct(s * 100);
+    $('oas-k').textContent = 'Each month, for life, as a share of the amount at ' + b;
+    var t = $('oas-text');
+    if (Math.abs(a - b) < 1e-9) sentence(t, 'Starting at ' + b + ', the earliest age. The pension rises by ' + pct(R.oasBoost) + ' from age ' + M.oasBoostAge + ', whenever it started.');
     else {
       cross = crossing(function (v) { return oasTotal(a, v); }, function (v) { return oasTotal(b, v); }, a);
-      txt = 'Waiting until ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + b + ' at about age ' + (Math.round(cross * 10) / 10) + '. Both rise by ' + pct(R.oasBoost) + ' from ' + M.oasBoostAge + '.';
+      sentence(t, 'Waiting until ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + b + ' at about ', 'age ' + (Math.round(cross * 10) / 10), '. Both rise by ' + pct(R.oasBoost) + ' from ' + M.oasBoostAge + '.');
     }
-    $('oas-text').textContent = txt;
     totalsChart($('oas-chart'), function (v) { return oasTotal(a, v); }, function (v) { return oasTotal(b, v); }, 'Start ' + ageShort(a), 'Start ' + b, a, b, cross);
     // the recovery tax, for the latest year with a confirmed threshold
     var yrs = Object.keys(M.thresholds).map(Number).filter(function (y) { return y <= thisYear; });
@@ -490,6 +639,7 @@ function finding(M, p) {
     if (ty == null) { $('oas').querySelector('.recovery').hidden = true; return; }
     var th = M.thresholds[ty], rep = Math.max(0, state.income - th) * R.oasRecovery / 100;
     $('rec-year').textContent = ty;
+    $('rec-big').textContent = money(rep);
     $('rec-text').textContent = 'In ' + ty + ', OAS is reduced by ' + pct(R.oasRecovery) + ' of net income above ' + money(th) + '. ' + (rep > 0 ? 'At ' + money(state.income) + ', that is ' + money(rep) + ' a year, up to the full pension.' : 'At ' + money(state.income) + ', nothing is repaid.');
   }
   function drawRrif(p) {
@@ -513,16 +663,26 @@ function finding(M, p) {
     var leftAt90 = 1; rows.forEach(function (r) { if (r.age < 90) leftAt90 *= 1 - r.factor; });
     $('rrif-text').textContent = 'An RRSP must mature by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + ', for example by becoming a RRIF. From the next year a minimum share must come out each year, set by your age on January 1 (the chart’s ages): ' + pct(first.factor * 100, 2) + ' at ' + first.age + ', in the year you turn ' + (first.age + 1) + '; ' + (tenth ? 'more than a tenth of the fund from ' + tenth.age + '; ' : '') + pct(maxF * 100) + ' from ' + rows[rows.length - 1].age + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90, on January 1.';
     var f = state.fund, at = p && p.age - 1 > R.rrsp ? M.rrif.filter(function (r) { return r.age === Math.min(p.age - 1, rows[rows.length - 1].age); })[0] : null;
-    $('fund-text').textContent = 'On ' + money(f) + ' on January 1, the minimum is ' + money(f * first.factor) + ' in the year you turn ' + (first.age + 1) + (at ? ' and ' + money(f * at.factor) + ' in the year you turn ' + p.age : '') + '.';
+    $('fund-k').textContent = 'The minimum in the year you turn ' + (first.age + 1);
+    $('fund-big').textContent = money(f * first.factor);
+    $('fund-text').textContent = 'On ' + money(f) + ' on January 1, the minimum is ' + money(f * first.factor) + ' in the year you turn ' + (first.age + 1) + ': ' + pct(first.factor * 100, 2) + ', the factor for age ' + first.age + ' on January 1.';
+    var fine = $('fund-fine'); fine.hidden = !at;
+    if (at) fine.textContent = 'In the year you turn ' + p.age + ', the minimum on the same fund would be ' + money(f * at.factor) + ' (' + pct(at.factor * 100, 2) + ').';
   }
 
   // ---------- people your age ----------
   function drawPeople(p) {
     var box = $('people');
-    if (!p.popCount) { box.hidden = true; return; }
-    box.hidden = false; box.textContent = '';
-    var h = document.createElement('p'); h.className = 'kicker'; h.style.margin = '0'; h.textContent = 'People your age'; box.appendChild(h);
-    var t = document.createElement('p'); t.textContent = 'About ' + p.popCount.toLocaleString('en-CA') + ' Canadians were ' + p.age + ' on July 1, ' + M.pop.year + ', by Statistics Canada’s estimate (see the sources).'; box.appendChild(t);
+    if (!M.pop) { box.hidden = true; return; }
+    box.hidden = false;
+    $('people-k').textContent = 'Canadians aged ' + p.age + ' on July 1, ' + M.pop.year;
+    if (p.popCount) {
+      $('people-big').textContent = 'About ' + p.popCount.toLocaleString('en-CA');
+      $('people-text').textContent = 'About ' + p.popCount.toLocaleString('en-CA') + ' Canadians were ' + p.age + ' on July 1, ' + M.pop.year + ', by Statistics Canada’s estimate (see the sources).';
+    } else {
+      $('people-big').textContent = 'Not in this snapshot';
+      $('people-text').textContent = 'The Statistics Canada snapshot on this page counts ages ' + M.pop.a0 + ' to ' + M.pop.a1 + ' on July 1, ' + M.pop.year + '.';
+    }
   }
 
   // ---------- one render for a birth year ----------
@@ -582,6 +742,8 @@ function finding(M, p) {
 
   var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(render, 120); });
   render();
+  // the first fill is not a change: no underline on load
+  requestAnimationFrame(function () { document.querySelectorAll('.flash').forEach(function (e) { e.classList.remove('flash'); }); });
 })();
 </script>
 </body>

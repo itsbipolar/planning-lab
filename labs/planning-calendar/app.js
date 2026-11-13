@@ -58,8 +58,11 @@
   const box = (t) => { const b = t.getBBox(); return { x: b.x, y: b.y, r: b.x + b.width, b: b.y + b.height }; };
   const hits = (a, b, pad) => a.x < b.r + pad && b.x < a.r + pad && a.y < b.b && b.y < a.b;
 
+  let unhair = null;
   function drawStrip(c) {
-    const svg = $('strip'); clear(svg);
+    const svg = $('strip');
+    if (unhair) unhair();
+    clear(svg);
     const W = Math.max(280, $('frame').clientWidth), narrow = W < 640, wk = c.weeks, n = wk.length;
     const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 11 : 16, fs = narrow ? 12 : 13;
     const tall = Math.max(4, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1), H = base + fs * 3 + 16;
@@ -137,6 +140,15 @@
         }
       }
     }
+    // the week under the pointer: its dates, in a box over its pile
+    unhair = deskCrosshair(svg, { x0: 0, x1: W - 0.01, y0: top - 4, y1: base, read: (px) => {
+      const k = Math.min(n - 1, Math.max(0, Math.floor(px / colW))), w = wk[k], es = w.events, shown = es.slice(0, 4);
+      const lines = [`Week of ${short(w.from)}`];
+      if (!es.length) lines.push('No dates this week');
+      for (const e of shown) lines.push(`${short(e.date)}: ${e.what}`);
+      if (es.length > shown.length) lines.push(`and ${plural(es.length - shown.length, 'more', 'more')}, listed below`);
+      return { x: k * colW + colW / 2, y: base - es.length * (u + 1), lines };
+    } });
     const most = wk.reduce((a, w) => (w.events.length > a.events.length ? w : a), wk[0]);
     $('strip-t').textContent = c.events.length
       ? `${plural(c.events.length, 'date', 'dates')} in the next twelve months, week by week; the busiest week, of ${short(most.from)}, has ${most.events.length}. Every date is listed below.`
@@ -188,9 +200,32 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 
+  // the household's answer, under the quick picks: the next date, and how many there are
+  const KIND_WORDS = { pay: ['payment due', 'payments due'], file: ['return due', 'returns due'], cutoff: ['cut-off', 'cut-offs'] };
+  function readouts(c) {
+    const np = c.pending.length, fine = $('rd-count-fine');
+    fine.hidden = !np;
+    if (np) fine.textContent = `${plural(np, 'more date is', 'more dates are')} not confirmed yet; listed under the dates, left out of the calendar file.`;
+    if (!c.events.length) {
+      $('rd-next-v').textContent = 'None';
+      $('rd-next-t').textContent = c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Tick a situation to see its dates.';
+      $('rd-count-v').textContent = plural(0, 'date', 'dates');
+      $('rd-count-t').textContent = 'Nothing to add to a calendar yet.';
+      return;
+    }
+    const e = c.events[0], same = c.events.filter((x) => x.date === e.date).length;
+    $('rd-next-v').textContent = longDate(e.date);
+    $('rd-next-t').textContent = `${e.label}, ${e.days === 0 ? 'today' : e.days === 1 ? 'tomorrow' : `in ${e.days} days`}${same > 1 ? `, with ${plural(same - 1, 'other date', 'other dates')} the same day` : ''}.`;
+    $('rd-count-v').textContent = plural(c.events.length, 'date', 'dates');
+    const parts = KINDS.map((k) => [k, c.events.filter((x) => x.kind === k).length]).filter(([, m]) => m)
+      .map(([k, m]) => (KIND_WORDS[k] ? `${m} ${KIND_WORDS[k][m === 1 ? 0 : 1]}` : `${m}: ${C.kinds[k]}`));
+    $('rd-count-t').textContent = `${parts.join(', ')}, from ${longDate(c.today)} to ${longDate(c.end)}.`;
+  }
+
   function render() {
     const c = cal(state.picked), p = presetOf(state.picked);
     current = c;
+    readouts(c);
     $('finding').textContent = finding(c, p ? p.noun : null);
     const lo = picks[0], hi = picks[picks.length - 1];
     $('dek').textContent = `The twelve months from ${longDate(c.today)} to ${longDate(c.end)}, as this page’s date sets them. ` +
@@ -216,5 +251,7 @@
   for (const x of used.values()) { const li = h('li', {}, $('sources')); h('a', { href: x.url }, li, x.title); li.append(`, read ${x.as_of}${x.authority === 'cra_position' ? ' (CRA’s position)' : ''}.`); }
 
   render();
+  // the first fill is not a change: no underline on load
+  requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => current && drawStrip(current), 150); });
 })();

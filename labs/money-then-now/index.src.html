@@ -16,6 +16,7 @@
     <a href="/builds/money-then-now/">About this build</a>
   </header>
   <main>
+    <section data-chapter="Then and now" class="opening">
     <p class="kicker" id="kicker">Data story · Statistics Canada and Bank of Canada data</p>
     <h1 id="finding" aria-live="polite">Money, then and now</h1>
 
@@ -29,24 +30,42 @@
       <p class="error" id="error" role="alert" hidden></p>
     </form>
 
+    <div class="readout" id="year-readout" aria-live="polite">
+      <p class="readout-k" id="rk-year"></p>
+      <div class="readout-row">
+        <div><p class="readout-k">Price change</p><p class="readout-v" id="rv-infl" data-flash></p></div>
+        <div><p class="readout-k">Prime rate, average</p><p class="readout-v" id="rv-prime" data-flash></p></div>
+        <div><p class="readout-k">Real rate</p><p class="readout-v" id="rv-real" data-flash></p></div>
+      </div>
+      <p class="readout-t" id="rt-year"></p>
+      <p class="readout-fine">Real rate here = the year's average prime rate minus that year's price rise; a simple after-the-fact measure.</p>
+    </div>
+
     <section class="chart" aria-labelledby="chart-h">
       <h2 id="chart-h" class="sr-only">Prices, borrowing and what an amount is worth, year by year</h2>
       <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Prices, prime rate and purchasing power</title><desc id="chart-desc"></desc></svg></div>
       <ul class="sr-only" id="chart-text"></ul>
-      <p class="note">Real rate here = the year's average prime rate minus that year's price rise; a simple after-the-fact measure.</p>
+      <p class="note">Point at the chart, or tap it, to read any year.</p>
       <p class="actions"><button type="button" id="save" class="ghost">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
     </section>
+    </section>
 
-    <section class="readings" aria-labelledby="readings-h">
+    <section class="readings" data-chapter="What the years say" aria-labelledby="readings-h">
+      <p class="sec-label"><b>02</b>What the years say</p>
       <h2 id="readings-h">What the years say</h2>
       <ul id="readings"></ul>
     </section>
 
-    <section class="out" aria-labelledby="out-h">
+    <section class="later" data-chapter="This year" aria-labelledby="out-h">
+      <p class="sec-label"><b>03</b>This year</p>
+      <div class="out">
       <h2 id="out-h">2026 up close</h2>
       <p>For this year month by month, Money year 2026 follows <a href="/builds/money-year/app/">the policy rate, mortgage rates, core inflation and the loonie this year, chart by chart</a>.</p>
+      </div>
     </section>
 
+    <section class="later" data-chapter="The data" aria-labelledby="data-h">
+    <p class="sec-label" id="data-h"><b>04</b>The data, year by year, and its sources</p>
     <details class="fold">
       <summary>Every year as a table</summary>
       <div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-cap">
@@ -61,6 +80,7 @@
       <summary>Sources and how it's made</summary>
       <div id="sources" class="prose"></div>
     </details>
+    </section>
 
     <footer class="foot">
       <div>

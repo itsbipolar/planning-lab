@@ -15,7 +15,7 @@ async function choose(page, year, amount) {
   await page.press('#year', 'Enter');
 }
 async function clashes(page) {
-  const boxes = await page.locator('#chart text').evaluateAll((ts) => ts.filter((t) => t.textContent.trim()).map((t) => { const b = t.getBBox(); return [b.x, b.y, b.width, b.height, t.textContent]; }));
+  const boxes = await page.locator('#chart text').evaluateAll((ts) => ts.filter((t) => t.textContent.trim() && !t.closest('.crosshair')).map((t) => { const b = t.getBBox(); return [b.x, b.y, b.width, b.height, t.textContent]; }));
   const out = [];
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
     const [a, b] = [boxes[i], boxes[j]];
@@ -93,6 +93,51 @@ for (const width of [390, 1440]) {
       await page.goto(url);
       const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#save')]);
       expect(dl.suggestedFilename()).toBe('money-then-now-1990.png');
+    });
+
+    test('the year readout sits under the form and changes with the year; the rail and the crosshair', async ({ page }) => {
+      await page.goto(url);
+      const f = await page.locator('#form').boundingBox(), r = await page.locator('#year-readout').boundingBox();
+      expect(r.y).toBeGreaterThanOrEqual(f.y + f.height - 1);
+      expect(r.y - (f.y + f.height)).toBeLessThan(64);
+      expect(Math.abs(r.x - f.x)).toBeLessThan(24);
+      await expect(page.locator('#rk-year')).toHaveText('The example year, 1990');
+      const infl = await page.locator('#rv-infl').innerText(), prime = await page.locator('#rv-prime').innerText();
+      expect(prime).toMatch(/%$/);
+      await choose(page, 1950, 250);
+      await expect(page.locator('#rk-year')).toHaveText('The year you picked, 1950');
+      await expect(page.locator('#rv-infl')).not.toHaveText(infl);
+      await expect(page.locator('#rv-prime')).toHaveText('No data');
+      await expect(page.locator('#rt-year')).toContainText(`The prime-rate series here starts in ${M.primeFirst}`);
+      await choose(page, 1990, 250);
+      await expect(page.locator('#rv-prime')).toHaveText(prime);
+      await expect(page.locator('#rt-year')).toContainText('points');
+      // the value is the largest text in the readout; the note is readable
+      const sizes = await page.evaluate(() => ['#rv-infl', '#rt-year', '#year-readout .readout-fine'].map((s) => parseFloat(getComputedStyle(document.querySelector(s)).fontSize)));
+      expect(sizes[0]).toBeGreaterThan(sizes[1]);
+      expect(sizes[2]).toBeGreaterThanOrEqual(15);
+
+      await expect(page.locator('section[data-chapter]')).toHaveCount(4);
+      if (width >= 1440) {
+        await expect(page.locator('nav.rail')).toBeVisible();
+        expect(await page.locator('nav.rail a').count()).toBeGreaterThanOrEqual(3);
+        const rail = await page.locator('nav.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
+        expect(rail.x + rail.width).toBeLessThan(h1.x);
+      } else await expect(page.locator('nav.rail')).toBeHidden();
+
+      const svg = page.locator('#chart'); await svg.scrollIntoViewIfNeeded();
+      const b = await svg.boundingBox();
+      await page.mouse.move(b.x + b.width * 0.8, b.y + b.height * 0.5);
+      await expect(svg.locator('.crosshair')).toBeVisible();
+      await expect(svg.locator('.crosshair text')).toContainText(/^\d{4}Prices [+−]?[\d.]+%Prime [\d.]+%Real rate [+−]?[\d.]+%\$250 from 1990: \$[\d,.]+$/);
+      await page.mouse.move(b.x + 2, b.y + b.height * 0.5);
+      await expect(svg.locator('.crosshair text')).toContainText(`${M.first}Prices`);
+      await expect(svg.locator('.crosshair text')).toContainText('No prime-rate data');
+      expect(await clashes(page)).toEqual([]);
+      await choose(page, 1950);
+      await expect(svg.locator('.crosshair')).toHaveCount(1); // the old one was removed before the redraw
+      await page.mouse.move(b.x + b.width * 0.5, b.y + b.height * 0.5);
+      await expect(svg.locator('.crosshair text')).toContainText('$250 from 1950: ');
     });
 
     for (const theme of ['dark', 'light']) {

@@ -71,6 +71,35 @@ for (const width of [390, 1440]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
     });
 
+    test('the birth year answers in a readout under it; the chart reads the square under the pointer', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      const f = await page.locator('.field.born').boundingBox(), r = await page.locator('#born-readout').boundingBox();
+      expect(r.y - (f.y + f.height)).toBeGreaterThanOrEqual(-1);
+      expect(r.y - (f.y + f.height)).toBeLessThan(48);
+      await expect(page.locator('#born-v')).toHaveText(/^[\d,]+ people$/);
+      const before = await page.locator('#born-v').textContent();
+      await born(page, 1958);
+      await expect(page.locator('#born-k')).toContainText('July 1, 1958');
+      await expect(page.locator('#born-v')).not.toHaveText(before);
+      await expect(page.locator('#born-v')).toHaveClass(/flash/);
+      await expect(page.locator('#born-t')).toContainText(`July 1, ${y1}`);
+      await page.check('input[name=mode][value=share]');
+      await expect(page.locator('#born-v')).toContainText('% of the population');
+      // two chapters: signposts, but no rail
+      await expect(page.locator('section[data-chapter]')).toHaveCount(2);
+      await expect(page.locator('.sec-label')).toHaveCount(2);
+      await expect(page.locator('.rail')).toHaveCount(0);
+      const heat = page.locator('#heat'); await heat.scrollIntoViewIfNeeded();
+      const b = await heat.boundingBox();
+      await page.mouse.move(b.x + b.width * 0.5, b.y + b.height * 0.4);
+      await expect(page.locator('#heat .crosshair')).toBeVisible();
+      await expect(page.locator('#heat .crosshair text')).toContainText('Age ');
+      await expect(page.locator('#heat .crosshair text')).toContainText('people');
+      await expect(page.locator('#point')).toContainText('July 1, ');
+      await born(page, 1962);
+      await expect(page.locator('#heat .crosshair')).toHaveCount(1);
+    });
+
     test('no chart text overlaps, for several birth years in both modes', async ({ page }) => {
       await page.goto(url);
       for (const mode of ['count', 'share']) {

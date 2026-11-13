@@ -24,7 +24,7 @@ async function labelClashes(page) {
     const bad = [];
     for (const svg of document.querySelectorAll('.plot svg')) {
       const box = svg.getBoundingClientRect();
-      const t = [...svg.querySelectorAll('text')].map((e) => ({ s: e.textContent, b: e.getBoundingClientRect() }));
+      const t = [...svg.querySelectorAll('text')].filter((e) => !e.closest('.crosshair')).map((e) => ({ s: e.textContent, b: e.getBoundingClientRect() }));
       for (const a of t) {
         if (a.b.left < box.left - 1 || a.b.right > box.right + 1 || a.b.top < box.top - 1 || a.b.bottom > box.bottom + 1) bad.push(`outside: ${a.s}`);
       }
@@ -91,6 +91,48 @@ for (const width of [390, 1440]) {
       expect(page.url()).toBe(start);
       expect(requests).toEqual([]); expect(errors).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+    });
+
+    test('the readouts beside the charts follow the person shown and every number moved', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      const head = await page.locator('.charts-head').boundingBox(), ro = await page.locator('#readouts').boundingBox();
+      expect(ro.y - (head.y + head.height)).toBeGreaterThanOrEqual(-1);
+      expect(ro.y - (head.y + head.height)).toBeLessThan(40);
+      await expect(page.locator('#rd-cpp-k')).toContainText(story.people.a.name);
+      await expect(page.locator('#rd-cpp-v')).toHaveText(/^\d+( and \d+ months?)?$/);
+      const before = await page.locator('#rd-cpp-v').textContent();
+      await page.locator('[data-drag="a.cppAge"]').focus(); await page.keyboard.press('ArrowLeft');
+      await expect(page.locator('#rd-cpp-v')).not.toHaveText(before);
+      await expect(page.locator('#rd-cpp-v')).toHaveClass(/flash/);
+      const rec = await page.locator('#rd-rec-v').textContent();
+      await page.locator('#s-a-other').fill('150000');
+      await expect(page.locator('#rd-rec-v')).not.toHaveText(rec);
+      await page.locator('[data-who="b"]').click();
+      await expect(page.locator('#rd-rec-k')).toContainText(story.people.b.name);
+      await expect(page.locator('#rd-rec-t')).toContainText('below the threshold');
+      await expect(page.locator('#rd-oas-v')).toHaveText('No crossing');
+    });
+
+    test('the chapter rail shows on wide screens only; the charts read out under the pointer', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expect(page.locator('section[data-chapter]')).toHaveCount(3);
+      await expect(page.locator('.sec-label')).toHaveCount(3);
+      if (width >= 1440) {
+        await expect(page.locator('.rail')).toBeVisible();
+        await expect(page.locator('.rail a')).toHaveCount(3);
+        const rail = await page.locator('.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
+        expect(rail.x + rail.width).toBeLessThan(h1.x);
+      } else await expect(page.locator('.rail')).toBeHidden();
+      for (const id of ['#plot-cpp', '#plot-oas']) {
+        const svg = page.locator(`${id} svg`); await svg.scrollIntoViewIfNeeded();
+        const b = await svg.boundingBox();
+        await page.mouse.move(b.x + b.width * 0.55, b.y + b.height / 2);
+        await expect(page.locator(`${id} .crosshair`)).toBeVisible();
+        await expect(page.locator(`${id} .crosshair text`)).toContainText('At age');
+        await expect(page.locator(`${id} .crosshair text`)).toContainText('$');
+      }
+      await page.locator('#s-a-cppAge').fill(String(std));
+      await expect(page.locator('#plot-cpp .crosshair')).toHaveCount(1);
     });
 
     test('the OAS recovery is worked out for each spouse, capped at the OAS', async ({ page }) => {

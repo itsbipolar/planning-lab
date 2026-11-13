@@ -22,12 +22,18 @@
     <noscript><p class="note">This letter needs JavaScript to fill in its numbers and sources.</p></noscript>
     <p class="sr-only" id="status" aria-live="polite"></p>
 
-    <section class="charts" aria-labelledby="charts-h">
+    <section class="charts" data-chapter="The charts" aria-labelledby="charts-h">
+      <p class="sec-label"><b>01</b>The charts</p>
       <div class="charts-head">
         <h2 id="charts-h">Total received by age: start at <span data-out="cppStandard"></span> or <span data-out="cppLatest"></span></h2>
         <div class="who" role="group" aria-label="Whose example amounts the charts show">
           <button type="button" data-who="a" aria-pressed="true"></button><button type="button" data-who="b" aria-pressed="false"></button>
         </div>
+      </div>
+      <div class="readouts" id="readouts">
+        <div class="readout" id="rd-cpp"><p class="readout-k" id="rd-cpp-k">CPP</p><p class="readout-v" id="rd-cpp-v" data-flash></p><p class="readout-t" id="rd-cpp-t"></p></div>
+        <div class="readout" id="rd-oas"><p class="readout-k" id="rd-oas-k">OAS</p><p class="readout-v" id="rd-oas-v" data-flash></p><p class="readout-t" id="rd-oas-t"></p></div>
+        <div class="readout" id="rd-rec"><p class="readout-k" id="rd-rec-k">OAS recovered</p><p class="readout-v" id="rd-rec-v" data-flash></p><p class="readout-t" id="rd-rec-t"></p></div>
       </div>
       <div class="panels">
         <figure class="panel" aria-labelledby="cpp-h">
@@ -42,6 +48,9 @@
       <p class="note chart-note">Example only, pure arithmetic: <span data-out="who.name"></span>'s invented amounts in nominal dollars, with no inflation indexing, tax, survivor benefits or investment return. The amber line is the start age in the letter; dots mark where two totals cross. OAS includes the <span data-out="oasBoost"></span> rise from age <span data-out="oasBoostAge"></span> for every start age.</p>
     </section>
 
+    <section class="letter-sec" data-chapter="The letter" aria-labelledby="letter-h">
+    <p class="sec-label"><b>02</b>The letter</p>
+    <h2 id="letter-h">A sample letter to <span data-name="a"></span> and <span data-name="b"></span></h2>
     <article class="letter" aria-label="Sample letter">
       <div class="para first"><div class="txt">
         <p class="letterhead"><span>Sample letter, for illustration</span><span>November 2026</span></p>
@@ -93,10 +102,12 @@
         <p class="sig">A sample letter by Mohammed El Chayeb, for illustration only.</p>
       </div></div>
     </article>
+    </section>
 
-    <section class="controls" aria-labelledby="h-controls">
-      <h2 id="h-controls">Adjust the numbers</h2>
-      <p class="note">The same ten numbers as in the letter, as plain sliders.</p>
+    <section class="controls" data-chapter="Adjust" aria-labelledby="h-controls">
+      <p class="sec-label"><b>03</b>Adjust the numbers</p>
+      <h2 id="h-controls">The same ten numbers, as sliders</h2>
+      <p class="note">Each one moves the headline, the charts and the letter, as dragging it in the letter does.</p>
       <div class="sliders" id="sliders"></div>
     </section>
 

@@ -31,7 +31,10 @@ input[type=number]{width:7.5rem;font-variant-numeric:tabular-nums}
 .born .row{display:flex;gap:.5rem;flex-wrap:wrap}
 button{font:inherit;font-weight:650;min-height:44px;padding:.5rem 1.1rem;background:var(--t-point);color:#0e1318;border:0;border-radius:2px;cursor:pointer}
 button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-rule)}
-.controls .note,.controls .error{flex-basis:100%;margin:0}
+.controls .note,.controls .error,.controls .readout{flex-basis:100%;margin:0}
+.controls .readout{margin:.25rem 0 0}
+.chart .sec-label{margin-bottom:.4rem}
+#heat .crosshair text{font-size:13.5px}
 .field.place{flex:1 1 14rem;max-width:22rem}
 .error{color:var(--t-d4);font-weight:600}
 
@@ -62,8 +65,9 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 .rule-key{list-style:none;margin:.6rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.2rem 1.1rem;font-size:15.5px;color:var(--t-ink2)}
 .rule-key b{color:var(--t-ink);margin-right:.25rem;font-variant-numeric:tabular-nums}
 .rule-key[hidden]{display:none}
-.point{min-height:1.6em;margin:.4rem 0 0;font-variant-numeric:tabular-nums}
-.readings-h{margin:1.5rem 0 .4rem}
+.point{min-height:1.6em;margin:.6rem 0 0;font-size:16.5px;color:var(--t-ink2);font-variant-numeric:tabular-nums}
+.diagonal{margin-top:2.5rem;border-top:1px solid var(--t-rule);padding-top:1.25rem}
+.readings-h{margin:0 0 .75rem}
 .readings{list-style:none;margin:0;padding:0;display:grid;gap:.3rem;max-width:62ch;font-variant-numeric:tabular-nums}
 .readings li{padding-left:1.1rem;position:relative}
 .readings li::before{content:"";position:absolute;left:0;top:.62em;width:.5rem;height:.5rem;border-radius:999px;background:var(--t-ink2)}

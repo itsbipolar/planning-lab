@@ -12,6 +12,46 @@
 :root,:root[data-theme="dark"]{color-scheme:dark;--t-ground:#0E1318;--t-raised:#151C23;--t-ink:#F2F4F6;--t-ink2:#C7CFD7;--t-ink3:#97A2AD;--t-point:#F2A93B;--t-money:#7FC79A;--t-rule:#26303A;--t-d1:#5AA2E0;--t-d2:#F2A93B;--t-d3:#4FBFAE;--t-d4:#E07A6F;--t-neutral:#3A4652;}
 :root[data-theme="light"]{color-scheme:light;--t-ground:#FCFDFD;--t-raised:#E8EEF3;--t-ink:#10161C;--t-ink2:#36414C;--t-ink3:#56616C;--t-point:#F2A93B;--t-point-deep:#A8690A;--t-money:#2C6E44;--t-rule:#D3D8DD;--t-d1:#1F64A8;--t-d2:#B9740A;--t-d3:#157A6E;--t-d4:#B5473B;--t-neutral:#C3CAD1;}
 :root{--font-display:"Source Serif 4 Variable", Georgia, serif;--font-ui:"Source Sans 3 Variable", system-ui, sans-serif;--font-mono:"Source Sans 3 Variable", system-ui, sans-serif} /* labels use the text face too (Mo, 2026-11-13: no mono labels) */
+
+html{scrollbar-width:thin;scrollbar-color:var(--t-neutral) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--t-neutral);border-radius:10px;border:3px solid var(--t-ground)}
+*::-webkit-scrollbar-thumb:hover{background:var(--t-ink3)}*::-webkit-scrollbar-button{display:none;width:0;height:0}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+[data-chapter]{scroll-margin-top:1.25rem}
+.read-progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:50;pointer-events:none}
+.read-progress span{display:block;height:100%;background:var(--t-point);transform-origin:0 50%;transform:scaleX(0)}
+.rail{display:none}
+@media (min-width:1360px){
+  .rail{display:block;position:fixed;left:12px;top:50%;transform:translateY(-50%);width:2.6rem;z-index:40}
+  .rail ol{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
+  .rail a{display:block;padding:.3rem 0;color:var(--t-ink3);text-decoration:none;font-size:14.5px;line-height:1.25}
+  .rail a b{font-weight:650;font-variant-numeric:tabular-nums}
+  .rail a span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .rail a:hover,.rail a[aria-current="true"]{color:var(--t-ink)}
+  .rail a[aria-current="true"] b{box-shadow:inset 0 -2px 0 var(--t-point)}
+}
+@media (min-width:1700px){
+  .rail{left:max(12px,calc((100vw - 80rem)/2 - 10rem));width:8.5rem}
+  .rail a{display:grid;grid-template-columns:1.6rem 1fr;align-items:baseline;gap:.25rem}
+  .rail a span{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
+}
+.sec-label{position:relative;margin:0 0 .5rem;padding-top:.9rem;font-size:1.05rem;font-weight:650;color:var(--t-ink2);font-variant-numeric:tabular-nums}
+.sec-label::before{content:"";position:absolute;top:0;left:0;width:3rem;height:3px;background:var(--t-point)}
+.sec-label b{color:var(--t-ink);margin-right:.5rem;letter-spacing:.04em}
+.readout{border-left:3px solid var(--t-point);padding:.35rem 0 .35rem 1rem;margin:1rem 0;max-width:46rem}
+.readout-k{margin:0;font-size:15.5px;font-weight:650;color:var(--t-ink3)}
+.readout-v{margin:.15rem 0 .1rem;font-family:var(--font-display);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.1;font-variant-numeric:tabular-nums;color:var(--t-ink)}
+.readout-t{margin:0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+.readout-fine{margin:.35rem 0 0;font-size:15.5px;color:var(--t-ink3)}
+[data-flash]{transition:box-shadow .25s ease}
+[data-flash].flash{box-shadow:inset 0 -3px 0 var(--t-point)}
+@media (prefers-reduced-motion:reduce){[data-flash]{transition:none}}
+.crosshair{pointer-events:none}
+.crosshair line{stroke:var(--t-ink);stroke-width:1;stroke-dasharray:3 3}
+.crosshair rect{fill:var(--t-raised);stroke:var(--t-rule)}
+.crosshair text{fill:var(--t-ink);font-variant-numeric:tabular-nums}
+
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 18.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
@@ -27,7 +67,7 @@ a{color:inherit;text-underline-offset:4px}
 h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;margin:0;text-wrap:balance}
 h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:24ch;margin-top:.5rem;font-variant-numeric:lining-nums}
 h2{font-size:1.55rem;line-height:1.15;margin:0 0 .8rem}
-.kicker{font-family:var(--font-mono);font-size:.8rem;color:var(--t-ink3);margin:2.5rem 0 0}
+.kicker{font-family:var(--font-mono);font-size:.85rem;color:var(--t-ink3);margin:2.5rem 0 0}
 .note{font-size:.9rem;color:var(--t-ink3)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 :focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
@@ -78,13 +118,13 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 .chart > .note{margin:.7rem 0 0}
 .actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:.9rem 0 0}
 
-.readings{margin-top:3rem;max-width:60rem}
+.readings{max-width:60rem}
 .readings ul{list-style:none;margin:0;padding:0}
 .readings li{font-size:1.15rem;line-height:1.45;padding:.7rem 0;border-top:1px solid var(--t-rule)}
 .readings strong{font-weight:700;font-variant-numeric:tabular-nums}
-.out{margin-top:3rem;max-width:60rem;border-left:3px solid var(--t-d1);padding:.2rem 0 .2rem 1rem}
+.out{max-width:60rem;border-left:3px solid var(--t-d1);padding:.2rem 0 .2rem 1rem}
 .out p{margin:0}
-.fold{margin-top:2.5rem;border-top:1px solid var(--t-rule);padding-top:1rem}
+.fold{margin-top:1rem;border-top:1px solid var(--t-rule);padding-top:1rem}
 .fold summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
 .prose{max-width:66ch;font-size:.95rem;color:var(--t-ink2)}
 .table-wrap{overflow-x:auto;max-width:42rem}
@@ -100,6 +140,19 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 
 /* Chart text keeps the size its label placement was tuned for; the page text around it is larger. */
 svg{font-size:17px}
+
+/* The premium layer (shared/desk/desk-ui.mjs): chapters, the year's readout */
+.readings,.later{margin-top:4.5rem}
+.readings h2{max-width:30ch}
+.readout{margin:1.5rem 0 0}
+.readout > .readout-k:first-child{margin-bottom:.4rem}
+.readout-row{display:grid;grid-template-columns:repeat(3,max-content);gap:.6rem 3rem}
+.readout-row > div{display:flex;flex-direction:column;justify-content:space-between}
+@media (max-width:639px){.readout-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem 1rem}}
+.readout-v{width:fit-content;max-width:100%}
+#rv-infl{color:var(--t-d2)}
+.readout-v.v-pos{color:var(--t-d3)}.readout-v.v-neg{color:var(--t-d4)}
+.crosshair text{font-size:13.5px}
 </style>
 </head>
 <body>
@@ -109,6 +162,7 @@ svg{font-size:17px}
     <a href="/builds/money-then-now/">About this build</a>
   </header>
   <main>
+    <section data-chapter="Then and now" class="opening">
     <p class="kicker" id="kicker">Data story · Statistics Canada and Bank of Canada data</p>
     <h1 id="finding" aria-live="polite">Money, then and now</h1>
 
@@ -122,24 +176,42 @@ svg{font-size:17px}
       <p class="error" id="error" role="alert" hidden></p>
     </form>
 
+    <div class="readout" id="year-readout" aria-live="polite">
+      <p class="readout-k" id="rk-year"></p>
+      <div class="readout-row">
+        <div><p class="readout-k">Price change</p><p class="readout-v" id="rv-infl" data-flash></p></div>
+        <div><p class="readout-k">Prime rate, average</p><p class="readout-v" id="rv-prime" data-flash></p></div>
+        <div><p class="readout-k">Real rate</p><p class="readout-v" id="rv-real" data-flash></p></div>
+      </div>
+      <p class="readout-t" id="rt-year"></p>
+      <p class="readout-fine">Real rate here = the year's average prime rate minus that year's price rise; a simple after-the-fact measure.</p>
+    </div>
+
     <section class="chart" aria-labelledby="chart-h">
       <h2 id="chart-h" class="sr-only">Prices, borrowing and what an amount is worth, year by year</h2>
       <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Prices, prime rate and purchasing power</title><desc id="chart-desc"></desc></svg></div>
       <ul class="sr-only" id="chart-text"></ul>
-      <p class="note">Real rate here = the year's average prime rate minus that year's price rise; a simple after-the-fact measure.</p>
+      <p class="note">Point at the chart, or tap it, to read any year.</p>
       <p class="actions"><button type="button" id="save" class="ghost">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
     </section>
+    </section>
 
-    <section class="readings" aria-labelledby="readings-h">
+    <section class="readings" data-chapter="What the years say" aria-labelledby="readings-h">
+      <p class="sec-label"><b>02</b>What the years say</p>
       <h2 id="readings-h">What the years say</h2>
       <ul id="readings"></ul>
     </section>
 
-    <section class="out" aria-labelledby="out-h">
+    <section class="later" data-chapter="This year" aria-labelledby="out-h">
+      <p class="sec-label"><b>03</b>This year</p>
+      <div class="out">
       <h2 id="out-h">2026 up close</h2>
       <p>For this year month by month, Money year 2026 follows <a href="/builds/money-year/app/">the policy rate, mortgage rates, core inflation and the loonie this year, chart by chart</a>.</p>
+      </div>
     </section>
 
+    <section class="later" data-chapter="The data" aria-labelledby="data-h">
+    <p class="sec-label" id="data-h"><b>04</b>The data, year by year, and its sources</p>
     <details class="fold">
       <summary>Every year as a table</summary>
       <div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-cap">
@@ -154,6 +226,7 @@ svg{font-size:17px}
       <summary>Sources and how it's made</summary>
       <div id="sources" class="prose"></div>
     </details>
+    </section>
 
     <footer class="foot">
       <div>
@@ -165,7 +238,67 @@ svg{font-size:17px}
   </main>
 </div>
 <script type="application/json" id="data">{"first":1915,"last":2025,"primeFirst":1975,"avg":{"1915":6.133333333333334,"1916":6.683333333333334,"1917":7.883333333333334,"1918":8.916666666666666,"1919":9.766666666666666,"1920":11.358333333333333,"1921":9.983333333333336,"1922":9.200000000000001,"1923":9.200000000000001,"1924":9.024999999999999,"1925":9.133333333333333,"1926":9.200000000000001,"1927":9.066666666666665,"1928":9.133333333333335,"1929":9.225,"1930":9.133333333333335,"1931":8.233333333333334,"1932":7.458333333333332,"1933":7.133333333333333,"1934":7.216666666666669,"1935":7.250000000000001,"1936":7.3999999999999995,"1937":7.666666666666667,"1938":7.708333333333332,"1939":7.6499999999999995,"1940":7.974999999999999,"1941":8.450000000000001,"1942":8.841666666666667,"1943":9.033333333333335,"1944":9.091666666666665,"1945":9.150000000000002,"1946":9.433333333333334,"1947":10.283333333333333,"1948":11.75,"1949":12.158333333333331,"1950":12.483333333333334,"1951":13.800000000000002,"1952":14.158333333333331,"1953":14.016666666666666,"1954":14.108333333333333,"1955":14.133333333333331,"1956":14.324999999999998,"1957":14.799999999999999,"1958":15.15,"1959":15.333333333333334,"1960":15.541666666666664,"1961":15.699999999999998,"1962":15.866666666666667,"1963":16.125,"1964":16.433333333333334,"1965":16.816666666666666,"1966":17.458333333333332,"1967":18.083333333333336,"1968":18.816666666666666,"1969":19.675,"1970":20.333333333333336,"1971":20.88333333333333,"1972":21.925,"1973":23.566666666666663,"1974":26.158333333333335,"1975":28.950000000000003,"1976":31.133333333333336,"1977":33.61666666666666,"1978":36.63333333333333,"1979":39.983333333333334,"1980":44.03333333333333,"1981":49.525,"1982":54.85833333333334,"1983":58.07500000000001,"1984":60.574999999999996,"1985":62.975,"1986":65.61666666666666,"1987":68.47500000000001,"1988":71.23333333333333,"1989":74.78333333333333,"1990":78.35833333333333,"1991":82.76666666666667,"1992":84.00000000000001,"1993":85.56666666666666,"1994":85.70833333333333,"1995":87.55000000000001,"1996":88.925,"1997":90.36666666666667,"1998":91.26666666666667,"1999":92.85000000000001,"2000":95.375,"2001":97.78333333333335,"2002":99.99166666666667,"2003":102.75,"2004":104.65833333333335,"2005":106.97500000000001,"2006":109.11666666666667,"2007":111.45,"2008":114.09166666666665,"2009":114.43333333333334,"2010":116.46666666666668,"2011":119.85833333333333,"2012":121.67500000000001,"2013":122.81666666666666,"2014":125.15833333333336,"2015":126.56666666666666,"2016":128.37499999999997,"2017":130.42499999999998,"2018":133.38333333333335,"2019":135.98333333333335,"2020":136.95833333333334,"2021":141.60833333333335,"2022":151.24166666666665,"2023":157.10833333333332,"2024":160.85,"2025":164.18333333333334},"infl":{"1915":2.080443828016665,"1916":8.967391304347828,"1917":17.955112219451365,"1918":13.107822410147985,"1919":9.532710280373834,"1920":16.296928327645045,"1921":-12.105649303008036,"1922":-7.846410684474137,"1923":0,"1924":-1.9021739130435034,"1925":1.2003693444136765,"1926":0.7299270072992803,"1927":-1.4492753623188692,"1928":0.7352941176471006,"1929":1.0036496350364743,"1930":-0.9936766034326805,"1931":-9.85401459854015,"1932":-9.41295546558707,"1933":-4.357541899441331,"1934":1.1682242990654457,"1935":0.4618937644341736,"1936":2.0689655172413612,"1937":3.603603603603611,"1938":0.5434782608695565,"1939":-0.756756756756749,"1940":4.24836601307188,"1941":5.956112852664597,"1942":4.635108481262318,"1943":2.1677662582469504,"1944":0.645756457564528,"1945":0.6416131989001261,"1946":3.0965391621129212,"1947":9.010600706713777,"1948":14.262560777957866,"1949":3.4751773049645163,"1950":2.673063742289261,"1951":10.547396528704954,"1952":2.596618357487901,"1953":-1.0005885815185356,"1954":0.6539833531510109,"1955":0.17720023626697223,"1956":1.3561320754716943,"1957":3.3158813263525433,"1958":2.3648648648648685,"1959":1.2101210121012063,"1960":1.3586956521739024,"1961":1.0187667560321634,"1962":1.0615711252654148,"1963":1.628151260504196,"1964":1.9121447028423777,"1965":2.33265720081135,"1966":3.815659068384525,"1967":3.5799522673031214,"1968":4.055299539170498,"1969":4.561558901682905,"1970":3.346039813638302,"1971":2.7049180327868516,"1972":4.988028731045513,"1973":7.487647282402099,"1974":10.997171145686014,"1975":10.672188595093978,"1976":7.541738629821526,"1977":7.976445396145571,"1978":8.973723351512163,"1979":9.144676979071885,"1980":10.129220508545211,"1981":12.471612414837253,"1982":10.768971899713975,"1983":5.86358802977367,"1984":4.304778303917334,"1985":3.962030540652095,"1986":4.194786290856145,"1987":4.356108712217455,"1988":4.02823414871607,"1989":4.983621899859614,"1990":4.780476933363054,"1991":5.625864085930021,"1992":1.4901329037454891,"1993":1.8650793650793362,"1994":0.16556291390728006,"1995":2.1487603305785363,"1996":1.5705311250713727,"1997":1.6212163808452917,"1998":0.995942456658061,"1999":1.7348429510591679,"2000":2.7194399569197447,"2001":2.525120139799042,"2002":2.2583944094085595,"2003":2.7585632136011284,"2004":1.8572587185726075,"2005":2.2135520343976367,"2006":2.0020253953416,"2007":2.138383992668391,"2008":2.3702706744429314,"2009":0.2994668030092962,"2010":1.776871540926317,"2011":2.912135088723522,"2012":1.5156782312452322,"2013":0.9382918978152022,"2014":1.9066359071787442,"2015":1.1252413609427858,"2016":1.4287595470107828,"2017":1.5968841285296964,"2018":2.268225672481017,"2019":1.9492690241159627,"2020":0.7169996323078687,"2021":3.3951931852753248,"2022":6.802801153416094,"2023":3.8790015978841907,"2024":2.381583832811751,"2025":2.072324111491053},"prime":{"1975":9.43867924528302,"1976":10.096153846153847,"1977":8.490384615384615,"1978":9.620192307692308,"1979":12.75,"1980":14.36320754716981,"1981":19.379807692307693,"1982":15.966346153846153,"1983":11.211538461538462,"1984":12.110576923076923,"1985":10.610576923076923,"1986":10.55188679245283,"1987":9.557692307692308,"1988":10.73076923076923,"1989":13.259615384615385,"1990":14.120192307692308,"1991":10.100961538461538,"1992":7.547169811320755,"1993":5.985576923076923,"1994":6.774038461538462,"1995":8.629807692307692,"1996":6.201923076923077,"1997":4.929245283018868,"1998":6.658653846153846,"1999":6.423076923076923,"2000":7.235576923076923,"2001":5.985576923076923,"2002":4.197115384615385,"2003":4.688679245283019,"2004":3.9951923076923075,"2005":4.399038461538462,"2006":5.764423076923077,"2007":6.100961538461538,"2008":4.797169811320755,"2009":2.418269230769231,"2010":2.5913461538461537,"2011":3,"2012":3,"2013":3,"2014":3,"2015":2.789423076923076,"2016":2.7000000000000006,"2017":2.8923076923076922,"2018":3.5990384615384596,"2019":3.9499999999999966,"2020":2.7707547169811324,"2021":2.450000000000002,"2022":4.108653846153844,"2023":6.935576923076917,"2024":6.772115384615377,"2025":4.9122641509433915},"meta":{"cpi":{"title":"Consumer Price Index, monthly, Canada, all-items (2002=100)","source":"Statistics Canada, Table 18-10-0004-01, vector v41690973","source_url":"https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401","licence":"Statistics Canada Open Licence","attribution":"Adapted from Statistics Canada, Consumer Price Index, monthly, Table 18-10-0004-01. This does not constitute an endorsement by Statistics Canada of this product.","retrieved":"2026-11-10"},"rate":{"title":"Prime rate, weekly (the rate a financial institution uses as a base for loan products)","source":"Bank of Canada Valet API, series V80691311","source_url":"https://www.bankofcanada.ca/valet/observations/V80691311/json","terms_url":"https://www.bankofcanada.ca/terms/","attribution":"Source: Bank of Canada. Not affiliated with or endorsed by the Bank of Canada.","retrieved":"2026-11-10"}}}</script>
-<script>// Money, then and now: the arithmetic on the yearly series. Pure functions with no figure of their own;
+<script>
+(function () {
+  'use strict';
+  // the reading-progress line, on pages at least two screens long
+  var bar = document.createElement('div'); bar.className = 'read-progress'; bar.setAttribute('aria-hidden', 'true');
+  bar.appendChild(document.createElement('span')); document.body.appendChild(bar);
+  var queued = false;
+  function progress() { queued = false; var room = document.documentElement.scrollHeight - innerHeight; bar.hidden = room < innerHeight; bar.firstChild.style.transform = 'scaleX(' + (room > 0 ? Math.min(1, scrollY / room) : 0) + ')'; }
+  addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(progress); } }, { passive: true });
+  addEventListener('resize', progress); addEventListener('load', progress); progress();
+
+  // the chapter rail, from <section data-chapter="...">, when there are three or more
+  var chapters = [].slice.call(document.querySelectorAll('[data-chapter]'));
+  if (chapters.length >= 3) {
+    var nav = document.createElement('nav'); nav.className = 'rail'; nav.setAttribute('aria-label', 'Chapters on this page');
+    var ol = document.createElement('ol'); var links = [];
+    chapters.forEach(function (c, i) {
+      if (!c.id) c.id = 'chapter-' + (i + 1);
+      var li = document.createElement('li'), a = document.createElement('a'), b = document.createElement('b');
+      a.href = '#' + c.id; b.textContent = String(i + 1).padStart(2, '0'); var sp = document.createElement('span'); sp.textContent = c.getAttribute('data-chapter'); a.title = sp.textContent; a.appendChild(b); a.appendChild(sp);
+      li.appendChild(a); ol.appendChild(li); links.push(a);
+    });
+    nav.appendChild(ol); document.body.appendChild(nav);
+    var mark = function () { var at = 0; chapters.forEach(function (c, i) { if (c.getBoundingClientRect().top < innerHeight * 0.35) at = i; }); links.forEach(function (a, i) { a.setAttribute('aria-current', String(i === at)); }); };
+    addEventListener('scroll', function () { requestAnimationFrame(mark); }, { passive: true }); mark();
+  }
+
+  // a short amber underline on any [data-flash] element whose text changes
+  var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var watch = function (el) {
+    var last = el.textContent;
+    new MutationObserver(function () { if (el.textContent === last) return; last = el.textContent; if (still) return; el.classList.add('flash'); clearTimeout(el._f); el._f = setTimeout(function () { el.classList.remove('flash'); }, 1100); }).observe(el, { childList: true, characterData: true, subtree: true });
+  };
+  [].forEach.call(document.querySelectorAll('[data-flash]'), watch);
+  window.deskWatchFlash = watch;
+})();
+
+// A chart crosshair: call deskCrosshair(svg, { x0, x1, y0, y1, read: function (px) { return { x: px, y: py, lines: ['...'] } } })
+// with the plot area in SVG units; it draws a dashed line and a reading box that follow the pointer (and arrow keys when
+// the SVG has focus). Returns a function that removes it (call before a redraw).
+function deskCrosshair(svg, o) {
+  var NS = 'http://www.w3.org/2000/svg', g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'crosshair'); g.style.display = 'none';
+  var line = document.createElementNS(NS, 'line'), box = document.createElementNS(NS, 'rect'), txt = document.createElementNS(NS, 'text');
+  g.appendChild(line); g.appendChild(box); g.appendChild(txt); svg.appendChild(g);
+  function toSvg(e) { var r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal; var sx = vb && vb.width ? vb.width / r.width : 1; return (e.clientX - r.left) * sx + (vb ? vb.x : 0); }
+  function show(px) {
+    px = Math.max(o.x0, Math.min(o.x1, px)); var r = o.read(px); if (!r) { g.style.display = 'none'; return; }
+    g.style.display = ''; line.setAttribute('x1', r.x); line.setAttribute('x2', r.x); line.setAttribute('y1', o.y0); line.setAttribute('y2', o.y1);
+    while (txt.firstChild) txt.removeChild(txt.firstChild);
+    r.lines.forEach(function (s, i) { var t = document.createElementNS(NS, 'tspan'); t.setAttribute('x', 0); t.setAttribute('dy', i ? '1.25em' : '1em'); if (!i) t.setAttribute('font-weight', '650'); t.textContent = s; txt.appendChild(t); });
+    var bb = txt.getBBox(), pad = 6, w = bb.width + pad * 2, h = bb.height + pad * 2, bx = r.x + 10; if (bx + w > o.x1) bx = r.x - 10 - w;
+    var by = Math.max(o.y0, Math.min(o.y1 - h, (r.y || o.y0) - h - 8));
+    box.setAttribute('x', bx); box.setAttribute('y', by); box.setAttribute('width', w); box.setAttribute('height', h); box.setAttribute('rx', 2);
+    txt.setAttribute('transform', 'translate(' + (bx + pad) + ',' + (by + pad) + ')'); [].forEach.call(txt.childNodes, function (t) { t.setAttribute('x', 0); });
+  }
+  function move(e) { show(toSvg(e)); } function hide() { g.style.display = 'none'; }
+  svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide);
+  return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
+}
+
+// Money, then and now: the arithmetic on the yearly series. Pure functions with no figure of their own;
 // build.mjs inlines this file into the page and the tests import it.
 function yearsOf(M) { const out = []; for (let y = M.first; y <= M.last; y++) out.push(y); return out; }
 
@@ -296,8 +429,11 @@ function counts(M) {
   }
 
   // ---------- the chart: three lanes on one shared axis of years ----------
+  var dropCross = null;
   function draw() {
-    var svg = $('chart'); clear(svg);
+    var svg = $('chart');
+    if (dropCross) { dropCross(); dropCross = null; } // the crosshair goes before the chart is drawn again
+    clear(svg);
     var W = Math.max(300, Math.floor($('chart-frame').clientWidth)), narrow = W < 640, fs = narrow ? 12 : 13;
     var N = YEARS.length, step = W / N;
     var X = function (y) { return (y - M.first) * step; }, CX = function (y) { return X(y) + step / 2; };
@@ -511,6 +647,16 @@ function counts(M) {
     ];
     var ul = $('chart-text'); ul.textContent = '';
     items.forEach(function (s) { var li = document.createElement('li'); li.textContent = s; ul.appendChild(li); });
+
+    // The crosshair (shared deskCrosshair): any year's price change, prime rate, real rate and what the amount was worth
+    dropCross = deskCrosshair(svg, { x0: 0, x1: W, y0: bandTop, y1: p3Bottom, read: function (px) {
+      var y = Math.max(M.first, Math.min(M.last, M.first + Math.floor(px / step)));
+      var lines = [String(y), 'Prices ' + signed(M.infl[y])];
+      if (M.prime[y] != null) lines.push('Prime ' + pct(M.prime[y]), 'Real rate ' + signed(realRate(M, y)));
+      else lines.push('No prime-rate data');
+      lines.push(typed(state.amount) + ' from ' + sel + ': ' + money(w[y]));
+      return { x: CX(y), y: Y2(M.prime[y] != null ? Math.max(M.prime[y], M.infl[y]) : M.infl[y]), lines: lines };
+    } });
   }
 
   // ---------- the headline and the readings ----------
@@ -531,7 +677,7 @@ function counts(M) {
       parts.forEach(function (p) { if (p[1]) { var b = document.createElement('strong'); b.textContent = p[0]; li.appendChild(b); } else li.appendChild(document.createTextNode(p[0])); });
       ul.appendChild(li);
     }
-    item([['Prices rose in '], [C.rose + ' of the ' + C.years + ' years', 1], [' from ' + M.first + ' to ' + M.last + ', and fell in ' + C.fell + '.']]);
+    $('readings-h').textContent = 'Prices rose in ' + C.rose + ' of the ' + C.years + ' years from ' + M.first + ' to ' + M.last + ', and fell in ' + C.fell;
     var lastSpan = SPANS[SPANS.length - 1];
     if (lastSpan) item([['Prime has been below inflation in '], [C.below + ' of the ' + C.primeYears + ' years', 1], [' since ' + M.primeFirst + ', most recently ' + span(lastSpan[0], lastSpan[1]) + '.']]);
     if (state.year !== M.last) {
@@ -539,6 +685,21 @@ function counts(M) {
       item([['Since ' + state.year + ', prices '], [r >= 1 ? (fold(r) ? 'rose ' + fold(r) : 'rose ' + Math.round((r - 1) * 100) + '%') : 'fell ' + Math.round((1 - r) * 100) + '%', 1], [' (yearly average to ' + M.last + ').']]);
     }
     item([['The steepest yearly rise was '], [EX.rise + ', ' + signed(M.infl[EX.rise]), 1], ['; the steepest fall, '], [EX.fall + ', ' + signed(M.infl[EX.fall]), 1], ['.']]);
+  }
+
+  // ---------- the readout under the form: the chosen year's three readings ----------
+  function yearReadout() {
+    var y = state.year, r = realRate(M, y), up = M.infl[y] >= 0;
+    $('rk-year').textContent = (state.example ? 'The example year, ' : 'The year you picked, ') + y;
+    $('rv-infl').textContent = signed(M.infl[y]);
+    $('rv-prime').textContent = M.prime[y] != null ? pct(M.prime[y]) : 'No data';
+    $('rv-real').textContent = r != null ? signed(r) : 'No data';
+    $('rv-real').classList.toggle('v-pos', r != null && r >= 0); $('rv-real').classList.toggle('v-neg', r != null && r < 0); // coloured as the chart's gap
+    var t;
+    if (r == null) t = 'The prime-rate series here starts in ' + M.primeFirst + '. Prices ' + (up ? 'rose ' : 'fell ') + pct(Math.abs(M.infl[y])) + ' in ' + y + '.';
+    else if (r >= 0) t = 'Prime was ' + fix1(r) + ' points above the year’s price change: borrowing cost more than prices ' + (up ? 'rose.' : 'moved.');
+    else t = 'Prime was ' + fix1(-r) + ' points below the year’s price rise: a negative real rate, as prices rose faster than borrowing cost.';
+    $('rt-year').textContent = t;
   }
 
   // ---------- the table and the sources (drawn once) ----------
@@ -569,7 +730,7 @@ function counts(M) {
 
   // ---------- one render ----------
   function render() {
-    finding(); readings(); draw();
+    finding(); yearReadout(); readings(); draw();
     Array.prototype.forEach.call(document.querySelectorAll('#rows tr.sel'), function (tr) { tr.classList.remove('sel'); });
     var row = document.querySelector('#rows tr[data-year="' + state.year + '"]'); if (row) row.classList.add('sel');
     $('example-note').textContent = state.example
@@ -614,6 +775,9 @@ function counts(M) {
   });
 
   table(); sources(); render();
+  // The first fill is not a change: drop the underline the shared layer gives a readout whose text changes (its observer
+  // runs first, in the same microtask queue), so only what the reader's own choice changes is underlined.
+  Promise.resolve().then(function () { return 0; }).then(function () { Array.prototype.forEach.call(document.querySelectorAll('[data-flash].flash'), function (e) { e.classList.remove('flash'); }); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
   new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   var rt, lastW = $('chart-frame').clientWidth;

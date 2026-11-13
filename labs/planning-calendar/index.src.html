@@ -20,11 +20,16 @@
     <h1 id="finding" aria-live="polite">The planning calendar</h1>
     <p class="dek" id="dek"></p>
 
-    <section class="build" aria-labelledby="build-h">
+    <section class="build" data-chapter="Household" aria-labelledby="build-h">
+      <p class="sec-label"><b>01</b>Household</p>
       <h2 id="build-h">Build your household</h2>
       <div class="picks" role="group" aria-labelledby="picks-l">
         <span class="picks-l" id="picks-l">Quick picks (examples)</span>
         <div class="pick-row" id="picks"></div>
+      </div>
+      <div class="readouts" id="readouts">
+        <div class="readout" id="rd-next"><p class="readout-k">The next confirmed date</p><p class="readout-v" id="rd-next-v" data-flash></p><p class="readout-t" id="rd-next-t"></p></div>
+        <div class="readout" id="rd-count"><p class="readout-k">In the next twelve months</p><p class="readout-v" id="rd-count-v" data-flash></p><p class="readout-t" id="rd-count-t"></p><p class="readout-fine" id="rd-count-fine" hidden></p></div>
       </div>
       <fieldset class="sits">
         <legend>Tick every situation that applies; they combine into one calendar.</legend>
@@ -32,19 +37,20 @@
       </fieldset>
     </section>
 
-    <section class="pile" aria-labelledby="pile-h">
+    <section class="pile" data-chapter="The year" aria-labelledby="pile-h">
+      <p class="sec-label"><b>02</b>The year</p>
       <h2 id="pile-h">Where the dates pile up, week by week</h2>
       <div class="frame" id="frame"><svg id="strip" role="img" aria-labelledby="strip-t"><title id="strip-t">How many dates fall in each week</title></svg></div>
       <p class="legend" id="legend"></p>
+      <p class="hint">Point at a week, or tap it, to read its dates.</p>
+      <div class="save" role="group" aria-label="Add to my calendar">
+        <button type="button" id="ics">Add to my calendar</button>
+        <p class="note" id="ics-note"></p>
+      </div>
     </section>
 
-    <section class="save" aria-labelledby="save-h">
-      <h2 id="save-h" class="sr-only">Add to my calendar</h2>
-      <button type="button" id="ics">Add to my calendar</button>
-      <p class="note" id="ics-note"></p>
-    </section>
-
-    <section class="list" aria-labelledby="list-h">
+    <section class="list" data-chapter="Each date" aria-labelledby="list-h">
+      <p class="sec-label"><b>03</b>Each date</p>
       <h2 id="list-h">Each date and the rule behind it</h2>
       <ol class="dates" id="dates"></ol>
       <div class="pending" id="pending"></div>

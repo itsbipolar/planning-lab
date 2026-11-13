@@ -87,8 +87,11 @@
   }
 
   // ---------- the chart: three lanes on one shared axis of years ----------
+  var dropCross = null;
   function draw() {
-    var svg = $('chart'); clear(svg);
+    var svg = $('chart');
+    if (dropCross) { dropCross(); dropCross = null; } // the crosshair goes before the chart is drawn again
+    clear(svg);
     var W = Math.max(300, Math.floor($('chart-frame').clientWidth)), narrow = W < 640, fs = narrow ? 12 : 13;
     var N = YEARS.length, step = W / N;
     var X = function (y) { return (y - M.first) * step; }, CX = function (y) { return X(y) + step / 2; };
@@ -302,6 +305,16 @@
     ];
     var ul = $('chart-text'); ul.textContent = '';
     items.forEach(function (s) { var li = document.createElement('li'); li.textContent = s; ul.appendChild(li); });
+
+    // The crosshair (shared deskCrosshair): any year's price change, prime rate, real rate and what the amount was worth
+    dropCross = deskCrosshair(svg, { x0: 0, x1: W, y0: bandTop, y1: p3Bottom, read: function (px) {
+      var y = Math.max(M.first, Math.min(M.last, M.first + Math.floor(px / step)));
+      var lines = [String(y), 'Prices ' + signed(M.infl[y])];
+      if (M.prime[y] != null) lines.push('Prime ' + pct(M.prime[y]), 'Real rate ' + signed(realRate(M, y)));
+      else lines.push('No prime-rate data');
+      lines.push(typed(state.amount) + ' from ' + sel + ': ' + money(w[y]));
+      return { x: CX(y), y: Y2(M.prime[y] != null ? Math.max(M.prime[y], M.infl[y]) : M.infl[y]), lines: lines };
+    } });
   }
 
   // ---------- the headline and the readings ----------
@@ -322,7 +335,7 @@
       parts.forEach(function (p) { if (p[1]) { var b = document.createElement('strong'); b.textContent = p[0]; li.appendChild(b); } else li.appendChild(document.createTextNode(p[0])); });
       ul.appendChild(li);
     }
-    item([['Prices rose in '], [C.rose + ' of the ' + C.years + ' years', 1], [' from ' + M.first + ' to ' + M.last + ', and fell in ' + C.fell + '.']]);
+    $('readings-h').textContent = 'Prices rose in ' + C.rose + ' of the ' + C.years + ' years from ' + M.first + ' to ' + M.last + ', and fell in ' + C.fell;
     var lastSpan = SPANS[SPANS.length - 1];
     if (lastSpan) item([['Prime has been below inflation in '], [C.below + ' of the ' + C.primeYears + ' years', 1], [' since ' + M.primeFirst + ', most recently ' + span(lastSpan[0], lastSpan[1]) + '.']]);
     if (state.year !== M.last) {
@@ -330,6 +343,21 @@
       item([['Since ' + state.year + ', prices '], [r >= 1 ? (fold(r) ? 'rose ' + fold(r) : 'rose ' + Math.round((r - 1) * 100) + '%') : 'fell ' + Math.round((1 - r) * 100) + '%', 1], [' (yearly average to ' + M.last + ').']]);
     }
     item([['The steepest yearly rise was '], [EX.rise + ', ' + signed(M.infl[EX.rise]), 1], ['; the steepest fall, '], [EX.fall + ', ' + signed(M.infl[EX.fall]), 1], ['.']]);
+  }
+
+  // ---------- the readout under the form: the chosen year's three readings ----------
+  function yearReadout() {
+    var y = state.year, r = realRate(M, y), up = M.infl[y] >= 0;
+    $('rk-year').textContent = (state.example ? 'The example year, ' : 'The year you picked, ') + y;
+    $('rv-infl').textContent = signed(M.infl[y]);
+    $('rv-prime').textContent = M.prime[y] != null ? pct(M.prime[y]) : 'No data';
+    $('rv-real').textContent = r != null ? signed(r) : 'No data';
+    $('rv-real').classList.toggle('v-pos', r != null && r >= 0); $('rv-real').classList.toggle('v-neg', r != null && r < 0); // coloured as the chart's gap
+    var t;
+    if (r == null) t = 'The prime-rate series here starts in ' + M.primeFirst + '. Prices ' + (up ? 'rose ' : 'fell ') + pct(Math.abs(M.infl[y])) + ' in ' + y + '.';
+    else if (r >= 0) t = 'Prime was ' + fix1(r) + ' points above the year’s price change: borrowing cost more than prices ' + (up ? 'rose.' : 'moved.');
+    else t = 'Prime was ' + fix1(-r) + ' points below the year’s price rise: a negative real rate, as prices rose faster than borrowing cost.';
+    $('rt-year').textContent = t;
   }
 
   // ---------- the table and the sources (drawn once) ----------
@@ -360,7 +388,7 @@
 
   // ---------- one render ----------
   function render() {
-    finding(); readings(); draw();
+    finding(); yearReadout(); readings(); draw();
     Array.prototype.forEach.call(document.querySelectorAll('#rows tr.sel'), function (tr) { tr.classList.remove('sel'); });
     var row = document.querySelector('#rows tr[data-year="' + state.year + '"]'); if (row) row.classList.add('sel');
     $('example-note').textContent = state.example
@@ -405,6 +433,9 @@
   });
 
   table(); sources(); render();
+  // The first fill is not a change: drop the underline the shared layer gives a readout whose text changes (its observer
+  // runs first, in the same microtask queue), so only what the reader's own choice changes is underlined.
+  Promise.resolve().then(function () { return 0; }).then(function () { Array.prototype.forEach.call(document.querySelectorAll('[data-flash].flash'), function (e) { e.classList.remove('flash'); }); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
   new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   var rt, lastW = $('chart-frame').clientWidth;

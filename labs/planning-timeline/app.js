@@ -152,7 +152,19 @@
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
     return [W, H];
   }
+  // a sentence with one figure set in bold (and underlined briefly when it changes)
+  // the same three nodes are kept, so the bold figure is the one that is underlined when it changes
+  function sentence(node, before, figure, after) {
+    if (!node._b) {
+      node.textContent = ''; node._pre = document.createTextNode(''); node._b = document.createElement('b'); node._post = document.createTextNode('');
+      node._b.setAttribute('data-flash', ''); node.appendChild(node._pre); node.appendChild(node._b); node.appendChild(node._post);
+      if (window.deskWatchFlash) window.deskWatchFlash(node._b);
+    }
+    node._pre.textContent = before; node._b.textContent = figure == null ? '' : figure; node._post.textContent = after || '';
+  }
+  var oneDp = function (v) { return (Math.round(v * 10) / 10).toLocaleString('en-CA', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); };
   function totalsChart(svg, fa, fb, aLabel, bLabel, startA, startB, cross) {
+    if (svg._unhair) svg._unhair();
     clear(svg);
     var box = chartBox(svg, 230, 300), W = box[0], H = box[1], pl = 34, pr = W < 520 ? 104 : 116, pt = 26, pb = 30;
     var x0 = Math.min(startA, startB), x1 = hi;
@@ -184,35 +196,42 @@
       var ct = el('text', halo({ x: cx - 9, y: cy - 10, fill: col('ink'), 'font-size': 13, 'font-weight': 650, 'text-anchor': 'end' }), svg, 'about ' + (Math.round(cross * 10) / 10));
       if (ct.getBBox().x < pl) { ct.setAttribute('x', cx + 9); ct.setAttribute('y', cy + 20); ct.setAttribute('text-anchor', 'start'); } // below-right, under both lines
     }
+    // the reading under the pointer: the age, and both totals at that age
+    svg._unhair = deskCrosshair(svg, { x0: pl, x1: W - pr, y0: pt, y1: H - pb, read: function (px) {
+      var age = Math.round(x0 + (px - pl) / (W - pl - pr) * (x1 - x0));
+      var lines = ['At age ' + age, aLabel + ': ' + oneDp(fa(age)) + ' years'];
+      if (!same) lines.push(bLabel + ': ' + oneDp(fb(age)) + ' years');
+      return { x: X(age), y: Y(Math.max(fa(age), same ? 0 : fb(age))), lines: lines };
+    } });
   }
 
   // ---------- the three choices ----------
   function drawCpp() {
     var a = state.cpp, s = cppShareAt(a), ch = (s - 1) * 100;
     $('cpp-age').textContent = ageText(a);
-    $('cpp-big').textContent = pct(s * 100) + ' of the standard amount';
-    var std = R.cppStd, cross = null, txt;
-    if (Math.abs(a - std) < 1e-9) txt = 'The standard start at ' + std + ': the full amount, with no reduction or increase.';
+    $('cpp-big').textContent = pct(s * 100);
+    var std = R.cppStd, cross = null, t = $('cpp-text');
+    if (Math.abs(a - std) < 1e-9) sentence(t, 'The standard start at ' + std + ': the full amount, with no reduction or increase.');
     else if (a < std) {
       cross = crossing(function (v) { return cppTotal(std, v); }, function (v) { return cppTotal(a, v); }, std);
-      txt = 'Starting at ' + ageText(a) + ' pays ' + pct(Math.abs(ch), 1) + ' less every month, for life. In total it stays ahead of starting at ' + std + ' until about age ' + (Math.round(cross * 10) / 10) + '; after that, ' + std + ' is ahead.';
+      sentence(t, 'Starting at ' + ageText(a) + ' pays ' + pct(Math.abs(ch), 1) + ' less every month, for life. In total it stays ahead of starting at ' + std + ' until about ', 'age ' + (Math.round(cross * 10) / 10), '; after that, ' + std + ' is ahead.');
     } else {
       cross = crossing(function (v) { return cppTotal(a, v); }, function (v) { return cppTotal(std, v); }, a);
-      txt = 'Starting at ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + std + ' at about age ' + (Math.round(cross * 10) / 10) + '.';
+      sentence(t, 'Starting at ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + std + ' at about ', 'age ' + (Math.round(cross * 10) / 10), '.');
     }
-    $('cpp-text').textContent = txt;
     totalsChart($('cpp-chart'), function (v) { return cppTotal(a, v); }, function (v) { return cppTotal(std, v); }, 'Start ' + ageShort(a), 'Start ' + std, a, std, Math.abs(a - std) < 1e-9 ? null : cross);
   }
   function drawOas() {
-    var a = state.oas, s = oasShareAt(a), ch = (s - 1) * 100, b = R.oasLo, cross = null, txt;
+    var a = state.oas, s = oasShareAt(a), ch = (s - 1) * 100, b = R.oasLo, cross = null;
     $('oas-age').textContent = ageText(a);
-    $('oas-big').textContent = pct(s * 100) + ' of the amount at ' + b;
-    if (Math.abs(a - b) < 1e-9) txt = 'Starting at ' + b + ', the earliest age. The pension rises by ' + pct(R.oasBoost) + ' from age ' + M.oasBoostAge + ', whenever it started.';
+    $('oas-big').textContent = pct(s * 100);
+    $('oas-k').textContent = 'Each month, for life, as a share of the amount at ' + b;
+    var t = $('oas-text');
+    if (Math.abs(a - b) < 1e-9) sentence(t, 'Starting at ' + b + ', the earliest age. The pension rises by ' + pct(R.oasBoost) + ' from age ' + M.oasBoostAge + ', whenever it started.');
     else {
       cross = crossing(function (v) { return oasTotal(a, v); }, function (v) { return oasTotal(b, v); }, a);
-      txt = 'Waiting until ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + b + ' at about age ' + (Math.round(cross * 10) / 10) + '. Both rise by ' + pct(R.oasBoost) + ' from ' + M.oasBoostAge + '.';
+      sentence(t, 'Waiting until ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + b + ' at about ', 'age ' + (Math.round(cross * 10) / 10), '. Both rise by ' + pct(R.oasBoost) + ' from ' + M.oasBoostAge + '.');
     }
-    $('oas-text').textContent = txt;
     totalsChart($('oas-chart'), function (v) { return oasTotal(a, v); }, function (v) { return oasTotal(b, v); }, 'Start ' + ageShort(a), 'Start ' + b, a, b, cross);
     // the recovery tax, for the latest year with a confirmed threshold
     var yrs = Object.keys(M.thresholds).map(Number).filter(function (y) { return y <= thisYear; });
@@ -220,6 +239,7 @@
     if (ty == null) { $('oas').querySelector('.recovery').hidden = true; return; }
     var th = M.thresholds[ty], rep = Math.max(0, state.income - th) * R.oasRecovery / 100;
     $('rec-year').textContent = ty;
+    $('rec-big').textContent = money(rep);
     $('rec-text').textContent = 'In ' + ty + ', OAS is reduced by ' + pct(R.oasRecovery) + ' of net income above ' + money(th) + '. ' + (rep > 0 ? 'At ' + money(state.income) + ', that is ' + money(rep) + ' a year, up to the full pension.' : 'At ' + money(state.income) + ', nothing is repaid.');
   }
   function drawRrif(p) {
@@ -243,16 +263,26 @@
     var leftAt90 = 1; rows.forEach(function (r) { if (r.age < 90) leftAt90 *= 1 - r.factor; });
     $('rrif-text').textContent = 'An RRSP must mature by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + ', for example by becoming a RRIF. From the next year a minimum share must come out each year, set by your age on January 1 (the chart’s ages): ' + pct(first.factor * 100, 2) + ' at ' + first.age + ', in the year you turn ' + (first.age + 1) + '; ' + (tenth ? 'more than a tenth of the fund from ' + tenth.age + '; ' : '') + pct(maxF * 100) + ' from ' + rows[rows.length - 1].age + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90, on January 1.';
     var f = state.fund, at = p && p.age - 1 > R.rrsp ? M.rrif.filter(function (r) { return r.age === Math.min(p.age - 1, rows[rows.length - 1].age); })[0] : null;
-    $('fund-text').textContent = 'On ' + money(f) + ' on January 1, the minimum is ' + money(f * first.factor) + ' in the year you turn ' + (first.age + 1) + (at ? ' and ' + money(f * at.factor) + ' in the year you turn ' + p.age : '') + '.';
+    $('fund-k').textContent = 'The minimum in the year you turn ' + (first.age + 1);
+    $('fund-big').textContent = money(f * first.factor);
+    $('fund-text').textContent = 'On ' + money(f) + ' on January 1, the minimum is ' + money(f * first.factor) + ' in the year you turn ' + (first.age + 1) + ': ' + pct(first.factor * 100, 2) + ', the factor for age ' + first.age + ' on January 1.';
+    var fine = $('fund-fine'); fine.hidden = !at;
+    if (at) fine.textContent = 'In the year you turn ' + p.age + ', the minimum on the same fund would be ' + money(f * at.factor) + ' (' + pct(at.factor * 100, 2) + ').';
   }
 
   // ---------- people your age ----------
   function drawPeople(p) {
     var box = $('people');
-    if (!p.popCount) { box.hidden = true; return; }
-    box.hidden = false; box.textContent = '';
-    var h = document.createElement('p'); h.className = 'kicker'; h.style.margin = '0'; h.textContent = 'People your age'; box.appendChild(h);
-    var t = document.createElement('p'); t.textContent = 'About ' + p.popCount.toLocaleString('en-CA') + ' Canadians were ' + p.age + ' on July 1, ' + M.pop.year + ', by Statistics Canada’s estimate (see the sources).'; box.appendChild(t);
+    if (!M.pop) { box.hidden = true; return; }
+    box.hidden = false;
+    $('people-k').textContent = 'Canadians aged ' + p.age + ' on July 1, ' + M.pop.year;
+    if (p.popCount) {
+      $('people-big').textContent = 'About ' + p.popCount.toLocaleString('en-CA');
+      $('people-text').textContent = 'About ' + p.popCount.toLocaleString('en-CA') + ' Canadians were ' + p.age + ' on July 1, ' + M.pop.year + ', by Statistics Canada’s estimate (see the sources).';
+    } else {
+      $('people-big').textContent = 'Not in this snapshot';
+      $('people-text').textContent = 'The Statistics Canada snapshot on this page counts ages ' + M.pop.a0 + ' to ' + M.pop.a1 + ' on July 1, ' + M.pop.year + '.';
+    }
   }
 
   // ---------- one render for a birth year ----------
@@ -312,4 +342,6 @@
 
   var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(render, 120); });
   render();
+  // the first fill is not a change: no underline on load
+  requestAnimationFrame(function () { document.querySelectorAll('.flash').forEach(function (e) { e.classList.remove('flash'); }); });
 })();

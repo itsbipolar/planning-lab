@@ -15,7 +15,7 @@ async function overlaps(page) {
   return page.evaluate(() => {
     const out = [];
     for (const svg of document.querySelectorAll('figure svg')) {
-      const boxes = [...svg.querySelectorAll('text')].filter((t) => t.textContent.trim()).map((t) => ({ t: t.textContent, r: t.getBoundingClientRect() }));
+      const boxes = [...svg.querySelectorAll('text')].filter((t) => t.textContent.trim() && !t.closest('.crosshair')).map((t) => ({ t: t.textContent, r: t.getBoundingClientRect() }));
       for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
         const a = boxes[i].r, b = boxes[j].r;
         if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) out.push(`${svg.id}: "${boxes[i].t}" / "${boxes[j].t}"`);
@@ -50,8 +50,9 @@ for (const width of [390, 1440]) {
       const h = await page.locator('#h-shuffle').innerText();
       const end = h.match(/(\$[\d,]+)$/)[1];
       await page.locator('#shuffle').focus(); await page.keyboard.press('Enter'); await page.keyboard.press('Enter');
-      await expect(page.locator('#s-shuffle')).toContainText(`Ruth ends with ${end}`);
-      expect((await page.locator('#s-shuffle').innerText()).match(/ends with (\$[\d,]+)\.$/)[1]).toBe(end);
+      await expect(page.locator('#rv-shuffle')).toHaveText(end);
+      await expect(page.locator('#s-shuffle')).toHaveText('Same ending as Ruth: with nothing taken out, the order of the years doesn’t matter.');
+      await expect(page.locator('#sam-order li')).toHaveCount(10);
 
       // every order: 10! orders, Ruth best, Sam worst
       await expect(page.locator('#run-text')).toContainText('All 3,628,800 orders worked out in this browser');
@@ -123,10 +124,89 @@ for (const width of [390, 1440]) {
   });
 }
 
+// A readout sits directly under the control that drives it (within a short gap, same left edge give or take its rule).
+async function under(page, control, readout) {
+  const c = await page.locator(control).boundingBox(), r = await page.locator(readout).boundingBox();
+  expect(r.y, `${readout} starts below ${control}`).toBeGreaterThanOrEqual(c.y + c.height - 1);
+  expect(r.y - (c.y + c.height), `${readout} is right under ${control}`).toBeLessThan(64);
+  expect(Math.abs(r.x - c.x), `${readout} lines up with ${control}`).toBeLessThan(24);
+}
+
+for (const width of [390, 1440]) {
+  test.describe(`${width}px, the premium layer`, () => {
+    test.use({ viewport: { width, height: 900 } });
+
+    test('each readout sits under its control and its value changes when the control is used', async ({ page }) => {
+      await page.goto(url); await ready(page);
+      // shuffle: the ending stays (the point), the order shown changes
+      await under(page, '#shuffle', '#r-shuffle');
+      const end = await page.locator('#rv-shuffle').innerText(), order = await page.locator('#sam-order').innerText();
+      await expect(page.locator('#rk-order')).toHaveText('Sam’s order: worst years first');
+      await page.click('#shuffle');
+      await expect(page.locator('#rk-order')).toContainText('Sam’s order this time');
+      await expect(page.locator('#sam-order')).not.toHaveText(order);
+      await expect(page.locator('#rv-shuffle')).toHaveText(end);
+      await expect(page.locator('#r-shuffle .readout-fine')).toHaveText(SYN);
+      // deal: nothing until a card is dealt, then where the order ends and its rank among every order
+      await under(page, '.deal .row', '#s-deal');
+      await expect(page.locator('#rv-deal')).toBeHidden();
+      await page.click('#random');
+      await expect(page.locator('#rv-deal')).toHaveText(/^(Runs out in year \d+|Lasts all 25 years, \$[\d,]+ left)$/);
+      await expect(page.locator('#rt-deal')).toContainText(/of all 3,628,800 orders/);
+      // the rescue levers: does Sam last, and what he is paid in total
+      await under(page, '.levers', '#r-mix');
+      const lasts = await page.locator('#rv-mix').innerText(), paid = await page.locator('#rv-paid').innerText();
+      expect(lasts).toBe('Runs out in year 20');
+      await page.check('#buffer');
+      await expect(page.locator('#rv-mix')).toHaveText('Runs out in year 18');
+      await expect(page.locator('#rv-paid')).not.toHaveText(paid);
+      // the RRIF lane: the share of orders that run out, without and then with the minimums
+      await under(page, 'label:has(#rrif)', '#r-rrif');
+      await expect(page.locator('#rc-rrif-on')).toBeHidden();
+      await expect(page.locator('#rv-rrif-off')).toHaveText(/%$/);
+      await page.check('#rrif');
+      await expect(page.locator('#rv-rrif-on')).toHaveText(/%$/, { timeout: 30000 });
+      // readouts are not fine print: the value is the largest text in the box, the notes stay readable
+      const sizes = await page.evaluate(() => ['#rv-deal', '#rt-deal', '#rf-deal'].map((s) => parseFloat(getComputedStyle(document.querySelector(s)).fontSize)));
+      expect(sizes[0]).toBeGreaterThan(sizes[1]);
+      expect(sizes[2]).toBeGreaterThanOrEqual(15);
+      expect(await overlaps(page)).toEqual([]);
+    });
+
+    test('the chapter rail shows on wide screens only, and the crosshair reads the balance charts', async ({ page }) => {
+      await page.goto(url); await ready(page);
+      await expect(page.locator('section[data-chapter]')).toHaveCount(8);
+      await expect(page.locator('.sec-label')).toHaveCount(7);
+      if (width >= 1440) {
+        await expect(page.locator('nav.rail')).toBeVisible();
+        expect(await page.locator('nav.rail a').count()).toBeGreaterThanOrEqual(3);
+        // the rail never sits on the page's text
+        const rail = await page.locator('nav.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
+        expect(rail.x + rail.width).toBeLessThan(h1.x);
+      } else await expect(page.locator('nav.rail')).toBeHidden();
+      for (const id of ['#c-lead', '#c-deal']) {
+        const svg = page.locator(id); await svg.scrollIntoViewIfNeeded();
+        const b = await svg.boundingBox();
+        await page.mouse.move(b.x + b.width * 0.3, b.y + b.height * 0.5);
+        await expect(svg.locator('.crosshair')).toBeVisible();
+        await expect(svg.locator('.crosshair text')).toContainText(/End of year \d+Ruth: \$[\d,]+Sam: /);
+      }
+      await page.click('#random');
+      const b = await page.locator('#c-deal').boundingBox();
+      await page.mouse.move(b.x + b.width * 0.3, b.y + b.height * 0.5);
+      await expect(page.locator('#c-deal .crosshair text')).toContainText('Your order: ');
+      await expect(page.locator('#c-deal .crosshair')).toHaveCount(1); // the old one was removed before the redraw
+      await page.mouse.move(0, 0);
+      await expect(page.locator('#c-deal .crosshair')).toBeHidden();
+    });
+  });
+}
+
 test('with reduced motion nothing animates', async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await ctx.newPage(); await page.goto(url); await ready(page);
-  await page.click('#random');
+  await page.click('#random'); await page.click('#shuffle');
   expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
+  expect(await page.locator('.flash').count()).toBe(0);
   await ctx.close();
 });

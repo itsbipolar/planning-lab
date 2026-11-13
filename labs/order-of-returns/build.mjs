@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { deskCSS } from '../../shared/desk/desk.mjs';
+import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -20,10 +21,10 @@ const need = (id) => {
 const facts = { rrif: need('rrif_minimum_factors'), maturity: need('rrsp_maturity_age') };
 
 const json = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
-const css = [deskCSS(), read(join(here, 'style.css'))].join('\n');
+const css = [deskCSS(), deskUICSS(), read(join(here, 'style.css'))].join('\n');
 const enumerate = strip(read(join(here, 'enumerate.mjs')));
 const worker = enumerate + '\n' + read(join(here, 'worker.js'));
-const js = strip(read(join(here, 'engine.mjs'))) + '\n' + enumerate + '\n' + read(join(here, 'app.js'));
+const js = deskUIJS() + '\n' + strip(read(join(here, 'engine.mjs'))) + '\n' + enumerate + '\n' + read(join(here, 'app.js'));
 for (const [name, src] of [['worker', worker], ['script', js]]) if (/<\/script/i.test(src)) throw new Error(`${name} contains </script`);
 const html = read(join(here, 'index.src.html'))
   .replace('/*@@CSS@@*/', () => css)

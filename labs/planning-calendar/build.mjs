@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { factIndex } from './engine.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
+import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -23,8 +24,8 @@ const own = config.ownDates.filter((o) => o.facts.every((id) => F.has(id))).map(
 const situationLabel = (s) => s.label.replace(/\{([\w.]+)\}/g, (m, id) => (F.has(id) ? String(F.get(id).value) : 'the age in the rule'));
 const data = { config: { ...config, situations: config.situations.map((s) => ({ ...s, label: situationLabel(s) })) }, facts: { facts }, own };
 
-const css = [deskCSS(), read(join(here, 'style.css'))].join('\n');
-const js = read(join(here, 'engine.mjs')).replace(/^export /gm, '') + '\n' + read(join(here, 'app.js'));
+const css = [deskCSS(), deskUICSS(), read(join(here, 'style.css'))].join('\n');
+const js = deskUIJS() + '\n' + read(join(here, 'engine.mjs')).replace(/^export /gm, '') + '\n' + read(join(here, 'app.js'));
 const html = read(join(here, 'index.src.html')).replace('/*@@CSS@@*/', () => css)
   .replace('/*@@DATA@@*/', () => JSON.stringify(data).replace(/</g, '\\u003c')).replace('/*@@JS@@*/', () => js);
 const out = process.env.OUT ?? join(here, 'dist', 'index.html');

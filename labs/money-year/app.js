@@ -73,10 +73,11 @@
 
   const panelsRoot = $('panels');
   const slider = $('when');
-  const readout = $('readout');
   const views = [];
+  const removers = []; // the crosshairs on the charts, removed before each redraw
 
   function draw() {
+    removers.splice(0).forEach((off) => off());
     panelsRoot.textContent = '';
     views.length = 0;
     const W = Math.max(300, Math.floor(panelsRoot.clientWidth)), narrow = W < 640, fs = narrow ? 12 : 13, dy = fs + 4;
@@ -191,17 +192,52 @@
       const cross = el('line', { y1: 0, y2: PH, class: 'cross', visibility: 'hidden' }, marks);
       const dots = p.lines.map(() => el('circle', { r: narrow ? 4 : 4.5, class: 'dot', visibility: 'hidden' }, marks));
       const live = el('g', { class: 'live' }, svg);
-      const hitArea = el('rect', { x: 0, y: 0, width: W, height: PH, class: 'hit' }, svg);
-      hitArea.addEventListener('pointermove', (e) => { const r = svg.getBoundingClientRect(); setDay(Math.round(((e.clientX - r.left) / r.width) * ((T1 - T0) / DAY))); });
-      hitArea.addEventListener('pointerdown', (e) => hitArea.dispatchEvent(new PointerEvent('pointermove', e)));
+      el('rect', { x: 0, y: 0, width: W, height: PH, class: 'hit' }, svg);
       box.appendChild(html('p', 'note', p.note));
-      views.push({ p, x, y, cross, dots, live, W, PH, fs, dy, seed: P.boxes.slice() });
+      const view = { p, x, y, cross, dots, live, W, PH, fs, dy, seed: P.boxes.slice() };
+      views.push(view);
+      // The crosshair (shared deskCrosshair): pointing at a chart picks that day for every chart and the slider, and
+      // the reading box gives the date and every measure on it.
+      removers.push(deskCrosshair(svg, { x0: 0, x1: Math.min(W, xr), y0: 0, y1: PH, read: (px) => {
+        const n = setDay(Math.round((px / W) * ((T1 - T0) / DAY))), d = iso(T0 + n * DAY), q = valueAt(p.lines[0].points, d);
+        return { x: x(d), y: q ? y(q[1]) : PH, lines: [longDate(d)].concat(dayValues(d).map((r) => `${r.label} ${r.said}`)) };
+      } }));
     });
     setDay(Number(slider.value));
   }
 
+  // Every measure's value in force on a day, in words.
+  function dayValues(d) {
+    const out = [];
+    for (const p of M.panels) for (const l of p.lines) {
+      const q = valueAt(l.points, d);
+      if (q) { const mon = p.monthly ? MONTHS[Number(q[0].slice(5, 7)) - 1] : null; out.push({ p, l, q, label: l.label, v: fmt(p, q[1]), mon, said: `${fmt(p, q[1])}${mon ? ` (${mon.slice(0, 3)})` : ''}` }); }
+    }
+    return out;
+  }
+  // The readout under the slider: the day, each measure's value (one cell per line, built once), and what has changed
+  // for the policy rate since that day.
+  const cells = new Map();
+  function readoutCells() {
+    const dl = $('rr-day');
+    for (const p of M.panels) for (const l of p.lines) {
+      const div = html('div', `cell c-${COLOUR[p.id] || 'd1'}`), dt = html('dt', 'readout-k', l.label), dd = html('dd', 'readout-v');
+      dd.setAttribute('data-flash', ''); if (window.deskWatchFlash) window.deskWatchFlash(dd);
+      div.append(dt, dd); dl.appendChild(div); cells.set(l, dd);
+    }
+  }
+  function sinceText(d) {
+    const pol = panel('policy');
+    if (!pol) return '';
+    const l = pol.lines[0], q = valueAt(l.points, d), last = l.points.at(-1);
+    if (!q) return '';
+    if (d >= M.retrieved) return `The latest day in the data. Move the slider back to compare any earlier day with it.`;
+    if (q[1] === last[1]) return `The policy rate has not changed since this day: ${fmt(pol, q[1])} then and on ${longDate(M.retrieved)}.`;
+    return `Since this day the policy rate has ${last[1] > q[1] ? 'risen' : 'fallen'} from ${fmt(pol, q[1])} to ${fmt(pol, last[1])} (${longDate(M.retrieved)}).`;
+  }
+
   // One day picked, by pointer or slider: every chart shows it and writes its value there, and the readout says it all
-  // in words. A line's latest value is already written at its end, so it isn't repeated.
+  // in words. A line's latest value is already written at its end, so it isn't repeated. Returns the day's number.
   function setDay(n) {
     n = Math.max(0, Math.min(DAYS, n));
     slider.value = n;
@@ -224,8 +260,12 @@
       });
     }
     const text = `${longDate(d)}: ${parts.join(', ')}.`;
-    readout.textContent = text;
+    $('rk-day').textContent = `On ${longDate(d)}`;
+    for (const r of dayValues(d)) { const dd = cells.get(r.l); dd.textContent = r.v; if (r.mon) dd.appendChild(html('span', 'readout-when', ` for ${r.mon}`)); }
+    for (const [l, dd] of cells) if (!valueAt(l.points, d)) dd.textContent = '–';
+    $('rt-day').textContent = sinceText(d);
     slider.setAttribute('aria-valuetext', text);
+    return n;
   }
 
   // The headline states the year's finding, from the policy rate's decisions; the lede gives the other three.
@@ -274,6 +314,8 @@
       col.appendChild(ol);
       root.appendChild(col);
     }
+    const yrs = [...groups.keys()].sort(), n = M.proposals.length;
+    if (n) $('h-budget').textContent = `${count(n)} ${n === 1 ? 'measure' : 'measures'} that would start ${yrs.length > 1 ? `between ${yrs[0]} and ${yrs.at(-1)}` : `in ${yrs[0]}`}`;
     if (!M.proposals.length) $('budget').hidden = true;
     if (M.budgetUrl) $('budget-link').href = M.budgetUrl;
   }
@@ -309,7 +351,13 @@
   slider.value = DAYS;
   $('asof').textContent = `Data to ${longDate(M.retrieved)}. The shaded end of each chart is the part of the year that isn't in yet.${M.budgetDay ? ` The dashed line marks Budget 2026, ${longDate(M.budgetDay)}.` : ''}`;
   slider.addEventListener('input', () => setDay(Number(slider.value)));
-  finding(); lede(); lane(); table(); sources(); draw();
+  const WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const count = (n) => WORDS[n] || String(n);
+  $('h-year').textContent = `${count(M.panels.length)} measures on one timeline`;
+  readoutCells(); finding(); lede(); lane(); table(); sources(); draw();
+  // The first fill is not a change: drop the underline the shared layer gives a readout whose text changes (its observer
+  // runs first, in the same microtask queue), so only what the reader moves is underlined.
+  Promise.resolve().then(() => 0).then(() => document.querySelectorAll('[data-flash].flash').forEach((e) => e.classList.remove('flash')));
   let lastW = panelsRoot.clientWidth;
   new ResizeObserver(() => { if (panelsRoot.clientWidth !== lastW) { lastW = panelsRoot.clientWidth; draw(); } }).observe(panelsRoot);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);

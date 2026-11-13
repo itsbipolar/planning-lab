@@ -40,20 +40,30 @@
         <label for="born">Your diagonal: born in</label>
         <div class="row"><input id="born" type="number" inputmode="numeric" autocomplete="off"><button type="submit">Draw it</button></div>
       </div>
-      <p class="note" id="born-note"></p>
       <p class="error" id="error" role="alert" hidden></p>
+      <div class="readout" id="born-readout">
+        <p class="readout-k" id="born-k"></p>
+        <p class="readout-v" id="born-v" data-flash></p>
+        <p class="readout-t" id="born-t"></p>
+        <p class="readout-fine" id="born-note"></p>
+      </div>
     </form>
 
-    <section class="chart" aria-labelledby="chart-h">
+    <section class="chart" data-chapter="The chart" aria-labelledby="chart-h">
+      <p class="sec-label"><b>01</b>The chart</p>
       <h2 id="chart-h"></h2>
       <p class="note" id="chart-sub"></p>
       <div class="legend" id="legend"></div>
       <div class="frame" id="frame"><svg id="heat" role="img" aria-labelledby="heat-title"><title id="heat-title">Heatmap</title></svg></div>
       <ul class="rule-key" id="rule-key" aria-label="The rule ages on the dashed lines" hidden></ul>
-      <p class="note point" id="point" aria-live="polite"></p>
-      <h3 class="kicker readings-h" id="readings-h">Your diagonal</h3>
-      <ul class="readings" id="readings"></ul>
+      <p class="point" id="point" aria-live="polite"></p>
       <p class="actions"><button type="button" id="save" class="ghost">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
+    </section>
+
+    <section class="diagonal" data-chapter="Your diagonal" aria-labelledby="readings-h">
+      <p class="sec-label"><b>02</b>Your diagonal</p>
+      <h2 class="readings-h" id="readings-h">Your diagonal</h2>
+      <ul class="readings" id="readings"></ul>
     </section>
 
     <details class="fold">

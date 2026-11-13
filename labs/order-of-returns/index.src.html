@@ -16,6 +16,7 @@
   </header>
   <main>
     <article>
+      <section data-chapter="Ruth and Sam" class="opening">
       <p class="kicker">Playable explainer · synthetic returns, not a forecast</p>
       <h1 id="headline">Same ten years, same average return, a different ending</h1>
       <p class="deck" id="deck">Two made-up retirees get the same ten market years in a different order.</p>
@@ -33,25 +34,33 @@
         <ul class="cards" id="cards" aria-label="The ten market years"></ul>
         <p>The average of the ten is <strong data-v="avg"></strong> a year. Ruth gets them best first, Sam worst first. From year <span data-v="after"></span> on, every year earns that same average, for both of them.</p>
       </div>
+      </section>
 
-      <section aria-labelledby="h-shuffle">
-        <p class="label">No withdrawals</p>
+      <section data-chapter="No withdrawals" aria-labelledby="h-shuffle">
+        <p class="sec-label"><b>02</b>No withdrawals</p>
         <h2 id="h-shuffle"></h2>
         <div class="prose">
           <p>Take the withdrawals away and the order stops mattering: each year multiplies the savings, and multiplying in a different order gives the same answer. Shuffle Sam's years as often as you like.</p>
-          <p><button type="button" id="shuffle">Shuffle Sam's years</button></p>
+          <p class="control"><button type="button" id="shuffle">Shuffle Sam's years</button></p>
+        </div>
+        <div class="readout" id="r-shuffle" aria-live="polite">
+          <p class="readout-k" id="rk-shuffle"></p>
+          <p class="readout-v" id="rv-shuffle" data-flash></p>
+          <p class="readout-t" id="s-shuffle"></p>
+          <p class="readout-k order-k" id="rk-order"></p>
+          <ol class="cards mini" id="sam-order" data-flash aria-labelledby="rk-order"></ol>
+          <p class="readout-fine">Synthetic sequence: not historical, not a forecast.</p>
         </div>
         <figure class="fig">
           <p class="fig-title" id="t-shuffle"></p>
           <svg id="c-shuffle" role="img" aria-labelledby="t-shuffle s-shuffle"></svg>
           <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
         </figure>
-        <p class="summary" id="s-shuffle" aria-live="polite"></p>
         <div class="prose"><p>With money coming out, a bad year early does more damage: the withdrawal is taken from savings that have just shrunk, and that money is not there when the good years come.</p></div>
       </section>
 
-      <section aria-labelledby="h-deal">
-        <p class="label">Your turn</p>
+      <section data-chapter="Your turn" aria-labelledby="h-deal">
+        <p class="sec-label"><b>03</b>Your turn</p>
         <h2 id="h-deal">Deal the ten years yourself</h2>
         <div class="prose"><p>Pick the order one card at a time. Same savings, same withdrawals, same average. Your path is drawn in amber.</p></div>
         <div class="deal">
@@ -59,17 +68,22 @@
           <div><p class="small">Cards left to deal</p><div class="cards hand" id="hand" role="group" aria-label="Cards left to deal"></div></div>
           <p class="row"><button type="button" id="random">Deal the rest at random</button><button type="button" id="reset" class="ghost">Start again</button><button type="button" id="save" class="ghost">Save this chart as an image</button></p>
         </div>
+        <div class="readout" id="s-deal" aria-live="polite" tabindex="-1">
+          <p class="readout-k" id="rk-deal"></p>
+          <p class="readout-v" id="rv-deal" data-flash></p>
+          <p class="readout-t" id="rt-deal"></p>
+          <p class="readout-fine" id="rf-deal"></p>
+        </div>
+        <p class="small save-note" id="save-note" aria-live="polite"></p>
         <figure class="fig">
           <p class="fig-title" id="t-deal"></p>
           <svg id="c-deal" role="img" aria-labelledby="t-deal s-deal"></svg>
           <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
         </figure>
-        <p class="summary" id="s-deal" aria-live="polite" tabindex="-1"></p>
-        <p class="small" id="save-note" aria-live="polite"></p>
       </section>
 
-      <section aria-labelledby="h-all">
-        <p class="label">Every possible order</p>
+      <section data-chapter="Every order" aria-labelledby="h-all">
+        <p class="sec-label"><b>04</b>Every possible order</p>
         <h2 id="h-all">Running every possible order of the ten years</h2>
         <div class="prose">
           <p>The ten years can be dealt in <strong data-v="orders"></strong> different orders. This page runs every one of them through the same engine, in your browser, and counts how each one ends.</p>
@@ -86,8 +100,8 @@
         <p class="small">Better means the money lasts longer; if both last, more is left at the end; if both run out in the same year, more was paid out before it did.</p>
       </section>
 
-      <section aria-labelledby="h-early">
-        <p class="label">Why the order matters</p>
+      <section data-chapter="The first years" aria-labelledby="h-early">
+        <p class="sec-label"><b>05</b>Why the order matters</p>
         <h2 id="h-early">The first five years decide most of it</h2>
         <div class="prose"><p>Group the orders by the average return of their first five years. Each column below is one group; the shading shows how that group's orders end.</p></div>
         <figure class="fig">
@@ -98,8 +112,8 @@
         <p class="summary" id="s-early" aria-live="polite"></p>
       </section>
 
-      <section aria-labelledby="h-rescue">
-        <p class="label">Rescuing Sam</p>
+      <section data-chapter="Rescuing Sam" aria-labelledby="h-rescue">
+        <p class="sec-label"><b>06</b>Rescuing Sam</p>
         <h2 id="h-rescue"></h2>
         <div class="prose">
           <p id="p-solver"></p>
@@ -113,31 +127,43 @@
           <label class="check"><input id="flex" type="checkbox"><span>Spend <span data-v="trim"></span> less in a year that follows a down year</span></label>
           <label class="check"><input id="buffer" type="checkbox"><span>Keep <span data-v="buffer"></span> years of withdrawals in cash, and draw on it after a down year</span></label>
         </div>
+        <div class="readout" id="r-mix" aria-live="polite">
+          <div class="readout-row">
+            <div><p class="readout-k">Sam’s money, with your changes</p><p class="readout-v" id="rv-mix" data-flash></p></div>
+            <div><p class="readout-k" id="rk-paid"></p><p class="readout-v" id="rv-paid" data-flash></p></div>
+          </div>
+          <p class="readout-t" id="s-mix"></p>
+          <p class="readout-fine">Each lever has a cost: spending less is a smaller life in those years, and cash held aside earns nothing in this model.</p>
+        </div>
         <figure class="fig">
           <p class="fig-title" id="t-mix"></p>
           <svg id="c-mix" role="img" aria-labelledby="t-mix s-mix"></svg>
           <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
         </figure>
-        <p class="summary" id="s-mix" aria-live="polite"></p>
-        <p class="small">Each lever has a cost: spending less is a smaller life in those years, and cash held aside earns nothing in this model.</p>
       </section>
 
-      <section aria-labelledby="h-rrif">
-        <p class="label">A Canadian lane: RRIF minimums</p>
+      <section data-chapter="RRIF minimums" aria-labelledby="h-rrif">
+        <p class="sec-label"><b>07</b>A Canadian lane: RRIF minimums</p>
         <h2 id="h-rrif">What RRIF minimum withdrawals do to each order</h2>
         <div class="prose">
           <p id="p-rrif"></p>
           <p class="small" id="p-rrif-src"></p>
-          <label class="check"><input id="rrif" type="checkbox"><span>Apply the RRIF minimums</span></label>
+          <label class="check control"><input id="rrif" type="checkbox"><span>Apply the RRIF minimums</span></label>
+        </div>
+        <div class="readout" id="r-rrif" aria-live="polite">
+          <div class="readout-row">
+            <div id="rc-rrif-on"><p class="readout-k" id="rk-rrif-on"></p><p class="readout-v" id="rv-rrif-on" data-flash></p></div>
+            <div><p class="readout-k" id="rk-rrif-off"></p><p class="readout-v" id="rv-rrif-off" data-flash></p></div>
+          </div>
+          <p class="readout-t" id="s-rrif"></p>
         </div>
         <div class="multiples" id="rrif-panels"></div>
-        <p class="summary" id="s-rrif" aria-live="polite"></p>
         <p class="small">In each panel's bottom strip, a bar is money the minimum took out beyond the plan that year: full colour for a year that follows a down year, fainter for a year that follows an up year.</p>
         <p class="small">An illustration with stated assumptions, not the rules in full. The extra that leaves the RRIF is not tracked after it leaves: it might be spent or saved elsewhere, and tax, which this sketch leaves out, is where much of the real cost or benefit lies.</p>
       </section>
 
-      <section aria-labelledby="h-qs">
-        <p class="label">Taking it further</p>
+      <section data-chapter="Questions" aria-labelledby="h-qs">
+        <p class="sec-label"><b>08</b>Taking it further</p>
         <h2 id="h-qs">Questions worth asking</h2>
         <div class="prose">
           <p>Nothing here can say what anyone should do. It can help with the questions to take to a qualified professional who knows the whole picture:</p>
