@@ -1,53 +1,101 @@
+/* The Order of Returns, in the Data desk look. The tokens and fonts come from shared/desk (inlined before this file). */
+:root{--you-text:var(--t-d2)}
+:root[data-theme="light"]{--you-text:var(--t-ink)}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
-body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 18px/1.55 var(--font-ui)}
-@media (min-width:1100px){body{font-size:19px}}
-.page{max-width:76rem;margin:0 auto;padding:0 20px}
-@media (min-width:1100px){.page{padding:0 32px}}
-.top{display:flex;gap:1.5rem;align-items:baseline;padding:20px 0;font-weight:500}
-.brand{font-family:var(--font-display);font-size:1.9rem;line-height:1;text-decoration:none;color:inherit;margin-right:auto}
-.back{color:inherit}
-h1,h2{font-family:var(--font-display);font-weight:400;letter-spacing:-.01em;margin:0}
-h1{font-size:clamp(2.6rem,5vw + .8rem,4.6rem);line-height:1}
-h2{font-size:2.3rem;line-height:1.05;margin:1.5rem 0 1rem}
-h3{font-size:1.1rem;line-height:1.3;margin:0 0 .5rem;font-weight:700}
-main p,main li{max-width:66ch}
-a{color:inherit;text-underline-offset:4px}
-a:focus-visible,button:focus-visible,input:focus-visible,h2:focus-visible{outline:2px solid var(--t-ink);outline-offset:2px}
-:root[data-theme="dark"] a:focus-visible,:root[data-theme="dark"] button:focus-visible,:root[data-theme="dark"] input:focus-visible,:root[data-theme="dark"] h2:focus-visible{outline-color:var(--t-point)}
-h2:focus{outline:none}h2:focus-visible{outline-style:solid}
-.lede{color:var(--t-ink2);margin:1.5rem 0 .5rem}
-.status-tag,.small{font-size:16px;color:var(--t-ink3)}
-.progress{font-size:16px;color:var(--t-ink3);margin:2rem 0 0}
-.scene{padding-bottom:1rem}
-button{font:inherit;font-weight:600;color:var(--t-ground);background:var(--t-ink);border:0;border-radius:2px;padding:.55rem 1rem;min-height:44px;min-width:44px;cursor:pointer}
-button.ghost{color:var(--t-ink);background:transparent;outline:1px solid var(--t-rule);outline-offset:-1px}
+body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 17px/1.55 var(--font-ui);font-variant-numeric:tabular-nums lining-nums}
+@media (min-width:1100px){body{font-size:18px}}
+.page{max-width:1440px;margin:0 auto;padding:0 16px}
+@media (min-width:768px){.page{padding:0 32px}}
+a{color:inherit;text-underline-offset:3px}
+.top{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--t-rule);font-size:15px;font-weight:500}
+.brand{font-family:var(--font-display);font-weight:700;font-size:1.45rem;line-height:1;text-decoration:none;margin-right:auto}
+.kicker,.label{font:500 13px/1.4 var(--font-mono);color:var(--t-ink3);margin:0 0 .6rem}
+.kicker{margin-top:2.5rem}
+.kicker::before,.label::before{content:'';display:inline-block;width:10px;height:10px;background:var(--t-point);margin-right:.5rem;vertical-align:-1px}
+h1,h2{font-family:var(--font-display);font-weight:650;letter-spacing:-.012em;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,1.1rem + 3.4vw,3.9rem);line-height:1.06;max-width:22em}
+h2{font-size:clamp(1.55rem,1.05rem + 1.7vw,2.4rem);line-height:1.12;max-width:30em;margin-bottom:1rem}
+h3{font-size:1.05rem;line-height:1.3;margin:2rem 0 .5rem;font-weight:700}
+.deck{font-size:clamp(1.1rem,1rem + .4vw,1.3rem);line-height:1.5;color:var(--t-ink2);max-width:46em;margin:1.1rem 0 .6rem}
+.meta{font:500 13px/1.5 var(--font-mono);color:var(--t-ink3);margin:0 0 1.5rem;max-width:60em}
+.prose p,.prose li,.prose ul{max-width:42rem}
+.prose p,p.summary{margin:0 0 1rem}
+section{border-top:1px solid var(--t-rule);margin-top:3.5rem;padding-top:1.5rem}
+.small,.note{font-size:15px;color:var(--t-ink3)}
+.summary{max-width:46rem;color:var(--t-ink2)}
+.you-rank{color:var(--t-ink);font-weight:600}
+.reading{font-size:15px;line-height:1.45;color:var(--t-ink2);margin:.4rem 0 0}
+
+/* figures: the full content width; text inside the charts is drawn at real pixel sizes */
+.fig{margin:1.25rem 0 .5rem;width:100%;min-width:0}
+.fig-title{font-weight:700;font-size:16px;line-height:1.35;margin:0 0 .6rem}
+.fig svg{display:block;width:100%;height:auto;overflow:visible}
+.syn{font:500 12px/1.4 var(--font-mono);color:var(--t-ink3);margin-top:.4rem}
+.multiples{display:grid;grid-template-columns:minmax(0,1fr);gap:28px 32px;margin:1rem 0}
+@media (min-width:900px){.multiples{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.small-multiple{margin:0}
+.small-multiple .fig-title{min-height:2.7em}
+
+/* chart marks, coloured by what they show: Ruth blue, Sam rose, your order amber, every order teal, before grey */
+svg text{font-family:var(--font-ui);font-variant-numeric:tabular-nums lining-nums}
+svg .mono{font-family:var(--font-mono)}
+.ax{fill:var(--t-ink3)}
+.ax.val{fill:var(--t-ink2)}
+.ax.grp{fill:var(--t-ink2)}
+.grid{stroke:var(--t-rule);stroke-width:1}
+.zero{stroke:var(--t-ink3);stroke-width:1}
+.band{fill:var(--t-raised)}
+.ln{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.ln.thin{stroke-width:1.75}
+.ln.dash{stroke-dasharray:6 5}
+.leader{fill:none;stroke:var(--t-ink3);stroke-width:1}
+.rule{stroke:var(--t-ink2);stroke-width:1.25;stroke-dasharray:3 3}
+.mark{fill:none;stroke-width:2}
+.dot{stroke:var(--t-ground);stroke-width:2}
+.halo{paint-order:stroke;stroke:var(--t-ground);stroke-width:4px;stroke-linejoin:round}
+.bar{fill:var(--t-d3)}
+.cell{fill:var(--t-d3)}
+.cell0{fill:var(--t-raised)}
+.s-ruth{stroke:var(--t-d1)}.s-sam{stroke:var(--t-d4)}.s-you{stroke:var(--t-d2)}.s-before{stroke:var(--t-ink3)}
+.f-ruth{fill:var(--t-d1)}.f-sam{fill:var(--t-d4)}.f-you{fill:var(--t-d2)}.f-before{fill:var(--t-ink3)}
+.f-ruth.light,.f-sam.light,.f-you.light{fill-opacity:.45}
+.t-ruth{fill:var(--t-d1)}.t-sam{fill:var(--t-d4)}.t-you{fill:var(--you-text)}.t-before,.t-ink2{fill:var(--t-ink2)}
+
+/* controls */
+button{font:inherit;font-size:16px;font-weight:600;color:var(--t-ground);background:var(--t-ink);border:0;border-radius:2px;padding:.55rem 1rem;min-height:44px;min-width:44px;cursor:pointer}
+button.ghost{color:var(--t-ink);background:transparent;box-shadow:inset 0 0 0 1px var(--t-ink3)}
+button.slim{font-size:14px;padding:.35rem .75rem}
 button:disabled{opacity:.45;cursor:default}
-.row{display:flex;gap:.75rem;flex-wrap:wrap}
-.cards{list-style:none;padding:0;margin:.5rem 0 1rem;display:flex;flex-wrap:wrap;gap:.4rem;font-variant-numeric:tabular-nums}
-.cards li,.hand button{min-width:4.2rem;text-align:center;padding:.45rem .5rem;border-radius:2px;font-weight:600}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--t-point);outline-offset:2px}
+:root[data-theme="light"] a:focus-visible,:root[data-theme="light"] button:focus-visible,:root[data-theme="light"] input:focus-visible,:root[data-theme="light"] summary:focus-visible,:root[data-theme="light"] [tabindex]:focus-visible{outline-color:var(--t-ink)}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0 0}
+.cards{list-style:none;padding:0;margin:.4rem 0 1rem;display:flex;flex-wrap:wrap;gap:.4rem;font-variant-numeric:tabular-nums}
+.cards li,.hand button{min-width:4.1rem;text-align:center;padding:.45rem .5rem;border-radius:2px;font-weight:600;font-size:16px}
 .cards li{background:var(--t-raised);color:var(--t-ink)}
-.cards li.down,.hand button.down{color:var(--t-ink);background:transparent;outline:1px solid var(--t-ink3);outline-offset:-1px}
+.cards li.down,.hand button.down{background:transparent;color:var(--t-ink);box-shadow:inset 0 0 0 1px var(--t-ink3)}
 .hand button{background:var(--t-raised);color:var(--t-ink)}
-.hand button.down{background:transparent}
-.dealt:empty::after{content:'none yet';color:var(--t-ink3);font-weight:400;font-size:16px}
-.chart{margin:1.25rem 0 .25rem;max-width:46rem}
-.chart svg{display:block;width:100%;height:auto;font-family:var(--font-ui);font-variant-numeric:tabular-nums}
-.syn{font-size:14px;color:var(--t-ink3);margin-top:.35rem}
-.summary{margin:.5rem 0 1rem}
-.levers{display:grid;gap:.75rem;max-width:40rem;margin:1rem 0}
+.dealt li{box-shadow:inset 0 -3px 0 var(--t-d2)}
+.dealt li.down{box-shadow:inset 0 0 0 1px var(--t-ink3),inset 0 -3px 0 var(--t-d2)}
+.dealt:empty::after{content:'none yet';color:var(--t-ink3);font-weight:400;font-size:15px;padding:.45rem 0}
+.deal .small{margin:.5rem 0 0}
+.run{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;font-size:15px;color:var(--t-ink2);margin:0 0 .5rem}
+.run progress{width:12rem;height:8px;accent-color:var(--t-d3)}
+.levers{display:grid;gap:.6rem;max-width:42rem;margin:.5rem 0 1rem}
 .levers label{font-weight:600}
-.levers input[type=range]{width:100%;min-height:44px;accent-color:var(--t-ink)}
+.levers input[type=range]{width:100%;min-height:44px;accent-color:var(--t-d4)}
 .check{display:flex;gap:.6rem;align-items:center;font-weight:400 !important;min-height:44px}
-.check input{width:22px;height:22px;accent-color:var(--t-ink)}
+.check input{width:22px;height:22px;flex:none;accent-color:var(--t-d2)}
+.mix-head{margin-top:2.5rem}
 .qs li{margin-bottom:.5rem}
-.stepper{display:flex;gap:.75rem;margin:2rem 0 1rem}
-.credit{margin-top:2rem}
-.foot-note{margin:2rem 0 .5rem;font-weight:600}
-.foot{margin-top:3rem;padding:2rem 0 3rem;font-size:16px;color:var(--t-ink2)}
-.foot p{max-width:66ch;margin:0 0 .75rem}
-.l-ruth{stroke:var(--t-ink3);stroke-dasharray:6 4}.l-sam{stroke:var(--t-ink)}.l-you{stroke:var(--t-money)}.l-base{stroke:var(--t-ink3);stroke-dasharray:3 4}
-.axis{fill:var(--t-ink3);font-size:13px}.grid{stroke:var(--t-rule)}.lab{font-size:13px;font-weight:600}
-.lab-ruth{fill:var(--t-ink2)}.lab-sam{fill:var(--t-ink)}.lab-you{fill:var(--t-money)}.lab-base{fill:var(--t-ink3)}
-.dot{fill:var(--t-point)}
-:root[data-theme="light"] .dot{fill:var(--t-point-deep)}
+details.table{margin:.5rem 0 1rem;max-width:42rem;font-size:15px}
+details.table summary{cursor:pointer;color:var(--t-ink2);min-height:44px;display:flex;align-items:center}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:.35rem .5rem;border-bottom:1px solid var(--t-rule)}
+td{text-align:right}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.offstage{position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;z-index:-1}
+.foot{margin-top:4rem;padding:1.5rem 0 3rem;border-top:1px solid var(--t-rule);font-size:15px;color:var(--t-ink2)}
+.foot p{max-width:60em;margin:0 0 .5rem}
+.prose ul.cards{max-width:none}
+.hand:empty::after{content:'All ten dealt';color:var(--t-ink3);font-size:15px;padding:.45rem 0}

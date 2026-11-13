@@ -2,15 +2,36 @@
   "_note": "Synthetic: not historical, not a forecast. Every person and figure here is fictional, chosen to show the mechanism.",
   "synthetic": true,
   "personas": [
-    { "name": "Ruth", "synthetic": true, "order": "good years first" },
-    { "name": "Sam", "synthetic": true, "order": "bad years first" }
+    {
+      "name": "Ruth",
+      "synthetic": true,
+      "order": "good years first"
+    },
+    {
+      "name": "Sam",
+      "synthetic": true,
+      "order": "bad years first"
+    }
   ],
   "start": 500000,
   "withdrawal": 25000,
   "indexation": 0.02,
-  "cards": [0.21, 0.16, 0.12, 0.09, 0.06, 0.03, -0.03, -0.08, -0.14, -0.02],
+  "cards": [
+    0.21,
+    0.16,
+    0.12,
+    0.09,
+    0.06,
+    0.03,
+    -0.03,
+    -0.08,
+    -0.14,
+    -0.02
+  ],
   "horizon": 25,
   "after": "Every year after the ten cards earns the cards' average return.",
-  "flexTrim": 0.10,
-  "bufferYears": 2
+  "flexTrim": 0.1,
+  "bufferYears": 2,
+  "startAge": 65,
+  "_startAge": "Illustrative: Ruth and Sam are this age at the start of year 1 (used only by the RRIF lane)."
 }

@@ -4,99 +4,165 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Order of Returns · Mohammed El Chayeb</title>
-<meta name="description" content="Same average return. A different retirement. A playable explainer of sequence-of-returns risk, with two fictional retirees and synthetic market years. Education only, not advice.">
+<meta name="description" content="Same ten market years, same average return, a different retirement. Two fictional retirees, every possible order of the years, and what changes the outcome. Synthetic numbers. Education only, not advice.">
 <style>/*@@CSS@@*/</style>
 </head>
 <body>
 <div class="page">
-  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/order-of-returns/">About this build</a></header>
+  <header class="top">
+    <a class="brand" href="/">Mo</a>
+    <a class="back" href="/builds/order-of-returns/">About this build</a>
+    <button type="button" id="theme" class="ghost slim" aria-pressed="false">Light theme</button>
+  </header>
   <main>
-    <h1>The Order of Returns</h1>
-    <p class="lede">Same average return. A different retirement. Two fictional retirees, the same ten market years in a different order, and what that order does once money starts coming out.</p>
-    <p class="status-tag"><span data-status>demo</span>. Synthetic people and synthetic market years: not historical, not a forecast.</p>
-    <noscript><p class="small">This explainer needs JavaScript to run the numbers. Every scene is written out below.</p></noscript>
+    <article>
+      <p class="kicker">The order of returns</p>
+      <h1 id="headline">Same ten years, same average return, a different ending</h1>
+      <p class="deck" id="deck">Two made-up retirees get the same ten market years in a different order.</p>
+      <p class="meta">Synthetic sequence: not historical, not a forecast. No taxes, fees, pensions or government benefits. Education only.</p>
+      <noscript><p class="note">This page needs JavaScript to run the numbers.</p></noscript>
 
-    <p id="progress" class="progress" aria-live="polite"></p>
-
-    <section class="scene" data-scene="1" aria-labelledby="h1s">
-      <h2 id="h1s" tabindex="-1">Meet Ruth and Sam</h2>
-      <p>Ruth and Sam are made up. Each retires with <strong data-v="start"></strong> and takes out <strong data-v="withdrawal"></strong> in the first year, a little more each year after to keep up with prices.</p>
-      <p>Over their first ten years, their savings see exactly the same ten market years. Only the order differs.</p>
-      <ul class="cards" id="cards-1" aria-label="The ten market years"></ul>
-      <p>The average of the ten is <strong data-v="avg"></strong> a year, for both of them. After those ten years, every year earns that same average.</p>
-      <p>Ruth gets the good years first. Sam gets the bad years first.</p>
-    </section>
-
-    <section class="scene" data-scene="2" aria-labelledby="h2s">
-      <h2 id="h2s" tabindex="-1">Shuffle the years</h2>
-      <p>First, imagine neither of them takes any money out. Shuffle the order of the years as often as you like.</p>
-      <p><button type="button" id="shuffle">Shuffle Sam's years</button></p>
-      <figure class="chart"><h3 id="t2"></h3><svg id="c2" role="img" aria-labelledby="t2 s2"></svg><figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption></figure>
-      <p id="s2" class="summary" aria-live="polite"></p>
-      <p>With nothing coming out, the order cannot matter: each year multiplies the savings, and multiplying in a different order gives the same answer.</p>
-    </section>
-
-    <section class="scene" data-scene="3" aria-labelledby="h3s">
-      <h2 id="h3s" tabindex="-1">Now take money out</h2>
-      <p>Now both take out the same amount each year. Bad years early hit Sam while his savings are largest, and every withdrawal in a down year locks in the loss: that money is gone before the good years come.</p>
-      <figure class="chart"><h3 id="t3"></h3><svg id="c3" role="img" aria-labelledby="t3 s3"></svg><figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption></figure>
-      <p id="s3" class="summary"></p>
-    </section>
-
-    <section class="scene" data-scene="4" aria-labelledby="h4s">
-      <h2 id="h4s" tabindex="-1">Deal the years yourself</h2>
-      <p>Pick the order of the ten years, one card at a time. Same savings, same withdrawals, same average.</p>
-      <div><p class="small">Your order so far:</p><ol class="cards dealt" id="dealt" aria-label="Your order so far"></ol></div>
-      <p class="small">Cards left to deal:</p>
-      <div class="cards hand" id="hand" role="group" aria-label="Cards left to deal"></div>
-      <p class="row"><button type="button" id="random">Deal the rest at random</button><button type="button" id="reset" class="ghost">Start again</button></p>
-      <figure class="chart"><h3 id="t4"></h3><svg id="c4" role="img" aria-labelledby="t4 s4"></svg><figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption></figure>
-      <p id="s4" class="summary" aria-live="polite"></p>
-    </section>
-
-    <section class="scene" data-scene="5" aria-labelledby="h5s">
-      <h2 id="h5s" tabindex="-1">Try to rescue Sam's plan</h2>
-      <p>Sam's order cannot change. These are things planners look at with people in his position. None of them is right for everyone, and none of them is a recommendation.</p>
-      <div class="levers">
-        <label for="w">First-year withdrawal: <output id="wout" for="w"></output></label>
-        <input id="w" type="range" step="1000">
-        <label class="check"><input id="flex" type="checkbox"><span>Spend <span data-v="trim"></span> less in a year that follows a down year</span></label>
-        <label class="check"><input id="buffer" type="checkbox"><span>Keep <span data-v="buffer"></span> years of withdrawals in cash, and draw on it after a down year</span></label>
+      <figure class="fig" id="fig-lead">
+        <p class="fig-title" id="t-lead"></p>
+        <svg id="c-lead" role="img" aria-labelledby="t-lead s-lead"></svg>
+        <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
+      </figure>
+      <p class="summary" id="s-lead"></p>
+      <div class="prose">
+        <p>Ruth and Sam are made up. Each retires with <strong data-v="start"></strong> and takes out <strong data-v="withdrawal"></strong> in the first year, <span data-v="indexation"></span> more each year after to keep up with prices. Their first ten years are the same ten market years:</p>
+        <ul class="cards" id="cards" aria-label="The ten market years"></ul>
+        <p>The average of the ten is <strong data-v="avg"></strong> a year. Ruth gets them best first, Sam worst first. From year <span data-v="after"></span> on, every year earns that same average, for both of them.</p>
       </div>
-      <figure class="chart"><h3 id="t5"></h3><svg id="c5" role="img" aria-labelledby="t5 s5"></svg><figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption></figure>
-      <p id="s5" class="summary" aria-live="polite"></p>
-      <p class="small">Each lever has a cost: spending less is a smaller life in those years, and cash held aside earns nothing in this model.</p>
-    </section>
 
-    <section class="scene" data-scene="6" aria-labelledby="h6s">
-      <h2 id="h6s" tabindex="-1">Questions worth asking</h2>
-      <p>Nothing here can say what anyone should do. It can help with the questions to take to a qualified professional who knows the whole picture:</p>
-      <ul class="qs">
-        <li>Which of my costs are fixed, and which could bend in a bad year?</li>
-        <li>What would a poor first few years mean for my plan, and how would I want to respond?</li>
-        <li>How much do I want to hold outside the market, and what does that cost me?</li>
-        <li>Which steady income (workplace pensions, CPP, OAS) covers the costs that cannot bend?</li>
-        <li>How do taxes and fees change these numbers for me?</li>
-        <li>What if I live much longer than I expect?</li>
-      </ul>
-      <h3>What this leaves out</h3>
-      <p>Taxes, fees, real market history (these ten years are invented), spending that changes with age, pensions and government benefits, and every year being different from the average after year ten. It is a picture of one mechanism, not a plan.</p>
-    </section>
+      <section aria-labelledby="h-shuffle">
+        <p class="label">No withdrawals</p>
+        <h2 id="h-shuffle"></h2>
+        <div class="prose">
+          <p>Take the withdrawals away and the order stops mattering: each year multiplies the savings, and multiplying in a different order gives the same answer. Shuffle Sam's years as often as you like.</p>
+          <p><button type="button" id="shuffle">Shuffle Sam's years</button></p>
+        </div>
+        <figure class="fig">
+          <p class="fig-title" id="t-shuffle"></p>
+          <svg id="c-shuffle" role="img" aria-labelledby="t-shuffle s-shuffle"></svg>
+          <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
+        </figure>
+        <p class="summary" id="s-shuffle" aria-live="polite"></p>
+        <div class="prose"><p>With money coming out, a bad year early does more damage: the withdrawal is taken from savings that have just shrunk, and that money is not there when the good years come.</p></div>
+      </section>
 
-    <nav class="stepper" aria-label="Scenes">
-      <button type="button" id="prev" class="ghost">Back</button>
-      <button type="button" id="next">Next</button>
-    </nav>
+      <section aria-labelledby="h-deal">
+        <p class="label">Your turn</p>
+        <h2 id="h-deal">Deal the ten years yourself</h2>
+        <div class="prose"><p>Pick the order one card at a time. Same savings, same withdrawals, same average. Your path is drawn in amber.</p></div>
+        <div class="deal">
+          <div><p class="small">Your order so far</p><ol class="cards dealt" id="dealt" aria-label="Your order so far"></ol></div>
+          <div><p class="small">Cards left to deal</p><div class="cards hand" id="hand" role="group" aria-label="Cards left to deal"></div></div>
+          <p class="row"><button type="button" id="random">Deal the rest at random</button><button type="button" id="reset" class="ghost">Start again</button><button type="button" id="save" class="ghost">Save this chart as an image</button></p>
+        </div>
+        <figure class="fig">
+          <p class="fig-title" id="t-deal"></p>
+          <svg id="c-deal" role="img" aria-labelledby="t-deal s-deal"></svg>
+          <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
+        </figure>
+        <p class="summary" id="s-deal" aria-live="polite" tabindex="-1"></p>
+        <p class="small" id="save-note" aria-live="polite"></p>
+      </section>
 
-    <p class="small credit">The scene-by-scene format follows Nicky Case's <em>The Evolution of Trust</em> (CC0). The engine, words and numbers are new.</p>
-    <p class="foot-note">Education only; rules can change and your situation may differ.</p>
+      <section aria-labelledby="h-all">
+        <p class="label">Every possible order</p>
+        <h2 id="h-all">Running every possible order of the ten years</h2>
+        <div class="prose">
+          <p>The ten years can be dealt in <strong data-v="orders"></strong> different orders. This page runs every one of them through the same engine, in your browser, and counts how each one ends.</p>
+          <div class="run" id="run"><progress id="run-bar" max="1" value="0" aria-label="Orders worked out"></progress> <span id="run-text" aria-live="polite">Starting…</span></div>
+        </div>
+        <figure class="fig">
+          <p class="fig-title" id="t-all">How the orders end: share of all orders</p>
+          <svg id="c-all" role="img" aria-labelledby="t-all s-all"></svg>
+          <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
+        </figure>
+        <p class="summary" id="s-all" aria-live="polite"></p>
+        <p class="summary you-rank" id="s-rank" aria-live="polite"></p>
+        <details class="table"><summary>The counts behind the chart</summary><table id="tab-all"><caption class="sr">Orders by how they end</caption><thead><tr><th scope="col">How the order ends</th><th scope="col">Orders</th><th scope="col">Share</th></tr></thead><tbody></tbody></table></details>
+        <p class="small">Better means the money lasts longer; if both last, more is left at the end; if both run out in the same year, more was paid out before it did.</p>
+      </section>
+
+      <section aria-labelledby="h-early">
+        <p class="label">Why the order matters</p>
+        <h2 id="h-early">The first five years decide most of it</h2>
+        <div class="prose"><p>Group the orders by the average return of their first five years. Each column below is one group; the shading shows how that group's orders end.</p></div>
+        <figure class="fig">
+          <p class="fig-title" id="t-early">How orders end, by the average return of their first five years</p>
+          <svg id="c-early" role="img" aria-labelledby="t-early s-early"></svg>
+          <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
+        </figure>
+        <p class="summary" id="s-early" aria-live="polite"></p>
+      </section>
+
+      <section aria-labelledby="h-rescue">
+        <p class="label">Rescuing Sam</p>
+        <h2 id="h-rescue"></h2>
+        <div class="prose">
+          <p id="p-solver"></p>
+          <p>Sam's order cannot change. Below, three things planners look at with people in his position, one at a time, each against his path before (grey). None is right for everyone, and none is a recommendation.</p>
+        </div>
+        <div class="multiples" id="levers"></div>
+        <h3 class="mix-head">Mix your own</h3>
+        <div class="levers">
+          <label for="w">First-year withdrawal: <output id="wout" for="w"></output></label>
+          <input id="w" type="range">
+          <label class="check"><input id="flex" type="checkbox"><span>Spend <span data-v="trim"></span> less in a year that follows a down year</span></label>
+          <label class="check"><input id="buffer" type="checkbox"><span>Keep <span data-v="buffer"></span> years of withdrawals in cash, and draw on it after a down year</span></label>
+        </div>
+        <figure class="fig">
+          <p class="fig-title" id="t-mix"></p>
+          <svg id="c-mix" role="img" aria-labelledby="t-mix s-mix"></svg>
+          <figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>
+        </figure>
+        <p class="summary" id="s-mix" aria-live="polite"></p>
+        <p class="small">Each lever has a cost: spending less is a smaller life in those years, and cash held aside earns nothing in this model.</p>
+      </section>
+
+      <section aria-labelledby="h-rrif">
+        <p class="label">A Canadian lane: RRIF minimums</p>
+        <h2 id="h-rrif">What RRIF minimum withdrawals do to each order</h2>
+        <div class="prose">
+          <p id="p-rrif"></p>
+          <p class="small" id="p-rrif-src"></p>
+          <label class="check"><input id="rrif" type="checkbox"><span>Apply the RRIF minimums</span></label>
+        </div>
+        <div class="multiples" id="rrif-panels"></div>
+        <p class="summary" id="s-rrif" aria-live="polite"></p>
+        <p class="small">In each panel's bottom strip, a bar is money the minimum took out beyond the plan that year: full colour for a year that follows a down year, fainter for a year that follows an up year.</p>
+        <p class="small">An illustration with stated assumptions, not the rules in full. The extra that leaves the RRIF is not tracked after it leaves: it might be spent or saved elsewhere, and tax, which this sketch leaves out, is where much of the real cost or benefit lies.</p>
+      </section>
+
+      <section aria-labelledby="h-qs">
+        <p class="label">Taking it further</p>
+        <h2 id="h-qs">Questions worth asking</h2>
+        <div class="prose">
+          <p>Nothing here can say what anyone should do. It can help with the questions to take to a qualified professional who knows the whole picture:</p>
+          <ul class="qs">
+            <li>Which of my costs are fixed, and which could bend in a bad year?</li>
+            <li>What would a poor first few years mean for my plan, and how would I want to respond?</li>
+            <li>How much do I want to hold outside the market, and what does that cost me?</li>
+            <li>Which steady income (workplace pensions, CPP, OAS) covers the costs that cannot bend?</li>
+            <li>If my savings are in a RRIF, how do the minimum withdrawals fit what I spend, and what happens to money I must take out but do not need?</li>
+            <li>How do taxes and fees change these numbers for me, and what if I live much longer than I expect?</li>
+          </ul>
+          <h3>What this leaves out</h3>
+          <p>Taxes, fees, pensions and government benefits; real market history (these ten years are invented); spending that changes with age; prices rising by anything other than the assumed amount; and every year after the tenth being different from the average. It is a picture of one mechanism, not a plan.</p>
+        </div>
+      </section>
+    </article>
   </main>
   <footer class="foot">
-    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
-    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
+    <p>Education only: general information, not personal financial, tax, legal or investment advice, and not a recommendation for anyone's situation.</p>
+    <p>Made with AI assistance. I directed and reviewed the work.</p>
   </footer>
 </div>
 <script type="application/json" id="story">/*@@STORY@@*/</script>
+<script type="application/json" id="facts">/*@@FACTS@@*/</script>
+<script type="text/plain" id="worker-src">/*@@WORKER@@*/</script>
 <script>/*@@JS@@*/</script>
 </body>
 </html>
