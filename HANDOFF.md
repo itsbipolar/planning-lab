@@ -1,4 +1,13 @@
-# Handoff (2026-11-10)
+# Handoff (2026-11-13)
+
+**Redesign (branch phase2, 2026-11-13; merge to main with the site's design-trial-1 on Mo's go):** every lab on the site is
+in the Data desk look (shared/desk/desk.mjs) with the family header, kicker and footer, no theme switch. New: planning-timeline
+(replaces money-milestones and ages-that-matter on the site), money-then-now (replaces money-stripes; money-year kept as its
+2026 page). Rebuilt: order-of-returns (all 10! orders in a worker, rescue solver, RRIF lane), two-number-letter (both spouses,
+crossing ages, OAS recovery), retirement-wave (provinces and gender: shared/data/population-by-age-places.json via
+`node scripts/fetch-population.mjs places`), planning-calendar (rolling 12 months, households, .ics). Two design reviews,
+two fix rounds. RRIF wording follows age on January 1 (5.28% in the year you turn 72). npm run check: 104 + 104 pass.
+Next: Mo's go; P4 data refresh about Dec 1; CRA 2026 RRSP deadline and filing date when published.
 
 **P3 reel shell and history reel (reels/), 2026-11-10, done:** `reels/history-45/out/`: history-45.mp4 (45.5 s, 1080x1920,
 H.264+AAC, 13.9 MiB), history-45.vtt, contact-sheet.png, safe-zone-overlay.png and safe-zone-check.png, 7 carousel PNGs, carousel.pdf.
