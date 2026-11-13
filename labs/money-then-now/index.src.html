@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Money, then and now · Mohammed El Chayeb</title>
+<meta name="description" content="A century of Canadian prices and borrowing on one chart: every year's price change, the prime rate against it, and what an amount from any year is worth in today's dollars. Statistics Canada and Bank of Canada data. Education only, not advice.">
+<meta name="robots" content="noindex, nofollow">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<div class="page">
+  <header class="bar">
+    <a class="brand" href="/">Mohammed El Chayeb</a>
+    <a href="/builds/money-then-now/">About this build</a>
+  </header>
+  <main>
+    <p class="kicker" id="kicker">Data story · Statistics Canada and Bank of Canada data</p>
+    <h1 id="finding" aria-live="polite">Money, then and now</h1>
+
+    <form id="form" class="ask" novalidate>
+      <span class="field"><label for="year">Pick a year</label>
+      <input id="year" name="year" type="number" inputmode="numeric" autocomplete="off" required></span>
+      <span class="field"><label for="amount">An amount</label>
+      <span class="dollar"><span aria-hidden="true">$</span><input id="amount" name="amount" type="number" inputmode="decimal" autocomplete="off" min="0.01" step="0.01" required></span></span>
+      <button type="submit">Show it</button>
+      <p class="note" id="example-note"></p>
+      <p class="error" id="error" role="alert" hidden></p>
+    </form>
+
+    <section class="chart" aria-labelledby="chart-h">
+      <h2 id="chart-h" class="sr-only">Prices, borrowing and what an amount is worth, year by year</h2>
+      <ul class="keys" aria-label="How to read the chart">
+        <li><span class="sw sw-fall"></span>Prices fell</li>
+        <li><span class="sw sw-flat"></span>About flat</li>
+        <li><span class="sw sw-rise"></span>Prices rose <span class="note">(full colour at <span id="clamp"></span> or more either way)</span></li>
+        <li><span class="ln ln-prices"></span>Price change</li>
+        <li><span class="ln ln-prime"></span>Prime rate</li>
+        <li><span class="sw sw-pos"></span>Prime above prices</li>
+        <li><span class="sw sw-neg"></span>Prime below prices</li>
+        <li><span class="ln ln-money"></span>Your amount</li>
+      </ul>
+      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Prices, prime rate and purchasing power</title><desc id="chart-desc"></desc></svg></div>
+      <ul class="sr-only" id="chart-text"></ul>
+      <p class="note">Real rate here = the year's average prime rate minus that year's price rise; a simple after-the-fact measure.</p>
+      <p class="actions"><button type="button" id="save" class="ghost">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
+    </section>
+
+    <section class="readings" aria-labelledby="readings-h">
+      <h2 id="readings-h">What the years say</h2>
+      <ul id="readings"></ul>
+    </section>
+
+    <section class="out" aria-labelledby="out-h">
+      <h2 id="out-h">2026 up close</h2>
+      <p>For this year month by month, Money year 2026 follows <a href="/builds/money-year/app/">the policy rate, mortgage rates, core inflation and the loonie this year, chart by chart</a>.</p>
+    </section>
+
+    <details class="fold">
+      <summary>Every year as a table</summary>
+      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-cap">
+        <table class="nums"><caption id="table-cap">Each year's price change, average prime rate and real rate (prime minus price change), in per cent</caption>
+          <thead><tr><th scope="col">Year</th><th scope="col">Price change</th><th scope="col">Prime rate, average</th><th scope="col">Real rate</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary>Sources and how it's made</summary>
+      <div id="sources" class="prose"></div>
+    </details>
+
+    <footer class="foot">
+      <div>
+        <p><strong>Education only, not advice.</strong> Made with AI assistance; every figure is computed from the dated public data named below.</p>
+        <p class="note" id="foot-attr"></p>
+      </div>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/builds/">All the work</a></p>
+    </footer>
+  </main>
+</div>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>
