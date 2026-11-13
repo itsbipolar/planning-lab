@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path';
 import { series } from '../money-stripes/build.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
+import { deskPage } from '../../shared/desk/desk-page.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -38,7 +39,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const M = annual(read(join(root, 'shared', 'data', 'cpi-monthly.json')), read(join(root, 'shared', 'data', 'prime-rate-weekly.json')));
   const css = [deskCSS(), deskUICSS(), read(join(here, 'style.css'))].join('\n');
   const js = deskUIJS() + '\n' + read(join(here, 'model.mjs')).replace(/^export /gm, '') + '\n' + read(join(here, 'app.js'));
-  const html = read(join(here, 'index.src.html')).replace('/*@@CSS@@*/', () => css)
+  const html = deskPage(read(join(here, 'index.src.html')), 'money-then-now').replace('/*@@CSS@@*/', () => css)
     .replace('/*@@DATA@@*/', () => JSON.stringify(M).replace(/</g, '\\u003c')).replace('/*@@JS@@*/', () => js);
   mkdirSync(join(here, 'dist'), { recursive: true });
   writeFileSync(join(here, 'dist', 'index.html'), html);

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
 import { fileURLToPath } from 'node:url';
 
 const url = 'file://' + fileURLToPath(new URL('../dist/index.html', import.meta.url));
@@ -8,6 +9,12 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 for (const width of [390, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
+
+    test('the tool shell: tool bar, one Up next card, notes, share tags; no rail, nothing sticky, nothing stored', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expectShell(page, 'planning-timeline');
+      await expectStorageClean(page);
+    });
 
     test('opens on a labelled example, redraws for a typed year and for each slider; no request, nothing stored', async ({ page }) => {
       const requests = [];
@@ -26,7 +33,7 @@ for (const width of [390, 1440]) {
       await page.fill('#year', '1800'); await page.click('button[type=submit]');
       await expect(page.locator('#error')).toBeVisible();
       expect(requests).toEqual([]);
-      expect(await page.evaluate(() => [localStorage.length, sessionStorage.length, document.cookie, location.search, location.hash])).toEqual([0, 0, '', '', '']);
+      await expectStorageClean(page);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
     });
 
@@ -56,17 +63,11 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#people-big')).toContainText('About');
     });
 
-    test('the chapter rail shows on wide screens only; each totals chart reads out under the pointer', async ({ page }) => {
+    test('no chapter rail; each totals chart reads out under the pointer', async ({ page }) => {
       await page.goto(url); await page.waitForLoadState('load');
       await expect(page.locator('section[data-chapter]')).toHaveCount(5);
       await expect(page.locator('.sec-label')).toHaveCount(5);
-      if (width >= 1440) {
-        await expect(page.locator('.rail')).toBeVisible();
-        expect(await page.locator('.rail a').count()).toBeGreaterThanOrEqual(3);
-        // the rail never sits on the page text
-        const rail = await page.locator('.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
-        expect(rail.x + rail.width).toBeLessThan(h1.x);
-      } else await expect(page.locator('.rail')).toBeHidden();
+      await expect(page.locator('nav.rail')).toHaveCount(0); // the numbered rail is gone (redesign v2)
       for (const id of ['#cpp-chart', '#oas-chart']) {
         const svg = page.locator(id); await svg.scrollIntoViewIfNeeded();
         const b = await svg.boundingBox();

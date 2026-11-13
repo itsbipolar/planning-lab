@@ -70,7 +70,8 @@ test('every source carries its attribution and retrieval date', () => {
   assert.match(M.meta.rate.retrieved, /^\d{4}-\d{2}-\d{2}$/);
   const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
   assert.ok(html.includes('#ShowYourStripes warming stripes by Professor Ed Hawkins, University of Reading, CC BY 4.0; this page uses the idea for prices and has nothing to do with climate data.'));
-  assert.ok(html.includes('Education only, not advice.</strong> Made with AI assistance; every figure is computed from the dated public data named below.'));
+  assert.ok(html.includes('Education only, not advice.</strong> Made with AI assistance; every figure is checked at its source.'));
+  assert.ok(html.includes('Every figure here is computed from the dated public data named below.'));
 });
 
 test('an incomplete year is left out', () => {

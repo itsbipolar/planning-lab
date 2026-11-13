@@ -27,6 +27,12 @@
   function clear(svg) { Array.prototype.slice.call(svg.childNodes).forEach(function (c) { if (c.nodeName !== 'title') svg.removeChild(c); }); }
 
   var LAST = M.rrif[M.rrif.length - 1].age;
+  // The one RRIF sentence used across the labs (redesign v2): the first factor applies the year you turn one more than
+  // the maturity age (the factor is set by the age on January 1), the last from the year you turn one more than its age.
+  function rrifRule() {
+    var first = M.rrif.filter(function (r) { return r.age >= R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
+    return 'At least ' + pct(first.factor * 100, 2) + ' must come out the year you turn ' + (first.age + 1) + ', rising to ' + pct(last.factor * 100, 0) + ' from the year you turn ' + (last.age + 1);
+  }
   var lo = R.tfsaAge, hi = LAST + 1;
   var state = { birth: EXAMPLE_BIRTH, example: true, cpp: R.cppHi, oas: R.oasHi, income: EXAMPLE_INCOME, fund: EXAMPLE_FUND };
 
@@ -76,7 +82,7 @@
     } else reading(x(R.cppLo), below(y), signed(cLo) + ' to ' + signed(cHi));
     el('line', { x1: x(R.cppStd), x2: x(R.cppStd), y1: bar(y) - 2, y2: bar(y) + barH + 2, stroke: ink, 'stroke-width': 1.5, 'stroke-dasharray': '3 2' }, svg);
     dots.push([x(state.cpp), bar(y) + barH / 2]);
-    lanes.push(['CPP', 'Can start in any month from age ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + ' to ' + p.cpp.closes + ' for you): ' + signed(cLo) + ' a month at ' + R.cppLo + ', ' + signed(cHi) + ' at ' + R.cppHi + '.']);
+    lanes.push(['CPP', 'Can start in any month from age ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + ' to ' + p.cpp.closes + ' for you): at ' + R.cppLo + ' a ' + pct(Math.abs(cLo)) + ' smaller cheque, for life; at ' + R.cppHi + ' ' + pct(cHi) + ' bigger.']);
     y += laneH;
     // OAS
     var oHi = (oasShareAt(R.oasHi) - 1) * 100;
@@ -91,7 +97,7 @@
     lanes.push(['OAS', 'Can start from ' + R.oasLo + ', or later up to ' + R.oasHi + ' for ' + signed(oHi) + ' a month; the pension rises by ' + pct(R.oasBoost) + ' from age ' + M.oasBoostAge + '.']);
     y += laneH;
     // RRSP, then RRIF minimums as a staircase (a savings account, so the same data colour as the TFSA)
-    label(y + 17, 'RRSP, then RRIF', narrow ? 'matures by ' + p.rrsp.matures : 'an RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + ' for you)');
+    label(y + 17, 'RRSP, then RRIF', narrow ? 'winds up by ' + p.rrsp.matures : 'an RRSP must wind up by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + ' for you)');
     var base = y + rrifH - 4, maxF = Math.max.apply(null, M.rrif.map(function (r) { return r.factor; })), tall = rrifH - 58, band = 12;
     el('rect', { x: x(lo), y: base - band, width: x(R.rrsp + 1) - x(lo), height: band, fill: d3, opacity: 0.45 }, svg);
     M.rrif.forEach(function (r) {
@@ -102,7 +108,7 @@
     var first = M.rrif.filter(function (r) { return r.age >= R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
     reading(x(first.age + 1) - 4, base - band - 6, pct(first.factor * 100, 2) + ' turning ' + (first.age + 1), 'end');
     reading(x(hi), base - tall - 7, pct(last.factor * 100, 0) + ' from ' + (last.age + 1), 'end');
-    lanes.push(['RRSP and RRIF', 'An RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + '). As a RRIF, a minimum share comes out each year after, set by your age on January 1: ' + pct(first.factor * 100, 2) + ' in the year you turn ' + (first.age + 1) + ', rising to ' + pct(last.factor * 100, 0) + ' from ' + (last.age + 1) + '.']);
+    lanes.push(['RRSP and RRIF', 'An RRSP must wind up by the end of ' + p.rrsp.matures + ', the year you turn ' + R.rrsp + ' (most become a RRIF). ' + rrifRule() + '.']);
     // the axis: ages, and the calendar years they fall in for this person
     var ay = H - axisH + 6;
     el('line', { x1: x(lo), x2: x(hi), y1: ay, y2: ay, stroke: rule }, svg);
@@ -261,7 +267,7 @@
     el('text', { x: pl - 6, y: pt + 8, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, pct(maxF * 100));
     el('text', { x: pl - 6, y: H - pb + 4, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, '0');
     var leftAt90 = 1; rows.forEach(function (r) { if (r.age < 90) leftAt90 *= 1 - r.factor; });
-    $('rrif-text').textContent = 'An RRSP must mature by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + ', for example by becoming a RRIF. From the next year a minimum share must come out each year, set by your age on January 1 (the chart’s ages): ' + pct(first.factor * 100, 2) + ' at ' + first.age + ', in the year you turn ' + (first.age + 1) + '; ' + (tenth ? 'more than a tenth of the fund from ' + tenth.age + '; ' : '') + pct(maxF * 100) + ' from ' + rows[rows.length - 1].age + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90, on January 1.';
+    $('rrif-text').textContent = 'An RRSP must wind up by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + '; most become a RRIF. ' + rrifRule() + '. The chart’s ages are ages on January 1' + (tenth ? ', and more than a tenth of the fund must come out from ' + tenth.age : '') + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90, on January 1.';
     var f = state.fund, at = p && p.age - 1 > R.rrsp ? M.rrif.filter(function (r) { return r.age === Math.min(p.age - 1, rows[rows.length - 1].age); })[0] : null;
     $('fund-k').textContent = 'The minimum in the year you turn ' + (first.age + 1);
     $('fund-big').textContent = money(f * first.factor);

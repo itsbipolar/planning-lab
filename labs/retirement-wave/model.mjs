@@ -9,7 +9,7 @@ export const RULES = [
   ['oas_start_age', 'OAS can start', 'OAS starts'],
   ['cpp_latest_start_age', 'latest CPP start', 'CPP latest'],
   ['oas_deferral_max_age', 'OAS deferral ends', 'OAS deferral ends'],
-  ['rrsp_maturity_age', 'RRSPs must mature by the end of the year', 'RRSP matures'],
+  ['rrsp_maturity_age', 'RRSPs must wind up by the end of the year (most become a RRIF)', 'RRSP winds up'],
   ['oas_age75_increase', 'OAS rises', 'OAS rises'],
 ];
 const NEED = ['cpp_earliest_start_age', 'oas_start_age'];

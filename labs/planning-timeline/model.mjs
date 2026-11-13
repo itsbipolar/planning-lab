@@ -86,7 +86,7 @@ export function finding(M, p) {
   else if (p.cpp.state === 'open') bits.push(`your CPP window is open until ${p.cpp.closes}`);
   if (p.oas.state === 'ahead') bits.push(`OAS opens ${yrs(p.oas.opens - p.thisYear)}`);
   else if (p.oas.state === 'open') bits.push(`you can still defer OAS until ${p.oas.closes}`);
-  if (p.rrsp.state === 'ahead') bits.push(`your RRSP must become a RRIF by the end of ${p.rrsp.matures}`);
+  if (p.rrsp.state === 'ahead') bits.push(`your RRSP must wind up by the end of ${p.rrsp.matures}`);
   else bits.push(`RRIF minimums apply each year`);
   const t = p.lanes[0];
   // TFSA leads only when there is room for it: the pension and RRSP dates come first.

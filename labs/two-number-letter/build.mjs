@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path';
 import { rules } from './calc.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
+import { deskPage } from '../../shared/desk/desk-page.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -17,7 +18,7 @@ const strip = (p) => read(p).replace(/^export /gm, '');
 const js = [deskUIJS(), strip(join(root, 'shared', 'drag-number.js')), strip(join(here, 'calc.mjs')), read(join(here, 'app.js'))].join('\n');
 const facts = JSON.stringify({ facts: all.filter((f) => f.status === 'confirmed') }).replace(/</g, '\\u003c');
 const story = JSON.stringify(JSON.parse(read(join(here, 'story.json')))).replace(/</g, '\\u003c');
-const html = read(join(here, 'index.src.html')).replace('/*@@CSS@@*/', () => css).replace('/*@@FACTS@@*/', () => facts)
+const html = deskPage(read(join(here, 'index.src.html')), 'two-number-letter').replace('/*@@CSS@@*/', () => css).replace('/*@@FACTS@@*/', () => facts)
   .replace('/*@@STORY@@*/', () => story).replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);

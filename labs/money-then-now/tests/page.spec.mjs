@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -29,6 +30,12 @@ async function clashes(page) {
 for (const width of [390, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
+
+    test('the tool shell: tool bar, one Up next card, notes, share tags; no rail, nothing sticky, nothing stored', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expectShell(page, 'money-then-now');
+      await expectStorageClean(page);
+    });
 
     test('opens on a labelled example; a typed year and amount update the headline and the chart; no request, nothing stored', async ({ page }) => {
       const requests = [];
@@ -63,7 +70,7 @@ for (const width of [390, 1440]) {
 
       expect(requests).toEqual([]);
       expect(page.url()).toBe(start);
-      expect(await page.evaluate(() => [localStorage.length, sessionStorage.length, document.cookie, location.search, location.hash])).toEqual([0, 0, '', '', '']);
+      await expectStorageClean(page);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
     });
 
@@ -95,7 +102,7 @@ for (const width of [390, 1440]) {
       expect(dl.suggestedFilename()).toBe('money-then-now-1990.png');
     });
 
-    test('the year readout sits under the form and changes with the year; the rail and the crosshair', async ({ page }) => {
+    test('the year readout sits under the form and changes with the year; no rail; the crosshair', async ({ page }) => {
       await page.goto(url);
       const f = await page.locator('#form').boundingBox(), r = await page.locator('#year-readout').boundingBox();
       expect(r.y).toBeGreaterThanOrEqual(f.y + f.height - 1);
@@ -117,13 +124,8 @@ for (const width of [390, 1440]) {
       expect(sizes[0]).toBeGreaterThan(sizes[1]);
       expect(sizes[2]).toBeGreaterThanOrEqual(15);
 
-      await expect(page.locator('section[data-chapter]')).toHaveCount(4);
-      if (width >= 1440) {
-        await expect(page.locator('nav.rail')).toBeVisible();
-        expect(await page.locator('nav.rail a').count()).toBeGreaterThanOrEqual(3);
-        const rail = await page.locator('nav.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
-        expect(rail.x + rail.width).toBeLessThan(h1.x);
-      } else await expect(page.locator('nav.rail')).toBeHidden();
+      await expect(page.locator('section[data-chapter]')).toHaveCount(3); // the This year section comes back in step 6, with its data
+      await expect(page.locator('nav.rail')).toHaveCount(0); // the numbered rail is gone (redesign v2)
 
       const svg = page.locator('#chart'); await svg.scrollIntoViewIfNeeded();
       const b = await svg.boundingBox();

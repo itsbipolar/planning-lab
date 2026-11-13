@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expectStorageClean } from '../../../shared/desk/shell-test.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -58,7 +59,7 @@ for (const width of [390, 1440]) {
       await expect(page.locator('.mark')).toHaveCount(policy.decisions.length); // amber, once per rate decision
       expect(requests).toEqual([]);
       expect(page.url()).toBe(start);
-      expect(await page.evaluate(() => [localStorage.length, sessionStorage.length, document.cookie, location.search, location.hash])).toEqual([0, 0, '', '', '']);
+      await expectStorageClean(page);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
     });
 
@@ -95,7 +96,7 @@ for (const width of [390, 1440]) {
       }
     });
 
-    test('the day readout sits under the slider and its values change with the day; the rail; the crosshair reads every chart', async ({ page }) => {
+    test('the day readout sits under the slider and its values change with the day; no rail; the crosshair reads every chart', async ({ page }) => {
       await page.goto(url);
       const c = await page.locator('#when').boundingBox(), r = await page.locator('#readout').boundingBox();
       expect(r.y).toBeGreaterThanOrEqual(c.y + c.height - 1);
@@ -115,12 +116,7 @@ for (const width of [390, 1440]) {
       expect(sizes[2]).toBeGreaterThanOrEqual(15);
 
       await expect(page.locator('section[data-chapter]')).toHaveCount(3);
-      if (width >= 1440) {
-        await expect(page.locator('nav.rail')).toBeVisible();
-        expect(await page.locator('nav.rail a').count()).toBeGreaterThanOrEqual(3);
-        const rail = await page.locator('nav.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
-        expect(rail.x + rail.width).toBeLessThan(h1.x);
-      } else await expect(page.locator('nav.rail')).toBeHidden();
+      await expect(page.locator('nav.rail')).toHaveCount(0); // the numbered rail is gone (redesign v2)
 
       for (const [k, f] of [[0, 0.4], [3, 0.6]]) {
         const svg = page.locator('.panel svg').nth(k); await svg.scrollIntoViewIfNeeded();

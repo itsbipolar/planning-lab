@@ -84,7 +84,7 @@
       "kind": "cutoff",
       "facts": ["rrsp_maturity_age"],
       "rule": "year_end",
-      "text": "An RRSP must mature by the end of the year its holder turns {value}."
+      "text": "An RRSP must wind up by the end of the year its holder turns {value} (most become a RRIF)."
     },
     "rrif_min": {
       "label": "RRIF: the year's minimum paid by year-end",

@@ -567,7 +567,14 @@
   const downBefore = (order, t) => t > 0 && returnsOf(order)[t - 1] < 0;
   const forcedTotals = (order, res) => { let all = 0, down = 0; res.forced.forEach((f, t) => { all += f; if (downBefore(order, t)) down += f; }); return { all, down }; };
   const turns = MAT + 1, f0 = RRIF_F[RRIF_T0];
-  $('p-rrif').textContent = `Suppose all of Ruth’s and Sam’s savings are in a RRIF and they are ${S.startAge} when year 1 starts (an illustrative age). The facts file gives the age by the end of whose year an RRSP must mature (${MAT}) and the minimum withdrawal factor for each age. This sketch assumes the savings become a RRIF at the end of the year they turn ${MAT}. From the next year (year ${RRIF_T0 + 1}, the year they turn ${turns}), each year’s withdrawal is at least the balance at the start of that year times the factor for their age at the start of it: ${pctF(f0)} at ${S.startAge + RRIF_T0}, rising with age. When the minimum is more than they planned to take, the difference has to come out anyway, in good years and bad.`;
+  // The one RRIF sentence used across the labs (redesign v2), from the facts: the factor for an age on January 1 applies in
+  // the year you turn one more.
+  const rrifRule = () => {
+    const rows = FX.rrif.value.map((r) => ({ age: Number(r.age), factor: Number(r.factor) })).sort((a, b) => a.age - b.age);
+    const first = rows.find((r) => r.age >= MAT), last = rows[rows.length - 1];
+    return `At least ${pctF(first.factor)} must come out the year you turn ${first.age + 1}, rising to ${pctF(last.factor)} from the year you turn ${last.age + 1}`;
+  };
+  $('p-rrif').textContent = `Suppose all of Ruth’s and Sam’s savings are in a RRIF and they are ${S.startAge} when year 1 starts (an illustrative age). An RRSP must wind up by the end of the year its owner turns ${MAT} (most become a RRIF), and this sketch assumes theirs become a RRIF then. ${rrifRule()}. From year ${RRIF_T0 + 1}, the year they turn ${turns}, each year’s withdrawal is at least the balance at the start of that year times the factor for their age at the start of it (${pctF(f0)} at ${S.startAge + RRIF_T0}). When the minimum is more than they planned to take, the difference has to come out anyway, in good years and bad.`;
   const srcEl = $('p-rrif-src');
   srcEl.append('Sources: ');
   [FX.maturity, FX.rrif].forEach((f, i) => {

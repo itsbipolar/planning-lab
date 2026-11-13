@@ -21,21 +21,32 @@ html{font-size:112.5%;scrollbar-width:thin;scrollbar-color:var(--t-neutral) tran
 [data-chapter]{scroll-margin-top:1.25rem}
 .read-progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:50;pointer-events:none}
 .read-progress span{display:block;height:100%;background:var(--t-point);transform-origin:0 50%;transform:scaleX(0)}
-.rail{display:none}
-@media (min-width:1360px){
-  .rail{display:block;position:fixed;left:12px;top:50%;transform:translateY(-50%);width:2.6rem;z-index:40}
-  .rail ol{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
-  .rail a{display:block;padding:.3rem 0;color:var(--t-ink3);text-decoration:none;font-size:16px;line-height:1.25}
-  .rail a b{font-weight:650;font-variant-numeric:tabular-nums}
-  .rail a span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .rail a:hover,.rail a[aria-current="true"]{color:var(--t-ink)}
-  .rail a[aria-current="true"] b{box-shadow:inset 0 -2px 0 var(--t-point)}
-}
-@media (min-width:1700px){
-  .rail{left:max(12px,calc((100vw - 1280px)/2 - 170px));width:150px}
-  .rail a{display:grid;grid-template-columns:1.6rem 1fr;align-items:baseline;gap:.25rem}
-  .rail a span{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
-}
+/* The tool bar mirrors the site's masthead (Base.astro): the same container (80rem, 20px gutters, 40px from 1100px),
+   the same padding, type and rule, so going from a site page to a tool nothing jumps. Each nav link's hit area is
+   stretched to a 44px target without moving its underline. */
+.desk-top{max-width:80rem;margin:0 auto;padding:0 20px}
+@media (min-width:1100px){.desk-top{padding:0 40px}}
+.desk-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.75rem 2rem;padding:1.4rem 0 1.2rem;line-height:1.6;border-bottom:1px solid var(--t-rule)}
+.desk-brand{margin-right:auto;font-family:var(--font-display);font-weight:600;font-size:1.35rem;letter-spacing:-.01em;color:var(--t-ink);text-decoration:none;white-space:nowrap}
+.desk-nav ul{display:flex;flex-wrap:wrap;gap:.25rem 1.6rem;list-style:none;margin:0;padding:0}
+.desk-nav a{position:relative;display:inline-block;padding:.35rem 0;font-size:16.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--t-ink);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+.desk-nav a::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
+.desk-nav a:hover{border-bottom-color:var(--t-rule)}
+.desk-nav a[aria-current="true"]{border-bottom-color:var(--t-point)}
+@media (max-width:959px){.desk-head{column-gap:.75rem;row-gap:.2rem;padding:.5rem 0 .2rem;align-items:center}.desk-nav{width:100%}.desk-nav ul{flex-wrap:nowrap;gap:.5rem 1.6rem}.desk-nav a{padding:.15rem 0}}
+@media (max-width:560px){.desk-nav ul{justify-content:space-between;gap:.5rem}.desk-nav a{letter-spacing:.02em}}
+@media (max-width:420px){.desk-head{column-gap:.5rem}.desk-brand{font-size:1.1rem}}
+.desk-toolnav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 1.5rem;padding:.2rem 0;font-size:17px;border-bottom:1px solid var(--t-rule)}
+.desk-toolnav a{display:inline-flex;align-items:center;gap:.35rem;min-height:2.5rem;color:var(--t-ink);text-decoration:none;white-space:nowrap}
+.desk-toolnav a:hover{text-decoration:underline}
+.desk-toolnav .desk-made{color:var(--t-ink2)}
+.desk-next{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.35rem 1.5rem;margin:4rem 0 0;padding:1.4rem 1.5rem 1.5rem;border:1px solid var(--t-rule);border-top:3px solid var(--t-point);background:var(--t-raised);color:var(--t-ink);text-decoration:none}
+.desk-next-k{grid-column:1/-1;font-size:17px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--t-ink2)}
+.desk-next-q{font-family:var(--font-display);font-weight:600;font-size:clamp(1.55rem,1.4vw + 1.1rem,2.3rem);line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
+.desk-next-go{font-family:var(--font-display);font-size:2rem;line-height:1}
+.desk-next:hover,.desk-next:focus-visible{outline:2px solid var(--t-ink);outline-offset:4px}
+.desk-next:hover .desk-next-q{text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px}
+.desk-notes{margin:0}
 .sec-label{position:relative;margin:0 0 .5rem;padding-top:.9rem;font-size:1.05rem;font-weight:650;color:var(--t-ink2);font-variant-numeric:tabular-nums}
 .sec-label::before{content:"";position:absolute;top:0;left:0;width:3rem;height:3px;background:var(--t-point)}
 .sec-label b{color:var(--t-ink);margin-right:.5rem;letter-spacing:.04em}
@@ -126,13 +137,28 @@ svg{font-size:17px}
 .mini{touch-action:pan-y}
 .mini .crosshair text{font-size:14px}
 </style>
+<link rel="canonical" href="https://mo-portfolio-site.moe-chayeb.workers.dev/tools/your-year/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mo-portfolio-site.moe-chayeb.workers.dev/tools/your-year/">
+<meta property="og:title" content="What opens, and when, for your year?">
+<meta property="og:description" content="Type a birth year and see where you stand on Canada's TFSA, CPP, OAS and RRSP rules: what is open, what is closed, and what each start age is worth.">
+<meta property="og:image" content="https://mo-portfolio-site.moe-chayeb.workers.dev/og/tools/your-year.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
-<div class="page">
-  <header class="bar">
-    <a class="brand" href="/">Mohammed El Chayeb</a>
-    <a href="/builds/planning-timeline/">About this build</a>
+<div class="desk-top">
+  <header class="desk-head">
+    <a class="desk-brand" href="/">Mohammed El Chayeb</a>
+    <nav class="desk-nav" aria-label="Main"><ul><li><a href="/tools/" aria-current="true">Tools</a></li><li><a href="/watch/">Watch</a></li><li><a href="/how-i-build/">How I build</a></li><li><a href="/about/">About</a></li></ul></nav>
   </header>
+  <nav class="desk-toolnav" aria-label="This tool">
+    <a href="/tools/"><span aria-hidden="true">←</span> All tools</a>
+    <a class="desk-made" href="/tools/your-year/how-i-made-it/">How I made this</a>
+  </nav>
+  </div>
+<div class="page">
   <main>
     <p class="kicker" id="kicker"><span>Personal timeline ·</span> <span>Canadian rules</span></p>
     <h1 id="finding" aria-live="polite">Your planning timeline</h1>
@@ -234,9 +260,11 @@ svg{font-size:17px}
       <p class="note">The rules are today's. Someone who reached an age in the past met the rules of that time. Amounts depend on a person's own contributions, residence and income, which this page does not know.</p>
     </details>
 
+    <a class="desk-next" data-next href="/tools/when-to-start-cpp/"><span class="desk-next-k">Up next</span><span class="desk-next-q">When does waiting for CPP pay off?</span><span class="desk-next-go" aria-hidden="true">→</span></a>
+
     <footer class="foot">
-      <p><strong>Education only, not advice.</strong> Made with AI assistance; every rule is checked at its official source.</p>
-      <p><a href="/">Mohammed El Chayeb</a> · <a href="/builds/">All the work</a></p>
+      <p class="desk-notes"><strong>Education only, not advice.</strong> Made with AI assistance; every figure is checked at its source.</p>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/tools/">All tools</a></p>
     </footer>
   </main>
 </div>
@@ -251,22 +279,6 @@ svg{font-size:17px}
   function progress() { queued = false; var room = document.documentElement.scrollHeight - innerHeight; bar.hidden = room < innerHeight; bar.firstChild.style.transform = 'scaleX(' + (room > 0 ? Math.min(1, scrollY / room) : 0) + ')'; }
   addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(progress); } }, { passive: true });
   addEventListener('resize', progress); addEventListener('load', progress); progress();
-
-  // the chapter rail, from <section data-chapter="...">, when there are three or more
-  var chapters = [].slice.call(document.querySelectorAll('[data-chapter]'));
-  if (chapters.length >= 3) {
-    var nav = document.createElement('nav'); nav.className = 'rail'; nav.setAttribute('aria-label', 'Chapters on this page');
-    var ol = document.createElement('ol'); var links = [];
-    chapters.forEach(function (c, i) {
-      if (!c.id) c.id = 'chapter-' + (i + 1);
-      var li = document.createElement('li'), a = document.createElement('a'), b = document.createElement('b');
-      a.href = '#' + c.id; b.textContent = String(i + 1).padStart(2, '0'); var sp = document.createElement('span'); sp.textContent = c.getAttribute('data-chapter'); a.title = sp.textContent; a.appendChild(b); a.appendChild(sp);
-      li.appendChild(a); ol.appendChild(li); links.push(a);
-    });
-    nav.appendChild(ol); document.body.appendChild(nav);
-    var mark = function () { var at = 0; chapters.forEach(function (c, i) { if (c.getBoundingClientRect().top < innerHeight * 0.35) at = i; }); links.forEach(function (a, i) { a.setAttribute('aria-current', String(i === at)); }); };
-    addEventListener('scroll', function () { requestAnimationFrame(mark); }, { passive: true }); mark();
-  }
 
   // a short amber underline on any [data-flash] element whose text changes
   var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -389,7 +401,7 @@ function finding(M, p) {
   else if (p.cpp.state === 'open') bits.push(`your CPP window is open until ${p.cpp.closes}`);
   if (p.oas.state === 'ahead') bits.push(`OAS opens ${yrs(p.oas.opens - p.thisYear)}`);
   else if (p.oas.state === 'open') bits.push(`you can still defer OAS until ${p.oas.closes}`);
-  if (p.rrsp.state === 'ahead') bits.push(`your RRSP must become a RRIF by the end of ${p.rrsp.matures}`);
+  if (p.rrsp.state === 'ahead') bits.push(`your RRSP must wind up by the end of ${p.rrsp.matures}`);
   else bits.push(`RRIF minimums apply each year`);
   const t = p.lanes[0];
   // TFSA leads only when there is room for it: the pension and RRSP dates come first.
@@ -427,6 +439,12 @@ function finding(M, p) {
   function clear(svg) { Array.prototype.slice.call(svg.childNodes).forEach(function (c) { if (c.nodeName !== 'title') svg.removeChild(c); }); }
 
   var LAST = M.rrif[M.rrif.length - 1].age;
+  // The one RRIF sentence used across the labs (redesign v2): the first factor applies the year you turn one more than
+  // the maturity age (the factor is set by the age on January 1), the last from the year you turn one more than its age.
+  function rrifRule() {
+    var first = M.rrif.filter(function (r) { return r.age >= R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
+    return 'At least ' + pct(first.factor * 100, 2) + ' must come out the year you turn ' + (first.age + 1) + ', rising to ' + pct(last.factor * 100, 0) + ' from the year you turn ' + (last.age + 1);
+  }
   var lo = R.tfsaAge, hi = LAST + 1;
   var state = { birth: EXAMPLE_BIRTH, example: true, cpp: R.cppHi, oas: R.oasHi, income: EXAMPLE_INCOME, fund: EXAMPLE_FUND };
 
@@ -476,7 +494,7 @@ function finding(M, p) {
     } else reading(x(R.cppLo), below(y), signed(cLo) + ' to ' + signed(cHi));
     el('line', { x1: x(R.cppStd), x2: x(R.cppStd), y1: bar(y) - 2, y2: bar(y) + barH + 2, stroke: ink, 'stroke-width': 1.5, 'stroke-dasharray': '3 2' }, svg);
     dots.push([x(state.cpp), bar(y) + barH / 2]);
-    lanes.push(['CPP', 'Can start in any month from age ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + ' to ' + p.cpp.closes + ' for you): ' + signed(cLo) + ' a month at ' + R.cppLo + ', ' + signed(cHi) + ' at ' + R.cppHi + '.']);
+    lanes.push(['CPP', 'Can start in any month from age ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + ' to ' + p.cpp.closes + ' for you): at ' + R.cppLo + ' a ' + pct(Math.abs(cLo)) + ' smaller cheque, for life; at ' + R.cppHi + ' ' + pct(cHi) + ' bigger.']);
     y += laneH;
     // OAS
     var oHi = (oasShareAt(R.oasHi) - 1) * 100;
@@ -491,7 +509,7 @@ function finding(M, p) {
     lanes.push(['OAS', 'Can start from ' + R.oasLo + ', or later up to ' + R.oasHi + ' for ' + signed(oHi) + ' a month; the pension rises by ' + pct(R.oasBoost) + ' from age ' + M.oasBoostAge + '.']);
     y += laneH;
     // RRSP, then RRIF minimums as a staircase (a savings account, so the same data colour as the TFSA)
-    label(y + 17, 'RRSP, then RRIF', narrow ? 'matures by ' + p.rrsp.matures : 'an RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + ' for you)');
+    label(y + 17, 'RRSP, then RRIF', narrow ? 'winds up by ' + p.rrsp.matures : 'an RRSP must wind up by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + ' for you)');
     var base = y + rrifH - 4, maxF = Math.max.apply(null, M.rrif.map(function (r) { return r.factor; })), tall = rrifH - 58, band = 12;
     el('rect', { x: x(lo), y: base - band, width: x(R.rrsp + 1) - x(lo), height: band, fill: d3, opacity: 0.45 }, svg);
     M.rrif.forEach(function (r) {
@@ -502,7 +520,7 @@ function finding(M, p) {
     var first = M.rrif.filter(function (r) { return r.age >= R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
     reading(x(first.age + 1) - 4, base - band - 6, pct(first.factor * 100, 2) + ' turning ' + (first.age + 1), 'end');
     reading(x(hi), base - tall - 7, pct(last.factor * 100, 0) + ' from ' + (last.age + 1), 'end');
-    lanes.push(['RRSP and RRIF', 'An RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + '). As a RRIF, a minimum share comes out each year after, set by your age on January 1: ' + pct(first.factor * 100, 2) + ' in the year you turn ' + (first.age + 1) + ', rising to ' + pct(last.factor * 100, 0) + ' from ' + (last.age + 1) + '.']);
+    lanes.push(['RRSP and RRIF', 'An RRSP must wind up by the end of ' + p.rrsp.matures + ', the year you turn ' + R.rrsp + ' (most become a RRIF). ' + rrifRule() + '.']);
     // the axis: ages, and the calendar years they fall in for this person
     var ay = H - axisH + 6;
     el('line', { x1: x(lo), x2: x(hi), y1: ay, y2: ay, stroke: rule }, svg);
@@ -661,7 +679,7 @@ function finding(M, p) {
     el('text', { x: pl - 6, y: pt + 8, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, pct(maxF * 100));
     el('text', { x: pl - 6, y: H - pb + 4, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, '0');
     var leftAt90 = 1; rows.forEach(function (r) { if (r.age < 90) leftAt90 *= 1 - r.factor; });
-    $('rrif-text').textContent = 'An RRSP must mature by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + ', for example by becoming a RRIF. From the next year a minimum share must come out each year, set by your age on January 1 (the chart’s ages): ' + pct(first.factor * 100, 2) + ' at ' + first.age + ', in the year you turn ' + (first.age + 1) + '; ' + (tenth ? 'more than a tenth of the fund from ' + tenth.age + '; ' : '') + pct(maxF * 100) + ' from ' + rows[rows.length - 1].age + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90, on January 1.';
+    $('rrif-text').textContent = 'An RRSP must wind up by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + '; most become a RRIF. ' + rrifRule() + '. The chart’s ages are ages on January 1' + (tenth ? ', and more than a tenth of the fund must come out from ' + tenth.age : '') + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90, on January 1.';
     var f = state.fund, at = p && p.age - 1 > R.rrsp ? M.rrif.filter(function (r) { return r.age === Math.min(p.age - 1, rows[rows.length - 1].age); })[0] : null;
     $('fund-k').textContent = 'The minimum in the year you turn ' + (first.age + 1);
     $('fund-big').textContent = money(f * first.factor);

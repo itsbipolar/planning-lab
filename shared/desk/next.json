@@ -1,0 +1,18 @@
+{
+  "_note": "The Up next chain (redesign v2, Navigation rules 5): each public tool's slug on the site (/tools/<slug>/), the lab that builds it, the short question its Up next card shows, and the tool that comes after it. films: each watch page's one Up next tool. The site's sync-labs check fails if a slug here has no dist.",
+  "tools": [
+    { "slug": "your-year", "labSlug": "planning-timeline", "question": "What opens, and when, for your year?", "next": "when-to-start-cpp" },
+    { "slug": "when-to-start-cpp", "labSlug": "two-number-letter", "question": "When does waiting for CPP pay off?", "next": "order-of-returns" },
+    { "slug": "order-of-returns", "labSlug": "order-of-returns", "question": "Same ten years. Why does one retiree run out?", "next": "money-then-now" },
+    { "slug": "money-then-now", "labSlug": "money-then-now", "question": "What did $100 buy the year you were born?", "next": "tax-dates" },
+    { "slug": "tax-dates", "labSlug": "planning-calendar", "question": "What’s your next tax date?", "next": "retirement-wave" },
+    { "slug": "retirement-wave", "labSlug": "retirement-wave", "question": "How many Canadians are nearing retirement age?", "next": "your-year" }
+  ],
+  "films": {
+    "franklin-gift": { "next": "money-then-now" },
+    "double-tax-at-death": { "next": "tax-dates" },
+    "money-history": { "next": "money-then-now" },
+    "apollo-envelopes": { "next": "order-of-returns" },
+    "money-year": { "next": "money-then-now" }
+  }
+}

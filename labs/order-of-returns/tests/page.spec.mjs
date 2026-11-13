@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
 import { readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -34,6 +35,12 @@ test('banned phrases are nowhere on the page', () => {
 for (const width of [390, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
+
+    test('the tool shell: tool bar, one Up next card, notes, share tags; no rail, nothing sticky, nothing stored', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expectShell(page, 'order-of-returns');
+      await expectStorageClean(page);
+    });
 
     test('a keyboard playthrough: the finding, every order, the rescue and the RRIF lane, with nothing stored or sent', async ({ page }) => {
       const requests = [], errors = [];
@@ -98,11 +105,11 @@ for (const width of [390, 1440]) {
       // honest labels, no overlaps, nothing stored or sent
       for (const svg of await page.locator('figure svg').all()) await expect(svg.locator('xpath=following-sibling::figcaption')).toHaveText(SYN);
       expect(await overlaps(page)).toEqual([]);
-      await expect(page.locator('footer p')).toHaveCount(2);
+      await expect(page.locator('footer.foot p')).toHaveCount(3);
       expect(errors).toEqual([]);
       expect(requests).toEqual([]);
       expect(page.url()).toBe(url);
-      expect(await page.evaluate(() => [localStorage.length, sessionStorage.length, document.cookie])).toEqual([0, 0, '']);
+      await expectStorageClean(page);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
     });
 
@@ -173,17 +180,11 @@ for (const width of [390, 1440]) {
       expect(await overlaps(page)).toEqual([]);
     });
 
-    test('the chapter rail shows on wide screens only, and the crosshair reads the balance charts', async ({ page }) => {
+    test('no chapter rail, and the crosshair reads the balance charts', async ({ page }) => {
       await page.goto(url); await ready(page);
       await expect(page.locator('section[data-chapter]')).toHaveCount(8);
       await expect(page.locator('.sec-label')).toHaveCount(7);
-      if (width >= 1440) {
-        await expect(page.locator('nav.rail')).toBeVisible();
-        expect(await page.locator('nav.rail a').count()).toBeGreaterThanOrEqual(3);
-        // the rail never sits on the page's text
-        const rail = await page.locator('nav.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
-        expect(rail.x + rail.width).toBeLessThan(h1.x);
-      } else await expect(page.locator('nav.rail')).toBeHidden();
+      await expect(page.locator('nav.rail')).toHaveCount(0); // the numbered rail is gone (redesign v2)
       for (const id of ['#c-lead', '#c-deal']) {
         const svg = page.locator(id); await svg.scrollIntoViewIfNeeded();
         const b = await svg.boundingBox();

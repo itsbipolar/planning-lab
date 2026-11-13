@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { rolling, finding } from '../engine.mjs';
@@ -34,6 +35,12 @@ for (const width of [390, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
 
+    test('the tool shell: tool bar, one Up next card, notes, share tags; no rail, nothing sticky, nothing stored', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expectShell(page, 'planning-calendar');
+      await expectStorageClean(page);
+    });
+
     test('opens on the example with the computed finding; ticking situations updates the strip and the list', async ({ page }) => {
       await open(page);
       const ex = expected(example.situations);
@@ -62,7 +69,7 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#ics')).toBeDisabled();
     });
 
-    test('the household\'s answer is a readout under the quick picks; the chapter rail and the strip readings', async ({ page }) => {
+    test('the household\'s answer is a readout under the quick picks; no rail; the strip readings', async ({ page }) => {
       await open(page);
       const ex = expected(example.situations);
       const picks = await page.locator('#picks').boundingBox(), ro = await page.locator('#readouts').boundingBox();
@@ -81,12 +88,7 @@ for (const width of [390, 1440]) {
       await page.locator(`#picks button[data-preset=${example.id}]`).click();
       await expect(page.locator('section[data-chapter]')).toHaveCount(3);
       await expect(page.locator('.sec-label')).toHaveCount(3);
-      if (width >= 1440) {
-        await expect(page.locator('.rail a')).toHaveCount(3);
-        await expect(page.locator('.rail')).toBeVisible();
-        const rail = await page.locator('.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
-        expect(rail.x + rail.width).toBeLessThan(h1.x);
-      } else await expect(page.locator('.rail')).toBeHidden();
+      await expect(page.locator('nav.rail')).toHaveCount(0); // the numbered rail is gone (redesign v2)
       // the week of the next date, read under the pointer
       const strip = page.locator('#strip'); await strip.scrollIntoViewIfNeeded();
       const k = await page.locator('#strip rect[class^="k-"]').first().boundingBox();
@@ -121,13 +123,13 @@ for (const width of [390, 1440]) {
       expect(flat.match(/Education only\\, not advice\./g)).toHaveLength(cal.events.length);
       expect(requests).toEqual([]);
       expect(page.url()).toBe(before);
-      expect(await page.evaluate(() => [localStorage.length, sessionStorage.length, document.cookie, location.search, location.hash])).toEqual([0, 0, '', '', '']);
+      await expectStorageClean(page);
     });
 
     test('rules in words with sources, own-date rules, footer; no sideways scroll; strip labels never overlap', async ({ page }) => {
       await open(page);
       const t = await page.locator('body').innerText();
-      for (const s of ['CPP can start: age', 'Not confirmed yet', 'Education only, not advice.', 'Made with AI assistance; every rule is checked at its official source.']) expect(t).toContain(s);
+      for (const s of ['CPP can start: age', 'Not confirmed yet', 'Education only, not advice.', 'Made with AI assistance; every figure is checked at its source.']) expect(t).toContain(s);
       expect(t).not.toMatch(/\byou should\b/i);
       for (const a of await page.locator('#dates a').all()) expect(await a.getAttribute('href')).toMatch(/^https:\/\/([a-z0-9-]+\.)*(canada\.ca|gc\.ca)\//);
       await page.locator('details.sources summary').click();

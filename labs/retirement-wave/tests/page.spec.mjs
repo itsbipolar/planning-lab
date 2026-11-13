@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 
@@ -27,6 +28,12 @@ async function clashes(page) {
 for (const width of [390, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
+
+    test('the tool shell: tool bar, one Up next card, notes, share tags; no rail, nothing sticky, nothing stored', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expectShell(page, 'retirement-wave');
+      await expectStorageClean(page);
+    });
 
     test('opens on a labelled example; the birth year, toggle, place and gender redraw it; bad years are refused; no request, nothing stored', async ({ page }) => {
       const requests = [];
@@ -67,7 +74,7 @@ for (const width of [390, 1440]) {
       }
       await born(page, 1960); await expect(page.locator('#error')).toBeHidden();
       expect(requests).toEqual([]);
-      expect(await page.evaluate(() => [localStorage.length, sessionStorage.length, document.cookie, location.search, location.hash])).toEqual([0, 0, '', '', '']);
+      await expectStorageClean(page);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
     });
 
@@ -118,7 +125,7 @@ for (const width of [390, 1440]) {
       for (const d of await page.locator('details summary').all()) await d.click();
       const t = await page.locator('body').innerText();
       for (const s of [snap.attribution, 'Table 17-10-0005-01', snap.released, snap.retrieved, 'doi.org/10.25318/1710000501-eng', 'preliminary postcensal',
-        'Education only, not advice.', 'Made with AI assistance; every figure is computed from the dated public data named below.']) expect(t).toContain(s);
+        'Education only, not advice.', 'Made with AI assistance; every figure is checked at its source.', 'Every figure here is computed from the dated public data named below.']) expect(t).toContain(s);
       expect(t).not.toMatch(/\byou should\b|\bwe recommend\b/i);
     });
 

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -47,6 +48,12 @@ for (const width of [390, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
 
+    test('the tool shell: tool bar, one Up next card, notes, share tags; no rail, nothing sticky, nothing stored', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expectShell(page, 'two-number-letter');
+      await expectStorageClean(page);
+    });
+
     test('the example opens with its computed finding, and arrow keys rewrite the headline, letter and chart; nothing is stored or sent', async ({ page }) => {
       const requests = [], errors = [];
       page.on('pageerror', (e) => errors.push(e.message));
@@ -87,7 +94,7 @@ for (const width of [390, 1440]) {
       await page.getByRole('button', { name: `More: ${story.people.b.name}'s CPP start age` }).click();
       await expect(tom).toHaveText(String(std + 1));
       await expect(page.locator('#status')).not.toBeEmpty();
-      expect(await page.evaluate(() => localStorage.length + sessionStorage.length + document.cookie.length)).toBe(0);
+      await expectStorageClean(page);
       expect(page.url()).toBe(start);
       expect(requests).toEqual([]); expect(errors).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
@@ -113,16 +120,11 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#rd-oas-v')).toHaveText('No crossing');
     });
 
-    test('the chapter rail shows on wide screens only; the charts read out under the pointer', async ({ page }) => {
+    test('no chapter rail; the charts read out under the pointer', async ({ page }) => {
       await page.goto(url); await page.waitForLoadState('load');
       await expect(page.locator('section[data-chapter]')).toHaveCount(3);
       await expect(page.locator('.sec-label')).toHaveCount(3);
-      if (width >= 1440) {
-        await expect(page.locator('.rail')).toBeVisible();
-        await expect(page.locator('.rail a')).toHaveCount(3);
-        const rail = await page.locator('.rail').boundingBox(), h1 = await page.locator('h1').boundingBox();
-        expect(rail.x + rail.width).toBeLessThan(h1.x);
-      } else await expect(page.locator('.rail')).toBeHidden();
+      await expect(page.locator('nav.rail')).toHaveCount(0); // the numbered rail is gone (redesign v2)
       for (const id of ['#plot-cpp', '#plot-oas']) {
         const svg = page.locator(`${id} svg`); await svg.scrollIntoViewIfNeeded();
         const b = await svg.boundingBox();
@@ -203,9 +205,9 @@ test('every margin note and source names an allowlisted government page and a re
   for (const href of hrefs) expect(new URL(href).hostname).toMatch(/(^|\.)(canada\.ca|gc\.ca|ontario\.ca|bankofcanada\.ca)$/);
   for (const t of await notes.allInnerTexts()) expect(t).toMatch(/read \d{4}-\d\d-\d\d/);
   await expect(page.locator('.ignores')).toContainText('What this ignores');
-  await expect(page.locator('.foot')).toContainText('Education only, not advice. Made with AI assistance; every rule is checked at its official source.');
-  await expect(page.locator('.brand')).toHaveAttribute('href', '/');
-  await expect(page.getByRole('link', { name: 'About this build' })).toHaveAttribute('href', '/builds/two-number-letter/');
+  await expect(page.locator('.foot')).toContainText('Education only, not advice. Made with AI assistance; every figure is checked at its source.');
+  await expect(page.locator('.desk-brand')).toHaveAttribute('href', '/');
+  await expect(page.getByRole('link', { name: 'How I made this' })).toHaveAttribute('href', '/tools/when-to-start-cpp/how-i-made-it/');
 });
 
 test('print layout keeps the letter and charts and drops the controls', async ({ page }) => {

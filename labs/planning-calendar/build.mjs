@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { factIndex } from './engine.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
+import { deskPage } from '../../shared/desk/desk-page.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -26,7 +27,7 @@ const data = { config: { ...config, situations: config.situations.map((s) => ({ 
 
 const css = [deskCSS(), deskUICSS(), read(join(here, 'style.css'))].join('\n');
 const js = deskUIJS() + '\n' + read(join(here, 'engine.mjs')).replace(/^export /gm, '') + '\n' + read(join(here, 'app.js'));
-const html = read(join(here, 'index.src.html')).replace('/*@@CSS@@*/', () => css)
+const html = deskPage(read(join(here, 'index.src.html')), 'planning-calendar').replace('/*@@CSS@@*/', () => css)
   .replace('/*@@DATA@@*/', () => JSON.stringify(data).replace(/</g, '\\u003c')).replace('/*@@JS@@*/', () => js);
 const out = process.env.OUT ?? join(here, 'dist', 'index.html');
 mkdirSync(dirname(out), { recursive: true });

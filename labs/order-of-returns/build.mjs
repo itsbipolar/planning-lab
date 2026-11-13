@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
+import { deskPage } from '../../shared/desk/desk-page.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -26,7 +27,7 @@ const enumerate = strip(read(join(here, 'enumerate.mjs')));
 const worker = enumerate + '\n' + read(join(here, 'worker.js'));
 const js = deskUIJS() + '\n' + strip(read(join(here, 'engine.mjs'))) + '\n' + enumerate + '\n' + read(join(here, 'app.js'));
 for (const [name, src] of [['worker', worker], ['script', js]]) if (/<\/script/i.test(src)) throw new Error(`${name} contains </script`);
-const html = read(join(here, 'index.src.html'))
+const html = deskPage(read(join(here, 'index.src.html')), 'order-of-returns')
   .replace('/*@@CSS@@*/', () => css)
   .replace('/*@@STORY@@*/', () => json(JSON.parse(read(join(here, 'story.json')))))
   .replace('/*@@FACTS@@*/', () => json(facts))
