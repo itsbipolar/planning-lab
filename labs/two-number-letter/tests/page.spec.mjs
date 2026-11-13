@@ -140,7 +140,7 @@ for (const width of [390, 1440]) {
 
     for (const theme of ['dark', 'light']) test(`axe passes (${theme})`, async ({ page }) => {
       await page.goto(url);
-      if (theme === 'light') await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+      await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
       await page.locator('#s-a-other').fill('200000');
       await page.locator('[data-drag="a.cppAge"]').focus();
