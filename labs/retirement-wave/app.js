@@ -22,23 +22,43 @@
   }
   const html = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
   const clear = (svg) => [...svg.childNodes].forEach((c) => { if (c.nodeName !== 'title') svg.removeChild(c); });
-  // Spread labels apart vertically so none is closer than `gap` to the next, staying between lo and hi.
-  function relax(items, gap, lo, hi) {
+  // Spread items apart vertically (each item has a centre `want` and a height `h`) so none comes closer than `pad` to the
+  // next, staying between lo and hi. Returns the items with their centre `y`.
+  function relax(items, pad, lo, hi) {
     items.sort((p, q) => p.want - q.want);
-    items.forEach((it, i) => { it.y = Math.max(it.want, lo, i ? items[i - 1].y + gap : -Infinity); });
-    for (let i = items.length - 1; i >= 0; i--) items[i].y = Math.min(items[i].y, i < items.length - 1 ? items[i + 1].y - gap : hi);
-    items.forEach((it, i) => { it.y = Math.max(it.y, lo, i ? items[i - 1].y + gap : -Infinity); });
+    const gap = (i) => (items[i - 1].h + items[i].h) / 2 + pad;
+    items.forEach((it, i) => { it.y = Math.max(it.want, lo + it.h / 2, i ? items[i - 1].y + gap(i) : -Infinity); });
+    for (let i = items.length - 1; i >= 0; i--) items[i].y = Math.min(items[i].y, i < items.length - 1 ? items[i + 1].y - gap(i + 1) : hi - items[i].h / 2);
+    items.forEach((it, i) => { it.y = Math.max(it.y, lo + it.h / 2, i ? items[i - 1].y + gap(i) : -Infinity); });
     return items;
+  }
+  const hit = (a, b, pad = 0) => a.x < b.r + pad && b.x < a.r + pad && a.y < b.b + pad && b.y < a.b + pad;
+  // Lines of text in one group with one ground-coloured backing behind them: [[tspan text, class], ...] per line.
+  function label(parent, cls, lines, x, cy, anchor, lh) {
+    const g = el('g', { class: `label ${cls}-g` }, parent), bg = el('rect', { class: `${cls}-bg`, rx: 2 }, g);
+    const t = el('text', { class: cls, 'text-anchor': anchor }, g);
+    lines.forEach((parts, k) => {
+      parts.forEach(([text, c], j) => {
+        const sp = el('tspan', c ? { class: c } : {}, t, text);
+        if (j === 0) { sp.setAttribute('x', x); sp.setAttribute('y', (cy + 4 + (k - (lines.length - 1) / 2) * lh).toFixed(1)); }
+      });
+    });
+    const fit = () => { const b = t.getBBox(); bg.setAttribute('x', b.x - 4); bg.setAttribute('y', b.y - 2); bg.setAttribute('width', b.width + 8); bg.setAttribute('height', b.height + 4); return { x: b.x - 4, y: b.y - 2, r: b.x + b.width + 4, b: b.y + b.height + 2 }; };
+    const move = (nx, na) => { t.setAttribute('text-anchor', na); t.querySelectorAll('tspan[x]').forEach((sp) => sp.setAttribute('x', nx)); return fit(); };
+    return { g, t, box: fit(), move };
   }
 
   // ---------- the heatmap ----------
   function drawHeat() {
     const svg = $('heat'); clear(svg);
     const W = Math.max(300, $('frame').clientWidth), narrow = W < 640;
-    const left = narrow ? 24 : 34, right = narrow ? 30 : 222, top = 8, bottom = 30;
+    // The grid runs the full width. Wide: the rule names sit inside the grid on a ground-coloured backing, wherever the
+    // line is clear of the diagonal's readings. Narrow: a thin gutter on the right holds the rule ages, and the names are
+    // in the key under the chart.
+    const left = narrow ? 26 : 34, right = narrow ? 28 : 3, top = 8, bottom = 30;
     const cols = y1 - y0 + 1, rows = a1 - a0 + 1, cw = (W - left - right) / cols;
-    const ch = narrow ? Math.min(9, Math.max(8, cw * 1.5)) : Math.min(14, Math.max(9, cw * 0.75));
-    const plotW = cols * cw, plotH = rows * ch, H = top + plotH + bottom;
+    const ch = narrow ? Math.min(9, Math.max(8, cw * 1.5)) : Math.min(15, Math.max(9, cw * 0.75));
+    const plotW = cols * cw, plotH = rows * ch, H = top + plotH + bottom, R = left + plotW;
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
     const X = (y) => left + (y - y0) * cw, Y = (a) => top + (a1 - a) * ch, Yc = (a) => Y(a) + ch / 2;
     const [lo, hi] = range(M, V, state.mode);
@@ -51,20 +71,12 @@
     const yt = niceTicks(y0, y1, narrow ? 4 : 11).ticks, ly = top + plotH + 19, xs = [];
     for (const y of yt) { el('line', { class: 'leader', x1: X(y) + cw / 2, x2: X(y) + cw / 2, y1: top + plotH, y2: top + plotH + 4 }, svg); el('text', { class: 'lab', x: X(y) + cw / 2, y: ly, 'text-anchor': 'middle' }, svg, String(y)); xs.push(X(y) + cw / 2); }
     if (xs[0] - X(y0) > 44) el('text', { class: 'lab', x: X(y0), y: ly, 'text-anchor': 'start' }, svg, String(y0));
-    if (left + plotW - xs.at(-1) > 44) el('text', { class: 'lab', x: left + plotW, y: ly, 'text-anchor': 'end' }, svg, String(y1));
+    if (R - xs.at(-1) > 44) el('text', { class: 'lab', x: R, y: ly, 'text-anchor': 'end' }, svg, String(y1));
 
-    // the rule ages: dashed lines across, labels in the right margin, spread so they never touch
+    // the rule ages: dashed lines across the whole grid
     for (const r of M.rules) {
-      el('line', { class: 'rule-halo', x1: left, x2: left + plotW, y1: Yc(r.age), y2: Yc(r.age) }, svg);
-      el('line', { class: 'rule', x1: left, x2: left + plotW, y1: Yc(r.age), y2: Yc(r.age) }, svg);
-    }
-    const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age) + 4 })), 17, top + 8, top + plotH + 4);
-    for (const it of rl) {
-      const x = left + plotW + (narrow ? 7 : 9);
-      if (Math.abs(it.y - it.want) > 1) el('path', { class: 'leader', d: `M${left + plotW},${Yc(it.r.age)} L${x - 2},${it.y - 4}` }, svg);
-      const t = el('text', { class: 'rule-n', x, y: it.y }, svg);
-      el('tspan', { class: 'age' }, t, String(it.r.age));
-      if (!narrow) el('tspan', { class: 'what' }, t, '  ' + it.r.label);
+      el('line', { class: 'rule-halo', x1: left, x2: R, y1: Yc(r.age), y2: Yc(r.age) }, svg);
+      el('line', { class: 'rule', x1: left, x2: R, y1: Yc(r.age), y2: Yc(r.age) }, svg);
     }
 
     // the diagonal: one group of people, a year older every July 1
@@ -76,7 +88,8 @@
       el('polygon', { class: 'diag-halo', points: pts }, svg);
       el('polygon', { class: 'diag', points: pts }, svg);
     }
-    // readings where the diagonal crosses each rule age, and where it starts and ends in the data
+    // readings where the diagonal crosses each rule age, and where it starts and ends in the data; crossings a year or
+    // two apart share one tag, so their readings never sit on top of each other
     const marks = d.crossings.filter((c) => c.when === 'in').map((c) => ({ year: c.year, age: c.age, v: c.value }));
     const near = (a) => marks.some((m) => Math.abs(m.age - a) < 3);
     if (d.cells.length) {
@@ -84,19 +97,68 @@
       if (!near(fa)) marks.push({ year: fy, age: fa, v: fv });
       if (!near(la) && (la !== fa)) marks.push({ year: ly2, age: la, v: lv });
     }
-    const tags = relax(marks.map((m) => ({ m, cx: X(m.year) + cw / 2, cy: Yc(m.age), want: Yc(m.age) + 4 })), 17, top + 13, top + plotH - 5);
-    const tagLayer = el('g', {}, svg), dotLayer = el('g', {}, svg);
+    marks.sort((p, q) => p.age - q.age);
+    const groups = [];
+    for (const m of marks) { const g = groups.at(-1); if (g && m.age - g.at(-1).age <= 2) g.push(m); else groups.push([m]); }
+    const LH = 15, tagLayer = el('g', {}, svg), dotLayer = el('g', {}, svg), obstacles = [];
+    const parts = (m) => [[`${m.age} in ${m.year}`], [`: ${fmt(m.v)}`, 'v']];
+    const tags = relax(groups.map((g) => {
+      const cx = g.reduce((s, m) => s + X(m.year) + cw / 2, 0) / g.length, cy = g.reduce((s, m) => s + Yc(m.age), 0) / g.length;
+      return { g, cx, cy, want: cy, h: (narrow && g.length > 1 ? g.length : 1) * LH + 4 };
+    }), 3, top + 2, top + plotH - 2);
     for (const it of tags) {
-      const g = el('g', {}, tagLayer), bg = el('rect', { class: 'tag-bg', rx: 2 }, g);
-      const t = el('text', { class: 'tag', x: it.cx - 9, y: it.y, 'text-anchor': 'end' }, g);
-      el('tspan', {}, t, `${it.m.age} in ${it.m.year}`); el('tspan', { class: 'v' }, t, `: ${fmt(it.m.v)}`);
-      let w = t.getComputedTextLength();
-      if (it.cx - 9 - w < left + 3) { t.setAttribute('text-anchor', 'start'); t.setAttribute('x', Math.min(it.cx + 9, left + plotW - 3 - w)); }
-      const b = t.getBBox();
-      bg.setAttribute('x', b.x - 4); bg.setAttribute('y', b.y - 2); bg.setAttribute('width', b.width + 8); bg.setAttribute('height', b.height + 4);
-      if (Math.abs(it.y - it.want) > 2) el('path', { class: 'leader', d: `M${it.cx},${it.cy} L${b.x + (b.x > it.cx ? -4 : b.width + 4)},${it.y - 4}` }, tagLayer);
-      el('circle', { class: 'dot', cx: it.cx, cy: it.cy, r: narrow ? 3.5 : 4.5 }, dotLayer);
+      const xs2 = it.g.map((m) => X(m.year) + cw / 2), xl = Math.min(...xs2) - 9, xr = Math.max(...xs2) + 9;
+      // One line when it fits beside the dots; otherwise one reading per line, in the same backing.
+      const one = [it.g.flatMap((m, k) => (k ? [[' · '], ...parts(m)] : parts(m)))];
+      const many = it.g.slice().reverse().map(parts);
+      let L = label(tagLayer, 'tag', narrow && it.g.length > 1 ? many : one, xl, it.y, 'end', LH);
+      if (L.box.x < left + 1) {
+        L.box = L.move(xr, 'start');
+        if (L.box.r > R - 1 && it.g.length > 1 && !(narrow)) { L.g.remove(); L = label(tagLayer, 'tag', many, xl, it.y, 'end', LH); if (L.box.x < left + 1) L.box = L.move(xr, 'start'); }
+        if (L.box.r > R - 1) L.box = L.move(Math.max(left + 5, R - 5 - (L.box.r - L.box.x - 8)), 'start');
+      }
+      obstacles.push(L.box);
+      for (const m of it.g) {
+        const cx = X(m.year) + cw / 2, cy = Yc(m.age);
+        if (Math.abs(it.y - cy) > 2 || it.g.length > 1) {
+          const ex = L.box.x > cx ? L.box.x : L.box.r, ey = Math.min(Math.max(cy, L.box.y + 3), L.box.b - 3);
+          if (Math.abs(ex - cx) > 6 || Math.abs(ey - cy) > 3) el('path', { class: 'leader', d: `M${cx},${cy} L${ex},${ey}` }, tagLayer);
+        }
+        el('circle', { class: 'dot', cx, cy, r: narrow ? 3.5 : 4.5 }, dotLayer);
+        obstacles.push({ x: cx - 6, r: cx + 6, y: cy - 6, b: cy + 6 });
+      }
     }
+    svg.appendChild(dotLayer);
+
+    // the rule names
+    const ruleLayer = el('g', {}, svg);
+    if (narrow) {
+      const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: 15 })), 2, top, top + plotH + 8);
+      for (const it of rl) {
+        const x = R + 6;
+        if (Math.abs(it.y - it.want) > 1) el('path', { class: 'leader', d: `M${R},${Yc(it.r.age)} L${x - 2},${it.y}` }, ruleLayer);
+        const g = el('g', { class: 'label' }, ruleLayer);
+        el('text', { class: 'rule-n', x, y: it.y + 4 }, g, String(it.r.age));
+      }
+    } else {
+      const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: 20 })), 1, top, top + plotH);
+      const placed = [];
+      for (const it of rl) {
+        const age = it.r.age, yc = state.born + age;
+        // the diagonal's own cells near this line are kept clear too
+        const zone = yc >= y0 && yc <= y1 ? [{ x: X(yc - 1), r: X(yc + 2), y: it.y - 9, b: it.y + 9 }] : [];
+        const L = label(ruleLayer, 'rule-n', [[[String(age), 'age'], [`  ${it.r.label}`, 'what']]], left + 6, it.y, 'start', LH);
+        const wdt = L.box.r - L.box.x, clear = (b) => ![...obstacles, ...zone].some((o) => hit(b, o, 2)) && !placed.some((o) => hit(b, o, 0));
+        // left edge first, then the right edge, then along the line
+        const tries = [[left + 6, 'start'], [R - 6, 'end']];
+        for (let x = left + 6 + 48; x + wdt < R - 6; x += 48) tries.push([x, 'start']);
+        let ok = false;
+        for (const [x, a] of tries) { const b = L.move(x, a); if (clear(b)) { L.box = b; ok = true; break; } }
+        if (!ok) L.box = L.move(left + 6, 'start');
+        placed.push(L.box);
+      }
+    }
+    $('rule-key').hidden = !narrow;
 
     $('heat-title').textContent = `Heatmap of ${state.mode === 'share' ? 'each age’s share of the population' : 'the number of people at each age'}, ${who(M, state.place, state.gender)}, ages ${a0} to ${a1}, July 1, ${y0} to ${y1}, with the rule ages as dashed lines and the diagonal for people born in ${state.born}. The numbers are in the table below the chart.`;
     svg.onpointermove = (e) => {
@@ -205,15 +267,14 @@
   const c = $('citation'), link = (href, text) => { const a = document.createElement('a'); a.href = href; a.textContent = text; return a; };
   c.append('Citation: ', link(src.source_url, src.citation.replace(/\.? DOI: .*/, '')), '. DOI: ', link(src.doi, src.doi), `. Released ${src.released}; read ${src.retrieved}. `, link(src.licence_url, src.licence), '.');
   for (const k of ['age', 'revisions', 'gender', 'genders', 'territories', 'ninety', 'adapted']) if (src.notes[k]) $('notes').appendChild(html('li', (k === 'adapted' ? 'How this page adapts it: ' : 'Statistics Canada: ') + src.notes[k]));
+  for (const r of M.rules) { const li = html('li'); li.append(html('b', String(r.age)), ` ${r.text}`); $('rule-key').appendChild(li); }
   const seen = new Set();
   for (const r of M.rules) for (const f of r.facts) {
     if (seen.has(f.id)) continue; seen.add(f.id);
     const li = document.createElement('li'); li.append(link(f.source_url, f.title), `, read ${f.as_of}.`); $('fact-sources').appendChild(li);
   }
   $('foot-src').textContent = `Data: Statistics Canada, Table 17-10-0005-01, released ${src.released}, read ${src.retrieved}; the rule ages from official federal sources, listed under Sources and notes.`;
-  const asOf = M.rules.flatMap((r) => r.facts.map((f) => f.as_of)).sort().pop();
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  $('kicker').textContent = `Statistics Canada · July 1, ${y0} to ${y1} · rules as of ${months[Number(asOf.slice(5, 7)) - 1]} ${asOf.slice(0, 4)}`;
+  $('kicker').textContent = `Data story · Statistics Canada, ${y0} to ${y1}`;
 
   // ---------- save the chart as an image, made in the browser ----------
   $('save').addEventListener('click', () => {

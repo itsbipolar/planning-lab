@@ -18,17 +18,18 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 17px/1.55 v
 .page{max-width:80rem;margin:0 auto;padding:0 16px}
 @media (min-width:700px){.page{padding:0 24px}}
 @media (min-width:1100px){.page{padding:0 40px}}
-.bar{display:flex;gap:1.5rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
-.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto}
+.bar{display:flex;flex-wrap:wrap;gap:.35rem 1.5rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
+.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto;white-space:nowrap}
+.bar a{white-space:nowrap}
+@media (max-width:480px){.bar{column-gap:1rem}.bar a:not(.brand){font-size:15px}}
 a{color:inherit;text-underline-offset:4px}
 h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;margin:0;text-wrap:balance}
 h1{font-size:clamp(1.9rem,2.4vw + 1rem,3.2rem);line-height:1.1;max-width:30ch;margin-top:.5rem}
 h2{font-size:1.4rem;line-height:1.2;margin:0 0 .25rem}
-.kicker{font-family:var(--font-mono);font-weight:500;font-size:.8rem;color:var(--t-ink3);margin:2.5rem 0 0}
+.kicker{font-family:var(--font-mono);font-weight:500;font-size:.75rem;color:var(--t-ink3);margin:2.5rem 0 0}
 .lede{font-size:1.15rem;color:var(--t-ink2);max-width:62ch;margin:1rem 0 0}
 .note{font-size:15px;color:var(--t-ink3)}
-:focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
-:root[data-theme="light"] :focus-visible{outline-color:var(--t-ink)}
+:focus-visible{outline:2px solid var(--t-ink);outline-offset:3px}
 
 .controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem 1.75rem;margin:2rem 0 0;padding:1.1rem 0 1rem;border-top:1px solid var(--t-rule);border-bottom:1px solid var(--t-rule)}
 .field{display:grid;gap:.35rem;min-width:0;margin:0;padding:0;border:0}
@@ -37,8 +38,7 @@ h2{font-size:1.4rem;line-height:1.2;margin:0 0 .25rem}
 .opts{display:flex;flex-wrap:wrap;gap:0}
 .opts label{display:flex;align-items:center;gap:.45rem;min-height:44px;padding:.3rem .8rem .3rem .6rem;border:1px solid var(--t-rule);margin:0 -1px -1px 0;font-size:15px;cursor:pointer;background:var(--t-ground)}
 .opts label:has(input:checked){background:var(--t-raised);border-color:var(--t-ink3);font-weight:650}
-input[type=radio]{width:1.05rem;height:1.05rem;margin:0;accent-color:var(--t-point)}
-:root[data-theme="light"] input[type=radio]{accent-color:var(--t-ink)}
+input[type=radio]{width:1.05rem;height:1.05rem;margin:0;accent-color:var(--t-ink)}
 select,input[type=number]{font:inherit;font-size:16px;min-height:44px;padding:.4rem .6rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-rule);border-radius:2px;max-width:100%}
 select{width:100%}
 input[type=number]{width:7.5rem;font-variant-numeric:tabular-nums}
@@ -70,16 +70,18 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 :root[data-theme="light"] .diag{stroke:var(--t-point-deep)}
 .dot{fill:var(--t-point);stroke:var(--t-ground);stroke-width:2}
 :root[data-theme="light"] .dot{fill:var(--t-point-deep)}
-.tag-bg{fill:var(--t-ground);opacity:.94}
+.tag-bg,.rule-n-bg{fill:var(--t-ground);opacity:.94}
 .tag{fill:var(--t-ink);font-size:12.5px;font-weight:600}
 .tag tspan.v{font-weight:400;fill:var(--t-ink2)}
+.rule-key{list-style:none;margin:.6rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.2rem 1.1rem;font-size:14px;color:var(--t-ink2)}
+.rule-key b{color:var(--t-ink);margin-right:.25rem;font-variant-numeric:tabular-nums}
+.rule-key[hidden]{display:none}
 .point{min-height:1.6em;margin:.4rem 0 0;font-variant-numeric:tabular-nums}
 .readings-h{margin:1.5rem 0 .4rem}
 .readings{list-style:none;margin:0;padding:0;display:grid;gap:.3rem;max-width:62ch;font-variant-numeric:tabular-nums}
 .readings li{padding-left:1.1rem;position:relative}
-.readings li::before{content:"";position:absolute;left:0;top:.62em;width:.5rem;height:.5rem;border-radius:999px;background:var(--t-point)}
-:root[data-theme="light"] .readings li::before{background:var(--t-point-deep)}
-.readings li.after::before,:root[data-theme="light"] .readings li.after::before{background:transparent;border:1.5px solid var(--t-ink3)}
+.readings li::before{content:"";position:absolute;left:0;top:.62em;width:.5rem;height:.5rem;border-radius:999px;background:var(--t-ink2)}
+.readings li.after::before{background:transparent;border:1.5px solid var(--t-ink3)}
 .actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:1.25rem 0 0}
 
 .fold{margin-top:2.5rem;border-top:1px solid var(--t-rule);padding-top:.75rem}
@@ -96,22 +98,22 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 .foot p{margin:0;max-width:75ch}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-:root .q0{fill:#192733;background:#192733}
-:root .q1{fill:#1d2d3c;background:#1d2d3c}
-:root .q2{fill:#203445;background:#203445}
-:root .q3{fill:#243b4f;background:#243b4f}
-:root .q4{fill:#284259;background:#284259}
-:root .q5{fill:#2c4963;background:#2c4963}
-:root .q6{fill:#30506d;background:#30506d}
-:root .q7{fill:#335777;background:#335777}
-:root .q8{fill:#385f82;background:#385f82}
-:root .q9{fill:#3c688e;background:#3c688e}
-:root .q10{fill:#41719b;background:#41719b}
-:root .q11{fill:#457aa7;background:#457aa7}
-:root .q12{fill:#4a83b4;background:#4a83b4}
-:root .q13{fill:#4f8cc1;background:#4f8cc1}
-:root .q14{fill:#5495ce;background:#5495ce}
-:root .q15{fill:#589fdc;background:#589fdc}
+:root .q0{fill:#273f54;background:#273f54}
+:root .q1{fill:#2a455c;background:#2a455c}
+:root .q2{fill:#2d4b64;background:#2d4b64}
+:root .q3{fill:#30506d;background:#30506d}
+:root .q4{fill:#335675;background:#335675}
+:root .q5{fill:#375d7e;background:#375d7e}
+:root .q6{fill:#3a6386;background:#3a6386}
+:root .q7{fill:#3d698f;background:#3d698f}
+:root .q8{fill:#406f98;background:#406f98}
+:root .q9{fill:#4476a2;background:#4476a2}
+:root .q10{fill:#477dab;background:#477dab}
+:root .q11{fill:#4b84b5;background:#4b84b5}
+:root .q12{fill:#4e8abf;background:#4e8abf}
+:root .q13{fill:#5291c9;background:#5291c9}
+:root .q14{fill:#5599d3;background:#5599d3}
+:root .q15{fill:#59a0dd;background:#59a0dd}
 :root .q16{fill:#64a7e2;background:#64a7e2}
 :root .q17{fill:#72afe5;background:#72afe5}
 :root .q18{fill:#7fb6e8;background:#7fb6e8}
@@ -120,22 +122,22 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 :root .q21{fill:#a7cdf0;background:#a7cdf0}
 :root .q22{fill:#b4d5f3;background:#b4d5f3}
 :root .q23{fill:#c1dcf5;background:#c1dcf5}
-:root[data-theme="light"] .q0{fill:#eaf0f7;background:#eaf0f7}
-:root[data-theme="light"] .q1{fill:#dfe8f3;background:#dfe8f3}
-:root[data-theme="light"] .q2{fill:#d5e1ef;background:#d5e1ef}
-:root[data-theme="light"] .q3{fill:#cadaeb;background:#cadaeb}
-:root[data-theme="light"] .q4{fill:#c0d2e8;background:#c0d2e8}
-:root[data-theme="light"] .q5{fill:#b5cbe4;background:#b5cbe4}
-:root[data-theme="light"] .q6{fill:#abc3e0;background:#abc3e0}
-:root[data-theme="light"] .q7{fill:#a1bcdc;background:#a1bcdc}
-:root[data-theme="light"] .q8{fill:#95b3d7;background:#95b3d7}
-:root[data-theme="light"] .q9{fill:#86a9d1;background:#86a9d1}
-:root[data-theme="light"] .q10{fill:#769ecb;background:#769ecb}
-:root[data-theme="light"] .q11{fill:#6793c4;background:#6793c4}
-:root[data-theme="light"] .q12{fill:#5888be;background:#5888be}
-:root[data-theme="light"] .q13{fill:#487db7;background:#487db7}
-:root[data-theme="light"] .q14{fill:#3872b1;background:#3872b1}
-:root[data-theme="light"] .q15{fill:#2668aa;background:#2668aa}
+:root[data-theme="light"] .q0{fill:#d8e4f0;background:#d8e4f0}
+:root[data-theme="light"] .q1{fill:#ceddec;background:#ceddec}
+:root[data-theme="light"] .q2{fill:#c5d6e9;background:#c5d6e9}
+:root[data-theme="light"] .q3{fill:#bbd0e5;background:#bbd0e5}
+:root[data-theme="light"] .q4{fill:#b2c9e2;background:#b2c9e2}
+:root[data-theme="light"] .q5{fill:#a8c2de;background:#a8c2de}
+:root[data-theme="light"] .q6{fill:#9fbbda;background:#9fbbda}
+:root[data-theme="light"] .q7{fill:#95b4d6;background:#95b4d6}
+:root[data-theme="light"] .q8{fill:#8aadd2;background:#8aadd2}
+:root[data-theme="light"] .q9{fill:#7da3cd;background:#7da3cd}
+:root[data-theme="light"] .q10{fill:#6f99c7;background:#6f99c7}
+:root[data-theme="light"] .q11{fill:#618fc1;background:#618fc1}
+:root[data-theme="light"] .q12{fill:#5385bc;background:#5385bc}
+:root[data-theme="light"] .q13{fill:#457bb6;background:#457bb6}
+:root[data-theme="light"] .q14{fill:#3671b0;background:#3671b0}
+:root[data-theme="light"] .q15{fill:#2567aa;background:#2567aa}
 :root[data-theme="light"] .q16{fill:#1f60a1;background:#1f60a1}
 :root[data-theme="light"] .q17{fill:#1f5a95;background:#1f5a95}
 :root[data-theme="light"] .q18{fill:#1e548a;background:#1e548a}
@@ -152,7 +154,7 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
     <a href="/builds/retirement-wave/">About this build</a>
   </header>
   <main>
-    <p class="kicker" id="kicker">The retirement wave</p>
+    <p class="kicker" id="kicker">Data story</p>
     <h1 id="finding" aria-live="polite">The retirement wave</h1>
     <p class="lede" id="lede"></p>
 
@@ -185,6 +187,7 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
       <p class="note" id="chart-sub"></p>
       <div class="legend" id="legend"></div>
       <div class="frame" id="frame"><svg id="heat" role="img" aria-labelledby="heat-title"><title id="heat-title">Heatmap</title></svg></div>
+      <ul class="rule-key" id="rule-key" aria-label="The rule ages on the dashed lines" hidden></ul>
       <p class="note point" id="point" aria-live="polite"></p>
       <h3 class="kicker readings-h" id="readings-h">Your diagonal</h3>
       <ul class="readings" id="readings"></ul>
@@ -358,23 +361,43 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
   }
   const html = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
   const clear = (svg) => [...svg.childNodes].forEach((c) => { if (c.nodeName !== 'title') svg.removeChild(c); });
-  // Spread labels apart vertically so none is closer than `gap` to the next, staying between lo and hi.
-  function relax(items, gap, lo, hi) {
+  // Spread items apart vertically (each item has a centre `want` and a height `h`) so none comes closer than `pad` to the
+  // next, staying between lo and hi. Returns the items with their centre `y`.
+  function relax(items, pad, lo, hi) {
     items.sort((p, q) => p.want - q.want);
-    items.forEach((it, i) => { it.y = Math.max(it.want, lo, i ? items[i - 1].y + gap : -Infinity); });
-    for (let i = items.length - 1; i >= 0; i--) items[i].y = Math.min(items[i].y, i < items.length - 1 ? items[i + 1].y - gap : hi);
-    items.forEach((it, i) => { it.y = Math.max(it.y, lo, i ? items[i - 1].y + gap : -Infinity); });
+    const gap = (i) => (items[i - 1].h + items[i].h) / 2 + pad;
+    items.forEach((it, i) => { it.y = Math.max(it.want, lo + it.h / 2, i ? items[i - 1].y + gap(i) : -Infinity); });
+    for (let i = items.length - 1; i >= 0; i--) items[i].y = Math.min(items[i].y, i < items.length - 1 ? items[i + 1].y - gap(i + 1) : hi - items[i].h / 2);
+    items.forEach((it, i) => { it.y = Math.max(it.y, lo + it.h / 2, i ? items[i - 1].y + gap(i) : -Infinity); });
     return items;
+  }
+  const hit = (a, b, pad = 0) => a.x < b.r + pad && b.x < a.r + pad && a.y < b.b + pad && b.y < a.b + pad;
+  // Lines of text in one group with one ground-coloured backing behind them: [[tspan text, class], ...] per line.
+  function label(parent, cls, lines, x, cy, anchor, lh) {
+    const g = el('g', { class: `label ${cls}-g` }, parent), bg = el('rect', { class: `${cls}-bg`, rx: 2 }, g);
+    const t = el('text', { class: cls, 'text-anchor': anchor }, g);
+    lines.forEach((parts, k) => {
+      parts.forEach(([text, c], j) => {
+        const sp = el('tspan', c ? { class: c } : {}, t, text);
+        if (j === 0) { sp.setAttribute('x', x); sp.setAttribute('y', (cy + 4 + (k - (lines.length - 1) / 2) * lh).toFixed(1)); }
+      });
+    });
+    const fit = () => { const b = t.getBBox(); bg.setAttribute('x', b.x - 4); bg.setAttribute('y', b.y - 2); bg.setAttribute('width', b.width + 8); bg.setAttribute('height', b.height + 4); return { x: b.x - 4, y: b.y - 2, r: b.x + b.width + 4, b: b.y + b.height + 2 }; };
+    const move = (nx, na) => { t.setAttribute('text-anchor', na); t.querySelectorAll('tspan[x]').forEach((sp) => sp.setAttribute('x', nx)); return fit(); };
+    return { g, t, box: fit(), move };
   }
 
   // ---------- the heatmap ----------
   function drawHeat() {
     const svg = $('heat'); clear(svg);
     const W = Math.max(300, $('frame').clientWidth), narrow = W < 640;
-    const left = narrow ? 24 : 34, right = narrow ? 30 : 222, top = 8, bottom = 30;
+    // The grid runs the full width. Wide: the rule names sit inside the grid on a ground-coloured backing, wherever the
+    // line is clear of the diagonal's readings. Narrow: a thin gutter on the right holds the rule ages, and the names are
+    // in the key under the chart.
+    const left = narrow ? 26 : 34, right = narrow ? 28 : 3, top = 8, bottom = 30;
     const cols = y1 - y0 + 1, rows = a1 - a0 + 1, cw = (W - left - right) / cols;
-    const ch = narrow ? Math.min(9, Math.max(8, cw * 1.5)) : Math.min(14, Math.max(9, cw * 0.75));
-    const plotW = cols * cw, plotH = rows * ch, H = top + plotH + bottom;
+    const ch = narrow ? Math.min(9, Math.max(8, cw * 1.5)) : Math.min(15, Math.max(9, cw * 0.75));
+    const plotW = cols * cw, plotH = rows * ch, H = top + plotH + bottom, R = left + plotW;
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
     const X = (y) => left + (y - y0) * cw, Y = (a) => top + (a1 - a) * ch, Yc = (a) => Y(a) + ch / 2;
     const [lo, hi] = range(M, V, state.mode);
@@ -387,20 +410,12 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
     const yt = niceTicks(y0, y1, narrow ? 4 : 11).ticks, ly = top + plotH + 19, xs = [];
     for (const y of yt) { el('line', { class: 'leader', x1: X(y) + cw / 2, x2: X(y) + cw / 2, y1: top + plotH, y2: top + plotH + 4 }, svg); el('text', { class: 'lab', x: X(y) + cw / 2, y: ly, 'text-anchor': 'middle' }, svg, String(y)); xs.push(X(y) + cw / 2); }
     if (xs[0] - X(y0) > 44) el('text', { class: 'lab', x: X(y0), y: ly, 'text-anchor': 'start' }, svg, String(y0));
-    if (left + plotW - xs.at(-1) > 44) el('text', { class: 'lab', x: left + plotW, y: ly, 'text-anchor': 'end' }, svg, String(y1));
+    if (R - xs.at(-1) > 44) el('text', { class: 'lab', x: R, y: ly, 'text-anchor': 'end' }, svg, String(y1));
 
-    // the rule ages: dashed lines across, labels in the right margin, spread so they never touch
+    // the rule ages: dashed lines across the whole grid
     for (const r of M.rules) {
-      el('line', { class: 'rule-halo', x1: left, x2: left + plotW, y1: Yc(r.age), y2: Yc(r.age) }, svg);
-      el('line', { class: 'rule', x1: left, x2: left + plotW, y1: Yc(r.age), y2: Yc(r.age) }, svg);
-    }
-    const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age) + 4 })), 17, top + 8, top + plotH + 4);
-    for (const it of rl) {
-      const x = left + plotW + (narrow ? 7 : 9);
-      if (Math.abs(it.y - it.want) > 1) el('path', { class: 'leader', d: `M${left + plotW},${Yc(it.r.age)} L${x - 2},${it.y - 4}` }, svg);
-      const t = el('text', { class: 'rule-n', x, y: it.y }, svg);
-      el('tspan', { class: 'age' }, t, String(it.r.age));
-      if (!narrow) el('tspan', { class: 'what' }, t, '  ' + it.r.label);
+      el('line', { class: 'rule-halo', x1: left, x2: R, y1: Yc(r.age), y2: Yc(r.age) }, svg);
+      el('line', { class: 'rule', x1: left, x2: R, y1: Yc(r.age), y2: Yc(r.age) }, svg);
     }
 
     // the diagonal: one group of people, a year older every July 1
@@ -412,7 +427,8 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
       el('polygon', { class: 'diag-halo', points: pts }, svg);
       el('polygon', { class: 'diag', points: pts }, svg);
     }
-    // readings where the diagonal crosses each rule age, and where it starts and ends in the data
+    // readings where the diagonal crosses each rule age, and where it starts and ends in the data; crossings a year or
+    // two apart share one tag, so their readings never sit on top of each other
     const marks = d.crossings.filter((c) => c.when === 'in').map((c) => ({ year: c.year, age: c.age, v: c.value }));
     const near = (a) => marks.some((m) => Math.abs(m.age - a) < 3);
     if (d.cells.length) {
@@ -420,19 +436,68 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
       if (!near(fa)) marks.push({ year: fy, age: fa, v: fv });
       if (!near(la) && (la !== fa)) marks.push({ year: ly2, age: la, v: lv });
     }
-    const tags = relax(marks.map((m) => ({ m, cx: X(m.year) + cw / 2, cy: Yc(m.age), want: Yc(m.age) + 4 })), 17, top + 13, top + plotH - 5);
-    const tagLayer = el('g', {}, svg), dotLayer = el('g', {}, svg);
+    marks.sort((p, q) => p.age - q.age);
+    const groups = [];
+    for (const m of marks) { const g = groups.at(-1); if (g && m.age - g.at(-1).age <= 2) g.push(m); else groups.push([m]); }
+    const LH = 15, tagLayer = el('g', {}, svg), dotLayer = el('g', {}, svg), obstacles = [];
+    const parts = (m) => [[`${m.age} in ${m.year}`], [`: ${fmt(m.v)}`, 'v']];
+    const tags = relax(groups.map((g) => {
+      const cx = g.reduce((s, m) => s + X(m.year) + cw / 2, 0) / g.length, cy = g.reduce((s, m) => s + Yc(m.age), 0) / g.length;
+      return { g, cx, cy, want: cy, h: (narrow && g.length > 1 ? g.length : 1) * LH + 4 };
+    }), 3, top + 2, top + plotH - 2);
     for (const it of tags) {
-      const g = el('g', {}, tagLayer), bg = el('rect', { class: 'tag-bg', rx: 2 }, g);
-      const t = el('text', { class: 'tag', x: it.cx - 9, y: it.y, 'text-anchor': 'end' }, g);
-      el('tspan', {}, t, `${it.m.age} in ${it.m.year}`); el('tspan', { class: 'v' }, t, `: ${fmt(it.m.v)}`);
-      let w = t.getComputedTextLength();
-      if (it.cx - 9 - w < left + 3) { t.setAttribute('text-anchor', 'start'); t.setAttribute('x', Math.min(it.cx + 9, left + plotW - 3 - w)); }
-      const b = t.getBBox();
-      bg.setAttribute('x', b.x - 4); bg.setAttribute('y', b.y - 2); bg.setAttribute('width', b.width + 8); bg.setAttribute('height', b.height + 4);
-      if (Math.abs(it.y - it.want) > 2) el('path', { class: 'leader', d: `M${it.cx},${it.cy} L${b.x + (b.x > it.cx ? -4 : b.width + 4)},${it.y - 4}` }, tagLayer);
-      el('circle', { class: 'dot', cx: it.cx, cy: it.cy, r: narrow ? 3.5 : 4.5 }, dotLayer);
+      const xs2 = it.g.map((m) => X(m.year) + cw / 2), xl = Math.min(...xs2) - 9, xr = Math.max(...xs2) + 9;
+      // One line when it fits beside the dots; otherwise one reading per line, in the same backing.
+      const one = [it.g.flatMap((m, k) => (k ? [[' · '], ...parts(m)] : parts(m)))];
+      const many = it.g.slice().reverse().map(parts);
+      let L = label(tagLayer, 'tag', narrow && it.g.length > 1 ? many : one, xl, it.y, 'end', LH);
+      if (L.box.x < left + 1) {
+        L.box = L.move(xr, 'start');
+        if (L.box.r > R - 1 && it.g.length > 1 && !(narrow)) { L.g.remove(); L = label(tagLayer, 'tag', many, xl, it.y, 'end', LH); if (L.box.x < left + 1) L.box = L.move(xr, 'start'); }
+        if (L.box.r > R - 1) L.box = L.move(Math.max(left + 5, R - 5 - (L.box.r - L.box.x - 8)), 'start');
+      }
+      obstacles.push(L.box);
+      for (const m of it.g) {
+        const cx = X(m.year) + cw / 2, cy = Yc(m.age);
+        if (Math.abs(it.y - cy) > 2 || it.g.length > 1) {
+          const ex = L.box.x > cx ? L.box.x : L.box.r, ey = Math.min(Math.max(cy, L.box.y + 3), L.box.b - 3);
+          if (Math.abs(ex - cx) > 6 || Math.abs(ey - cy) > 3) el('path', { class: 'leader', d: `M${cx},${cy} L${ex},${ey}` }, tagLayer);
+        }
+        el('circle', { class: 'dot', cx, cy, r: narrow ? 3.5 : 4.5 }, dotLayer);
+        obstacles.push({ x: cx - 6, r: cx + 6, y: cy - 6, b: cy + 6 });
+      }
     }
+    svg.appendChild(dotLayer);
+
+    // the rule names
+    const ruleLayer = el('g', {}, svg);
+    if (narrow) {
+      const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: 15 })), 2, top, top + plotH + 8);
+      for (const it of rl) {
+        const x = R + 6;
+        if (Math.abs(it.y - it.want) > 1) el('path', { class: 'leader', d: `M${R},${Yc(it.r.age)} L${x - 2},${it.y}` }, ruleLayer);
+        const g = el('g', { class: 'label' }, ruleLayer);
+        el('text', { class: 'rule-n', x, y: it.y + 4 }, g, String(it.r.age));
+      }
+    } else {
+      const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: 20 })), 1, top, top + plotH);
+      const placed = [];
+      for (const it of rl) {
+        const age = it.r.age, yc = state.born + age;
+        // the diagonal's own cells near this line are kept clear too
+        const zone = yc >= y0 && yc <= y1 ? [{ x: X(yc - 1), r: X(yc + 2), y: it.y - 9, b: it.y + 9 }] : [];
+        const L = label(ruleLayer, 'rule-n', [[[String(age), 'age'], [`  ${it.r.label}`, 'what']]], left + 6, it.y, 'start', LH);
+        const wdt = L.box.r - L.box.x, clear = (b) => ![...obstacles, ...zone].some((o) => hit(b, o, 2)) && !placed.some((o) => hit(b, o, 0));
+        // left edge first, then the right edge, then along the line
+        const tries = [[left + 6, 'start'], [R - 6, 'end']];
+        for (let x = left + 6 + 48; x + wdt < R - 6; x += 48) tries.push([x, 'start']);
+        let ok = false;
+        for (const [x, a] of tries) { const b = L.move(x, a); if (clear(b)) { L.box = b; ok = true; break; } }
+        if (!ok) L.box = L.move(left + 6, 'start');
+        placed.push(L.box);
+      }
+    }
+    $('rule-key').hidden = !narrow;
 
     $('heat-title').textContent = `Heatmap of ${state.mode === 'share' ? 'each age’s share of the population' : 'the number of people at each age'}, ${who(M, state.place, state.gender)}, ages ${a0} to ${a1}, July 1, ${y0} to ${y1}, with the rule ages as dashed lines and the diagonal for people born in ${state.born}. The numbers are in the table below the chart.`;
     svg.onpointermove = (e) => {
@@ -541,15 +606,14 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
   const c = $('citation'), link = (href, text) => { const a = document.createElement('a'); a.href = href; a.textContent = text; return a; };
   c.append('Citation: ', link(src.source_url, src.citation.replace(/\.? DOI: .*/, '')), '. DOI: ', link(src.doi, src.doi), `. Released ${src.released}; read ${src.retrieved}. `, link(src.licence_url, src.licence), '.');
   for (const k of ['age', 'revisions', 'gender', 'genders', 'territories', 'ninety', 'adapted']) if (src.notes[k]) $('notes').appendChild(html('li', (k === 'adapted' ? 'How this page adapts it: ' : 'Statistics Canada: ') + src.notes[k]));
+  for (const r of M.rules) { const li = html('li'); li.append(html('b', String(r.age)), ` ${r.text}`); $('rule-key').appendChild(li); }
   const seen = new Set();
   for (const r of M.rules) for (const f of r.facts) {
     if (seen.has(f.id)) continue; seen.add(f.id);
     const li = document.createElement('li'); li.append(link(f.source_url, f.title), `, read ${f.as_of}.`); $('fact-sources').appendChild(li);
   }
   $('foot-src').textContent = `Data: Statistics Canada, Table 17-10-0005-01, released ${src.released}, read ${src.retrieved}; the rule ages from official federal sources, listed under Sources and notes.`;
-  const asOf = M.rules.flatMap((r) => r.facts.map((f) => f.as_of)).sort().pop();
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  $('kicker').textContent = `Statistics Canada · July 1, ${y0} to ${y1} · rules as of ${months[Number(asOf.slice(5, 7)) - 1]} ${asOf.slice(0, 4)}`;
+  $('kicker').textContent = `Data story · Statistics Canada, ${y0} to ${y1}`;
 
   // ---------- save the chart as an image, made in the browser ----------
   $('save').addEventListener('click', () => {

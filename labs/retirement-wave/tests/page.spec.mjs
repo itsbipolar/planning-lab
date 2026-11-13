@@ -10,8 +10,10 @@ const [y0, y1] = snap.years, [a0, a1] = snap.ages;
 const cells = (y1 - y0 + 1) * (a1 - a0 + 1);
 const born = async (page, y) => { await page.fill('#born', String(y)); await page.click('button[type=submit]'); };
 
+// Every label with its backing (the diagonal's reading tags and the rule names are each one group), plus the axis and
+// legend text: no two may touch. Adjacent crossings such as 70 and 71 must share a tag or sit apart, backings included.
 async function clashes(page) {
-  const boxes = await page.locator('#heat text, .legend text').evaluateAll((ts) => ts.filter((t) => t.textContent.trim()).map((t) => {
+  const boxes = await page.locator('#heat g.label, #heat text.lab, .legend text').evaluateAll((ts) => ts.filter((t) => t.textContent.trim()).map((t) => {
     const b = t.getBoundingClientRect(); return [b.x, b.y, b.width, b.height, t.textContent];
   }));
   const out = [];
@@ -76,6 +78,7 @@ for (const width of [390, 1440]) {
         for (const y of [1965, 1950, 1946, 1940, 1930, 1910, 1882, 1976]) {
           await born(page, y);
           expect(await clashes(page), `born ${y}, ${mode}`).toEqual([]);
+          expect(await page.locator('#heat g.tag-g').count(), `born ${y}: a tag per reading or merged group`).toBeGreaterThan(0);
         }
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);

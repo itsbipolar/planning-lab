@@ -1,5 +1,5 @@
 // The heatmap's colour steps: one hue (the desk's d1 blue), sequential, mixed in OKLab from the page's ground. Dark: few
-// people is close to the ground, many is pale blue. Light: few is a pale tint, many is deep blue. Written at build as
+// people is a muted blue lifted well off the ground (so every cell reads against the page), many is pale blue. Light: few is a pale tint, many is deep blue. Written at build as
 // classes .q0 to .q{n-1} for both schemes, so switching data-theme recolours the chart without redrawing it.
 import { readFileSync } from 'node:fs';
 
@@ -19,8 +19,8 @@ function toHex([L, A, B]) {
 }
 export const mix = (a, b, t) => { const p = toLab(a), q = toLab(b); return toHex(p.map((v, k) => v + (q[k] - v) * t)); };
 export const STOPS = {
-  dark: [mix(T.dark.ground, T.dark.d1, 0.16), mix(T.dark.ground, T.dark.d1, 0.55), T.dark.d1, mix(T.dark.d1, '#FFFFFF', 0.62)],
-  light: [mix(T.light.ground, T.light.d1, 0.08), mix(T.light.ground, T.light.d1, 0.45), T.light.d1, mix(T.light.d1, T.light.ink, 0.55)],
+  dark: [mix(T.dark.ground, T.dark.d1, 0.34), mix(T.dark.ground, T.dark.d1, 0.66), T.dark.d1, mix(T.dark.d1, '#FFFFFF', 0.62)],
+  light: [mix(T.light.ground, T.light.d1, 0.16), mix(T.light.ground, T.light.d1, 0.5), T.light.d1, mix(T.light.d1, T.light.ink, 0.55)],
 };
 export function colour(t, scheme) {
   const s = STOPS[scheme], x = Math.min(1, Math.max(0, t)) * (s.length - 1), i = Math.min(s.length - 2, Math.floor(x));
