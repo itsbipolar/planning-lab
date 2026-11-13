@@ -688,9 +688,13 @@ function headline(r, cppAge) {
     const onGrid = (b) => gridYs.some((g) => g > b.y - 1 && g < b.y + b.height + 1);
 
     // labels at the right-hand end of each line, kept apart
-    const ends = starts.map((s) => ({ s, y: Y(o.total(s, to)) + 4 })).sort((p, q) => p.y - q.y);
-    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 17) ends[i].y = ends[i - 1].y + 17;
-    const over = ends.length ? ends[ends.length - 1].y - (H - pad.b - 4) : 0;
+    // spaced by the label's real box in the face the page draws (measured here), with a pixel of air between boxes;
+    // each baseline sits so the box is centred on its line's end
+    const probe = el('text', { class: 'lab lab-base', x: 0, y: 0 }, svg, 'Hg'), pb = probe.getBBox(); probe.remove();
+    const pitch = pb.height + 1, mid = (-pb.y - (pb.height + pb.y)) / 2;
+    const ends = starts.map((s) => ({ s, y: Y(o.total(s, to)) + mid })).sort((p, q) => p.y - q.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < pitch) ends[i].y = ends[i - 1].y + pitch;
+    const over = ends.length ? ends[ends.length - 1].y - (H - pad.b - mid) : 0;
     if (over > 0) ends.forEach((e) => { e.y -= over; });
     for (const e of ends) {
       const label = e.s === o.chosen ? `${o.name} · ${e.s}` : `start ${e.s}`;

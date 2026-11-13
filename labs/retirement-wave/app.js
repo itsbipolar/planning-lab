@@ -33,14 +33,23 @@
     return items;
   }
   const hit = (a, b, pad = 0) => a.x < b.r + pad && b.x < a.r + pad && a.y < b.b + pad && b.y < a.b + pad;
-  // Lines of text in one group with one ground-coloured backing behind them: [[tspan text, class], ...] per line.
-  function label(parent, cls, lines, x, cy, anchor, lh) {
+  // The real box of one line of text in a class, measured in the chart itself: its height (ascent plus descent, the box the
+  // browser gives the text) and the shift from a line's centre to its baseline. Line spacing and label heights come from
+  // this, so they follow the face and size the page really draws.
+  function metrics(svg, cls) {
+    const t = el('text', { class: cls, x: 0, y: 0 }, svg, 'Hg'), b = t.getBBox(); t.remove();
+    const asc = -b.y, desc = b.height + b.y;
+    return { h: b.height, lh: b.height + 1, mid: (asc - desc) / 2 };
+  }
+  // Lines of text in one group with one ground-coloured backing behind them: [[tspan text, class], ...] per line, spaced
+  // and centred on cy by the class's metrics m.
+  function label(parent, cls, lines, x, cy, anchor, m) {
     const g = el('g', { class: `label ${cls}-g` }, parent), bg = el('rect', { class: `${cls}-bg`, rx: 2 }, g);
     const t = el('text', { class: cls, 'text-anchor': anchor }, g);
     lines.forEach((parts, k) => {
       parts.forEach(([text, c], j) => {
         const sp = el('tspan', c ? { class: c } : {}, t, text);
-        if (j === 0) { sp.setAttribute('x', x); sp.setAttribute('y', (cy + 4 + (k - (lines.length - 1) / 2) * lh).toFixed(1)); }
+        if (j === 0) { sp.setAttribute('x', x); sp.setAttribute('y', (cy + m.mid + (k - (lines.length - 1) / 2) * m.lh).toFixed(1)); }
       });
     });
     const fit = () => { const b = t.getBBox(); bg.setAttribute('x', b.x - 4); bg.setAttribute('y', b.y - 2); bg.setAttribute('width', b.width + 8); bg.setAttribute('height', b.height + 4); return { x: b.x - 4, y: b.y - 2, r: b.x + b.width + 4, b: b.y + b.height + 2 }; };
@@ -100,21 +109,24 @@
     marks.sort((p, q) => p.age - q.age);
     const groups = [];
     for (const m of marks) { const g = groups.at(-1); if (g && m.age - g.at(-1).age <= 2) g.push(m); else groups.push([m]); }
-    const LH = 15, tagLayer = el('g', {}, svg), dotLayer = el('g', {}, svg), obstacles = [];
+    // a backing reaches 2px above and below its text (label's fit), so a label is its lines plus 4
+    const TM = metrics(svg, 'tag'), RM = metrics(svg, 'rule-n'), back = 4;
+    const tagLayer = el('g', {}, svg), dotLayer = el('g', {}, svg), obstacles = [];
     const parts = (m) => [[`${m.age} in ${m.year}`], [`: ${fmt(m.v)}`, 'v']];
     const tags = relax(groups.map((g) => {
       const cx = g.reduce((s, m) => s + X(m.year) + cw / 2, 0) / g.length, cy = g.reduce((s, m) => s + Yc(m.age), 0) / g.length;
-      return { g, cx, cy, want: cy, h: (narrow && g.length > 1 ? g.length : 1) * LH + 4 };
+      const k = narrow && g.length > 1 ? g.length : 1;
+      return { g, cx, cy, want: cy, h: TM.h + (k - 1) * TM.lh + back };
     }), 3, top + 2, top + plotH - 2);
     for (const it of tags) {
       const xs2 = it.g.map((m) => X(m.year) + cw / 2), xl = Math.min(...xs2) - 9, xr = Math.max(...xs2) + 9;
       // One line when it fits beside the dots; otherwise one reading per line, in the same backing.
       const one = [it.g.flatMap((m, k) => (k ? [[' · '], ...parts(m)] : parts(m)))];
       const many = it.g.slice().reverse().map(parts);
-      let L = label(tagLayer, 'tag', narrow && it.g.length > 1 ? many : one, xl, it.y, 'end', LH);
+      let L = label(tagLayer, 'tag', narrow && it.g.length > 1 ? many : one, xl, it.y, 'end', TM);
       if (L.box.x < left + 1) {
         L.box = L.move(xr, 'start');
-        if (L.box.r > R - 1 && it.g.length > 1 && !(narrow)) { L.g.remove(); L = label(tagLayer, 'tag', many, xl, it.y, 'end', LH); if (L.box.x < left + 1) L.box = L.move(xr, 'start'); }
+        if (L.box.r > R - 1 && it.g.length > 1 && !(narrow)) { L.g.remove(); L = label(tagLayer, 'tag', many, xl, it.y, 'end', TM); if (L.box.x < left + 1) L.box = L.move(xr, 'start'); }
         if (L.box.r > R - 1) L.box = L.move(Math.max(left + 5, R - 5 - (L.box.r - L.box.x - 8)), 'start');
       }
       obstacles.push(L.box);
@@ -133,21 +145,21 @@
     // the rule names
     const ruleLayer = el('g', {}, svg);
     if (narrow) {
-      const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: 15 })), 2, top, top + plotH + 8);
+      const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: RM.h })), 2, top, top + plotH + 8);
       for (const it of rl) {
         const x = R + 6;
         if (Math.abs(it.y - it.want) > 1) el('path', { class: 'leader', d: `M${R},${Yc(it.r.age)} L${x - 2},${it.y}` }, ruleLayer);
         const g = el('g', { class: 'label' }, ruleLayer);
-        el('text', { class: 'rule-n', x, y: it.y + 4 }, g, String(it.r.age));
+        el('text', { class: 'rule-n', x, y: it.y + RM.mid }, g, String(it.r.age));
       }
     } else {
-      const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: 20 })), 1, top, top + plotH);
+      const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: RM.h + back })), 3, top, top + plotH);
       const placed = [];
       for (const it of rl) {
         const age = it.r.age, yc = state.born + age;
         // the diagonal's own cells near this line are kept clear too
-        const zone = yc >= y0 && yc <= y1 ? [{ x: X(yc - 1), r: X(yc + 2), y: it.y - 9, b: it.y + 9 }] : [];
-        const L = label(ruleLayer, 'rule-n', [[[String(age), 'age'], [`  ${it.r.label}`, 'what']]], left + 6, it.y, 'start', LH);
+        const zone = yc >= y0 && yc <= y1 ? [{ x: X(yc - 1), r: X(yc + 2), y: it.y - RM.h / 2, b: it.y + RM.h / 2 }] : [];
+        const L = label(ruleLayer, 'rule-n', [[[String(age), 'age'], [`  ${it.r.label}`, 'what']]], left + 6, it.y, 'start', RM);
         const wdt = L.box.r - L.box.x, clear = (b) => ![...obstacles, ...zone].some((o) => hit(b, o, 2)) && !placed.some((o) => hit(b, o, 0));
         // left edge first, then the right edge, then along the line
         const tries = [[left + 6, 'start'], [R - 6, 'end']];

@@ -54,9 +54,18 @@
     return e;
   };
   const mctx = document.createElement('canvas').getContext('2d');
+  // text is measured in the face the page really draws it in (the desk's tokens, read from the page's own CSS)
+  const face = (mono) => getComputedStyle(document.documentElement).getPropertyValue(mono ? '--font-mono' : '--font-ui').trim() || 'sans-serif';
   const tw = (s, size, weight = 400, mono = false) => {
-    mctx.font = weight + ' ' + size + 'px ' + (mono ? '"IBM Plex Mono", monospace' : '"Libre Franklin Variable", system-ui, sans-serif');
+    mctx.font = weight + ' ' + size + 'px ' + face(mono);
     return mctx.measureText(s).width;
+  };
+  // A line of text's real box at a size: the font's ascent above the baseline and descent below it (what the browser
+  // gives an SVG text element), so stacked lines are spaced by the face's own metrics rather than by a guessed gap.
+  const vm = (size, weight = 400) => {
+    mctx.font = weight + ' ' + size + 'px ' + face(false);
+    const m = mctx.measureText('Hg'), asc = m.fontBoundingBoxAscent, desc = m.fontBoundingBoxDescent;
+    return asc > 0 ? { asc, desc, h: asc + desc } : { asc: size, desc: size / 2, h: size * 1.5 };
   };
   const widthOf = (svg) => Math.max(260, Math.floor(svg.parentNode.getBoundingClientRect().width));
   const setup = (svg, W, H) => {
@@ -93,7 +102,9 @@
   // A line chart of balances by year. series: [{ key, name, reading, pts, dep, upto, thin, dash }]
   function lineChart(svg, cfg) {
     const W = cfg.width || widthOf(svg), narrow = W < 600, tight = narrow || cfg.compact;
-    const fs = narrow ? 12 : 13, lfs = narrow ? 12 : 14, lh = Math.round(lfs * 1.3);
+    const fs = narrow ? 12 : 13, lfs = narrow ? 12 : 14;
+    // stacked label lines: the name (bold) then its reading, each in its real box, one pixel of air between boxes
+    const mN = vm(lfs, 700), mR = vm(lfs - 1), mF = vm(fs, 600), air = 1;
     const H = cfg.height ? cfg.height(W) : narrow ? 320 : Math.round(Math.min(500, Math.max(360, W * 0.3)));
     setup(svg, W, H);
     let max = cfg.yMax || 0; if (!cfg.yMax) for (const s of cfg.series) for (const v of s.pts) max = Math.max(max, v);
@@ -133,30 +144,34 @@
     }
     // readings at the end of the dealt years
     if (cfg.readAt) {
-      const rs = cfg.series.filter((s) => (s.upto === undefined || s.upto >= cfg.readAt) && !s.thin).map((s) => ({ s, v: s.pts[cfg.readAt], want: y(s.pts[cfg.readAt]), size: fs + 4 }));
+      const rs = cfg.series.filter((s) => (s.upto === undefined || s.upto >= cfg.readAt) && !s.thin).map((s) => ({ s, v: s.pts[cfg.readAt], want: y(s.pts[cfg.readAt]), size: mF.h }));
       spread(rs, T + 2, y(0) - 2, 2);
       for (const r of rs) {
         el('circle', { cx: x(cfg.readAt), cy: y(r.v), r: 3.5, class: 'f-' + r.s.key }, gd);
-        el('text', { x: x(cfg.readAt) + 8, y: r.pos + fs / 2 - 1, class: 'halo t-' + r.s.key, 'font-size': fs, 'font-weight': 600 }, gt, money(r.v));
+        el('text', { x: x(cfg.readAt) + 8, y: r.pos - mF.h / 2 + mF.asc, class: 'halo t-' + r.s.key, 'font-size': fs, 'font-weight': 600 }, gt, money(r.v));
       }
     }
     // the series labels: in the gutter at the height of their line's end, spread so they never overlap, with a leader
     // when they had to move; a path that stops early (a partly dealt order) is labelled at its end instead
     const blocks = labelled.map((s) => {
       const upto = s.upto === undefined ? s.pts.length - 1 : s.upto, lines = s.nameLines.length + s.readLines.length;
-      return { s, upto, end: y(s.pts[upto]), size: lines * lh, want: y(s.pts[upto]) };
+      const size = s.nameLines.length * mN.h + s.readLines.length * mR.h + (lines - 1) * air;
+      return { s, upto, end: y(s.pts[upto]), size, want: y(s.pts[upto]) };
     });
     const gutter = blocks.filter((b) => full(b.s)), over = blocks.filter((b) => !full(b.s));
     over.forEach((b) => { b.want = b.end - b.size / 2 - 8; });
-    spread(gutter, Math.max(4, T - 10), H - B + 8, 6);
+    // the gutter's floor: above the year ticks' row (baseline H - 9) by their ascent and a little air, so the last label
+    // never sits on "Year 25" or the "years" note
+    spread(gutter, Math.max(4, T - 10), Math.min(H - B + 8, H - 9 - vm(fs).asc - 3), 6);
     spread(over, T, y(0) - 6, 4);
     for (const b of blocks) {
       const inGut = gutter.includes(b), ex = x(b.upto), tx = inGut ? W - R + 14 : ex + 8;
       const top = b.pos - b.size / 2;
       if (inGut && Math.abs(b.pos - b.end) > 3) el('path', { d: `M${ex + 3} ${b.end}L${ex + 6} ${b.end}L${tx - 4} ${b.pos}`, class: 'leader' }, gt);
-      let ly = top + lfs;
-      for (const l of b.s.nameLines) { el('text', { x: tx, y: ly, class: 'halo t-' + b.s.key, 'font-size': lfs, 'font-weight': 700 }, gt, l); ly += lh; }
-      for (const l of b.s.readLines) { el('text', { x: tx, y: ly - 1, class: 'halo t-ink2', 'font-size': lfs - 1 }, gt, l); ly += lh; }
+      // each line's box starts where the one above ends (plus the air); its baseline sits its ascent below that
+      let ly = top;
+      for (const l of b.s.nameLines) { el('text', { x: tx, y: ly + mN.asc, class: 'halo t-' + b.s.key, 'font-size': lfs, 'font-weight': 700 }, gt, l); ly += mN.h + air; }
+      for (const l of b.s.readLines) { el('text', { x: tx, y: ly + mR.asc, class: 'halo t-ink2', 'font-size': lfs - 1 }, gt, l); ly += mR.h + air; }
     }
   }
   function wrap(text, max, size, weight) {
