@@ -65,6 +65,7 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--t-point)}
 
 .people{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1.25rem;max-width:60rem}
 .people p{font-size:1.15rem;margin:.4rem 0}
+.people .kicker{font-size:.8rem}
 .sources{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1rem}
 .sources summary{cursor:pointer;font-weight:650}
 .sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:15px;color:var(--t-ink2)}
@@ -281,6 +282,8 @@ function finding(M, p) {
   var signed = function (v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + pct(Math.abs(v)); };
   var ageText = function (a) { var y = Math.floor(a + 1e-9), m = Math.round((a - y) * 12); return m ? y + ' years ' + m + ' month' + (m > 1 ? 's' : '') : String(y); };
   var col = function (name) { return getComputedStyle(document.documentElement).getPropertyValue('--t-' + name).trim(); };
+  // the highlight: amber on the dark ground, its deep shade on the light ground so lines and words keep their contrast
+  var pick = function () { return document.documentElement.getAttribute('data-theme') === 'light' ? col('point-deep') : col('point'); };
   function el(tag, attrs, parent, text) {
     var e = document.createElementNS(NS, tag);
     for (var k in attrs) e.setAttribute(k, attrs[k]);
@@ -309,7 +312,7 @@ function finding(M, p) {
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
     var x = function (a) { return padL + (a - lo) / (hi - lo) * (W - padL - padR); };
     var ink = col('ink'), ink2 = col('ink2'), ink3 = col('ink3'), rule = col('rule'), ground = col('ground');
-    var d1 = col('d1'), d3 = col('d3'), d4 = col('d4'), neutral = col('neutral'), point = col('point');
+    var d1 = col('d1'), d3 = col('d3'), d4 = col('d4'), neutral = col('neutral'), point = pick();
     var defs = el('defs', {}, svg);
     function grad(id, stops) { var g = el('linearGradient', { id: id, x1: 0, x2: 1, y1: 0, y2: 0 }, defs); stops.forEach(function (s) { el('stop', { offset: s[0], 'stop-color': s[1] }, g); }); }
     var stdAt = (R.cppStd - R.cppLo) / (R.cppHi - R.cppLo);
@@ -359,14 +362,14 @@ function finding(M, p) {
     var base = y + rrifH - 4, maxF = Math.max.apply(null, M.rrif.map(function (r) { return r.factor; })), tall = rrifH - 58, band = 12;
     el('rect', { x: x(lo), y: base - band, width: x(R.rrsp + 1) - x(lo), height: band, fill: d3, opacity: 0.45 }, svg);
     M.rrif.forEach(function (r) {
-      if (r.age <= R.rrsp) return;
-      var h = Math.max(2, r.factor / maxF * tall);
-      el('rect', { x: x(r.age), y: base - h, width: Math.max(1, x(r.age + 1) - x(r.age) - 1), height: h, fill: d3 }, svg);
+      if (r.age < R.rrsp || r.age + 1 >= hi) return; // the factor for an age on January 1 applies in the year you turn one more
+      var h = Math.max(2, r.factor / maxF * tall), ax = r.age + 1;
+      el('rect', { x: x(ax), y: base - h, width: Math.max(1, x(ax + 1) - x(ax) - 1), height: h, fill: d3 }, svg);
     });
-    var first = M.rrif.filter(function (r) { return r.age > R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
-    reading(x(first.age) - 4, base - band - 6, pct(first.factor * 100, 1) + ' at ' + first.age, 'end');
-    reading(x(hi), base - tall - 7, pct(last.factor * 100, 0) + ' at ' + last.age, 'end');
-    lanes.push(['RRSP and RRIF', 'An RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + '). As a RRIF, a minimum share comes out each year, from ' + pct(first.factor * 100, 2) + ' at ' + first.age + ' to ' + pct(last.factor * 100, 0) + ' at ' + last.age + '.']);
+    var first = M.rrif.filter(function (r) { return r.age >= R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
+    reading(x(first.age + 1) - 4, base - band - 6, pct(first.factor * 100, 2) + ' turning ' + (first.age + 1), 'end');
+    reading(x(hi), base - tall - 7, pct(last.factor * 100, 0) + ' from ' + (last.age + 1), 'end');
+    lanes.push(['RRSP and RRIF', 'An RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + '). As a RRIF, a minimum share comes out each year after, set by your age on January 1: ' + pct(first.factor * 100, 2) + ' in the year you turn ' + (first.age + 1) + ', rising to ' + pct(last.factor * 100, 0) + ' from ' + (last.age + 1) + '.']);
     // the axis: ages, and the calendar years they fall in for this person
     var ay = H - axisH + 6;
     el('line', { x1: x(lo), x2: x(hi), y1: ay, y2: ay, stroke: rule }, svg);
@@ -434,9 +437,9 @@ function finding(M, p) {
     }
     var same = Math.abs(startA - startB) < 1e-9;
     if (!same) path(fb, startB, col('d1'), 2);
-    path(fa, startA, col('point'), 3);
+    path(fa, startA, pick(), 3);
     // names at the line ends, kept at least a line apart and inside the plot
-    var ends = [{ y: Y(fa(x1)) + 4, t: aLabel, c: col('point'), w: 700 }];
+    var ends = [{ y: Y(fa(x1)) + 4, t: aLabel, c: pick(), w: 700 }];
     if (!same) ends.push({ y: Y(fb(x1)) + 4, t: bLabel, c: col('d1'), w: 650 });
     ends.sort(function (p, q) { return p.y - q.y; });
     if (ends.length > 1 && ends[1].y - ends[0].y < 17) { var mid = (ends[0].y + ends[1].y) / 2; ends[0].y = mid - 8.5; ends[1].y = mid + 8.5; }
@@ -488,7 +491,7 @@ function finding(M, p) {
   }
   function drawRrif(p) {
     var svg = $('rrif-chart'); clear(svg);
-    var rows = M.rrif.filter(function (r) { return r.age > R.rrsp; });
+    var rows = M.rrif.filter(function (r) { return r.age >= R.rrsp; }); // ages on January 1
     var first = rows[0], tenth = rows.filter(function (r) { return r.factor >= 0.1; })[0];
     var box = chartBox(svg, 220, 280), W = box[0], H = box[1], pl = 40, pr = 8, pt = 14, pb = 30;
     var a0 = first.age, a1 = rows[rows.length - 1].age + 1, maxF = rows[rows.length - 1].factor;
@@ -505,9 +508,9 @@ function finding(M, p) {
     el('text', { x: pl - 6, y: pt + 8, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, pct(maxF * 100));
     el('text', { x: pl - 6, y: H - pb + 4, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, '0');
     var leftAt90 = 1; rows.forEach(function (r) { if (r.age < 90) leftAt90 *= 1 - r.factor; });
-    $('rrif-text').textContent = 'An RRSP must mature by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + ', for example by becoming a RRIF. From then on a minimum share must come out each year: ' + pct(first.factor * 100, 2) + ' at ' + first.age + ', ' + (tenth ? 'more than a tenth of the fund from ' + tenth.age + ', ' : '') + pct(maxF * 100) + ' from ' + rows[rows.length - 1].age + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90.';
-    var f = state.fund, at = p && p.age > R.rrsp ? M.rrif.filter(function (r) { return r.age === Math.min(p.age, rows[rows.length - 1].age); })[0] : null;
-    $('fund-text').textContent = 'On ' + money(f) + ', the minimum is ' + money(f * first.factor) + ' at ' + first.age + (at ? ' and ' + money(f * at.factor) + ' at ' + p.age + ', using that age’s factor' : '') + '.';
+    $('rrif-text').textContent = 'An RRSP must mature by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + ', for example by becoming a RRIF. From the next year a minimum share must come out each year, set by your age on January 1 (the chart’s ages): ' + pct(first.factor * 100, 2) + ' at ' + first.age + ', in the year you turn ' + (first.age + 1) + '; ' + (tenth ? 'more than a tenth of the fund from ' + tenth.age + '; ' : '') + pct(maxF * 100) + ' from ' + rows[rows.length - 1].age + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90, on January 1.';
+    var f = state.fund, at = p && p.age - 1 > R.rrsp ? M.rrif.filter(function (r) { return r.age === Math.min(p.age - 1, rows[rows.length - 1].age); })[0] : null;
+    $('fund-text').textContent = 'On ' + money(f) + ' on January 1, the minimum is ' + money(f * first.factor) + ' in the year you turn ' + (first.age + 1) + (at ? ' and ' + money(f * at.factor) + ' in the year you turn ' + p.age : '') + '.';
   }
 
   // ---------- people your age ----------
