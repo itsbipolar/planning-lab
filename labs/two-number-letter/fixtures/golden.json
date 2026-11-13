@@ -3,6 +3,38 @@
   "cases": [
     {
       "input": {
+        "cppAge": 70,
+        "oasAge": 70,
+        "cppAt65": 1100,
+        "oasAt65": 720,
+        "other": 72000
+      },
+      "cppMonthly": 1562.0,
+      "oasMonthly": 979.2,
+      "cppCrossing": 81.9047619047619,
+      "oasCrossing": 83.08080808080808,
+      "net": 102494.4,
+      "recovery": 1075.71,
+      "capped": false
+    },
+    {
+      "input": {
+        "cppAge": 63,
+        "oasAge": 65,
+        "cppAt65": 850,
+        "oasAt65": 720,
+        "other": 38000
+      },
+      "cppMonthly": 727.6,
+      "oasMonthly": 720.0,
+      "cppCrossing": 76.88888888888889,
+      "oasCrossing": null,
+      "net": 55371.2,
+      "recovery": 0.0,
+      "capped": false
+    },
+    {
+      "input": {
         "cppAge": 60,
         "oasAge": 65,
         "cppAt65": 1000,
@@ -12,22 +44,10 @@
       "cppMonthly": 640.0,
       "oasMonthly": 700.0,
       "cppCrossing": 73.88888888888889,
-      "incomeBothPaid": 56080.0,
-      "aboveThreshold": false
-    },
-    {
-      "input": {
-        "cppAge": 70,
-        "oasAge": 70,
-        "cppAt65": 1000,
-        "oasAt65": 700,
-        "other": 40000
-      },
-      "cppMonthly": 1420.0,
-      "oasMonthly": 952.0,
-      "cppCrossing": 81.9047619047619,
-      "incomeBothPaid": 68464.0,
-      "aboveThreshold": false
+      "oasCrossing": null,
+      "net": 56080.0,
+      "recovery": 0.0,
+      "capped": false
     },
     {
       "input": {
@@ -35,27 +55,15 @@
         "oasAge": 67,
         "cppAt65": 1200,
         "oasAt65": 700,
-        "other": 80000
+        "other": 95000
       },
       "cppMonthly": 1200.0,
       "oasMonthly": 800.8,
       "cppCrossing": null,
-      "incomeBothPaid": 104009.6,
-      "aboveThreshold": true
-    },
-    {
-      "input": {
-        "cppAge": 62,
-        "oasAge": 65,
-        "cppAt65": 800,
-        "oasAt65": 650,
-        "other": 0
-      },
-      "cppMonthly": 627.2,
-      "oasMonthly": 650.0,
-      "cppCrossing": 75.88888888888889,
-      "incomeBothPaid": 15326.4,
-      "aboveThreshold": false
+      "oasCrossing": 80.35353535353535,
+      "net": 119009.6,
+      "recovery": 3552.99,
+      "capped": false
     },
     {
       "input": {
@@ -63,13 +71,15 @@
         "oasAge": 70,
         "cppAt65": 1500,
         "oasAt65": 720,
-        "other": 70000
+        "other": 200000
       },
       "cppMonthly": 1878.0,
       "oasMonthly": 979.2,
       "cppCrossing": 79.9047619047619,
-      "incomeBothPaid": 104286.4,
-      "aboveThreshold": true
+      "oasCrossing": 83.08080808080808,
+      "net": 234286.4,
+      "recovery": 11750.4,
+      "capped": true
     }
   ]
 }

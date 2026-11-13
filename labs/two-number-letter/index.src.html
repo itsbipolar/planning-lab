@@ -4,59 +4,88 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A Letter You Can Argue With · Mohammed El Chayeb</title>
-<meta name="description" content="A sample letter to a fictional couple about CPP and OAS start ages. Drag the numbers and the letter rewrites itself, every rule sourced. Education only, not advice.">
+<meta name="description" content="A sample planning letter to a fictional couple about when to start CPP and OAS. Drag the numbers and the letter, the headline and the charts rewrite themselves, every rule sourced. Education only, not advice.">
 <style>/*@@CSS@@*/</style>
 </head>
 <body>
 <div class="page">
-  <header class="top"><a class="brand" href="/">Mo</a><a class="back" href="/builds/two-number-letter/">About this build</a></header>
+  <header class="bar">
+    <a class="brand" href="/">Mohammed El Chayeb</a>
+    <a href="/builds/two-number-letter/">About this build</a>
+  </header>
   <main>
-    <h1>A letter you can argue with</h1>
-    <p class="lede">A sample letter about when to start CPP and OAS. Drag any underlined number, or use the controls after the letter, and the letter rewrites itself.</p>
-    <p class="status-tag"><span data-status>demo</span>. Sample letter for illustration: <span data-name="a"></span> and <span data-name="b"></span> are fictional, and their amounts are made up.</p>
-    <noscript><p class="small">This letter needs JavaScript to fill in its numbers and sources.</p></noscript>
+    <p class="kicker" id="kicker">A letter you can argue with · Canadian rules</p>
+    <h1 id="finding" aria-live="polite">A letter you can argue with</h1>
+    <p class="dek" id="dek"></p>
+    <p class="intro">A sample planning letter to <span data-name="a"></span> and <span data-name="b"></span>, a fictional couple; their amounts are invented examples. Drag any amber number in the letter, or focus it and use the arrow keys, and the headline, the charts and the letter rewrite themselves.</p>
+    <noscript><p class="note">This letter needs JavaScript to fill in its numbers and sources.</p></noscript>
+    <p class="sr-only" id="status" aria-live="polite"></p>
+
+    <section class="charts" aria-labelledby="charts-h">
+      <div class="charts-head">
+        <h2 id="charts-h">Total received by age: start at <span data-out="cppStandard"></span> or <span data-out="cppLatest"></span></h2>
+        <div class="who" role="group" aria-label="Whose example amounts the charts show">
+          <button type="button" data-who="a" aria-pressed="true"></button><button type="button" data-who="b" aria-pressed="false"></button>
+        </div>
+      </div>
+      <div class="panels">
+        <figure class="panel" aria-labelledby="cpp-h">
+          <figcaption><span class="kicker">Canada Pension Plan</span><h3 id="cpp-h">CPP received by each age, <span data-out="who.name"></span>'s example</h3></figcaption>
+          <div class="plot" id="plot-cpp"></div>
+        </figure>
+        <figure class="panel" aria-labelledby="oas-h">
+          <figcaption><span class="kicker">Old Age Security</span><h3 id="oas-h">OAS received by each age, <span data-out="who.name"></span>'s example</h3></figcaption>
+          <div class="plot" id="plot-oas"></div>
+        </figure>
+      </div>
+      <p class="note chart-note">Example only, pure arithmetic: <span data-out="who.name"></span>'s invented amounts in nominal dollars, with no inflation indexing, tax, survivor benefits or investment return. The amber line is the start age in the letter; dots mark where two totals cross. OAS includes the <span data-out="oasBoost"></span> rise from age <span data-out="oasBoostAge"></span> for every start age.</p>
+    </section>
 
     <article class="letter" aria-label="Sample letter">
-      <p class="date">November 2026</p>
-
-      <div class="para"><div class="txt">
+      <div class="para first"><div class="txt">
+        <p class="letterhead"><span>Sample letter, for illustration</span><span>November 2026</span></p>
         <p>Dear <span data-name="a"></span> and <span data-name="b"></span>,</p>
-        <p>You asked when <span data-name="a"></span> could start her Canada Pension Plan and Old Age Security pensions, and what difference the age makes. This letter sets out the rules and what they do to the numbers. It does not pick an age. That choice rests on things only the two of you know, and the questions at the end are a place to start.</p>
+        <p>You asked when each of you could start the Canada Pension Plan and Old Age Security, and what difference the age makes. This letter sets out the rules and what they do to your numbers. It does not pick an age for either of you. That choice rests on things only the two of you know, and the questions at the end are a place to start.</p>
       </div></div>
 
       <div class="para"><div class="txt">
-        <p>The CPP retirement pension can start at any age from <span data-out="cppEarliest"></span> to <span data-out="cppLatest"></span>, and its standard start is <span data-out="cppStandard"></span>. For this letter, <span data-name="a"></span>'s pension at the standard age is an illustrative <span data-drag="cppAt65"></span> a month; her own estimate comes from Service Canada.</p>
-        <p>If she starts it at <span data-drag="cppAge"></span>, it would be about <strong data-out="cppMonthly"></strong> a month. <span data-out="cppWhy"></span></p>
+        <h2 class="lh">Canada Pension Plan</h2>
+        <p>The CPP retirement pension can start at any age from <span data-out="cppEarliest"></span> to <span data-out="cppLatest"></span>, and its standard start is <span data-out="cppStandard"></span>. Each month before <span data-out="cppStandard"></span> takes <span data-out="cppDown"></span> off the pension for life; each month after it adds <span data-out="cppUp"></span>, up to <span data-out="cppLatest"></span>.</p>
+        <p>For this letter, <span data-name="a"></span>'s pension at <span data-out="cppStandard"></span> is an illustrative <span data-drag="a.cppAt65"></span> a month, and <span data-name="b"></span>'s is <span data-drag="b.cppAt65"></span>. Your own estimates come from Service Canada.</p>
+        <p>If <span data-name="a"></span> starts <span data-pron="a.possessive"></span> pension at <span data-drag="a.cppAge"></span>, it would be about <strong data-out="a.cppMonthly"></strong> a month. <span data-out="a.cppWhy"></span> If <span data-name="b"></span> starts <span data-pron="b.possessive"></span> at <span data-drag="b.cppAge"></span>, it would be about <strong data-out="b.cppMonthly"></strong> a month. <span data-out="b.cppWhy"></span></p>
       </div>
       <aside class="side"><p class="sn" data-fact="cpp_earliest_start_age">Start ages for the CPP retirement pension.</p><p class="sn" data-fact="cpp_early_start_reduction">The reduction for each month before the standard age.</p><p class="sn" data-fact="cpp_late_start_increase">The increase for each month after it.</p></aside></div>
 
       <div class="para"><div class="txt">
-        <p>One way people compare start ages is the age at which the lifetime totals cross. Counting only the dollars received, with no inflation, tax or investment return, <span data-out="crossing"></span></p>
+        <p>One way to compare start ages is the age at which the lifetime totals cross. Counting only the dollars received, with no inflation, tax or investment return: <span data-out="a.cppCross"></span> <span data-out="b.cppCross"></span> The crossing age depends only on the two start ages, not on the size of the pension, so it is the same for both of you.</p>
       </div>
-      <aside class="side"><figure class="chart" id="chart" aria-labelledby="chart-cap"><figcaption id="chart-cap" class="cap"></figcaption><div id="chart-svg"></div><p class="syn">Illustrative amounts, nominal dollars.</p></figure></aside></div>
+      <aside class="side"><p class="sn plain">The charts above draw these totals with the example amounts. Use the buttons beside them to switch between <span data-name="a"></span> and <span data-name="b"></span>.</p></aside></div>
 
       <div class="para"><div class="txt">
-        <p>Old Age Security normally starts at <span data-out="oasStart"></span>, and it can be deferred to as late as <span data-out="oasLatest"></span>. Each month of deferral adds <span data-out="oasUp"></span>. With an illustrative <span data-drag="oasAt65"></span> a month at <span data-out="oasStart"></span>, starting it at <span data-drag="oasAge"></span> would pay about <strong data-out="oasMonthly"></strong> a month<span data-out="oasWhy"></span>.</p>
+        <h2 class="lh">Old Age Security</h2>
+        <p>Old Age Security normally starts at <span data-out="oasStart"></span>, and it can be deferred to as late as <span data-out="oasLatest"></span>. Each month of deferral adds <span data-out="oasUp"></span>, and from age <span data-out="oasBoostAge"></span> the pension rises by a further <span data-out="oasBoost"></span>, whatever the start age.</p>
+        <p>With an illustrative <span data-drag="a.oasAt65"></span> a month at <span data-out="oasStart"></span>, <span data-name="a"></span> starting at <span data-drag="a.oasAge"></span> would be paid about <strong data-out="a.oasMonthly"></strong> a month<span data-out="a.oasWhy"></span>. For <span data-name="b"></span>, an illustrative <span data-drag="b.oasAt65"></span> starting at <span data-drag="b.oasAge"></span> would be about <strong data-out="b.oasMonthly"></strong> a month<span data-out="b.oasWhy"></span>. <span data-out="oasCross"></span></p>
       </div>
-      <aside class="side"><p class="sn" data-fact="oas_start_age">The age at which OAS starts.</p><p class="sn" data-fact="oas_deferral_increase">The increase for each month OAS is deferred, up to the latest age.</p></aside></div>
+      <aside class="side"><p class="sn" data-fact="oas_start_age">The age at which OAS starts.</p><p class="sn" data-fact="oas_deferral_increase">The increase for each month OAS is deferred, up to the latest age.</p><p class="sn" data-fact="oas_age75_increase">The rise from age <span data-out="oasBoostAge"></span>, whatever the start age.</p></aside></div>
 
       <div class="para"><div class="txt">
-        <p>OAS is reduced for people whose net income is above a threshold, which for <span data-out="thrYear"></span> is <span data-out="thrValue"></span>. With <span data-drag="other"></span> a year of other retirement income, <span data-name="a"></span>'s income in a year when both pensions are paid comes to about <strong data-out="income"></strong>, which is <mark data-out="thrSide"></mark> that threshold. <span data-out="thrWhy"></span></p>
+        <p>OAS is reduced when a person's net income is above a threshold, which for <span data-out="thrYear"></span> is <span data-out="thrValue"></span>. The recovery tax is <span data-out="recRate"></span> of net income above it, up to the whole OAS pension, and it is worked out for each of you on your own net income, not the two combined.</p>
+        <p>With <span data-drag="a.other"></span> a year of other income, <span data-name="a"></span>'s net income in a year when both of <span data-pron="a.possessive"></span> pensions are paid comes to about <strong data-out="a.net"></strong>. <span data-out="a.recWhy"></span> With <span data-drag="b.other"></span>, <span data-name="b"></span>'s comes to about <strong data-out="b.net"></strong>. <span data-out="b.recWhy"></span></p>
       </div>
-      <aside class="side"><p class="sn" data-fact="oas_recovery_threshold">The OAS recovery tax threshold, and how the recovery tax is worked out.</p></aside></div>
+      <aside class="side"><p class="sn" data-fact="oas_recovery_threshold">The OAS recovery tax threshold.</p><p class="sn" data-fact="oas_recovery_rate">The recovery tax rate on net income above it.</p></aside></div>
 
       <div class="para"><div class="txt">
-        <p>What this letter does not weigh: health and how long either of you may live; <span data-name="b"></span>'s own pensions and how your income is split between you; income tax; the yearly indexing of both pensions; survivor benefits; and whether other savings can carry the years before a later start. Any of these can matter more than the crossing age.</p>
+        <p>What this letter does not weigh: health and how long either of you may live; income tax, and pension income splitting between you; the yearly indexing of both pensions; survivor benefits; how the recovery tax is withheld from one year's payments on the year before's income; and whether other savings can carry the years before a later start. Any of these can matter more than a crossing age.</p>
       </div>
-      <aside class="side"><p class="sn ignores">What this ignores: inflation and indexing, tax, investment returns on money not yet spent, part-month starts, survivor and disability benefits, and the details of net income. The amounts are invented.</p></aside></div>
+      <aside class="side"><p class="sn ignores">What this ignores: inflation and indexing, tax, investment returns on money not yet spent, part-month starts, survivor and disability benefits, and the details of net income. The couple and their amounts are invented.</p></aside></div>
 
-      <div class="para"><div class="txt">
+      <div class="para last"><div class="txt">
         <p>Questions worth bringing to a qualified professional who knows your full picture:</p>
         <ul class="qs">
           <li>What do our own Service Canada estimates show for each of us?</li>
           <li>If one of us starts later, which savings would cover the years in between, and what would that cost in tax?</li>
           <li>How would each choice change the income of whichever of us lives longer?</li>
-          <li>Where would our income sit against the OAS threshold in each year, and can it be evened out?</li>
+          <li>Where would each of our incomes sit against the OAS threshold in each year, and can it be evened out?</li>
           <li>How do these choices fit with when we draw on our RRSPs or RRIFs?</li>
         </ul>
         <p>With best wishes,</p>
@@ -66,16 +95,23 @@
 
     <section class="controls" aria-labelledby="h-controls">
       <h2 id="h-controls">Adjust the numbers</h2>
-      <p class="small">The same five numbers as in the letter, as plain sliders.</p>
+      <p class="note">The same ten numbers as in the letter, as plain sliders.</p>
       <div class="sliders" id="sliders"></div>
     </section>
 
-    <p class="small credit">The idea of a document you can adjust follows Bret Victor's reactive documents (Tangle); the margin notes follow Edward Tufte's layout. The code and words are new.</p>
+    <details class="sources">
+      <summary>Sources and assumptions</summary>
+      <ul id="sources"></ul>
+      <p class="note">Every rule above is read from the official page listed, on the date shown. The couple, their pension amounts and their other income are invented examples. Net income here is other income plus both pensions in a year when both are paid; the real definition of net income has more parts.</p>
+    </details>
+
+    <p class="note credit">The idea of a document you can adjust follows Bret Victor's reactive documents (Tangle); the margin notes follow Edward Tufte's layout. The code and words are new.</p>
+
+    <footer class="foot">
+      <p><strong>Education only, not advice.</strong> Made with AI assistance; every rule is checked at its official source.</p>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/builds/">All the work</a></p>
+    </footer>
   </main>
-  <footer class="foot">
-    <p>Education only, not personal financial, tax, legal or investment advice. General information as of November 2026; rules change. Nothing here is a recommendation for your situation. This is a personal site, not affiliated with or endorsed by my employer.</p>
-    <p>Made with AI assistance. I directed and reviewed the work and checked every figure against its source.</p>
-  </footer>
 </div>
 <script type="application/json" id="facts">/*@@FACTS@@*/</script>
 <script type="application/json" id="story">/*@@STORY@@*/</script>

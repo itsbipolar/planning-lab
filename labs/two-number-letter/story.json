@@ -1,9 +1,22 @@
 {
-  "_note": "Synthetic, illustrative inputs for a fictional couple. Not the published CPP or OAS amounts, not anyone's real figures. Start ages default to the standard ages in facts.json.",
+  "_note": "A fictional couple with invented, illustrative amounts: not the published CPP or OAS amounts and not anyone's real figures. Start ages are named by a rule in facts.json (earliest, standard, latest) plus whole years, so no age is typed here.",
   "synthetic": true,
-  "names": { "a": "Lena", "b": "Tom" },
-  "cppAt65": { "value": 1000, "min": 100, "max": 2000, "step": 25 },
-  "oasAt65": { "value": 700, "min": 100, "max": 1000, "step": 10 },
-  "other": { "value": 40000, "min": 0, "max": 200000, "step": 1000 },
+  "people": {
+    "a": {
+      "name": "Lena", "subject": "she", "possessive": "her",
+      "cppAt65": 1100, "oasAt65": 720, "other": 72000,
+      "cppAge": { "from": "latest" }, "oasAge": { "from": "latest" }
+    },
+    "b": {
+      "name": "Tom", "subject": "he", "possessive": "his",
+      "cppAt65": 850, "oasAt65": 720, "other": 38000,
+      "cppAge": { "from": "standard", "years": -2 }, "oasAge": { "from": "earliest" }
+    }
+  },
+  "ranges": {
+    "cppAt65": { "min": 100, "max": 2000, "step": 25 },
+    "oasAt65": { "min": 100, "max": 1000, "step": 5 },
+    "other": { "min": 0, "max": 200000, "step": 1000 }
+  },
   "chart": { "toAge": 95 }
 }

@@ -1,4 +1,5 @@
-// The letter page: fills every number and source from facts.json (inlined at build) and the synthetic story.
+// The letter page. Every rule comes from the confirmed facts inlined at build (shared/facts.json) through calc.mjs; the
+// couple and their amounts are invented examples (story.json). Nothing is stored, sent or put in the address.
 (() => {
   const facts = JSON.parse(document.getElementById('facts').textContent).facts;
   const story = JSON.parse(document.getElementById('story').textContent);
@@ -8,123 +9,279 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const money = (n) => '$' + Math.round(n).toLocaleString('en-CA');
   const pct = (x) => `${Number((Math.abs(x) * 100).toFixed(1))}%`;
-  const fact = (id) => byId[id].value;
-
-  const state = {
-    cppAge: r.cpp.standard, oasAge: r.oas.start,
-    cppAt65: story.cppAt65.value, oasAt65: story.oasAt65.value, other: story.other.value,
+  const plainPct = (id) => `${byId[id].value}%`;
+  const ageText = (x) => {
+    let y = Math.floor(x + 1e-9), m = Math.round((x - y) * 12);
+    if (m === 12) { y += 1; m = 0; }
+    return m ? `${y} and ${m} month${m === 1 ? '' : 's'}` : `${y}`;
   };
-  const spec = {
-    cppAge: { min: r.cpp.earliest, max: r.cpp.latest, step: 1, pxPerStep: 24, format: String, label: 'CPP start age' },
-    oasAge: { min: r.oas.start, max: r.oas.latest, step: 1, pxPerStep: 24, format: String, label: 'OAS start age' },
-    cppAt65: { ...story.cppAt65, pxPerStep: 4, format: money, label: 'Illustrative CPP at the standard age, per month' },
-    oasAt65: { ...story.oasAt65, pxPerStep: 4, format: money, label: 'Illustrative OAS at the start age, per month' },
-    other: { ...story.other, pxPerStep: 3, format: money, label: 'Other retirement income, per year' },
+  const ageShort = (x) => {
+    let y = Math.floor(x + 1e-9), m = Math.round((x - y) * 12);
+    if (m === 12) { y += 1; m = 0; }
+    return m ? `${y} y ${m} m` : `${y}`;
   };
+  const std = r.cpp.standard;
+  const people = story.people;
+  const W = ['a', 'b'];
+  const name = (w) => people[w].name;
 
-  $$('[data-name]').forEach((el) => { el.textContent = story.names[el.dataset.name]; });
+  // Start ages in story.json are named by a rule (earliest, standard, latest) plus whole years.
+  const startAge = (spec, lo, mid, hi) => Math.min(hi, Math.max(lo, ({ earliest: lo, standard: mid, latest: hi })[spec.from] + (spec.years || 0)));
+  const state = { who: 'a' };
+  for (const w of W) {
+    const p = people[w];
+    state[w] = {
+      cppAge: startAge(p.cppAge, r.cpp.earliest, std, r.cpp.latest),
+      oasAge: startAge(p.oasAge, r.oas.start, r.oas.start, r.oas.latest),
+      cppAt65: p.cppAt65, oasAt65: p.oasAt65, other: p.other,
+    };
+  }
+  const specFor = (w) => ({
+    cppAt65: { ...story.ranges.cppAt65, pxPerStep: 4, format: money, label: `${name(w)}'s illustrative CPP at ${std}, per month`, short: `CPP at ${std}, per month` },
+    cppAge: { min: r.cpp.earliest, max: r.cpp.latest, step: 1, pxPerStep: 24, format: String, label: `${name(w)}'s CPP start age`, short: 'CPP start age' },
+    oasAt65: { ...story.ranges.oasAt65, pxPerStep: 4, format: money, label: `${name(w)}'s illustrative OAS at ${r.oas.start}, per month`, short: `OAS at ${r.oas.start}, per month` },
+    oasAge: { min: r.oas.start, max: r.oas.latest, step: 1, pxPerStep: 24, format: String, label: `${name(w)}'s OAS start age`, short: 'OAS start age' },
+    other: { ...story.ranges.other, pxPerStep: 3, format: money, label: `${name(w)}'s other income, per year`, short: 'Other income, per year' },
+  });
+  const spec = { a: specFor('a'), b: specFor('b') };
+
+  $$('[data-name]').forEach((el) => { el.textContent = name(el.dataset.name); });
+  $$('[data-pron]').forEach((el) => { const [w, k] = el.dataset.pron.split('.'); el.textContent = people[w][k]; });
+  $$('[data-who]').forEach((b) => { b.textContent = name(b.dataset.who); });
   const fixed = {
-    cppEarliest: r.cpp.earliest, cppLatest: r.cpp.latest, cppStandard: r.cpp.standard,
-    oasStart: r.oas.start, oasLatest: r.oas.latest, oasUp: `${fact('oas_deferral_increase')}%`,
-    thrYear: r.threshold.year, thrValue: money(r.threshold.value),
+    cppEarliest: r.cpp.earliest, cppLatest: r.cpp.latest, cppStandard: std,
+    cppDown: plainPct('cpp_early_start_reduction'), cppUp: plainPct('cpp_late_start_increase'),
+    oasStart: r.oas.start, oasLatest: r.oas.latest, oasUp: plainPct('oas_deferral_increase'),
+    oasBoost: plainPct('oas_age75_increase'), oasBoostAge: r.oas.boostAge,
+    thrYear: r.recovery.year, thrValue: money(r.recovery.threshold), recRate: plainPct('oas_recovery_rate'),
   };
 
-  // Sidenotes: each names its source, its tax year where it has one, and the date it was read.
+  // Margin notes: each names its source, its tax year where it has one, and the date it was read.
   $$('.sn[data-fact]').forEach((el) => {
-    const f = el.dataset.fact === 'oas_recovery_threshold' ? byId[r.threshold.id] : byId[el.dataset.fact];
+    const f = el.dataset.fact === 'oas_recovery_threshold' ? byId[r.recovery.id] : byId[el.dataset.fact];
     const host = new URL(f.source_url).hostname.replace(/^www\./, '');
     const year = f.tax_year ? `Tax year ${f.tax_year}. ` : '';
     el.insertAdjacentHTML('beforeend', ` ${year}Source: <a href="${f.source_url}">${host}</a>, read ${f.as_of}.`);
   });
+  // The sources list: every rule the letter uses, with its official page.
+  const src = $('#sources');
+  for (const s of r.sources) {
+    const li = document.createElement('li'), a = document.createElement('a');
+    a.href = s.source_url; a.textContent = s.title;
+    li.append(a, document.createTextNode(`${s.tax_year ? `, tax year ${s.tax_year}` : ''}. ${s.authority ? s.authority + ', ' : ''}read ${s.as_of}.`));
+    src.append(li);
+  }
+  const asOf = r.sources.map((s) => s.as_of).sort().pop();
+  const month = new Date(`${asOf}T12:00:00`).toLocaleString('en-CA', { month: 'long', year: 'numeric' });
+  $('#kicker').textContent = `A letter you can argue with · Canadian rules as of ${month}`;
 
-  const controls = {};
+  // The plain sliders: the single-pointer alternative to dragging, and the same numbers.
+  const controls = { a: {}, b: {} };
   const sliders = $('#sliders');
-  for (const [key, s] of Object.entries(spec)) {
-    const id = `s-${key}`;
-    sliders.insertAdjacentHTML('beforeend', `<div class="slider"><label for="${id}">${s.label}: <output id="${id}-o"></output></label><div class="row"><button type="button" class="step" data-dir="-1" aria-label="Less: ${s.label}">−</button><input type="range" id="${id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${state[key]}"><button type="button" class="step" data-dir="1" aria-label="More: ${s.label}">+</button></div></div>`);
-    const input = $(`#${id}`);
-    input.parentElement.querySelectorAll('.step').forEach((b) => b.addEventListener('click', () => {
-      state[key] = Math.min(s.max, Math.max(s.min, state[key] + Number(b.dataset.dir) * s.step)); render();
-    }));
-    input.addEventListener('input', () => { state[key] = Number(input.value); render(); });
-    controls[key] = { input, out: $(`#${id}-o`), drags: [] };
+  for (const w of W) {
+    sliders.insertAdjacentHTML('beforeend', `<fieldset class="who-set" id="set-${w}"><legend>${name(w)}</legend></fieldset>`);
+    const set = $(`#set-${w}`);
+    for (const [key, s] of Object.entries(spec[w])) {
+      const id = `s-${w}-${key}`;
+      set.insertAdjacentHTML('beforeend', `<div class="slider"><label for="${id}">${s.short}: <output id="${id}-o"></output></label><div class="row"><button type="button" class="step" data-dir="-1" aria-label="Less: ${s.label}">−</button><input type="range" id="${id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${state[w][key]}" aria-label="${s.label}"><button type="button" class="step" data-dir="1" aria-label="More: ${s.label}">+</button></div></div>`);
+      const input = $(`#${id}`);
+      input.parentElement.querySelectorAll('.step').forEach((b) => b.addEventListener('click', () => {
+        change(w, key, Math.min(s.max, Math.max(s.min, state[w][key] + Number(b.dataset.dir) * s.step)));
+      }));
+      input.addEventListener('input', () => change(w, key, Number(input.value)));
+      controls[w][key] = { input, out: $(`#${id}-o`), drags: [] };
+    }
   }
   $$('[data-drag]').forEach((el) => {
-    const key = el.dataset.drag;
-    controls[key].drags.push(dragNumber(el, { ...spec[key], value: state[key], onChange: (v) => { state[key] = v; render(); } }));
+    const [w, key] = el.dataset.drag.split('.');
+    controls[w][key].drags.push(dragNumber(el, { ...spec[w][key], value: state[w][key], onChange: (v) => change(w, key, v) }));
   });
+  $$('[data-who]').forEach((b) => b.addEventListener('click', () => { state.who = b.dataset.who; render(); }));
 
-  function ageText(x) {
-    let y = Math.floor(x), m = Math.round((x - y) * 12);
-    if (m === 12) { y += 1; m = 0; }
-    return m ? `about age ${y} and ${m} month${m === 1 ? '' : 's'}` : `about age ${y}`;
+  // The charts follow the person whose number was moved last.
+  let said;
+  function change(w, key, v) {
+    state[w][key] = v; state.who = w; render();
+    clearTimeout(said);
+    said = setTimeout(() => { $('#status').textContent = statusText(w, key); }, 450);
+  }
+
+  function headlineText(h) {
+    const at = Math.round(h.at);
+    if (h.kind === 'later') return `Waiting from ${h.from} to ${h.to} pays off for CPP if you live past about ${at}.`;
+    if (h.kind === 'earlier') return `Starting CPP at ${h.from} instead of ${h.to} pays more in total unless you live past about ${at}.`;
+    return `Waiting from ${h.from} to ${h.to} would pay off for CPP if you live past about ${at}.`;
+  }
+
+  function cppCross(w, s) {
+    const age = state[w].cppAge, n = name(w);
+    if (s.cppCrossing === null) return `${n}'s start at ${std} is the standard, so there is nothing to compare; a start at ${r.cpp.latest} would catch up with it at about age ${ageText(cppCrossing(r, r.cpp.latest))}.`;
+    if (age > std) return `${n}'s start at ${age} catches up with a start at ${std} at about age ${ageText(s.cppCrossing)}; after that, the later start is ahead.`;
+    return `${n}'s start at ${age} stays ahead of a start at ${std} until about age ${ageText(s.cppCrossing)}; after that, ${std} is ahead.`;
+  }
+
+  function recWhy(w, s) {
+    const her = people[w].possessive;
+    if (s.recovery <= 0) return `That is below the threshold, so none of ${her} OAS would be recovered.`;
+    if (s.recoveryCapped) return `That is ${money(s.overThreshold)} above the threshold, enough for the recovery tax to take back all of ${her} OAS, about ${money(s.recovery)} that year.`;
+    return `That is ${money(s.overThreshold)} above the threshold, so about ${money(s.recovery)} of ${her} OAS would be recovered that year.`;
+  }
+
+  function dekText(w, s) {
+    const p = people[w], st = state[w], Her = p.possessive[0].toUpperCase() + p.possessive.slice(1);
+    const oas = s.oasCrossing === null
+      ? `${Her} OAS starts at ${r.oas.start}`
+      : `${Her} OAS from ${st.oasAge} catches up with a start at ${r.oas.start} past about ${Math.round(s.oasCrossing)}`;
+    const rec = s.recovery > 0
+      ? `at ${p.possessive} example net income of ${money(s.net)}, the ${r.recovery.year} recovery tax would take back about ${money(s.recovery)} of OAS a year`
+      : `${p.possessive} example net income of ${money(s.net)} is below the ${r.recovery.year} recovery threshold`;
+    return `Shown for ${p.name}, an invented example: CPP from ${st.cppAge}, OAS from ${st.oasAge}. ${oas}, and ${rec}.`;
+  }
+
+  function statusText(w, key) {
+    const s = spouse(r, state[w]), n = name(w);
+    if (key === 'cppAge' || key === 'cppAt65') return `${n}: CPP from ${state[w].cppAge}, about ${money(s.cppMonthly)} a month. ${$('#finding').textContent}`;
+    if (key === 'oasAge' || key === 'oasAt65') return `${n}: OAS from ${state[w].oasAge}, about ${money(s.oasMonthly)} a month.`;
+    return `${n}: net income about ${money(s.net)}; OAS recovered about ${money(s.recovery)} a year.`;
   }
 
   function render() {
-    const out = letter(r, state);
-    for (const [key, c] of Object.entries(controls)) {
-      c.input.value = state[key];
-      c.out.textContent = spec[key].format(state[key]);
-      c.drags.forEach((d) => d.set(state[key]));
+    const out = couple(r, state.a, state.b);
+    for (const w of W) for (const [key, c] of Object.entries(controls[w])) {
+      c.input.value = state[w][key];
+      c.out.textContent = spec[w][key].format(state[w][key]);
+      c.drags.forEach((d) => d.set(state[w][key]));
     }
-    const std = r.cpp.standard, age = state.cppAge;
-    const text = {
-      ...fixed,
-      cppMonthly: money(out.cppMonthly),
-      cppWhy: age < std
-        ? `That is ${pct(out.cppChange)} less than at ${std}: the pension is reduced by ${fact('cpp_early_start_reduction')}% for each month it starts before ${std}.`
-        : age > std
-          ? `That is ${pct(out.cppChange)} more than at ${std}: it rises by ${fact('cpp_late_start_increase')}% for each month it starts after ${std}.`
-          : 'That is the standard start, with no reduction and no increase.',
-      crossing: out.cppCrossing === null
-        ? `there is nothing to compare at the standard start. Drag her CPP start age to see where the totals cross.`
-        : `starting at ${age} instead of ${std}, the two totals cross at ${ageText(out.cppCrossing)}. Until then the earlier start, ${Math.min(age, std)}, has paid more in total; after it, the later start, ${Math.max(age, std)}, has.`,
-      oasMonthly: money(out.oasMonthly),
-      oasWhy: state.oasAge === r.oas.start ? '' : `, ${pct(out.oasChange)} more than at ${r.oas.start}`,
-      income: money(out.incomeBothPaid),
-      thrSide: out.aboveThreshold ? 'above' : 'below',
-      thrWhy: out.aboveThreshold ? 'Above it, the OAS recovery tax applies; how it is worked out is on the Government of Canada page in the margin note.' : '',
-    };
+    const text = { ...fixed, 'who.name': name(state.who) };
+    for (const w of W) {
+      const s = out[w], st = state[w];
+      text[`${w}.cppMonthly`] = money(s.cppMonthly);
+      text[`${w}.cppWhy`] = st.cppAge < std ? `That is ${pct(s.cppChange)} less than at ${std}, for life.`
+        : st.cppAge > std ? `That is ${pct(s.cppChange)} more than at ${std}, for life.`
+          : 'That is the standard start, with no reduction and no increase.';
+      text[`${w}.cppCross`] = cppCross(w, s);
+      text[`${w}.oasMonthly`] = money(s.oasMonthly);
+      text[`${w}.oasWhy`] = st.oasAge === r.oas.start ? '' : `, ${pct(s.oasChange)} more than at ${r.oas.start}`;
+      text[`${w}.net`] = money(s.net);
+      text[`${w}.recWhy`] = recWhy(w, s);
+    }
+    const later = W.filter((w) => out[w].oasCrossing !== null);
+    text.oasCross = later.length
+      ? later.map((w) => `Counting the rise at ${r.oas.boostAge}, ${name(w)}'s later start catches up with a start at ${r.oas.start} at about age ${ageText(out[w].oasCrossing)}.`).join(' ')
+      : `Counting the rise at ${r.oas.boostAge}, a start at ${r.oas.latest} would catch up with one at ${r.oas.start} at about age ${ageText(oasCrossing(r, r.oas.latest))}.`;
     $$('[data-out]').forEach((el) => { el.textContent = text[el.dataset.out]; });
-    chart(out);
+    $$('[data-who]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.who === state.who)));
+    $('#finding').textContent = headlineText(headline(r, state[state.who].cppAge));
+    $('#dek').textContent = dekText(state.who, out[state.who]);
+    charts();
   }
 
-  function chart(out) {
-    const holder = $('#chart-svg');
-    const w = Math.max(260, Math.min(440, holder.clientWidth || 320)), h = Math.round(w * 0.8);
-    const pad = { l: 46, r: 64, t: 12, b: 28 };
-    const std = r.cpp.standard, age = state.cppAge, from = r.cpp.earliest, to = story.chart.toAge;
-    const lines = [{ start: std, m: state.cppAt65, you: false, label: `From ${std}` }];
-    if (age !== std) lines.unshift({ start: age, m: out.cppMonthly, you: true, label: `From ${age}` });
-    const maxY = Math.max(...lines.map((l) => total(l.start, l.m, to)), 1);
-    const X = (a) => pad.l + ((a - from) / (to - from)) * (w - pad.l - pad.r);
-    const Y = (v) => h - pad.b - (v / maxY) * (h - pad.t - pad.b);
-    const short = (v) => (v === 0 ? "$0" : v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : `$${Math.round(v / 1e3)}k`);
-    let svg = '';
-    for (let i = 0; i <= 2; i++) {
-      const v = (maxY * i) / 2;
-      svg += `<line class="grid" x1="${pad.l}" x2="${w - pad.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${pad.l - 6}" y="${Y(v) + 4}" text-anchor="end">${short(v)}</text>`;
-    }
-    for (let a = from; a <= to; a += 5) svg += `<text class="axis" x="${X(a)}" y="${h - 8}" text-anchor="middle">${a}</text>`;
-    const ends = [];
-    for (const l of lines) {
-      svg += `<polyline ${l.you ? 'class="l-you"' : 'class="l-std"'} fill="none" stroke-width="2" points="${X(from)},${Y(0)} ${X(l.start)},${Y(0)} ${X(to)},${Y(total(l.start, l.m, to))}"/>`;
-      ends.push({ y: Y(total(l.start, l.m, to)), l });
-    }
-    ends.sort((a, b) => a.y - b.y);
-    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 16) ends[i].y = ends[i - 1].y + 16;
-    for (const e of ends) svg += `<text ${e.l.you ? 'class="lab lab-you"' : 'class="lab lab-std"'} x="${w - pad.r + 6}" y="${e.y + 4}">${e.l.label}</text>`;
-    if (out.cppCrossing !== null && out.cppCrossing <= to) {
-      svg += `<circle class="dot" cx="${X(out.cppCrossing)}" cy="${Y(total(std, state.cppAt65, out.cppCrossing))}" r="5"/>`;
-    }
-    const summary = out.cppCrossing === null
-      ? `Total CPP received by each age, starting at ${std}.`
-      : `Total CPP received by each age, starting at ${age} and at ${std}; the totals cross at ${ageText(out.cppCrossing)}.`;
-    $('#chart-cap').textContent = 'Total CPP received by each age';
-    holder.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${summary}">${svg}</svg>`;
+  // ---------- the two charts ----------
+  const NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent, text) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
   }
+  const shortMoney = (v) => (v === 0 ? '$0' : v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : `$${Math.round(v / 1e3)}k`);
+  const overlaps = (a, b) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+  function charts() {
+    const w = state.who, st = state[w], n = name(w);
+    const cppAmt = (s) => st.cppAt65 * cppFactor(r, s);
+    const oasAmt = (s) => st.oasAt65 * oasFactor(r, s);
+    panel($('#plot-cpp'), {
+      what: 'CPP', name: n, base: std, late: r.cpp.latest, chosen: st.cppAge,
+      total: (s, x) => cppTotal(s, cppAmt(s), x), cross: (s) => cppCrossing(r, s),
+    });
+    panel($('#plot-oas'), {
+      what: 'OAS', name: n, base: r.oas.start, late: r.oas.latest, chosen: st.oasAge,
+      total: (s, x) => oasTotal(r, s, oasAmt(s), x), cross: (s) => oasCrossing(r, s),
+    });
+  }
+
+  function panel(holder, o) {
+    holder.textContent = '';
+    const from = r.cpp.earliest, to = story.chart.toAge;
+    const Wd = Math.max(280, Math.floor(holder.clientWidth || 320)), narrow = Wd < 520;
+    const H = narrow ? 268 : 336;
+    const pad = { l: 14, r: narrow ? 66 : 84, t: 22, b: 30 };
+    const starts = [...new Set([o.base, o.late, o.chosen])].sort((x, y) => x - y);
+    const top = Math.max(...starts.map((s) => o.total(s, to)), 1);
+    // the tightest round scale with two to four steps
+    const step = [1e3, 2e3, 5e3, 1e4, 2e4, 25e3, 5e4, 1e5, 2e5, 25e4, 5e5, 1e6]
+      .filter((s) => Math.ceil(top / s) <= 4 && Math.ceil(top / s) >= 2)
+      .sort((p, q) => Math.ceil(top / p) * p - Math.ceil(top / q) * q || p - q)[0] || 1e6;
+    const maxY = Math.max(step, Math.ceil(top / step) * step);
+    const X = (a) => pad.l + ((a - from) / (to - from)) * (Wd - pad.l - pad.r);
+    const Y = (v) => H - pad.b - (v / maxY) * (H - pad.t - pad.b);
+    const c1 = o.cross(o.late);
+    const c2 = starts.length === 3 ? o.cross(o.chosen) : null;
+    const summary = `${o.what} received by each age with ${o.name}'s example amounts: totals for starts at ${o.base} and ${o.late} cross at about age ${ageText(c1)}`
+      + (c2 !== null ? `; ${o.name}'s start at ${o.chosen} crosses a start at ${o.base} at about age ${ageText(c2)}.` : `; ${o.name} starts at ${o.chosen}.`);
+    const svg = el('svg', { viewBox: `0 0 ${Wd} ${H}`, width: Wd, height: H, role: 'img', 'aria-label': summary }, holder);
+    const placed = [];
+    const keep = (t) => { placed.push(t.getBBox()); return t; };
+
+    // grid and axes
+    for (let v = 0; v <= maxY + 1e-6; v += step) {
+      el('line', { class: v === 0 ? 'axis-line' : 'grid', x1: pad.l, x2: Wd - pad.r, y1: Y(v), y2: Y(v) }, svg);
+      // the dollar scale sits just above each grid line, inside the plot
+      keep(el('text', { class: 'tick', x: pad.l, y: Y(v) - 5 }, svg, shortMoney(v)));
+    }
+    for (let a = Math.ceil(from / 5) * 5; a <= to; a += 5) {
+      el('line', { class: 'axis-line', x1: X(a), x2: X(a), y1: H - pad.b, y2: H - pad.b + 4 }, svg);
+      keep(el('text', { class: 'tick', x: X(a), y: H - pad.b + 17, 'text-anchor': 'middle' }, svg, String(a)));
+    }
+    keep(el('text', { class: 'tick', x: Wd - pad.r + 14, y: H - pad.b + 17 }, svg, 'age'));
+
+    // the lines: the standard (or earliest) start, the latest start, and the letter's start in amber, drawn last
+    const cls = (s) => (s === o.chosen ? 'pick' : s === o.base ? 'base' : 'late');
+    const order = [...starts].sort((x, y) => (x === o.chosen) - (y === o.chosen));
+    for (const s of order) {
+      let d = `M${X(s).toFixed(1)} ${Y(0).toFixed(1)}`;
+      for (let x = s; x <= to + 1e-9; x += 0.25) d += ` L${X(x).toFixed(1)} ${Y(o.total(s, x)).toFixed(1)}`;
+      el('path', { class: `ln ln-${cls(s)}`, d }, svg);
+    }
+    el('circle', { class: 'start-pick', cx: X(o.chosen), cy: Y(0), r: 5 }, svg);
+
+    // labels at the right-hand end of each line, kept apart
+    const ends = starts.map((s) => ({ s, y: Y(o.total(s, to)) + 4 })).sort((p, q) => p.y - q.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 17) ends[i].y = ends[i - 1].y + 17;
+    const over = ends.length ? ends[ends.length - 1].y - (H - pad.b - 4) : 0;
+    if (over > 0) ends.forEach((e) => { e.y -= over; });
+    for (const e of ends) {
+      const label = e.s === o.chosen ? `${o.name} · ${e.s}` : `start ${e.s}`;
+      keep(el('text', { class: `lab lab-${cls(e.s)}`, x: Wd - pad.r + 7, y: e.y }, svg, label));
+    }
+
+    // the crossing points, with their ages written beside them
+    const crossings = [{ at: c1, pick: o.chosen === o.late, pair: [o.base, o.late] }];
+    if (c2 !== null) crossings.push({ at: c2, pick: true, pair: [Math.min(o.chosen, o.base), Math.max(o.chosen, o.base)] });
+    for (const c of crossings) {
+      if (c.at === null || c.at > to) continue;
+      const cx = X(c.at), cy = Y(o.total(o.base, c.at));
+      el('circle', { class: c.pick ? 'dot dot-pick' : 'dot', cx, cy, r: 5 }, svg);
+      const t = el('text', { class: 'reading' }, svg, narrow ? `cross ${ageShort(c.at)}` : `${c.pair[0]} and ${c.pair[1]} cross at ${ageShort(c.at)}`);
+      // above-left (clear of both lines, which climb to the right), then above, left, below, right, and further out, until it overlaps nothing already placed
+      const tries = [[-8, -9, 'end'], [0, -14, 'middle'], [-9, 4, 'end'], [0, 22, 'middle'], [9, 4, 'start'], [0, -30, 'middle'], [-9, 22, 'end'], [0, 40, 'middle'], [0, -48, 'middle']];
+      for (const [dx, dy, anchor] of tries) {
+        t.setAttribute('x', cx + dx); t.setAttribute('y', cy + dy); t.setAttribute('text-anchor', anchor);
+        const b = t.getBBox();
+        if (b.x >= 2 && b.x + b.width <= Wd - 2 && b.y >= 0 && b.y + b.height <= H - pad.b && !placed.some((p) => overlaps(p, b))) break;
+      }
+      placed.push(t.getBBox());
+    }
+  }
+
+  // a printed letter carries its sources list open
+  const details = $('.sources');
+  addEventListener('beforeprint', () => { details.dataset.was = details.open; details.open = true; });
+  addEventListener('afterprint', () => { details.open = details.dataset.was === 'true'; });
 
   render();
   let t;
-  addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => chart(letter(r, state)), 100); });
+  addEventListener('resize', () => { clearTimeout(t); t = setTimeout(charts, 120); });
 })();

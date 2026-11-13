@@ -1,19 +1,23 @@
-// Builds labs/two-number-letter/dist/index.html: one self-contained page (styles, the calc module, the drag-number component, the facts, fonts and the story
-// inlined), so it makes no request after it loads. Run: node labs/two-number-letter/build.mjs
+// Builds labs/two-number-letter/dist/index.html: one self-contained page (the Data desk look and fonts, the calc module,
+// the drag-number component, the confirmed facts and the story inlined), so it makes no request after it loads.
+// A missing confirmed fact stops the build. Run: node labs/two-number-letter/build.mjs
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { rules } from './calc.mjs';
+import { deskCSS } from '../../shared/desk/desk.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
-const read = (p) => readFileSync(p, 'utf8'), b64 = (p) => readFileSync(p).toString('base64');
-const fonts = `@font-face{font-family:"Archivo Variable";src:url(data:font/woff2;base64,${b64(join(here, 'fonts', 'archivo-latin-wght-normal.woff2'))}) format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"Instrument Serif";src:url(data:font/woff2;base64,${b64(join(here, 'fonts', 'instrument-serif-latin-400-normal.woff2'))}) format("woff2");font-weight:400;font-display:swap}`;
-const css = [fonts, read(join(root, 'shared', 'tokens.css')), read(join(here, 'style.css'))].join('\n');
+const read = (p) => readFileSync(p, 'utf8');
+const all = JSON.parse(read(join(root, 'shared', 'facts.json'))).facts;
+const r = rules(all); // throws if a rule the letter needs is not confirmed
+const css = [deskCSS(), read(join(here, 'style.css'))].join('\n');
 const strip = (p) => read(p).replace(/^export /gm, '');
 const js = [strip(join(root, 'shared', 'drag-number.js')), strip(join(here, 'calc.mjs')), read(join(here, 'app.js'))].join('\n');
-const facts = JSON.stringify({ facts: JSON.parse(read(join(root, 'shared', 'facts.json'))).facts.filter((f) => f.status === 'confirmed') }).replace(/</g, '\\u003c');
+const facts = JSON.stringify({ facts: all.filter((f) => f.status === 'confirmed') }).replace(/</g, '\\u003c');
 const story = JSON.stringify(JSON.parse(read(join(here, 'story.json')))).replace(/</g, '\\u003c');
-const html = read(join(here, 'index.src.html')).replace('/*@@CSS@@*/', () => css).replace('/*@@FACTS@@*/', () => facts).replace('/*@@STORY@@*/', () => story).replace('/*@@JS@@*/', () => js);
+const html = read(join(here, 'index.src.html')).replace('/*@@CSS@@*/', () => css).replace('/*@@FACTS@@*/', () => facts)
+  .replace('/*@@STORY@@*/', () => story).replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);
-console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB)`);
+console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): ${r.sources.length} sources, threshold year ${r.recovery.year}`);

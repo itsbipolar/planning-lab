@@ -5,27 +5,36 @@ import { readFileSync } from 'node:fs';
 
 const here = new URL('..', import.meta.url).pathname;
 const facts = JSON.parse(readFileSync(new URL('../../../shared/facts.json', import.meta.url), 'utf8')).facts.filter((f) => f.status === 'confirmed');
-const files = ['app.js', 'calc.mjs', 'index.src.html', 'style.css', 'story.json', '../../shared/drag-number.js'];
+const files = ['app.js', 'calc.mjs', 'build.mjs', 'index.src.html', 'style.css', 'story.json', '../../shared/drag-number.js'];
+// The shared drag-number component steps ten at a time on Page Up/Down (a keyboard convention, not the OAS rise); that
+// one figure is allowed there and nowhere else. The component is shared with other labs and is not this page's to change.
+const allow = { '../../shared/drag-number.js': ['10'] };
 const sources = files.map((f) => [f, readFileSync(here + f, 'utf8')]);
 const used = ['cpp_standard_start_age', 'cpp_earliest_start_age', 'cpp_latest_start_age', 'cpp_early_start_reduction',
-  'cpp_late_start_increase', 'oas_start_age', 'oas_deferral_max_age', 'oas_deferral_increase'];
+  'cpp_late_start_increase', 'oas_start_age', 'oas_deferral_max_age', 'oas_deferral_increase', 'oas_age75_increase',
+  'oas_recovery_rate'];
+const figures = [...new Set(facts.filter((f) => used.includes(f.id) || f.series === 'oas_recovery_threshold').map((f) => String(f.value)))];
+// The age of the OAS rise is read from its fact's title; it must not be typed either.
+const boostAge = String(facts.find((f) => f.id === 'oas_age75_increase').title).match(/\bage (\d+)\b/)[1];
+const has = (text, v) => new RegExp(`(?<![\\w.])${v.replace('.', '\\.')}(?![\\w.])`).test(text);
 
 test('no CPP or OAS figure from the facts file is written into the page source', () => {
-  const figures = [...new Set(facts.filter((f) => used.includes(f.id) || f.series === 'oas_recovery_threshold').map((f) => String(f.value)))];
-  assert.ok(figures.length >= 6, figures.join(', '));
-  for (const [name, text] of sources) for (const v of figures) {
-    const re = new RegExp(`(?<![\\w.])${v.replace('.', '\\.')}(?![\\w.])`);
-    assert.ok(!re.test(text), `${name} contains the figure ${v}: it must come from facts.json`);
+  assert.ok(figures.length >= 9, figures.join(', '));
+  for (const [name, text] of sources) for (const v of [...figures, boostAge]) {
+    if ((allow[name] || []).includes(v)) continue;
+    assert.ok(!has(text, v), `${name} contains the figure ${v}: it must come from facts.json`);
   }
 });
 
 test('the checker can fail: a planted figure is caught', () => {
-  assert.ok(/(?<![\w.])65(?![\w.])/.test('const age = 65;'));
+  assert.ok(has('const age = 65;', '65'));
+  assert.ok(has('rate * 0.6;', '0.6'));
+  assert.ok(!has('step * 100;', '10'));
 });
 
 test('every fact the page reads exists and is confirmed', () => {
   const text = sources.map(([, t]) => t).join('\n');
-  const ids = [...text.matchAll(/'((?:cpp|oas)_[a-z_]+)'/g)].map((m) => m[1]);
-  assert.ok(ids.length >= 8);
+  const ids = [...text.matchAll(/'((?:cpp|oas)_[a-z0-9_]+)'/g)].map((m) => m[1]);
+  assert.ok(ids.length >= 10);
   for (const id of new Set(ids)) assert.ok(facts.some((f) => f.id === id || f.series === id), `fact ${id} is missing or not confirmed`);
 });
