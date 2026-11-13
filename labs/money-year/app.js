@@ -302,7 +302,7 @@
     const foot = $('foot-attr');
     foot.append(`${S.attribution} `, link(S.terms_url, 'Terms of use'), '.');
     if (M.budgetUrl) { const b = $('budget-src'); b.textContent = 'Budget 2026 proposals: Department of Finance Canada, Budget 2026, '; b.append(link(M.budgetUrl, 'Tax measures: Supplementary information'), '.'); }
-    $('kicker').textContent = `Canada's money year, graphed · Bank of Canada data to ${longDate(M.retrieved)}`;
+    $('kicker').textContent = `Data story · Bank of Canada data to ${longDate(M.retrieved)}`;
   }
 
   slider.max = DAYS;

@@ -15,7 +15,7 @@
     <a href="/builds/planning-timeline/">About this build</a>
   </header>
   <main>
-    <p class="kicker" id="kicker">Interactive · Canadian rules</p>
+    <p class="kicker" id="kicker"><span>Personal timeline ·</span> <span>Canadian rules</span></p>
     <h1 id="finding" aria-live="polite">Your planning timeline</h1>
 
     <form id="form" class="ask" novalidate>
@@ -34,39 +34,52 @@
     </section>
 
     <div class="choices">
-      <section class="card" id="cpp" aria-labelledby="cpp-h">
-        <p class="kicker">Canada Pension Plan</p>
-        <h2 id="cpp-h">When to start CPP</h2>
-        <label class="slider"><span>Start at <output id="cpp-age"></output></span><input type="range" id="cpp-range"></label>
-        <p class="big"><output id="cpp-big"></output></p>
-        <p id="cpp-text"></p>
-        <svg class="mini" id="cpp-chart" role="img" aria-labelledby="cpp-chart-t"><title id="cpp-chart-t">Total CPP received by age, for this start age and the standard age</title></svg>
-        <p class="note">Pure arithmetic in "years of the standard pension": no inflation indexing, tax, survivor benefits or investment return.</p>
-      </section>
-
-      <section class="card" id="oas" aria-labelledby="oas-h">
-        <p class="kicker">Old Age Security</p>
-        <h2 id="oas-h">When to start OAS</h2>
-        <label class="slider"><span>Start at <output id="oas-age"></output></span><input type="range" id="oas-range"></label>
-        <p class="big"><output id="oas-big"></output></p>
-        <p id="oas-text"></p>
-        <svg class="mini" id="oas-chart" role="img" aria-labelledby="oas-chart-t"><title id="oas-chart-t">Total OAS received by age, for this start age and the earliest age</title></svg>
-        <div class="recovery">
-          <label for="income">Net income in <span id="rec-year"></span> <span class="note">(an example)</span></label>
-          <input id="income" type="number" inputmode="numeric" step="1000" min="0">
-          <p id="rec-text"></p>
+      <section class="choice" id="cpp" aria-labelledby="cpp-h">
+        <div class="copy">
+          <p class="kicker">Canada Pension Plan</p>
+          <h2 id="cpp-h">When to start CPP</h2>
+          <label class="slider"><span>Start at <output id="cpp-age"></output></span><input type="range" id="cpp-range"></label>
+          <p class="big"><output id="cpp-big"></output></p>
+          <p id="cpp-text"></p>
+        </div>
+        <div class="fig">
+          <svg class="mini" id="cpp-chart" role="img" aria-labelledby="cpp-chart-t"><title id="cpp-chart-t">Total CPP received by age, for this start age and the standard age</title></svg>
+          <p class="note">Pure arithmetic in "years of the standard pension": no inflation indexing, tax, survivor benefits or investment return.</p>
         </div>
       </section>
 
-      <section class="card" id="rrif" aria-labelledby="rrif-h">
-        <p class="kicker">RRSP to RRIF</p>
-        <h2 id="rrif-h">The minimum that must come out</h2>
-        <p id="rrif-text"></p>
-        <svg class="mini" id="rrif-chart" role="img" aria-labelledby="rrif-chart-t"><title id="rrif-chart-t">The RRIF minimum withdrawal by age, and the share of a fund left if only the minimum comes out</title></svg>
-        <p class="legend"><span class="key bar"></span>Minimum each year, as a share of the fund (left scale) <span class="key dash"></span>Share of the fund left, if only the minimum comes out and it earns nothing (from all of it to none)</p>
-        <label for="fund">A fund of <span class="note">(an example)</span></label>
-        <input id="fund" type="number" inputmode="numeric" step="10000" min="0">
-        <p id="fund-text"></p>
+      <section class="choice" id="oas" aria-labelledby="oas-h">
+        <div class="copy">
+          <p class="kicker">Old Age Security</p>
+          <h2 id="oas-h">When to start OAS</h2>
+          <label class="slider"><span>Start at <output id="oas-age"></output></span><input type="range" id="oas-range"></label>
+          <p class="big"><output id="oas-big"></output></p>
+          <p id="oas-text"></p>
+          <div class="recovery">
+            <label for="income">Net income in <span id="rec-year"></span> <span class="note">(an example)</span></label>
+            <input id="income" type="number" inputmode="numeric" step="1000" min="0">
+            <p id="rec-text"></p>
+          </div>
+        </div>
+        <div class="fig">
+          <svg class="mini" id="oas-chart" role="img" aria-labelledby="oas-chart-t"><title id="oas-chart-t">Total OAS received by age, for this start age and the earliest age</title></svg>
+          <p class="note">Pure arithmetic in "years of the pension at the earliest age", with the rise at the later age counted for both.</p>
+        </div>
+      </section>
+
+      <section class="choice" id="rrif" aria-labelledby="rrif-h">
+        <div class="copy">
+          <p class="kicker">RRSP to RRIF</p>
+          <h2 id="rrif-h">The minimum that must come out</h2>
+          <p id="rrif-text"></p>
+          <label for="fund">A fund of <span class="note">(an example)</span></label>
+          <input id="fund" type="number" inputmode="numeric" step="10000" min="0">
+          <p id="fund-text"></p>
+        </div>
+        <div class="fig">
+          <svg class="mini" id="rrif-chart" role="img" aria-labelledby="rrif-chart-t"><title id="rrif-chart-t">The RRIF minimum withdrawal by age, and the share of a fund left if only the minimum comes out</title></svg>
+          <p class="legend"><span class="key key-bar"></span>Minimum each year, as a share of the fund (left scale) <span class="key key-dash"></span>Share of the fund left, if only the minimum comes out and it earns nothing (from all of it to none)</p>
+        </div>
       </section>
     </div>
 

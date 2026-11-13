@@ -64,8 +64,11 @@ for (const width of [390, 1440]) {
 
     test('the header, the sources, the attribution and terms, and the education and AI lines', async ({ page }) => {
       await page.goto(url);
-      await expect(page.locator('.bar a')).toHaveText(['Mohammed El Chayeb', '← Money, then and now', 'About this build']);
-      expect(await page.locator('.bar a').evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['/', '/builds/money-then-now/app/', '/builds/money-then-now/']);
+      await expect(page.locator('.bar a')).toHaveText(['Mohammed El Chayeb', 'About this build']);
+      expect(await page.locator('.bar a').evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['/', '/builds/money-then-now/']);
+      await expect(page.locator('.crumb a')).toHaveText('← Money, then and now');
+      await expect(page.locator('.crumb a')).toHaveAttribute('href', '/builds/money-then-now/app/');
+      await expect(page.locator('#kicker')).toHaveText(/^Data story · Bank of Canada data to \w+ \d{1,2}, \d{4}$/);
       await expect(page.locator('button, [aria-pressed]')).toHaveCount(0); // no theme switch
       await expect(page.locator('.foot')).toContainText('Education only, not advice. Made with AI assistance; every figure is computed from the dated public data named below.');
       await expect(page.locator('#foot-attr')).toContainText('Not affiliated with or endorsed by the Bank of Canada');

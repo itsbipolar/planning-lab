@@ -49,8 +49,10 @@
 
   // Places labels so that no two overlap: each label tries its candidate positions in order and keeps the first that
   // stays inside the chart and clear of every label (and reserved mark) placed before it; one that fits nowhere is left out.
-  function placer(layer, W) {
+  // Every label placed gets a ground-coloured backing, so no line or gridline runs through its words.
+  function placer(layer, W, backs) {
     var boxes = [];
+    function back(b) { el('rect', { x: (b.x - 3).toFixed(1), y: (b.y - 1).toFixed(1), width: (b.w + 6).toFixed(1), height: (b.h + 2).toFixed(1), 'class': 'lbl-bg' }, backs); }
     function hit(b) { return boxes.some(function (o) { return b.x < o.x + o.w + 4 && o.x < b.x + b.w + 4 && b.y < o.y + o.h + 1 && o.y < b.y + b.h + 1; }); }
     function fill(t, text) {
       t.textContent = '';
@@ -58,7 +60,7 @@
     }
     return {
       reserve: function (b) { boxes.push(b); },
-      fixed: function (t) { var b = t.getBBox(); boxes.push({ x: b.x, y: b.y, w: b.width, h: b.height }); return t; },
+      fixed: function (t, bare) { var bb = t.getBBox(), b = { x: bb.x, y: bb.y, w: bb.width, h: bb.height }; boxes.push(b); if (!bare) back(b); return t; },
       put: function (cls, cands) {
         var t = el('text', { 'class': cls }, layer);
         for (var i = 0; i < cands.length; i++) {
@@ -66,7 +68,7 @@
           fill(t, c.text); t.setAttribute('x', c.x); t.setAttribute('y', c.y); t.setAttribute('text-anchor', c.anchor || 'start');
           var bb = t.getBBox(), b = { x: bb.x, y: bb.y, w: bb.width, h: bb.height };
           var extra = c.extra ? c.extra(b) : null;
-          if (b.x >= 0 && b.x + b.w <= W && !hit(b) && !(extra && hit(extra))) { boxes.push(b); if (extra) boxes.push(extra); return { t: t, b: b, c: c }; }
+          if (b.x >= -0.25 && b.x + b.w <= W + 0.25 && !hit(b) && !(extra && hit(extra))) { boxes.push(b); back(b); if (extra) boxes.push(extra); return { t: t, b: b, c: c }; }
         }
         t.remove(); return null;
       },
@@ -91,34 +93,60 @@
     var N = YEARS.length, step = W / N;
     var X = function (y) { return (y - M.first) * step; }, CX = function (y) { return X(y) + step / 2; };
     var sel = state.year, scx = CX(sel);
-    var marks = el('g', {}, svg), labels = el('g', {}, svg);
-    var P = placer(labels, W), lineGap = fs + 4;
+    var marks = el('g', {}, svg), backs = el('g', {}, svg), labels = el('g', {}, svg);
+    var P = placer(labels, W, backs), lineGap = fs + 4;
     var pal = { n: hex(tok('neutral')), up: hex(tok('d2')), down: hex(tok('d1')) };
 
-    // A lane heading: the title in bold, the note after it on the same line when it fits, else on the next line.
-    function head(y, title, note) {
+    // A lane heading: the title in bold, the note after it on the same line when it fits, else on the next line; then the
+    // lane's own key on the line below, wrapping between items (never inside one).
+    function head(y, title, note, key) {
       var t = el('text', { x: 0, y: y + fs + 3, 'class': 'lane-t' }, labels, title);
       var tb = t.getBBox(), bottom = y + fs + 3;
       if (note) {
         var n = el('text', { x: tb.width + 12, y: bottom, 'class': 'lbl-2' }, labels, note);
         if (tb.width + 12 + n.getBBox().width > W) { n.setAttribute('x', 0); bottom += lineGap + 2; n.setAttribute('y', bottom); }
-        P.fixed(n);
+        P.fixed(n, true);
       }
-      P.fixed(t);
+      P.fixed(t, true);
+      if (key) {
+        var kx = 0, sw = fs + 3, base = bottom + lineGap + 4;
+        key.forEach(function (k) {
+          var kt = el('text', { x: 0, y: base, 'class': k.cls ? 'key-t' : 'key-t key-note' }, labels, k.text);
+          var w = (k.cls ? sw + 6 : 0) + kt.getBBox().width;
+          if (kx > 0 && kx + w > W) { kx = 0; base += lineGap + 2; }
+          if (k.line) el('line', { x1: kx, x2: kx + sw, y1: base - fs / 3, y2: base - fs / 3, 'class': k.cls }, labels);
+          else if (k.cls) el('rect', { x: kx, y: base - fs + 3, width: sw, height: fs - 3, 'class': k.cls }, labels);
+          kt.setAttribute('x', kx + (k.cls ? sw + 6 : 0)); kt.setAttribute('y', base);
+          P.fixed(kt, true);
+          kx += w + (narrow ? 14 : 20);
+        });
+        bottom = base;
+      }
       return bottom + 6;
+    }
+    // A line or a band of marks becomes an obstacle for the labels: one box per year, from the lowest to the highest point
+    // the marks reach in that year's column (with the step up from the year before).
+    function obstacle(y, ys) {
+      var a = Math.min.apply(null, ys), b = Math.max.apply(null, ys);
+      P.reserve({ x: X(y), y: a - 2, w: step, h: b - a + 4 });
     }
 
     // Lane 1: prices each year, one stripe per year
-    var y0 = head(0, 'Prices each year', 'change in the year’s average price level');
+    var y0 = head(0, 'Prices each year', 'change in the year’s average price level', [
+      { cls: 'key-fall', text: 'prices fell' }, { cls: 'key-flat', text: 'about flat' }, { cls: 'key-rise', text: 'prices rose' },
+      { text: 'full colour at ' + CLAMP + '% or more either way' }]);
     var rows = narrow ? 3 : 2, rowH = fs + 7, bandTop = y0;
     var rowY = function (r) { return bandTop + (r + 1) * rowH - 5; };
     var sTop = bandTop + rows * rowH + 4, sH = narrow ? 56 : 84;
     YEARS.forEach(function (y) {
       el('rect', { x: X(y).toFixed(2), y: sTop, width: (step + 0.4).toFixed(2), height: sH, fill: stripeColour(M.infl[y], pal), 'class': 'stripe', 'data-year': y }, marks);
     });
+    P.reserve({ x: 0, y: sTop + 2, w: W, h: sH - 2 });
 
     // Lane 2: borrowing vs prices
-    var l2 = head(sTop + sH + (narrow ? 26 : 32), 'Borrowing vs prices', 'average prime rate and price change, % a year');
+    var l2 = head(sTop + sH + (narrow ? 26 : 32), 'Borrowing vs prices', 'average prime rate and price change, % a year', [
+      { cls: 'line-prices', line: true, text: 'price change' }, { cls: 'line-prime', line: true, text: 'prime rate' },
+      { cls: 'gap-pos', text: 'prime above prices' }, { cls: 'gap-neg', text: 'prime below prices' }]);
     var p2Top = l2 + 4, p2H = narrow ? 270 : 230, pad2 = fs + 12;
     var vals = [];
     YEARS.forEach(function (y) { vals.push(M.infl[y]); if (M.prime[y] != null) vals.push(M.prime[y]); });
@@ -139,6 +167,12 @@
     }
     el('path', { d: stepPath(function (y) { return M.infl[y]; }, M.first), 'class': 'line-prices' }, marks);
     el('path', { d: stepPath(function (y) { return M.prime[y]; }, M.primeFirst), 'class': 'line-prime' }, marks);
+    YEARS.forEach(function (y) {
+      var ys = [Y2(M.infl[y])];
+      if (M.prime[y] != null) ys.push(Y2(M.prime[y]));
+      if (y > M.first) { ys.push(Y2(M.infl[y - 1])); if (M.prime[y - 1] != null && M.prime[y] != null) ys.push(Y2(M.prime[y - 1])); }
+      obstacle(y, ys);
+    });
 
     // Lane 3: what the amount is worth in each year's dollars (log scale)
     var l3 = head(p2Top + p2H + (narrow ? 30 : 34), 'What ' + typed(state.amount) + ' from ' + sel + ' is worth', 'in each year’s dollars, log scale');
@@ -155,6 +189,7 @@
     var d3 = '';
     YEARS.forEach(function (y) { var py = Y3(w[y]).toFixed(2); d3 += (d3 ? ' L' : 'M') + X(y).toFixed(2) + ' ' + py + ' L' + X(y + 1).toFixed(2) + ' ' + py; });
     el('path', { d: d3, 'class': 'line-money' }, marks);
+    YEARS.forEach(function (y) { obstacle(y, y > M.first ? [Y3(w[y]), Y3(w[y - 1])] : [Y3(w[y])]); });
     var p3Bottom = p3Top + p3H;
 
     // The axis of years: decade ticks, as many as fit without touching
@@ -191,7 +226,7 @@
     P.put('lbl', beside(xr, xl, Y2(M.infl[sel]) + fs / 3, [['prices ', 'b'], [signed(M.infl[sel])]], dy, 4));
     if (M.prime[sel] != null) {
       var mid = (Y2(M.prime[sel]) + Y2(M.infl[sel])) / 2;
-      P.put('lbl-2', beside(xr, xl, mid + fs / 3, 'real ' + signed(realRate(M, sel)), dy, 2));
+      P.put('lbl-2', beside(xr, xl, mid + fs / 3, 'real ' + signed(realRate(M, sel)), dy, 6));
     } else {
       P.put('lbl-2', beside(xr, xl, p2Top + pad2 - 2, 'no prime-rate data before ' + M.primeFirst, dy, 1).concat(beside(xr, xl, p2Top + pad2 - 2, 'no prime data yet', dy, 1)));
     }
@@ -219,14 +254,17 @@
     if (EX.recent != null) stripeLabel(EX.recent, [[EX.recent + ' ', 'b'], [signed(M.infl[EX.recent]) + ', highest since ' + EX.since]], [[EX.recent + ' ', 'b'], [signed(M.infl[EX.recent])]]);
 
     // Spans when prime was below prices (a negative real rate)
+    // labelled above the lines, clear of every mark
     SPANS.forEach(function (s) {
-      var lowest = 0;
-      for (var y = s[0]; y <= s[1]; y++) lowest = Math.max(lowest, Y2(Math.min(M.prime[y], M.infl[y])));
+      var highest = Infinity;
+      for (var y = s[0]; y <= s[1]; y++) highest = Math.min(highest, Y2(Math.max(M.prime[y], M.infl[y])));
       var a = X(s[0]), b = X(s[1] + 1), c = (a + b) / 2, cands = [];
+      var foot = highest - 4, lead = function (bx) { return { x: c - 1, y: bx.y + bx.h, w: 2, h: Math.max(0, foot - bx.y - bx.h - 2) }; };
       ['prime below prices, ' + span(s[0], s[1]), span(s[0], s[1]) + ': below'].forEach(function (text) {
-        for (var k = 0; k < 4; k++) [[c, 'middle'], [b, 'end'], [a, 'start']].forEach(function (p) { cands.push({ x: p[0], y: lowest + fs + 4 + k * dy, anchor: p[1], text: text }); });
+        for (var k = 0; k < 8; k++) [[c, 'middle'], [b, 'end'], [a, 'start']].forEach(function (p) { cands.push({ x: p[0], y: highest - 7 - k * dy, anchor: p[1], text: text, extra: k ? lead : null }); });
       });
-      P.put('lbl lbl-neg', cands);
+      var got = P.put('lbl lbl-neg', cands);
+      if (got && got.c.extra) el('line', { x1: c, x2: c, y1: got.b.y + got.b.h + 1, y2: foot, 'class': 'leader' }, marks);
     });
 
     // The prime rate's peak, and the series names where they are easy to find
@@ -235,18 +273,24 @@
     P.put('lbl', [['prime rate, peak ' + pct(M.prime[pk]) + ' in ' + pk], ['prime ' + pct(M.prime[pk]) + ' in ' + pk], ['prime rate']].reduce(function (acc, t) {
       return acc.concat([{ x: pc, y: pyy, anchor: 'middle', text: t[0] }, { x: pc - 4, y: pyy, anchor: 'end', text: t[0] }, { x: pc + 4, y: pyy, anchor: 'start', text: t[0] }]);
     }, []));
+    // Scale labels after the notes: on their gridline at either edge, above it or below it, or else at the first clear
+    // stretch along it, wherever no mark or note is
+    function tick(y, t) {
+      var c = [{ x: 0, y: y - 4, text: t }, { x: W - 1, y: y - 4, anchor: 'end', text: t }, { x: 0, y: y + fs + 1, text: t }, { x: W - 1, y: y + fs + 1, anchor: 'end', text: t }];
+      for (var i = 1; i < 12; i++) c.push({ x: W * i / 12, y: y - 4, text: t });
+      P.put('tick', c);
+    }
+    for (var g2 = Math.ceil(lo2 / gs) * gs; g2 <= hi2; g2 += gs) {
+      var gv = Math.round(g2 * 1e6) / 1e6;
+      tick(Y2(gv), gv === 0 ? '0%' : (gv > 0 ? '+' : MINUS) + Math.abs(gv) + '%');
+    }
+    keep3.forEach(function (v) { tick(Y3(v), v >= 1 ? '$' + v.toLocaleString('en-CA') : money(v)); });
+
     var rc = CX(EX.rise), ryy = Y2(M.infl[EX.rise]) - 6;
     P.put('lbl', [{ x: rc + 4, y: ryy, anchor: 'start', text: 'price change' }, { x: rc, y: ryy, anchor: 'middle', text: 'price change' }, { x: rc + 4, y: ryy + dy * 2, anchor: 'start', text: 'price change' }]);
 
     // The first year's value on the money line
     if (sel !== M.first) P.put('lbl-2', beside(CX(M.first) + 4, -1, Y3(w[M.first]) - 8, money(w[M.first]) + ' in ' + M.first, dy, 2).filter(function (c) { return c.anchor === 'start'; }));
-
-    // Scale labels last: they give way to everything else
-    for (var g2 = Math.ceil(lo2 / gs) * gs; g2 <= hi2; g2 += gs) {
-      var gv = Math.round(g2 * 1e6) / 1e6;
-      P.put('tick', [{ x: 0, y: Y2(gv) - 4, text: gv === 0 ? '0%' : (gv > 0 ? '+' : MINUS) + Math.abs(gv) + '%' }, { x: W, y: Y2(gv) - 4, anchor: 'end', text: gv === 0 ? '0%' : (gv > 0 ? '+' : MINUS) + Math.abs(gv) + '%' }]);
-    }
-    keep3.forEach(function (v) { var t = v >= 1 ? '$' + v.toLocaleString('en-CA') : money(v); P.put('tick', [{ x: 0, y: Y3(v) - 4, text: t }, { x: W, y: Y3(v) - 4, anchor: 'end', text: t }]); });
 
     // Words for screen readers, and the image's name
     $('chart-title').textContent = 'Canadian prices, the prime rate and purchasing power, ' + M.first + ' to ' + M.last + ', with ' + sel + ' marked';
@@ -327,7 +371,6 @@
   // ---------- controls ----------
   var year = $('year'), amount = $('amount');
   year.min = String(M.first); year.max = String(M.last); year.value = String(EXAMPLE_YEAR); amount.value = String(EXAMPLE_AMOUNT);
-  $('clamp').textContent = CLAMP + '%';
   $('kicker').textContent = 'Data story · Statistics Canada and Bank of Canada data to ' + M.last;
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();

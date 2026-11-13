@@ -3,14 +3,17 @@ html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 17px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
 .page{max-width:80rem;margin:0 auto;padding:0 20px}
 @media (min-width:1100px){.page{padding:0 40px}}
-.bar{display:flex;gap:1.5rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
-.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto}
+.bar{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
+.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto;white-space:nowrap}
+.bar a{white-space:nowrap}
+@media (max-width:480px){.bar a:not(.brand){font-size:15px}}
 a{color:inherit;text-underline-offset:4px}
 h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;margin:0;text-wrap:balance}
 h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:28ch;margin-top:.5rem}
 h2{font-size:1.55rem;line-height:1.15;margin:.35rem 0 1rem}
 .kicker{font-family:var(--font-mono);font-size:.8rem;color:var(--t-ink3);margin:2.5rem 0 0}
-.card .kicker{margin:0}
+.choice .kicker{margin:0}
+.kicker span{white-space:nowrap}
 .note{font-size:15px;color:var(--t-ink3)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 :focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
@@ -31,16 +34,18 @@ button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-
 #tl .mono{font-family:var(--font-mono)}
 .tl-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:.9rem 0 0}
 
-.choices{display:grid;gap:1.25rem;margin-top:3rem}
-@media (min-width:1000px){.choices{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.card{background:var(--t-raised);border-top:3px solid var(--t-rule);padding:1.25rem 1.25rem 1.4rem}
-.card p{margin:.5rem 0}
+.choices{margin-top:3rem}
+.choice{display:grid;gap:.5rem 3.5rem;border-top:1px solid var(--t-rule);padding:1.75rem 0 2.25rem}
+@media (min-width:1000px){.choice{grid-template-columns:minmax(0,25rem) minmax(0,1fr);align-items:start}.choice .fig{padding-top:1.5rem}}
+.choice p{margin:.5rem 0;max-width:62ch}
+.fig{min-width:0}
 .slider{display:grid;gap:.35rem;font-weight:600}
 .slider output{font-variant-numeric:tabular-nums}
 input[type=range]{width:100%;min-height:44px;accent-color:var(--t-point)}
 .big{font-family:var(--font-display);font-weight:600;font-size:2.1rem;line-height:1.1;margin:.4rem 0 .2rem !important;font-variant-numeric:tabular-nums}
-.mini{display:block;width:100%;height:auto;margin:.75rem 0 .25rem;overflow:visible}
+.mini{display:block;max-width:100%;height:auto;margin:.75rem 0 .25rem;overflow:visible}
 .mini text{font-family:var(--font-ui)}
+.mini .mono,#tl .mono{font-family:var(--font-mono)}
 .recovery{border-top:1px solid var(--t-rule);margin-top:1rem;padding-top:.9rem}
 .recovery label,#rrif label{display:block;font-weight:600;margin:.6rem 0 .35rem}
 
@@ -51,9 +56,8 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--t-point)}
 .sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:15px;color:var(--t-ink2)}
 .foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:15px;color:var(--t-ink2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
 .foot p{margin:0}
-.legend{font-size:14px;color:var(--t-ink2);display:block}
+.legend{font-size:14px;line-height:1.7;color:var(--t-ink2);display:block}
 .key{display:inline-block;width:14px;height:10px;margin:0 .35rem 0 0;vertical-align:middle;line-height:0}
-.legend .key.bar{height:10px}
-.key.bar{background:var(--t-d2)}
-.key.dash{border-top:2px dashed var(--t-ink);height:0;width:18px;margin-left:.6rem;vertical-align:middle}
+.key.key-bar{background:var(--t-d3)}
+.key.key-dash{border-top:2px dashed var(--t-ink);height:0;width:18px;margin-left:.6rem;vertical-align:middle}
 h1{max-width:32ch}

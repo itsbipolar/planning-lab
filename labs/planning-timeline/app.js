@@ -29,70 +29,75 @@
   var state = { birth: EXAMPLE_BIRTH, example: true, cpp: R.cppHi, oas: R.oasHi, income: EXAMPLE_INCOME, fund: EXAMPLE_FUND };
 
   // ---------- the timeline ----------
+  // Every label and reading is drawn last, with a ground-coloured halo, so the "you are here" line breaks behind it and
+  // no word sits on a bar.
+  function halo(attrs) { attrs.stroke = col('ground'); attrs['stroke-width'] = 4; attrs['stroke-linejoin'] = 'round'; attrs['paint-order'] = 'stroke'; return attrs; }
   function drawTimeline(p) {
     var svg = $('tl'); clear(svg);
     var W = Math.max(320, $('tl-frame').clientWidth), narrow = W < 640;
-    var padL = 4, padR = narrow ? 14 : 24, top = 34, laneH = narrow ? 64 : 62, rrifH = narrow ? 92 : 86, axisH = 46;
-    var H = top + laneH * 3 + rrifH + axisH;
+    var fs = 13, small = 12, barH = 20;
+    var padL = 4, padR = narrow ? 14 : 24, top = 34;
+    var tfsaH = 58, laneH = 82, rrifH = narrow ? 104 : 100, axisH = 46;
+    var H = top + tfsaH + laneH * 2 + rrifH + axisH;
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
     var x = function (a) { return padL + (a - lo) / (hi - lo) * (W - padL - padR); };
     var ink = col('ink'), ink2 = col('ink2'), ink3 = col('ink3'), rule = col('rule'), ground = col('ground');
-    var d1 = col('d1'), d2 = col('d2'), d3 = col('d3'), d4 = col('d4'), neutral = col('neutral'), point = col('point');
+    var d1 = col('d1'), d3 = col('d3'), d4 = col('d4'), neutral = col('neutral'), point = col('point');
     var defs = el('defs', {}, svg);
     function grad(id, stops) { var g = el('linearGradient', { id: id, x1: 0, x2: 1, y1: 0, y2: 0 }, defs); stops.forEach(function (s) { el('stop', { offset: s[0], 'stop-color': s[1] }, g); }); }
     var stdAt = (R.cppStd - R.cppLo) / (R.cppHi - R.cppLo);
     grad('g-cpp', [[0, d4], [stdAt, neutral], [1, d1]]);
     grad('g-oas', [[0, neutral], [1, d1]]);
-    var fs = narrow ? 12 : 13;
-    var later = [];
-    function label(y, name, detail) { later.push([y, name, detail]); }
-    function drawLabels() { later.forEach(function (l) {
-      var t = el('text', { x: padL, y: l[0], fill: ink, 'font-size': fs + 1, 'font-weight': 650 }, svg, l[1]);
-      if (l[2]) el('tspan', { fill: ink2, 'font-weight': 400 }, t, '  ' + l[2]);
+    var texts = [], dots = [];
+    function label(y, name, detail) { texts.push(function () {
+      var t = el('text', halo({ x: padL, y: y, fill: ink, 'font-size': fs + 1, 'font-weight': 650 }), svg, name);
+      if (detail) el('tspan', { fill: ink2, 'font-weight': 400 }, t, '  ' + detail);
     }); }
+    function reading(xx, y, str, anchor) { texts.push(function () { el('text', halo({ x: xx, y: y, fill: ink2, 'font-size': fs, 'text-anchor': anchor || 'start', 'class': 'mono' }), svg, str); }); }
+    var bar = function (y) { return y + 26; }, below = function (y) { return y + 26 + barH + fs + 9; };
     var lanes = []; var y = top;
     // TFSA
     var t = p.lanes[0];
-    label(y + 16, 'TFSA', t.open ? 'room since ' + t.startYear + ': ' + money(t.room) + ' by ' + t.roomTo : 'room starts in ' + t.startYear);
-    if (t.from < hi) el('rect', { x: x(Math.max(lo, t.from)), y: y + 26, width: x(hi) - x(Math.max(lo, t.from)), height: 20, fill: d3 }, svg);
+    label(y + 17, 'TFSA', t.open ? 'room since ' + t.startYear + ': ' + money(t.room) + ' by ' + t.roomTo : 'room starts in ' + t.startYear);
+    if (t.from < hi) el('rect', { x: x(Math.max(lo, t.from)), y: bar(y), width: x(hi) - x(Math.max(lo, t.from)), height: barH, fill: d3 }, svg);
     lanes.push(['TFSA', t.open ? 'Contribution room has built up since ' + t.startYear + ': ' + money(t.room) + ' in all by ' + t.roomTo + ', if you lived in Canada and were old enough.' : 'Contribution room starts in ' + t.startYear + '.']);
-    y += laneH;
-    // CPP
-    label(y + 16, 'CPP', narrow ? 'start ' + R.cppLo + '–' + R.cppHi : 'start any month from ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + '–' + p.cpp.closes + ' for you)');
-    el('rect', { x: x(R.cppLo), y: y + 26, width: x(R.cppHi + 1) - x(R.cppLo), height: 20, fill: 'url(#g-cpp)' }, svg);
+    y += tfsaH;
+    // CPP: the readings sit under the bar, never on it
+    label(y + 17, 'CPP', narrow ? 'start ' + R.cppLo + '–' + R.cppHi : 'start any month from ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + '–' + p.cpp.closes + ' for you)');
+    el('rect', { x: x(R.cppLo), y: bar(y), width: x(R.cppHi + 1) - x(R.cppLo), height: barH, fill: 'url(#g-cpp)' }, svg);
     var cLo = (cppShareAt(R.cppLo) - 1) * 100, cHi = (cppShareAt(R.cppHi) - 1) * 100;
     if (x(R.cppHi + 1) - x(R.cppLo) > 110) {
-      el('text', { x: x(R.cppLo), y: y + 61, fill: ink2, 'font-size': fs, 'class': 'mono' }, svg, signed(cLo));
-      el('text', { x: x(R.cppHi + 1), y: y + 61, fill: ink2, 'font-size': fs, 'text-anchor': 'end', 'class': 'mono' }, svg, signed(cHi));
-    } else el('text', { x: x(R.cppLo), y: y + 61, fill: ink2, 'font-size': fs, 'class': 'mono', 'text-anchor': 'end' }, svg, signed(cLo) + ' to ' + signed(cHi));
-    el('line', { x1: x(R.cppStd), x2: x(R.cppStd), y1: y + 24, y2: y + 48, stroke: ink, 'stroke-width': 1.5, 'stroke-dasharray': '3 2' }, svg);
-    var hx = x(state.cpp); el('circle', { cx: hx, cy: y + 26 + 10, r: 8, fill: point, stroke: ground, 'stroke-width': 2 }, svg);
+      reading(x(R.cppLo), below(y), signed(cLo));
+      reading(x(R.cppHi + 1), below(y), signed(cHi), 'end');
+    } else reading(x(R.cppLo), below(y), signed(cLo) + ' to ' + signed(cHi));
+    el('line', { x1: x(R.cppStd), x2: x(R.cppStd), y1: bar(y) - 2, y2: bar(y) + barH + 2, stroke: ink, 'stroke-width': 1.5, 'stroke-dasharray': '3 2' }, svg);
+    dots.push([x(state.cpp), bar(y) + barH / 2]);
     lanes.push(['CPP', 'Can start in any month from age ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + ' to ' + p.cpp.closes + ' for you): ' + signed(cLo) + ' a month at ' + R.cppLo + ', ' + signed(cHi) + ' at ' + R.cppHi + '.']);
     y += laneH;
     // OAS
     var oHi = (oasShareAt(R.oasHi) - 1) * 100;
-    label(y + 16, 'OAS', narrow ? 'start ' + R.oasLo + '–' + R.oasHi : 'start any month from ' + R.oasLo + ' to ' + R.oasHi + ' (' + p.oas.opens + '–' + p.oas.closes + ' for you)');
-    el('rect', { x: x(R.oasLo), y: y + 26, width: x(R.oasHi + 1) - x(R.oasLo), height: 20, fill: 'url(#g-oas)' }, svg);
-    el('text', { x: x(R.oasHi + 1), y: y + 61, fill: ink2, 'font-size': fs, 'text-anchor': 'end', 'class': 'mono' }, svg, signed(oHi));
+    label(y + 17, 'OAS', narrow ? 'start ' + R.oasLo + '–' + R.oasHi : 'start any month from ' + R.oasLo + ' to ' + R.oasHi + ' (' + p.oas.opens + '–' + p.oas.closes + ' for you)');
+    el('rect', { x: x(R.oasLo), y: bar(y), width: x(R.oasHi + 1) - x(R.oasLo), height: barH, fill: 'url(#g-oas)' }, svg);
+    reading(x(R.oasHi + 1), below(y), signed(oHi), 'end');
     if (M.oasBoostAge > R.oasHi && M.oasBoostAge < hi) {
-      el('rect', { x: x(M.oasBoostAge), y: y + 26, width: x(hi) - x(M.oasBoostAge), height: 20, fill: d1, opacity: 0.35 }, svg);
-      el('text', { x: x(M.oasBoostAge) + 4, y: y + 61, fill: ink2, 'font-size': fs, 'class': 'mono' }, svg, '+' + pct(R.oasBoost) + ' from ' + M.oasBoostAge);
+      el('rect', { x: x(M.oasBoostAge), y: bar(y), width: x(hi) - x(M.oasBoostAge), height: barH, fill: d1, opacity: 0.35 }, svg);
+      reading(x(M.oasBoostAge), below(y), '+' + pct(R.oasBoost) + ' from ' + M.oasBoostAge);
     }
-    var ox = x(state.oas); el('circle', { cx: ox, cy: y + 26 + 10, r: 8, fill: point, stroke: ground, 'stroke-width': 2 }, svg);
+    dots.push([x(state.oas), bar(y) + barH / 2]);
     lanes.push(['OAS', 'Can start from ' + R.oasLo + ', or later up to ' + R.oasHi + ' for ' + signed(oHi) + ' a month; the pension rises by ' + pct(R.oasBoost) + ' from age ' + M.oasBoostAge + '.']);
     y += laneH;
-    // RRSP, then RRIF minimums as a staircase
-    label(y + 16, 'RRSP, then RRIF', narrow ? 'matures by ' + p.rrsp.matures : 'an RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + ' for you)');
-    var base = y + rrifH - 14, maxF = Math.max.apply(null, M.rrif.map(function (r) { return r.factor; })), tall = rrifH - 46;
-    el('rect', { x: x(lo), y: base - 12, width: x(R.rrsp + 1) - x(lo), height: 12, fill: d2, opacity: 0.55 }, svg);
+    // RRSP, then RRIF minimums as a staircase (a savings account, so the same data colour as the TFSA)
+    label(y + 17, 'RRSP, then RRIF', narrow ? 'matures by ' + p.rrsp.matures : 'an RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + ' for you)');
+    var base = y + rrifH - 4, maxF = Math.max.apply(null, M.rrif.map(function (r) { return r.factor; })), tall = rrifH - 58, band = 12;
+    el('rect', { x: x(lo), y: base - band, width: x(R.rrsp + 1) - x(lo), height: band, fill: d3, opacity: 0.45 }, svg);
     M.rrif.forEach(function (r) {
       if (r.age <= R.rrsp) return;
       var h = Math.max(2, r.factor / maxF * tall);
-      el('rect', { x: x(r.age), y: base - h, width: Math.max(1, x(r.age + 1) - x(r.age) - 1), height: h, fill: d2 }, svg);
+      el('rect', { x: x(r.age), y: base - h, width: Math.max(1, x(r.age + 1) - x(r.age) - 1), height: h, fill: d3 }, svg);
     });
     var first = M.rrif.filter(function (r) { return r.age > R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
-    el('text', { x: x(first.age), y: base - first.factor / maxF * tall - 6, fill: ink2, 'font-size': fs, 'class': 'mono', 'text-anchor': 'middle' }, svg, pct(first.factor * 100, 1));
-    el('text', { x: x(hi), y: base - tall - 6, fill: ink2, 'font-size': fs, 'class': 'mono', 'text-anchor': 'end' }, svg, pct(last.factor * 100, 0) + ' at ' + last.age);
+    reading(x(first.age) - 4, base - band - 6, pct(first.factor * 100, 1) + ' at ' + first.age, 'end');
+    reading(x(hi), base - tall - 7, pct(last.factor * 100, 0) + ' at ' + last.age, 'end');
     lanes.push(['RRSP and RRIF', 'An RRSP must mature by the end of the year you turn ' + R.rrsp + ' (' + p.rrsp.matures + '). As a RRIF, a minimum share comes out each year, from ' + pct(first.factor * 100, 2) + ' at ' + first.age + ' to ' + pct(last.factor * 100, 0) + ' at ' + last.age + '.']);
     // the axis: ages, and the calendar years they fall in for this person
     var ay = H - axisH + 6;
@@ -101,21 +106,23 @@
     for (var a = Math.ceil(lo / step) * step; a < hi; a += step) {
       if (a - lo < step / 2) continue;
       el('line', { x1: x(a), x2: x(a), y1: ay, y2: ay + 5, stroke: ink3 }, svg);
-      el('text', { x: x(a), y: ay + 19, fill: ink2, 'font-size': fs, 'text-anchor': 'middle', 'class': 'mono' }, svg, String(a));
-      el('text', { x: x(a), y: ay + 35, fill: ink3, 'font-size': fs - 1, 'text-anchor': 'middle', 'class': 'mono' }, svg, String(p.birthYear + a));
+      el('text', { x: x(a), y: ay + 19, fill: ink2, 'font-size': small, 'text-anchor': 'middle', 'class': 'mono' }, svg, String(a));
+      el('text', { x: x(a), y: ay + 35, fill: ink3, 'font-size': small, 'text-anchor': 'middle', 'class': 'mono' }, svg, String(p.birthYear + a));
     }
-    el('text', { x: padL, y: ay + 19, fill: ink3, 'font-size': fs - 1, 'class': 'mono' }, svg, 'age');
-    el('text', { x: padL, y: ay + 35, fill: ink3, 'font-size': fs - 1, 'class': 'mono' }, svg, 'year');
-    // you are here: the years behind are muted
+    el('text', { x: padL, y: ay + 19, fill: ink3, 'font-size': small, 'class': 'mono' }, svg, 'age');
+    el('text', { x: padL, y: ay + 35, fill: ink3, 'font-size': small, 'class': 'mono' }, svg, 'year');
+    // you are here: the years behind are muted; the line is drawn under every label, which breaks it with its halo
     if (p.age > lo) {
       var yx = x(Math.min(hi, p.age));
-      el('rect', { x: x(lo), y: top + 20, width: yx - x(lo), height: H - axisH - top - 14, fill: ground, opacity: 0.62 }, svg);
+      el('rect', { 'class': 'wash', x: x(lo), y: top + 20, width: yx - x(lo), height: H - axisH - top - 14, fill: ground, opacity: 0.62 }, svg);
       if (p.age < hi) {
-        el('line', { x1: yx, x2: yx, y1: 14, y2: H - axisH + 6, stroke: point, 'stroke-width': 2 }, svg);
-        el('text', { x: yx, y: 12, fill: point, 'font-size': fs + 1, 'font-weight': 700, 'text-anchor': yx > W * 0.8 ? 'end' : 'middle' }, svg, (state.example ? 'Example, ' : 'You, ') + p.age);
+        el('line', { 'class': 'here', x1: yx, x2: yx, y1: 16, y2: H - axisH + 6, stroke: ink, 'stroke-width': 1.5 }, svg);
+        texts.push(function () { el('text', halo({ x: yx, y: 12, fill: ink, 'font-size': fs + 1, 'font-weight': 700, 'text-anchor': yx > W * 0.8 ? 'end' : yx < W * 0.2 ? 'start' : 'middle' }), svg, (state.example ? 'Example, ' : 'You, ') + p.age); });
       }
     }
-    drawLabels();
+    // the start ages chosen with the sliders: the one marked choice, in the highlight colour
+    dots.forEach(function (d) { el('circle', { cx: d[0], cy: d[1], r: 8, fill: point, stroke: ground, 'stroke-width': 2 }, svg); });
+    texts.forEach(function (f) { f(); });
     $('tl-title').textContent = 'Planning timeline for someone born in ' + p.birthYear + ', aged ' + p.age + ' in ' + p.thisYear;
     var ul = $('tl-text'); ul.textContent = '';
     lanes.forEach(function (l) { var li = document.createElement('li'); li.textContent = l[0] + ': ' + l[1]; ul.appendChild(li); });
@@ -132,32 +139,46 @@
   }
 
   // ---------- a small two-line chart of totals ----------
+  // Chart text is set in CSS pixels (the SVG is drawn at its real width), never smaller than 12px. Line names sit in the
+  // right margin past the line ends; the crossing age sits above-left of its dot, clear of both lines.
+  var ageShort = function (a) { var y = Math.floor(a + 1e-9), m = Math.round((a - y) * 12); return m ? y + ' y ' + m + ' m' : String(y); };
+  function chartBox(svg, narrowH, wideH) {
+    var W = Math.max(280, Math.floor(svg.parentNode.clientWidth));
+    var H = W < 520 ? narrowH : Math.round(Math.min(wideH, Math.max(narrowH, W * 0.34)));
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    return [W, H];
+  }
   function totalsChart(svg, fa, fb, aLabel, bLabel, startA, startB, cross) {
     clear(svg);
-    var W = Math.max(260, svg.parentNode.clientWidth - 2), H = 170, pl = 30, pr = 8, pt = 12, pb = 26;
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    var box = chartBox(svg, 230, 300), W = box[0], H = box[1], pl = 34, pr = W < 520 ? 104 : 116, pt = 26, pb = 30;
     var x0 = Math.min(startA, startB), x1 = hi;
     var ymax = Math.max(fa(x1), fb(x1)) || 1;
     var X = function (v) { return pl + (v - x0) / (x1 - x0) * (W - pl - pr); }, Y = function (v) { return H - pb - v / ymax * (H - pt - pb); };
-    var ink2 = col('ink2'), ink3 = col('ink3'), rule = col('rule');
+    var ink3 = col('ink3'), rule = col('rule');
     el('line', { x1: pl, x2: W - pr, y1: H - pb, y2: H - pb, stroke: rule }, svg);
-    var step = Math.round((x1 - x0) / 4);
-    for (var a = Math.ceil(x0 / step) * step; a <= x1; a += step) el('text', { x: X(a), y: H - 8, fill: ink3, 'font-size': 11, 'text-anchor': 'middle', 'class': 'mono' }, svg, String(a));
-    el('text', { x: pl + 2, y: pt + 2, fill: ink3, 'font-size': 11, 'class': 'mono' }, svg, Math.round(ymax) + ' years of pension');
-    el('text', { x: pl - 4, y: H - pb, fill: ink3, 'font-size': 11, 'text-anchor': 'end', 'class': 'mono' }, svg, '0');
+    var step = Math.round((x1 - x0) / (W < 520 ? 4 : 6));
+    for (var a = Math.ceil(x0 / step) * step; a <= x1; a += step) el('text', { x: X(a), y: H - 9, fill: ink3, 'font-size': 12, 'text-anchor': 'middle', 'class': 'mono' }, svg, String(a));
+    el('text', { x: pl, y: pt - 12, fill: ink3, 'font-size': 12, 'class': 'mono' }, svg, Math.round(ymax) + ' years of pension');
+    el('text', { x: pl - 6, y: H - pb + 4, fill: ink3, 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, '0');
     function path(f, start, color, width) {
       var d = 'M' + X(start) + ' ' + Y(0); for (var v = start; v <= x1; v += 0.25) d += ' L' + X(v).toFixed(1) + ' ' + Y(f(v)).toFixed(1);
-      el('path', { d: d, fill: 'none', stroke: color, 'stroke-width': width }, svg);
+      el('path', { d: d, fill: 'none', stroke: color, 'stroke-width': width, 'stroke-linejoin': 'round' }, svg);
     }
     var same = Math.abs(startA - startB) < 1e-9;
     if (!same) path(fb, startB, col('d1'), 2);
     path(fa, startA, col('point'), 3);
-    var ya = Y(fa(x1)), yb = Y(fb(x1)), up = ya <= yb;
-    el('text', { x: W - pr, y: ya + (up ? -8 : 16), fill: col('point'), 'font-size': 12, 'font-weight': 700, 'text-anchor': 'end' }, svg, aLabel);
-    if (!same) el('text', { x: W - pr, y: yb + (up ? 16 : -8), fill: col('d1'), 'font-size': 12, 'font-weight': 600, 'text-anchor': 'end' }, svg, bLabel);
+    // names at the line ends, kept at least a line apart and inside the plot
+    var ends = [{ y: Y(fa(x1)) + 4, t: aLabel, c: col('point'), w: 700 }];
+    if (!same) ends.push({ y: Y(fb(x1)) + 4, t: bLabel, c: col('d1'), w: 650 });
+    ends.sort(function (p, q) { return p.y - q.y; });
+    if (ends.length > 1 && ends[1].y - ends[0].y < 17) { var mid = (ends[0].y + ends[1].y) / 2; ends[0].y = mid - 8.5; ends[1].y = mid + 8.5; }
+    var shift = Math.max(0, pt + 4 - ends[0].y); ends.forEach(function (e) { e.y += shift; });
+    ends.forEach(function (e) { el('text', halo({ x: W - pr + 8, y: e.y, fill: e.c, 'font-size': 13, 'font-weight': e.w }), svg, e.t); });
     if (cross != null && cross < x1) {
-      el('circle', { cx: X(cross), cy: Y(fa(cross)), r: 5, fill: col('ground'), stroke: col('ink'), 'stroke-width': 2 }, svg);
-      el('text', { x: X(cross), y: Y(fa(cross)) - 10, fill: col('ink'), 'font-size': 12, 'font-weight': 650, 'text-anchor': X(cross) > W * 0.75 ? 'end' : 'middle' }, svg, 'about ' + (Math.round(cross * 10) / 10));
+      var cx = X(cross), cy = Y(fa(cross));
+      el('circle', { cx: cx, cy: cy, r: 5, fill: col('ground'), stroke: col('ink'), 'stroke-width': 2 }, svg);
+      var ct = el('text', halo({ x: cx - 9, y: cy - 10, fill: col('ink'), 'font-size': 13, 'font-weight': 650, 'text-anchor': 'end' }), svg, 'about ' + (Math.round(cross * 10) / 10));
+      if (ct.getBBox().x < pl) { ct.setAttribute('x', cx + 9); ct.setAttribute('y', cy + 20); ct.setAttribute('text-anchor', 'start'); } // below-right, under both lines
     }
   }
 
@@ -176,7 +197,7 @@
       txt = 'Starting at ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + std + ' at about age ' + (Math.round(cross * 10) / 10) + '.';
     }
     $('cpp-text').textContent = txt;
-    totalsChart($('cpp-chart'), function (v) { return cppTotal(a, v); }, function (v) { return cppTotal(std, v); }, 'Start at ' + ageText(a), 'Start at ' + std, a, std, Math.abs(a - std) < 1e-9 ? null : cross);
+    totalsChart($('cpp-chart'), function (v) { return cppTotal(a, v); }, function (v) { return cppTotal(std, v); }, 'Start ' + ageShort(a), 'Start ' + std, a, std, Math.abs(a - std) < 1e-9 ? null : cross);
   }
   function drawOas() {
     var a = state.oas, s = oasShareAt(a), ch = (s - 1) * 100, b = R.oasLo, cross = null, txt;
@@ -188,7 +209,7 @@
       txt = 'Waiting until ' + ageText(a) + ' pays ' + pct(ch, 1) + ' more every month, for life. In total it catches up with starting at ' + b + ' at about age ' + (Math.round(cross * 10) / 10) + '. Both rise by ' + pct(R.oasBoost) + ' from ' + M.oasBoostAge + '.';
     }
     $('oas-text').textContent = txt;
-    totalsChart($('oas-chart'), function (v) { return oasTotal(a, v); }, function (v) { return oasTotal(b, v); }, 'Start at ' + ageText(a), 'Start at ' + b, a, b, cross);
+    totalsChart($('oas-chart'), function (v) { return oasTotal(a, v); }, function (v) { return oasTotal(b, v); }, 'Start ' + ageShort(a), 'Start ' + b, a, b, cross);
     // the recovery tax, for the latest year with a confirmed threshold
     var yrs = Object.keys(M.thresholds).map(Number).filter(function (y) { return y <= thisYear; });
     var ty = yrs.length ? Math.max.apply(null, yrs) : null;
@@ -201,20 +222,20 @@
     var svg = $('rrif-chart'); clear(svg);
     var rows = M.rrif.filter(function (r) { return r.age > R.rrsp; });
     var first = rows[0], tenth = rows.filter(function (r) { return r.factor >= 0.1; })[0];
-    var W = Math.max(260, svg.parentNode.clientWidth - 2), H = 190, pl = 30, pr = 8, pt = 14, pb = 26;
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    var box = chartBox(svg, 220, 280), W = box[0], H = box[1], pl = 40, pr = 8, pt = 14, pb = 30;
     var a0 = first.age, a1 = rows[rows.length - 1].age + 1, maxF = rows[rows.length - 1].factor;
     var X = function (v) { return pl + (v - a0) / (a1 - a0) * (W - pl - pr); }, Y = function (f) { return H - pb - f / maxF * (H - pt - pb); };
     el('line', { x1: pl, x2: W - pr, y1: H - pb, y2: H - pb, stroke: col('rule') }, svg);
-    rows.forEach(function (r) { el('rect', { x: X(r.age), y: Y(r.factor), width: Math.max(1, X(r.age + 1) - X(r.age) - 1), height: H - pb - Y(r.factor), fill: col('d2') }, svg); });
+    rows.forEach(function (r) { el('rect', { x: X(r.age), y: Y(r.factor), width: Math.max(1, X(r.age + 1) - X(r.age) - 1), height: H - pb - Y(r.factor), fill: col('d3') }, svg); });
     // the share of the fund left if only the minimum comes out and it earns nothing (right-hand scale is 0 to 100%)
     var left = 1, d = 'M' + X(a0) + ' ' + (pt), ys = function (s) { return H - pb - s * (H - pt - pb); };
     d = 'M' + X(a0) + ' ' + ys(1);
     rows.forEach(function (r) { left *= 1 - r.factor; d += ' L' + X(r.age + 1).toFixed(1) + ' ' + ys(left).toFixed(1); });
     el('path', { d: d, fill: 'none', stroke: col('ink'), 'stroke-width': 2, 'stroke-dasharray': '5 3' }, svg);
-    var step = Math.round((a1 - a0) / 4);
-    for (var a = Math.ceil(a0 / step) * step; a <= a1; a += step) el('text', { x: X(a), y: H - 8, fill: col('ink3'), 'font-size': 11, 'text-anchor': 'middle', 'class': 'mono' }, svg, String(a));
-    el('text', { x: pl - 4, y: pt + 8, fill: col('ink3'), 'font-size': 11, 'text-anchor': 'end', 'class': 'mono' }, svg, pct(maxF * 100));
+    var step = Math.round((a1 - a0) / (W < 520 ? 4 : 8));
+    for (var a = Math.ceil(a0 / step) * step; a <= a1; a += step) el('text', { x: X(a), y: H - 9, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'middle', 'class': 'mono' }, svg, String(a));
+    el('text', { x: pl - 6, y: pt + 8, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, pct(maxF * 100));
+    el('text', { x: pl - 6, y: H - pb + 4, fill: col('ink3'), 'font-size': 12, 'text-anchor': 'end', 'class': 'mono' }, svg, '0');
     var leftAt90 = 1; rows.forEach(function (r) { if (r.age < 90) leftAt90 *= 1 - r.factor; });
     $('rrif-text').textContent = 'An RRSP must mature by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + ', for example by becoming a RRIF. From then on a minimum share must come out each year: ' + pct(first.factor * 100, 2) + ' at ' + first.age + ', ' + (tenth ? 'more than a tenth of the fund from ' + tenth.age + ', ' : '') + pct(maxF * 100) + ' from ' + rows[rows.length - 1].age + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90.';
     var f = state.fund, at = p && p.age > R.rrsp ? M.rrif.filter(function (r) { return r.age === Math.min(p.age, rows[rows.length - 1].age); })[0] : null;
@@ -227,8 +248,7 @@
     if (!p.popCount) { box.hidden = true; return; }
     box.hidden = false; box.textContent = '';
     var h = document.createElement('p'); h.className = 'kicker'; h.style.margin = '0'; h.textContent = 'People your age'; box.appendChild(h);
-    var t = document.createElement('p'); t.textContent = 'About ' + p.popCount.toLocaleString('en-CA') + ' Canadians were ' + p.age + ' on July 1, ' + M.pop.year + '.'; box.appendChild(t);
-    var s = document.createElement('p'); s.className = 'note'; s.textContent = M.pop.attribution; box.appendChild(s);
+    var t = document.createElement('p'); t.textContent = 'About ' + p.popCount.toLocaleString('en-CA') + ' Canadians were ' + p.age + ' on July 1, ' + M.pop.year + ', by Statistics Canada’s estimate (see the sources).'; box.appendChild(t);
   }
 
   // ---------- one render for a birth year ----------
@@ -262,10 +282,11 @@
   // sources
   var src = $('sources');
   M.sources.forEach(function (s) { var li = document.createElement('li'), a = document.createElement('a'); a.href = s.source_url; a.textContent = s.title; li.appendChild(a); li.appendChild(document.createTextNode(', read ' + s.as_of + '.')); src.appendChild(li); });
-  if (M.pop) { var li = document.createElement('li'), a = document.createElement('a'); a.href = M.pop.source_url; a.textContent = 'Statistics Canada, population estimates by single year of age'; li.appendChild(a); src.appendChild(li); }
+  if (M.pop) { var li = document.createElement('li'), a = document.createElement('a'); a.href = M.pop.source_url; a.textContent = 'Statistics Canada, population estimates by single year of age'; li.appendChild(a); li.appendChild(document.createTextNode('. ' + M.pop.attribution)); src.appendChild(li); }
   var asOf = M.sources.map(function (s) { return s.as_of; }).sort().pop();
   var mo = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  $('kicker').textContent = 'Interactive · Canadian rules as of ' + mo[Number(asOf.slice(5, 7)) - 1] + ' ' + asOf.slice(0, 4);
+  var asOfText = mo[Number(asOf.slice(5, 7)) - 1] + ' ' + asOf.slice(0, 4);
+  $('kicker').lastElementChild.textContent = 'Canadian rules as of ' + asOfText;
 
   // save the timeline as an image, made in the browser
   $('save').addEventListener('click', function () {
@@ -279,7 +300,7 @@
       g.fillStyle = col('ink'); g.font = '600 18px Georgia, serif'; g.fillText(document.getElementById('finding').textContent, pad, pad + 4, W);
       g.drawImage(img, pad, pad + 16, W, H);
       g.fillStyle = col('ink3'); g.font = '12px Helvetica, Arial, sans-serif';
-      g.fillText('Your planning timeline. Canadian rules from official sources, ' + $('kicker').textContent.replace('Interactive · Canadian rules ', '') + '. Education only, not advice. Mohammed El Chayeb.', pad, H + pad * 2 + 24);
+      g.fillText('Your planning timeline. Canadian rules from official sources, ' + 'as of ' + asOfText + '. Education only, not advice. Mohammed El Chayeb.', pad, H + pad * 2 + 24);
       c.toBlob(function (b) { var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'planning-timeline-' + state.birth + '.png'; document.body.appendChild(a); a.click(); a.remove(); });
     };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);

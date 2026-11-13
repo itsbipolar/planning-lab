@@ -24,8 +24,10 @@ a{color:inherit;text-underline-offset:4px}
 :focus-visible{outline:2px solid var(--focus);outline-offset:3px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.bar{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
-.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto}
+.bar{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
+.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto;white-space:nowrap}
+.bar a{white-space:nowrap}
+@media (max-width:480px){.bar a:not(.brand){font-size:15px}}
 .theme{font:inherit;font-size:15px;color:var(--t-ink2);background:transparent;border:1px solid var(--t-rule);border-radius:2px;min-height:44px;padding:.3rem .8rem;cursor:pointer}
 
 h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;margin:0;text-wrap:balance}
@@ -33,6 +35,7 @@ h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:30ch;mar
 h2{font-size:1.55rem;line-height:1.15}
 h3{font-size:1.2rem;line-height:1.2}
 .kicker{display:block;font-family:var(--font-mono);font-size:.8rem;line-height:1.4;color:var(--t-ink3);margin:2.5rem 0 0}
+.kicker span{white-space:nowrap}
 .dek{font-size:1.15rem;line-height:1.5;color:var(--t-ink2);max-width:62ch;margin:1rem 0 .5rem}
 .intro{max-width:62ch;color:var(--t-ink2);margin:.5rem 0 0}
 .note{font-size:15px;color:var(--t-ink3)}
@@ -56,7 +59,7 @@ h3{font-size:1.2rem;line-height:1.2}
 .plot{width:100%;margin-top:.5rem}
 .plot svg{display:block;max-width:100%;height:auto;overflow:visible}
 .plot text{font-family:var(--font-ui);font-variant-numeric:tabular-nums}
-.plot .tick{font-family:var(--font-mono);font-size:11px;fill:var(--t-ink3)}
+.plot .tick{font-family:var(--font-mono);font-size:12px;fill:var(--t-ink3);paint-order:stroke;stroke:var(--t-ground);stroke-width:3px;stroke-linejoin:round}
 .grid{stroke:var(--t-rule)}
 .axis-line{stroke:var(--t-ink3)}
 .ln{fill:none;stroke-width:2;stroke-linejoin:round}
@@ -139,7 +142,7 @@ h3{font-size:1.2rem;line-height:1.2}
     <a href="/builds/two-number-letter/">About this build</a>
   </header>
   <main>
-    <p class="kicker" id="kicker">A letter you can argue with · Canadian rules</p>
+    <p class="kicker" id="kicker"><span>Interactive letter ·</span> <span>Canadian rules</span></p>
     <h1 id="finding" aria-live="polite">A letter you can argue with</h1>
     <p class="dek" id="dek"></p>
     <p class="intro">A sample planning letter to <span data-name="a"></span> and <span data-name="b"></span>, a fictional couple; their amounts are invented examples. Drag any amber number in the letter, or focus it and use the arrow keys, and the headline, the charts and the letter rewrite themselves.</p>
@@ -496,7 +499,7 @@ function headline(r, cppAge) {
   }
   const asOf = r.sources.map((s) => s.as_of).sort().pop();
   const month = new Date(`${asOf}T12:00:00`).toLocaleString('en-CA', { month: 'long', year: 'numeric' });
-  $('#kicker').textContent = `A letter you can argue with · Canadian rules as of ${month}`;
+  $('#kicker').lastElementChild.textContent = `Canadian rules as of ${month}`;
 
   // The plain sliders: the single-pointer alternative to dragging, and the same numbers.
   const controls = { a: {}, b: {} };
@@ -651,7 +654,8 @@ function headline(r, cppAge) {
     // grid and axes
     for (let v = 0; v <= maxY + 1e-6; v += step) {
       el('line', { class: v === 0 ? 'axis-line' : 'grid', x1: pad.l, x2: Wd - pad.r, y1: Y(v), y2: Y(v) }, svg);
-      // the dollar scale sits just above each grid line, inside the plot
+      // the dollar scale sits just above each grid line, inside the plot; the zero is left out when a line starts under it
+      if (v === 0 && starts[0] === from) continue;
       keep(el('text', { class: 'tick', x: pad.l, y: Y(v) - 5 }, svg, shortMoney(v)));
     }
     for (let a = Math.ceil(from / 5) * 5; a <= to; a += 5) {
@@ -663,12 +667,20 @@ function headline(r, cppAge) {
     // the lines: the standard (or earliest) start, the latest start, and the letter's start in amber, drawn last
     const cls = (s) => (s === o.chosen ? 'pick' : s === o.base ? 'base' : 'late');
     const order = [...starts].sort((x, y) => (x === o.chosen) - (y === o.chosen));
+    const pts = []; // every line, sampled finely, so a reading can be kept off the lines as well as off other words
     for (const s of order) {
-      let d = `M${X(s).toFixed(1)} ${Y(0).toFixed(1)}`;
-      for (let x = s; x <= to + 1e-9; x += 0.25) d += ` L${X(x).toFixed(1)} ${Y(o.total(s, x)).toFixed(1)}`;
+      let d = `M${X(s).toFixed(1)} ${Y(0).toFixed(1)}`, px = X(s), py = Y(0);
+      for (let x = s; x <= to + 1e-9; x += 0.25) {
+        const nx = X(x), ny = Y(o.total(s, x));
+        d += ` L${nx.toFixed(1)} ${ny.toFixed(1)}`;
+        for (let k = 1; k <= 6; k++) pts.push([px + (nx - px) * k / 6, py + (ny - py) * k / 6]);
+        px = nx; py = ny;
+      }
       el('path', { class: `ln ln-${cls(s)}`, d }, svg);
     }
     el('circle', { class: 'start-pick', cx: X(o.chosen), cy: Y(0), r: 5 }, svg);
+    placed.push({ x: X(o.chosen) - 6, y: Y(0) - 6, width: 12, height: 12 });
+    const onLine = (b) => pts.some(([px, py]) => px > b.x - 3 && px < b.x + b.width + 3 && py > b.y - 3 && py < b.y + b.height + 3);
 
     // labels at the right-hand end of each line, kept apart
     const ends = starts.map((s) => ({ s, y: Y(o.total(s, to)) + 4 })).sort((p, q) => p.y - q.y);
@@ -687,14 +699,22 @@ function headline(r, cppAge) {
       if (c.at === null || c.at > to) continue;
       const cx = X(c.at), cy = Y(o.total(o.base, c.at));
       el('circle', { class: c.pick ? 'dot dot-pick' : 'dot', cx, cy, r: 5 }, svg);
+      placed.push({ x: cx - 6, y: cy - 6, width: 12, height: 12 });
       const t = el('text', { class: 'reading' }, svg, narrow ? `cross ${ageShort(c.at)}` : `${c.pair[0]} and ${c.pair[1]} cross at ${ageShort(c.at)}`);
-      // above-left (clear of both lines, which climb to the right), then above, left, below, right, and further out, until it overlaps nothing already placed
-      const tries = [[-8, -9, 'end'], [0, -14, 'middle'], [-9, 4, 'end'], [0, 22, 'middle'], [9, 4, 'start'], [0, -30, 'middle'], [-9, 22, 'end'], [0, 40, 'middle'], [0, -48, 'middle']];
+      // above-left (clear of the lines, which climb to the right), then below-right, then further out; the first spot
+      // that touches no line, no dot and no word wins, or else the one that touches least
+      const tries = [[-8, -9, 'end'], [-14, -22, 'end'], [9, 20, 'start'], [14, 32, 'start'], [-9, 4, 'end'], [9, 4, 'start'],
+        [0, -14, 'middle'], [0, 22, 'middle'], [-24, -36, 'end'], [20, 46, 'start'], [0, -30, 'middle'], [0, 40, 'middle'], [0, -48, 'middle']];
+      let best = null;
       for (const [dx, dy, anchor] of tries) {
         t.setAttribute('x', cx + dx); t.setAttribute('y', cy + dy); t.setAttribute('text-anchor', anchor);
         const b = t.getBBox();
-        if (b.x >= 2 && b.x + b.width <= Wd - 2 && b.y >= 0 && b.y + b.height <= H - pad.b && !placed.some((p) => overlaps(p, b))) break;
+        const cost = (b.x >= 2 && b.x + b.width <= Wd - 2 && b.y >= 0 && b.y + b.height <= H - pad.b ? 0 : 4)
+          + (placed.some((p) => overlaps(p, b)) ? 2 : 0) + (onLine(b) ? 1 : 0);
+        if (!best || cost < best.cost) best = { cost, dx, dy, anchor };
+        if (cost === 0) break;
       }
+      t.setAttribute('x', cx + best.dx); t.setAttribute('y', cy + best.dy); t.setAttribute('text-anchor', best.anchor);
       placed.push(t.getBBox());
     }
   }

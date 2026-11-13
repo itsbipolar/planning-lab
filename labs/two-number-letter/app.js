@@ -73,7 +73,7 @@
   }
   const asOf = r.sources.map((s) => s.as_of).sort().pop();
   const month = new Date(`${asOf}T12:00:00`).toLocaleString('en-CA', { month: 'long', year: 'numeric' });
-  $('#kicker').textContent = `A letter you can argue with · Canadian rules as of ${month}`;
+  $('#kicker').lastElementChild.textContent = `Canadian rules as of ${month}`;
 
   // The plain sliders: the single-pointer alternative to dragging, and the same numbers.
   const controls = { a: {}, b: {} };
@@ -228,7 +228,8 @@
     // grid and axes
     for (let v = 0; v <= maxY + 1e-6; v += step) {
       el('line', { class: v === 0 ? 'axis-line' : 'grid', x1: pad.l, x2: Wd - pad.r, y1: Y(v), y2: Y(v) }, svg);
-      // the dollar scale sits just above each grid line, inside the plot
+      // the dollar scale sits just above each grid line, inside the plot; the zero is left out when a line starts under it
+      if (v === 0 && starts[0] === from) continue;
       keep(el('text', { class: 'tick', x: pad.l, y: Y(v) - 5 }, svg, shortMoney(v)));
     }
     for (let a = Math.ceil(from / 5) * 5; a <= to; a += 5) {
@@ -240,12 +241,20 @@
     // the lines: the standard (or earliest) start, the latest start, and the letter's start in amber, drawn last
     const cls = (s) => (s === o.chosen ? 'pick' : s === o.base ? 'base' : 'late');
     const order = [...starts].sort((x, y) => (x === o.chosen) - (y === o.chosen));
+    const pts = []; // every line, sampled finely, so a reading can be kept off the lines as well as off other words
     for (const s of order) {
-      let d = `M${X(s).toFixed(1)} ${Y(0).toFixed(1)}`;
-      for (let x = s; x <= to + 1e-9; x += 0.25) d += ` L${X(x).toFixed(1)} ${Y(o.total(s, x)).toFixed(1)}`;
+      let d = `M${X(s).toFixed(1)} ${Y(0).toFixed(1)}`, px = X(s), py = Y(0);
+      for (let x = s; x <= to + 1e-9; x += 0.25) {
+        const nx = X(x), ny = Y(o.total(s, x));
+        d += ` L${nx.toFixed(1)} ${ny.toFixed(1)}`;
+        for (let k = 1; k <= 6; k++) pts.push([px + (nx - px) * k / 6, py + (ny - py) * k / 6]);
+        px = nx; py = ny;
+      }
       el('path', { class: `ln ln-${cls(s)}`, d }, svg);
     }
     el('circle', { class: 'start-pick', cx: X(o.chosen), cy: Y(0), r: 5 }, svg);
+    placed.push({ x: X(o.chosen) - 6, y: Y(0) - 6, width: 12, height: 12 });
+    const onLine = (b) => pts.some(([px, py]) => px > b.x - 3 && px < b.x + b.width + 3 && py > b.y - 3 && py < b.y + b.height + 3);
 
     // labels at the right-hand end of each line, kept apart
     const ends = starts.map((s) => ({ s, y: Y(o.total(s, to)) + 4 })).sort((p, q) => p.y - q.y);
@@ -264,14 +273,22 @@
       if (c.at === null || c.at > to) continue;
       const cx = X(c.at), cy = Y(o.total(o.base, c.at));
       el('circle', { class: c.pick ? 'dot dot-pick' : 'dot', cx, cy, r: 5 }, svg);
+      placed.push({ x: cx - 6, y: cy - 6, width: 12, height: 12 });
       const t = el('text', { class: 'reading' }, svg, narrow ? `cross ${ageShort(c.at)}` : `${c.pair[0]} and ${c.pair[1]} cross at ${ageShort(c.at)}`);
-      // above-left (clear of both lines, which climb to the right), then above, left, below, right, and further out, until it overlaps nothing already placed
-      const tries = [[-8, -9, 'end'], [0, -14, 'middle'], [-9, 4, 'end'], [0, 22, 'middle'], [9, 4, 'start'], [0, -30, 'middle'], [-9, 22, 'end'], [0, 40, 'middle'], [0, -48, 'middle']];
+      // above-left (clear of the lines, which climb to the right), then below-right, then further out; the first spot
+      // that touches no line, no dot and no word wins, or else the one that touches least
+      const tries = [[-8, -9, 'end'], [-14, -22, 'end'], [9, 20, 'start'], [14, 32, 'start'], [-9, 4, 'end'], [9, 4, 'start'],
+        [0, -14, 'middle'], [0, 22, 'middle'], [-24, -36, 'end'], [20, 46, 'start'], [0, -30, 'middle'], [0, 40, 'middle'], [0, -48, 'middle']];
+      let best = null;
       for (const [dx, dy, anchor] of tries) {
         t.setAttribute('x', cx + dx); t.setAttribute('y', cy + dy); t.setAttribute('text-anchor', anchor);
         const b = t.getBBox();
-        if (b.x >= 2 && b.x + b.width <= Wd - 2 && b.y >= 0 && b.y + b.height <= H - pad.b && !placed.some((p) => overlaps(p, b))) break;
+        const cost = (b.x >= 2 && b.x + b.width <= Wd - 2 && b.y >= 0 && b.y + b.height <= H - pad.b ? 0 : 4)
+          + (placed.some((p) => overlaps(p, b)) ? 2 : 0) + (onLine(b) ? 1 : 0);
+        if (!best || cost < best.cost) best = { cost, dx, dy, anchor };
+        if (cost === 0) break;
       }
+      t.setAttribute('x', cx + best.dx); t.setAttribute('y', cy + best.dy); t.setAttribute('text-anchor', best.anchor);
       placed.push(t.getBBox());
     }
   }
