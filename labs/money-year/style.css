@@ -1,6 +1,6 @@
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
-body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 17px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 18.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
 .page{max-width:80rem;margin:0 auto;padding:0 16px}
 @media (min-width:700px){.page{padding:0 24px}}
 @media (min-width:1100px){.page{padding:0 40px}}
@@ -68,7 +68,7 @@ input[type=range]{display:block;width:100%;min-height:44px;margin:0;accent-color
 .leader{stroke:var(--t-ink3);stroke-width:1}
 .panel svg .callout{font-weight:650}
 .panel svg .callout.big{font-size:16px}
-@media (max-width:639px){.panel svg .callout.big{font-size:14px}}
+@media (max-width:639px){.panel svg .callout.big{font-size:15.5px}}
 .panel svg .callout.marked{fill:var(--t-ground);stroke:none}
 .mark{fill:var(--t-point)}
 :root[data-theme="light"] .panel svg .callout.marked{fill:var(--t-ink)}
@@ -110,3 +110,6 @@ input[type=range]{display:block;width:100%;min-height:44px;margin:0;accent-color
 .foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:.9rem;color:var(--t-ink2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
 .foot p{margin:0 0 .4rem}
 .foot > div{max-width:60rem}
+
+/* Chart text keeps the size its label placement was tuned for; the page text around it is larger. */
+svg{font-size:17px}
