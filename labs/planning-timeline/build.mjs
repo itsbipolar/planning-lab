@@ -9,7 +9,7 @@ import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 import { deskPage } from '../../shared/desk/desk-page.mjs';
 import { writePoster, r as rnd } from '../../shared/desk/poster.mjs';
-import { yourYear, EXAMPLE_BIRTH_YEAR, BASE_AMOUNT } from '../../shared/desk/your-year-core.mjs';
+import { yourYear, EXAMPLE_BIRTH_YEAR } from '../../shared/desk/your-year-core.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -42,11 +42,13 @@ writeFileSync(join(here, 'dist', 'index.html'), html);
     ],
     // the RRIF minimum as a staircase: [age it applies in (the year you turn), factor in %]
     rrif: model.rrif.filter((x) => x.age >= R.rrsp && x.age + 1 < hi).map((x) => [x.age + 1, rnd(x.factor * 100, 2)]),
+    // one reading, the one the lanes show: the CPP window in calendar years (the bars run by age, the axis under them in
+    // years); the prices figure is the home lead's, so the poster does not repeat it
     readings: [
-      { label: `Prices since ${b}`, value: Y.cpiNowText, text: Y.text.cpi, from: '$' + BASE_AMOUNT },
+      { label: 'CPP can start, if you qualify', value: `${Y.y60} to ${Y.y70}`, text: Y.text.cpp },
       { label: 'TFSA limits added up', value: Y.tfsaSum > 0 ? '$' + Y.tfsaSum.toLocaleString('en-CA') : `opens ${Y.tfsaStart}`, text: Y.text.tfsa },
     ],
-    labels: [{ text: `Example, ${Y.age}`, at: Y.age }, { text: Y.text.cpp }],
+    labels: [{ text: `Today, age ${Y.age}`, at: Y.age }],
     source: 'Canadian rules from official government pages; prices: Statistics Canada CPI',
     asOf: String(model.prices.last),
   });

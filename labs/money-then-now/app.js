@@ -50,11 +50,19 @@
     var at = getComputedStyle(document.documentElement).getPropertyValue('--stripe-at').trim().split(/\s+/).map(Number);
     return { at: at, stops: at.map(function (_, i) { return toLab(tok('stripe-' + i)); }) };
   }
+  // Dark scheme: lightness and chroma are mixed and the more colourful stop's hue is kept (as the site's src/lib/ramp.mjs
+  // does), so small rises read as a muted amber rather than olive.
+  function mixHue(a, b, t) {
+    var ca = Math.hypot(a[1], a[2]), cb = Math.hypot(b[1], b[2]);
+    var h = cb >= ca ? Math.atan2(b[2], b[1]) : Math.atan2(a[2], a[1]), C = ca + (cb - ca) * t;
+    return [a[0] + (b[0] - a[0]) * t, C * Math.cos(h), C * Math.sin(h)];
+  }
   function stripeColour(v, pal) {
-    var at = pal.at, cs = pal.stops, i;
+    var at = pal.at, cs = pal.stops, i, dark = document.documentElement.getAttribute('data-theme') !== 'light';
     if (v <= at[0]) return fromLab(cs[0]);
     for (i = 1; i < at.length; i++) if (v <= at[i]) {
       var t = (v - at[i - 1]) / (at[i] - at[i - 1]);
+      if (dark) return fromLab(mixHue(cs[i - 1], cs[i], t));
       return fromLab(cs[i - 1].map(function (x, k) { return x + (cs[i][k] - x) * t; }));
     }
     return fromLab(cs[cs.length - 1]);

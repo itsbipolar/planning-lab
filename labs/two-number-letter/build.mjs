@@ -40,9 +40,11 @@ writeFileSync(join(here, 'dist', 'index.html'), html);
     y: { label: `Years of the pension at ${early}`, min: 0, max: rnd(total(late, s, x1), 2) },
     lines,
     cross: { age: rnd(h.at, 1), total: rnd(total(late, s, h.at), 2) },
+    // the poster prints the first reading (each cheque's size); the age where the totals cross is drawn on the chart and
+    // said in the card's dek, so the tile never says the same figure twice
     readings: [
-      { label: `Waiting from ${early} to ${late} has paid more in total by about`, value: `age ${cross}` },
-      { label: `Each cheque, starting at ${late}`, value: `+${rnd((s - 1) * 100, 0)}%` },
+      { label: `Each cheque, starting at ${late} instead of ${early}`, value: `+${rnd((s - 1) * 100, 0)}%` },
+      { label: `Break-even age, ${late} against ${early}`, value: `age ${cross}` },
     ],
     labels: [{ text: 'They cross here', at: rnd(h.at, 1) }],
     source: 'CPP rules from canada.ca (confirmed facts)',

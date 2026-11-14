@@ -31,9 +31,9 @@ test('the Your year poster carries the core’s numbers for the labelled example
   const p = json('labs/planning-timeline/dist/poster.json');
   const Y = yourYear(yourYearRules(json('shared/facts.json')), annualPrices(json('shared/data/cpi-monthly.json')), EXAMPLE_BIRTH_YEAR, p.thisYear);
   assert.equal(p.birthYear, EXAMPLE_BIRTH_YEAR);
-  assert.equal(p.readings[0].value, Y.cpiNowText); assert.equal(p.readings[0].text, Y.text.cpi);
+  assert.equal(p.readings[0].value, `${Y.y60} to ${Y.y70}`); assert.equal(p.readings[0].text, Y.text.cpp);
   assert.equal(p.readings[1].text, Y.text.tfsa);
-  assert.equal(p.labels[1].text, Y.text.cpp);
+  assert.equal(p.labels[0].text, `Today, age ${Y.age}`); assert.equal(p.labels[0].at, Y.age);
 });
 
 test('the lines, line and heat posters hold well-formed series', () => {

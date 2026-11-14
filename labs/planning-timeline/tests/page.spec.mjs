@@ -78,6 +78,8 @@ for (const width of [390, 1440]) {
         await expect(page.locator(big)).toHaveText(/^\$[\d,]+$/);
       }
       await expect(page.locator('#fund-text')).toContainText('on January 1');
+      // the cohort snapshot covers ages 50 to 89; the shared example year can sit outside it, so type a year inside it
+      await page.fill('#year', '1965'); await page.click('button[type=submit]');
       await expect(page.locator('#people-big')).toContainText('About');
     });
 

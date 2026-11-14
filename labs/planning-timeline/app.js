@@ -8,7 +8,7 @@
   var D = JSON.parse(document.getElementById('data').textContent);
   var M = D.model;
   var R = M.r;
-  var EXAMPLE_BIRTH = 1965, EXAMPLE_INCOME = 110000, EXAMPLE_FUND = 500000;
+  var EXAMPLE_BIRTH = EXAMPLE_BIRTH_YEAR, EXAMPLE_INCOME = 110000, EXAMPLE_FUND = 500000;
   var thisYear = new Date().getFullYear();
   var NS = 'http://www.w3.org/2000/svg';
   var $ = function (id) { return document.getElementById(id); };

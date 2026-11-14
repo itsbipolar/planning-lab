@@ -66,9 +66,11 @@ writeFileSync(join(here, 'dist', 'index.html'), html);
     ],
     // how many orders run out in each year (index = year; 0 = lasts the whole horizon)
     outcomes: { lasts: s.lasts, total: s.total, byYear: s.byYear },
+    // the poster prints the first reading, the one its chart shows (the bad order's run-out year); the share of all
+    // orders that last is the card's dek, so the tile never says the same figure twice
     readings: [
-      { label: `Of the ${factorial(N).toLocaleString('en-CA')} orders, lasting ${story.horizon} years`, value: `${shareText}%` },
       ...(bad.depletionYear ? [{ label: 'Bad years first runs out in', value: `year ${bad.depletionYear}` }] : []),
+      { label: `Orders that last ${story.horizon} years, of ${factorial(N).toLocaleString('en-CA')}`, value: `${shareText}%` },
     ],
     labels: [{ text: 'Same ten years, same average' }, { text: 'Only the order differs' }],
     source: story._note,
