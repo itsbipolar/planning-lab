@@ -94,6 +94,30 @@ export function finding(M, V) {
   return { lede, more, now, then, ratio, oldNow, oldThen, lo, hi };
 }
 
+// "Find an age" (redesign v2 section 5): the age the page opens on (a year short of the OAS age: "about to turn" it),
+// and the answer for one age on the latest July 1 in one view: the label, the count, its unit, one line on when that
+// group reaches the OAS age (or how many there were when they did), and the longer "How this is worked out" text.
+export const num = (v) => Math.round(v).toLocaleString('en-CA');
+export const defaultAge = (M) => Math.min(M.ages[1], Math.max(M.ages[0], M.oasLo - 1));
+export const inAges = (M, a) => Number.isInteger(a) && a >= M.ages[0] && a <= M.ages[1];
+export function ageAnswer(M, V, age) {
+  const [y0, y1] = M.years, [a0] = M.ages, oas = M.oasLo, b = y1 - age, y65 = b + oas;
+  const count = V.counts[y1][age - a0], share = count / V.totals[y1];
+  const plain = V.place === 'CA' && V.gender === 'all';
+  const where = V.place === 'CA' ? 'Canada' : V.place === 'TR' ? 'The territories' : placeName(M, V.place);
+  const prefix = plain ? '' : `${where}${V.gender === 'all' ? '' : ` (${V.gender})`}: `;
+  let tail;
+  if (age < oas) tail = `they all turn ${oas} by July 1, ${y65}.`;
+  else if (age === oas) tail = `they turned ${oas} in the year to July 1, ${y1}.`;
+  else if (y65 >= y0) tail = `at ${oas}, on July 1, ${y65}, the group numbered ${num(V.counts[y65][oas - a0])}.`;
+  else tail = `they were ${oas} on July 1, ${y65}.`;
+  const line = plain ? tail[0].toUpperCase() + tail.slice(1) : prefix + tail;
+  const how = `Statistics Canada's estimate of ${who(M, V.place, V.gender)} aged ${age} on July 1, ${y1}: ${num(count)}, `
+    + `${pct(share, 2)} of the population of all ages. They were born from July 2, ${b - 1} to July 1, ${b}. The amber band on `
+    + `the chart follows the same birth years back through time; the group's size changes with deaths and migration.`;
+  return { age, b, y65, count, share, label: `Aged ${age} on July 1, ${y1}`, unit: V.place === 'CA' ? 'Canadians' : 'people', line, how };
+}
+
 // A birth year's diagonal. The people aged a on July 1 of year b + a were born between July 2 of b - 1 and July 1 of b.
 export const bornRange = (M) => [M.years[0] - M.ages[1], M.years[1] - M.ages[0]];
 export function diagonal(M, V, mode, b) {

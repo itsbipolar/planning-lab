@@ -62,7 +62,7 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 .desk-head{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 2rem;padding:1.2rem 0 1rem;line-height:1.6;border-bottom:3px double var(--t-ink)}
 .desk-brand{margin-right:auto;font-family:var(--font-display);font-weight:600;font-size:1.5rem;letter-spacing:-.01em;color:var(--t-ink);text-decoration:none;white-space:nowrap}
 .desk-nav ul{display:flex;flex-wrap:wrap;gap:.25rem 1.6rem;list-style:none;margin:0;padding:0}
-.desk-nav a{position:relative;display:inline-block;padding:.35rem 0;font-size:16.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t-ink);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+.desk-nav a{position:relative;display:inline-block;padding:.35rem 0;font-size:17.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t-ink);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
 .desk-nav a::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
 .desk-nav a:hover{border-bottom-color:var(--t-rule)}
 .desk-nav a[aria-current="true"]{border-bottom-color:var(--t-ink)}
@@ -79,7 +79,7 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 .desk-toolnav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 1.5rem;padding:.2rem 0;font-size:17.5px;border-bottom:1px solid var(--t-rule)}
 .desk-toolnav a{display:inline-flex;align-items:center;gap:.35rem;min-height:2.5rem;color:var(--t-ink);text-decoration:none;white-space:nowrap}
 .desk-toolnav a:hover{text-decoration:underline}
-.desk-next{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.35rem 1.5rem;margin:4rem 0 0;padding:1.4rem 1.5rem 1.5rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);color:var(--t-ink);text-decoration:none}
+.desk-next{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.35rem 1.5rem;margin:2.5rem 0 0;padding:1.4rem 1.5rem 1.5rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);color:var(--t-ink);text-decoration:none}
 .desk-next-k{grid-column:1/-1;color:var(--t-ink)}
 .desk-next-q{font-family:var(--font-display);font-weight:600;font-size:clamp(1.55rem,1.4vw + 1.1rem,2.3rem);line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
 .desk-next-go{font-family:var(--font-display);font-size:2rem;line-height:1}
@@ -104,12 +104,13 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 /* The chart frame: a 2px ink rule on top, a sans 700 title that states the takeaway, an ink2 subtitle with units, and
    an "Example data" chip where the numbers are illustrative. Inside the SVG: 1px gridlines, an ink zero line, named
    series 2.5px and context series 1.5px, one 600 annotation with a 1px leader, shaded regions at 40%. Every label
-   renders at 16.5px or more (shell-test.mjs expectTextSizes). */
+   renders at 17.5px or more (shell-test.mjs expectTextSizes). */
 figure.chart{margin:2rem 0 0;border-top:2px solid var(--t-ink);padding-top:.6rem}
 figure.chart>figcaption,.chart-head{margin:0 0 .6rem}
 .chart-title{margin:0;font:700 1.15rem/1.35 var(--font-ui);color:var(--t-ink)}
 .chart-sub{margin:.15rem 0 0;font-size:1.03rem;line-height:1.45;color:var(--t-ink2)}
-.tag-example{margin-top:.4rem}
+/* the example tag is a quiet label, not a box: nothing about it looks tappable */
+.chip.tag-example{display:block;margin-top:.35rem;padding:0;border:0;border-radius:0;background:none;color:var(--t-ink2)}
 .chart svg .grid{stroke:var(--t-rule);stroke-width:1;shape-rendering:crispEdges}
 .chart svg .zero{stroke:var(--t-ink);stroke-width:1;shape-rendering:crispEdges}
 .chart svg .s-named{stroke-width:2.5;fill:none}
@@ -119,7 +120,7 @@ figure.chart>figcaption,.chart-head{margin:0 0 .6rem}
 .chart svg .shade{fill-opacity:.4}
 
 /* Folds: "Go deeper" and the sources, closed by default. */
-details.deeper{margin-top:3rem;border-top:2px solid var(--t-ink);padding-top:.5rem}
+details.deeper{margin-top:2.5rem;border-top:2px solid var(--t-ink);padding-top:.5rem}
 /* Every fold shows that it opens: a chevron before its summary (a lab's display:flex summary hides the browser marker). */
 details>summary{list-style:none}
 details>summary::-webkit-details-marker{display:none}
@@ -127,15 +128,64 @@ details>summary::before{content:"";display:inline-block;flex:none;width:.45em;he
 details[open]>summary::before{transform:translateY(-.3em) rotate(45deg)}
 @media (prefers-reduced-motion:no-preference){details>summary::before{transition:transform .15s ease}}
 details.deeper>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-family:var(--type-label-font);font-weight:var(--type-label-weight);font-size:var(--type-label-size);letter-spacing:var(--type-label-tracking);text-transform:uppercase}
+/* One fold style for every tool (Go deeper, a tool's own fold, Sources): a 2px ink rule, the name in sentence case and,
+   under it, a one-line preview of what is inside (.fold-p: written by deskDeeper() from the fold's sub-sections, or from
+   the fold's data-preview). Folds in a run stack with no gap; the run sits one fixed gap under what comes before it.
+   Scoped under the page so a lab's own fold rules cannot drift from it. */
+body>.page details:is(.deeper,.sources,.fold,.this-year){margin:2.5rem 0 0;padding:0;border:0;border-top:2px solid var(--t-ink)}
+body>.page details:is(.deeper,.sources,.fold,.this-year)+details:is(.deeper,.sources,.fold,.this-year){margin-top:0}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;min-height:56px;padding:.75rem 0;cursor:pointer;font:700 1.2rem/1.3 var(--font-ui);letter-spacing:0;text-transform:none;color:var(--t-ink)}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary::before{align-self:center;grid-row:1}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary>.fold-p{grid-column:2;display:block;margin:.2rem 0 0;font:400 var(--type-small-size)/1.45 var(--font-ui);color:var(--t-ink2);text-transform:none;letter-spacing:0}
+body>.page details:is(.deeper,.sources,.fold,.this-year)[open]>summary>.fold-p{display:none}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.2em;text-decoration-color:var(--t-point)}
 
 /* Video tiles: the 56px ink play badge and the duration chip (as on the site). */
 .play-badge{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:rgb(16 22 28 / .88);color:#fff;border:0}
-.dur-chip{display:inline-block;padding:.15em .5em;font:700 17px/1.3 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:#fff;background:rgb(0 0 0 / .72)}
+.dur-chip{display:inline-block;padding:.15em .5em;font:700 17.5px/1.3 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:#fff;background:rgb(0 0 0 / .72)}
 
 .crosshair{pointer-events:none}
 .crosshair line{stroke:var(--t-ink);stroke-width:1;stroke-dasharray:3 3}
 .crosshair rect{fill:var(--t-raised);stroke:var(--t-rule)}
 .crosshair text{fill:var(--t-ink);font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
+
+/* ---- The desk tool template (steps 4 to 6; markup and APIs in the header comment). Generic names sit in :where() so a
+   lab's own rule still wins. Every size here is 17.5px or more (Mo: never smaller). ---- */
+/* 1. The big readout: "How this is worked out" is a closed fold under the one line. */
+.readout-how{margin:.5rem 0 0}
+.readout-how>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font:600 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
+.readout-how>:not(summary){margin:.35rem 0 .5rem;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+.readout[aria-busy="true"]{cursor:inherit}
+/* 2. Go deeper: the optional "In this section:" line and the sub-sections. */
+.deeper-in{margin:.5rem 0 1rem;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+:where(details.deeper) :where(.deeper-sub){margin-top:2rem}
+/* 3. The one assumptions line, beside the first control. */
+:where(.assume){margin:.6rem 0 0;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2);max-width:52ch}
+/* 4. Save and share: the in-app browser notice sits right after its button. */
+.save-note{display:block;margin:.5rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-ink);font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink);max-width:40ch}
+/* 5. Guess, then reveal: a ruled panel; the slider is a 44px target, its value in serif figures. */
+.guess{margin:1.5rem 0;padding:1rem 1.25rem 1.25rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);max-width:46rem}
+.guess[hidden]{display:none}
+.guess-q{margin:.25rem 0 .5rem;font-family:var(--type-card-font);font-weight:var(--type-card-weight);font-size:var(--type-card-size);line-height:var(--type-card-line);text-wrap:balance}
+.guess-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.guess-row input[type=range]{flex:1 1 9rem;min-width:0;height:44px;margin:0;accent-color:var(--t-ink);cursor:pointer}
+.guess-v{min-width:5ch;font-family:var(--type-readout-font);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.1;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+.guess-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem}
+.guess-actions[hidden],.guess-out[hidden]{display:none}
+.guess-out{margin:.75rem 0 0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+/* 6. The tool-bar year chip ("Born {year} · change · forget"): text buttons with 44px targets, scoped to the tool bar
+   so a lab's own button{} rule cannot restyle them. On phones it takes its own line under the two links. */
+.desk-toolnav .desk-year{display:inline-flex;flex-wrap:wrap;align-items:center;gap:0 .45rem;margin:0;min-height:2.5rem;font-size:17.5px;line-height:1.35;color:var(--t-ink)}
+.desk-toolnav .desk-year[hidden]{display:none}
+.desk-toolnav .desk-year b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+.desk-toolnav .desk-year button{position:relative;box-sizing:content-box;width:auto;height:auto;min-width:0;min-height:0;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;color:var(--t-ink);font:inherit;font-weight:600;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 35%,transparent);text-underline-offset:.2em;cursor:pointer}
+.desk-toolnav .desk-year button::after{content:"";position:absolute;left:-.3rem;right:-.3rem;top:50%;height:44px;transform:translateY(-50%)}
+.desk-toolnav .desk-year button:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
+@media (max-width:560px){.desk-toolnav .desk-year{order:3;flex-basis:100%}}
+.desk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 7. Motion only after a user action, and instant under reduced motion: one rule for every tool. */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;transition-delay:0s!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
 
 /* The Order of Returns, in the Data desk look. The tokens, fonts, type roles, container, labels, buttons, readouts and the
    chart frame come from shared/desk (inlined before this file); this file only adds what is particular to this page. */
@@ -160,7 +210,7 @@ section.opening{margin-top:0}
 .you-rank{font-weight:600}
 .reading{font-size:17.5px;line-height:1.45;color:var(--t-ink);margin:.4rem 0 0}
 
-/* charts: the full content width; text inside them is drawn at real pixel sizes, never under 17px (app.js TXT) */
+/* charts: the full content width; text inside them is drawn at real pixel sizes, never under 17.5px (app.js TXT) */
 figure.chart{width:100%;min-width:0;margin-bottom:.5rem}
 figure.chart svg{display:block;width:100%;height:auto;overflow:visible}
 figure.chart.group>figcaption{margin-bottom:1rem}
@@ -172,7 +222,7 @@ figure.chart.group>figcaption{margin-bottom:1rem}
 
 /* chart marks, coloured by what they show: Ruth blue, Sam rose, your order amber, every order teal, before grey */
 svg text{font-family:var(--font-ui)}
-svg{font-size:17px}
+svg{font-size:17.5px}
 .ax{fill:var(--t-ink2)}
 .ax.val,.ax.grp{fill:var(--t-ink)}
 .grid{stroke:var(--t-rule);stroke-width:1;shape-rendering:crispEdges}
@@ -193,14 +243,14 @@ svg{font-size:17px}
 .f-ruth{fill:var(--t-d1)}.f-sam{fill:var(--t-d4)}.f-you{fill:var(--t-d2)}.f-before{fill:var(--t-ink3)}
 .f-ruth.light,.f-sam.light,.f-you.light{fill-opacity:.45}
 .t-ruth{fill:var(--t-d1)}.t-sam{fill:var(--t-d4)}.t-you{fill:var(--you-text)}.t-before,.t-ink2{fill:var(--t-ink2)}
-.crosshair text{font-size:17px}
+.crosshair text{font-size:17.5px}
 
 /* controls: the buttons are the shared .btn / .btn-2 / .btn-you; the cards in the hand are this page's own */
 a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--t-point);outline-offset:2px}
 :root[data-theme="light"] a:focus-visible,:root[data-theme="light"] button:focus-visible,:root[data-theme="light"] input:focus-visible,:root[data-theme="light"] summary:focus-visible,:root[data-theme="light"] [tabindex]:focus-visible{outline-color:var(--t-ink)}
 .row{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0 0}
 .cards{list-style:none;padding:0;margin:.4rem 0 1rem;display:flex;flex-wrap:wrap;gap:.4rem;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
-.cards li,.hand button{min-width:4.1rem;text-align:center;padding:.45rem .5rem;border-radius:2px;font-weight:600;font-size:17px}
+.cards li,.hand button{min-width:4.1rem;text-align:center;padding:.45rem .5rem;border-radius:2px;font-weight:600;font-size:17.5px}
 .cards li{background:var(--t-raised);color:var(--t-ink)}
 .hand button{font-family:inherit;line-height:1.55;min-height:44px;border:0;cursor:pointer;background:var(--t-raised);color:var(--t-ink)}
 .cards li.down,.hand button.down{background:transparent;color:var(--t-ink);box-shadow:inset 0 0 0 1px var(--t-ink3)}
@@ -239,12 +289,58 @@ td{text-align:right}
 .readout .order-k{margin-top:1rem}
 .readout-v{width:fit-content;max-width:100%}
 .cards.mini{margin:.35rem 0 0;width:fit-content;max-width:100%}
-.cards.mini li{min-width:3.6rem;font-size:17px;padding:.3rem .4rem}
+.cards.mini li{min-width:3.6rem;font-size:17.5px;padding:.3rem .4rem}
 .cards.mini li{box-shadow:inset 0 -3px 0 var(--t-d4)}
 .cards.mini li.down{box-shadow:inset 0 0 0 1px var(--t-ink3),inset 0 -3px 0 var(--t-d4)}
 .save-note{margin:0}
 .save-note:empty{display:none}
 svg[hidden]{display:none}
+
+/* ---- The deal (redesign v2, step 4): the question, ten face-down cards and the answer beside them ---- */
+.opening .kicker{margin:.75rem 0 .5rem}
+.opening .lede{margin:.6rem 0 .2rem}
+.desk-deal{display:grid;gap:.6rem 3rem;align-items:start}
+/* wide: the question, the cards and the path on the left; the answer top-right beside the headline (its label level with
+   the kicker); the last row takes the slack so the left blocks keep their own heights */
+@media (min-width:900px){
+  .desk-deal{grid-template-columns:minmax(0,1fr) minmax(20rem,26rem);grid-template-rows:auto auto auto 1fr;grid-template-areas:"head answer" "table answer" "assume answer" "chart answer"}
+  .deal-head{grid-area:head}.deal-table{grid-area:table}.deal-answer{grid-area:answer;margin-top:.75rem}.desk-deal>.assume{grid-area:assume}.deal-chart{grid-area:chart;min-width:0}
+  .deck .card{height:64px}.deck .card-face{font-size:24px}
+}
+.deal-answer .readout{margin:0}
+.deck{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-width:40rem}
+@media (min-width:1200px){.deck{grid-template-columns:repeat(10,minmax(0,1fr));max-width:none}}
+.card{position:relative;height:52px;perspective:700px}
+.card-in{position:absolute;inset:0;transform-style:preserve-3d}
+@media (prefers-reduced-motion:no-preference){.card-in{transition:transform .3s ease}}
+.deck.instant .card-in{transition:none}
+.card.up .card-in{transform:rotateY(180deg)}
+.card-back,.card-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:3px;-webkit-backface-visibility:hidden;backface-visibility:hidden;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600;line-height:1}
+/* the back: a ruled card with its year number; the face: the year's return, an amber foot like the path it draws */
+.card-back{background:var(--t-raised) repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--t-ink) 9%,transparent) 7px 8px);box-shadow:inset 0 0 0 1px var(--t-rule);color:var(--t-ink2);font-size:19px}
+.card-face{transform:rotateY(180deg);background:var(--t-raised);color:var(--t-ink);font-size:22px;box-shadow:inset 0 -4px 0 var(--t-d2)}
+.card.neg .card-face{background:var(--t-ground);box-shadow:inset 0 0 0 1.5px var(--t-ink3),inset 0 -4px 0 var(--t-d2)}
+.deal-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 1.25rem;margin:.7rem 0 0}
+.btn-text{min-height:44px;padding:0;border:0;background:transparent;color:var(--t-ink);font:600 1.05rem/1.3 var(--font-ui);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 40%,transparent);text-underline-offset:.22em;cursor:pointer}
+.btn-text:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
+.strip{margin:.9rem 0 0;max-width:46rem}
+.strip-k{margin:0 0 .3rem;font-size:17.5px;line-height:1.4;color:var(--t-ink)}
+.strip svg{display:block;width:100%;height:auto;overflow:visible}
+.strip-bar{fill-opacity:.55}
+.tally{margin:.6rem 0 0;font-size:17.5px;line-height:1.45;color:var(--t-ink)}
+.tally[hidden],.save-row[hidden],.strip[hidden]{display:none}
+.save-row{margin:.6rem 0 0}
+.deal-answer .guess{margin:.9rem 0 0}
+.opening .assume{margin:.4rem 0 0}
+.deal-chart figure.chart{margin-top:1.25rem}
+.ln.faint{stroke-opacity:.55}
+.why{margin-top:2.25rem}
+.why figure.chart{margin-top:.25rem}
+details.deeper>section.deeper-sub:first-of-type{margin-top:1rem}
+.sources{margin-top:2rem;border-top:1px solid var(--t-rule);padding-top:.5rem}
+.sources summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
+.sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:17.5px;color:var(--t-ink)}
+.sources .note{max-width:68ch}
 </style>
 <link rel="canonical" href="https://mo-portfolio-site.moe-chayeb.workers.dev/tools/order-of-returns/">
 <meta property="og:type" content="website">
@@ -271,27 +367,61 @@ svg[hidden]{display:none}
 <div class="page">
   <main>
     <article>
-      <section data-chapter="Ruth and Sam" class="opening">
-      <p class="kicker">Game</p>
-      <h1 id="headline" class="display">Same ten years. Why does one retiree run out?</h1>
-      <p class="lede" id="deck">Two made-up retirees get the same market years in a different order.</p>
-      <p class="note assume" id="assume">Made-up returns, not history or a forecast. No taxes, fees or benefits. Education, not advice.</p>
-      <noscript><p class="note">This page needs JavaScript to run the numbers.</p></noscript>
-
-      <figure class="chart" id="fig-lead">
-        <figcaption><p class="chart-title" id="t-lead"></p><p class="chart-sub">Savings at the end of each year, after that year’s withdrawal</p><span class="chip tag-example">Example data</span></figcaption>
-        <svg id="c-lead" role="img" aria-labelledby="t-lead s-lead"></svg>
+      <section class="opening" aria-labelledby="headline">
+      <div class="desk-deal">
+        <div class="deal-head">
+          <p class="kicker">Game</p>
+          <h1 id="headline" class="display">Same ten years. Why does one retiree run out?</h1>
+          <p class="lede" id="deck">Ruth and Sam are made up. Same market years, opposite order.</p>
+          <noscript><p class="note">This page needs JavaScript to deal the cards.</p></noscript>
+        </div>
+        <div class="deal-table" data-first-move>
+          <ol class="deck" id="deck-cards" aria-label="The ten market years, in the order dealt"></ol>
+          <p class="deal-row"><button type="button" id="deal" class="btn-you">Deal my ten years</button><button type="button" id="one" class="btn-text">Deal one at a time</button></p>
+        </div>
+        <div class="deal-answer">
+          <div class="readout" id="answer" data-answer aria-live="polite" tabindex="-1">
+            <p class="readout-k" id="answer-k">This order lasts</p>
+            <p class="readout-v big" id="answer-v" data-readout-v>?</p>
+            <p class="readout-t" id="answer-t" data-readout-t></p>
+            <details class="readout-how"><summary>How this is worked out</summary>
+              <p id="how-1"></p>
+              <p id="how-2"></p>
+            </details>
+          </div>
+          <div class="strip" id="strip-box">
+            <p class="strip-k" id="strip-k"></p>
+            <svg id="c-strip" role="img" aria-labelledby="strip-k strip-s"></svg>
+            <p class="sr" id="strip-s"></p>
+          </div>
+          <p class="tally" id="tally" hidden></p>
+          <div id="guess"></div>
+          <p class="save-row" id="save-row" hidden><button type="button" id="save" class="btn-2">Save my card</button></p>
+        </div>
+        <p class="assume" id="assume" data-assumptions>Made-up returns, not history or a forecast. No taxes, fees or benefits. Education, not advice.</p>
+        <div class="deal-chart">
+      <figure class="chart" id="fig-deal">
+        <figcaption><p class="chart-title" id="t-deal"></p><p class="chart-sub" id="sub-deal">Savings at the end of each year: Ruth and Sam</p><span class="chip tag-example">Example data</span></figcaption>
+        <svg id="c-deal" role="img" aria-labelledby="t-deal s-deal"></svg>
       </figure>
-      <p class="summary" id="s-lead"></p>
-      <div class="prose">
-        <p>Each retires with <strong data-v="start"></strong> and takes out <strong data-v="withdrawal"></strong> in the first year, <span data-v="indexation"></span> more each year after to keep up with prices. Their first <span data-v="nWords"></span> years are the same <span data-v="nWords"></span> market years:</p>
-        <ul class="cards" id="cards" aria-label="The market years"></ul>
-        <p>The average of the <span data-v="nWords"></span> is <strong data-v="avg"></strong> a year. Ruth gets them best first, Sam worst first. From year <span data-v="after"></span> on, every year earns that same average, for both of them.</p>
-        <p>Further down, the page runs all <span data-v="orders"></span> possible orders of those years, lets you deal your own, and tries to rescue Sam.</p>
+      <p class="summary" id="s-deal"></p>
+        </div>
       </div>
       </section>
 
-      <section data-chapter="No withdrawals" aria-labelledby="h-shuffle">
+      <section class="why" aria-labelledby="h-why">
+        <p class="sec-label">Why?</p>
+        <figure class="chart" id="fig-why">
+          <figcaption><p class="chart-title" id="h-why">The first five years decide most of it</p><p class="chart-sub">Share of orders that last all <span data-v="horizon"></span> years, grouped by the average return of their first five years</p><span class="chip tag-example">Example data</span></figcaption>
+          <svg id="c-why" role="img" aria-labelledby="h-why s-why"></svg>
+        </figure>
+        <p class="summary" id="s-why"></p>
+      </section>
+
+      <details class="deeper" id="deeper">
+      <summary>Go deeper</summary>
+
+      <section class="deeper-sub" data-chapter="No withdrawals" aria-labelledby="h-shuffle">
         <p class="sec-label">No withdrawals</p>
         <h2 id="h-shuffle"></h2>
         <div class="prose">
@@ -312,57 +442,7 @@ svg[hidden]{display:none}
         <div class="prose"><p>With money coming out, a bad year early does more damage: the withdrawal is taken from savings that have just shrunk, and that money is not there when the good years come.</p></div>
       </section>
 
-      <section data-chapter="Your turn" aria-labelledby="h-deal">
-        <p class="sec-label">Your turn</p>
-        <h2 id="h-deal">Deal the ten years yourself</h2>
-        <div class="prose"><p>Pick the order one card at a time. Same savings, same withdrawals, same average. Your path is drawn in amber.</p></div>
-        <div class="deal">
-          <div><p class="label">Your order so far</p><ol class="cards dealt" id="dealt" aria-label="Your order so far"></ol></div>
-          <div><p class="label">Cards left to deal</p><div class="cards hand" id="hand" role="group" aria-label="Cards left to deal"></div></div>
-          <p class="row"><button type="button" id="random" class="btn-you">Deal the rest at random</button><button type="button" id="reset" class="btn-2">Start again</button><button type="button" id="save" class="btn-2">Save this chart as an image</button></p>
-        </div>
-        <div class="readout" id="s-deal" aria-live="polite" tabindex="-1">
-          <p class="readout-k" id="rk-deal"></p>
-          <p class="readout-v big" id="rv-deal" data-flash></p>
-          <p class="readout-t" id="rt-deal"></p>
-          <p class="readout-fine" id="rf-deal"></p>
-        </div>
-        <p class="note save-note" id="save-note" aria-live="polite"></p>
-        <figure class="chart">
-          <figcaption><p class="chart-title" id="t-deal"></p><p class="chart-sub">Savings at the end of each year: Ruth, Sam and your order (amber)</p><span class="chip tag-example">Example data</span></figcaption>
-          <svg id="c-deal" role="img" aria-labelledby="t-deal s-deal"></svg>
-        </figure>
-      </section>
-
-      <section data-chapter="Every order" aria-labelledby="h-all">
-        <p class="sec-label">Every possible order</p>
-        <h2 id="h-all">Running every possible order of the ten years</h2>
-        <div class="prose">
-          <p>The ten years can be dealt in <strong data-v="orders"></strong> different orders. This page runs every one of them through the same engine, in your browser, and counts how each one ends.</p>
-          <div class="run" id="run"><progress id="run-bar" max="1" value="0" aria-label="Orders worked out"></progress> <span id="run-text" aria-live="polite">Counting every order…</span></div>
-        </div>
-        <figure class="chart">
-          <figcaption><p class="chart-title" id="t-all">How the orders end</p><p class="chart-sub">Share of all orders, by the year the money runs out, or the money left at the end</p><span class="chip tag-example">Example data</span></figcaption>
-          <svg id="c-all" role="img" aria-labelledby="t-all s-all"></svg>
-        </figure>
-        <p class="summary" id="s-all" aria-live="polite"></p>
-        <p class="summary you-rank" id="s-rank" aria-live="polite"></p>
-        <details class="table"><summary>The counts behind the chart</summary><table id="tab-all"><caption class="sr">Orders by how they end</caption><thead><tr><th scope="col">How the order ends</th><th scope="col">Orders</th><th scope="col">Share</th></tr></thead><tbody></tbody></table></details>
-        <p class="note">Better means the money lasts longer; if both last, more is left at the end; if both run out in the same year, more was paid out before it did.</p>
-      </section>
-
-      <section data-chapter="The first years" aria-labelledby="h-early">
-        <p class="sec-label">Why the order matters</p>
-        <h2 id="h-early">The first five years decide most of it</h2>
-        <div class="prose"><p>Group the orders by the average return of their first five years. Each column below is one group; the shading shows how that group's orders end.</p></div>
-        <figure class="chart">
-          <figcaption><p class="chart-title" id="t-early">The better the first five years, the more orders last</p><p class="chart-sub">Each column is a group of orders with the same average return in their first five years. Darker: a larger share of that group ends that way</p><span class="chip tag-example">Example data</span></figcaption>
-          <svg id="c-early" role="img" aria-labelledby="t-early s-early"></svg>
-        </figure>
-        <p class="summary" id="s-early" aria-live="polite"></p>
-      </section>
-
-      <section data-chapter="Rescuing Sam" aria-labelledby="h-rescue">
+      <section class="deeper-sub" data-chapter="Rescuing Sam" aria-labelledby="h-rescue">
         <p class="sec-label">Rescuing Sam</p>
         <h2 id="h-rescue"></h2>
         <div class="prose">
@@ -394,12 +474,33 @@ svg[hidden]{display:none}
         </figure>
       </section>
 
-      <section data-chapter="RRIF minimums" aria-labelledby="h-rrif">
+      <section class="deeper-sub" data-chapter="Every order" aria-labelledby="h-all">
+        <p class="sec-label">Every possible order</p>
+        <h2 id="h-all">Running every possible order of the ten years</h2>
+        <div class="prose">
+          <p>The ten years can be dealt in <strong data-v="orders"></strong> different orders. This page runs every one of them through the same engine, in your browser, and counts how each one ends.</p>
+          <div class="run" id="run"><progress id="run-bar" max="1" value="0" aria-label="Orders worked out"></progress> <span id="run-text" aria-live="polite">Counting every order…</span></div>
+        </div>
+        <figure class="chart">
+          <figcaption><p class="chart-title" id="t-all">How the orders end</p><p class="chart-sub">Share of all orders, by the year the money runs out, or the money left at the end</p><span class="chip tag-example">Example data</span></figcaption>
+          <svg id="c-all" role="img" aria-labelledby="t-all s-all"></svg>
+        </figure>
+        <p class="summary" id="s-all" aria-live="polite"></p>
+        <details class="table"><summary>The counts behind the chart</summary><table id="tab-all"><caption class="sr">Orders by how they end</caption><thead><tr><th scope="col">How the order ends</th><th scope="col">Orders</th><th scope="col">Share</th></tr></thead><tbody></tbody></table></details>
+        <h3 id="h-early">Every order, by its first five years</h3>
+        <div class="prose"><p>The same orders, grouped by the average return of their first five years. Each column below is one group; the shading shows how that group's orders end.</p></div>
+        <figure class="chart">
+          <figcaption><p class="chart-title" id="t-early">The better the first five years, the more orders last</p><p class="chart-sub">Each column is a group of orders with the same average return in their first five years. Darker: a larger share of that group ends that way</p><span class="chip tag-example">Example data</span></figcaption>
+          <svg id="c-early" role="img" aria-labelledby="t-early s-early"></svg>
+        </figure>
+        <p class="summary" id="s-early" aria-live="polite"></p>
+      </section>
+
+      <section class="deeper-sub" data-chapter="RRIF minimums" aria-labelledby="h-rrif">
         <p class="sec-label">A Canadian lane: RRIF minimums</p>
         <h2 id="h-rrif">What RRIF minimum withdrawals do to each order</h2>
         <div class="prose">
           <p id="p-rrif"></p>
-          <p class="note" id="p-rrif-src"></p>
           <label class="check control"><input id="rrif" type="checkbox"><span>Apply the RRIF minimums</span></label>
         </div>
         <div class="readout" id="r-rrif" aria-live="polite">
@@ -416,7 +517,7 @@ svg[hidden]{display:none}
         <p class="note">An illustration with stated assumptions, not the rules in full. The extra that leaves the RRIF is not tracked after it leaves: it might be spent or saved elsewhere, and tax, which this sketch leaves out, is where much of the real cost or benefit lies.</p>
       </section>
 
-      <section data-chapter="Questions" aria-labelledby="h-qs">
+      <section class="deeper-sub" data-chapter="Questions" aria-labelledby="h-qs">
         <p class="sec-label">Taking it further</p>
         <h2 id="h-qs">Questions worth asking</h2>
         <div class="prose">
@@ -433,6 +534,13 @@ svg[hidden]{display:none}
           <p>Taxes, fees, pensions and government benefits; real market history (these ten years are invented); spending that changes with age; prices rising by anything other than the assumed amount; and every year after the tenth being different from the average. It is a picture of one mechanism, not a plan.</p>
         </div>
       </section>
+      </details>
+
+      <details class="sources" id="sources" data-preview="Where the method comes from, and what is made up">
+        <summary>Sources</summary>
+        <ul id="src-list"></ul>
+        <p class="note">The market years, Ruth and Sam are made up for this example; every figure on the page is worked out from them in your browser, and the share of all orders was worked out when the page was built, with the same engine.</p>
+      </details>
     </article>
   </main>
   <a class="desk-next" data-next href="/tools/money-then-now/"><span class="desk-next-k">Up next</span><span class="desk-next-q">What did $100 buy the year you were born?</span><span class="desk-next-go" aria-hidden="true">→</span></a>
@@ -444,6 +552,7 @@ svg[hidden]{display:none}
 </div>
 <script type="application/json" id="story">{"_note":"Synthetic: not historical, not a forecast. Every person and figure here is fictional, chosen to show the mechanism.","synthetic":true,"personas":[{"name":"Ruth","synthetic":true,"order":"good years first"},{"name":"Sam","synthetic":true,"order":"bad years first"}],"start":500000,"withdrawal":25000,"indexation":0.02,"cards":[0.21,0.16,0.12,0.09,0.06,0.03,-0.03,-0.08,-0.14,-0.02],"horizon":25,"after":"Every year after the ten cards earns the cards' average return.","flexTrim":0.1,"bufferYears":2,"startAge":65,"_startAge":"Illustrative: Ruth and Sam are this age at the start of year 1 (used only by the RRIF lane)."}</script>
 <script type="application/json" id="facts">{"rrif":{"id":"rrif_minimum_factors","title":"RRIF minimum withdrawal factors by age (Income Tax Regulations 7308(4))","value":[{"age":71,"factor":"0.0528"},{"age":72,"factor":"0.0540"},{"age":73,"factor":"0.0553"},{"age":74,"factor":"0.0567"},{"age":75,"factor":"0.0582"},{"age":76,"factor":"0.0598"},{"age":77,"factor":"0.0617"},{"age":78,"factor":"0.0636"},{"age":79,"factor":"0.0658"},{"age":80,"factor":"0.0682"},{"age":81,"factor":"0.0708"},{"age":82,"factor":"0.0738"},{"age":83,"factor":"0.0771"},{"age":84,"factor":"0.0808"},{"age":85,"factor":"0.0851"},{"age":86,"factor":"0.0899"},{"age":87,"factor":"0.0955"},{"age":88,"factor":"0.1021"},{"age":89,"factor":"0.1099"},{"age":90,"factor":"0.1192"},{"age":91,"factor":"0.1306"},{"age":92,"factor":"0.1449"},{"age":93,"factor":"0.1634"},{"age":94,"factor":"0.1879"},{"age":95,"factor":"0.2000"}],"unit":"factor","source_url":"https://laws-lois.justice.gc.ca/eng/regulations/C.R.C.,_c._945/section-7308.html","as_of":"2026-11-09"},"maturity":{"id":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","value":"71","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","as_of":"2026-11-10"}}</script>
+<script type="application/json" id="dist">{"_note":"Generated by build.mjs from story.json (enumerate.mjs distribution()); never edit by hand.","params":{"start":500000,"withdrawal":25000,"indexation":0.02,"cards":[0.21,0.16,0.12,0.09,0.06,0.03,-0.03,-0.08,-0.14,-0.02],"horizon":25},"total":3628800,"horizon":25,"lasts":685586,"lasted":[{"years":19,"count":5381},{"years":20,"count":88182},{"years":21,"count":322019},{"years":22,"count":667120},{"years":23,"count":945256},{"years":24,"count":915256},{"years":25,"count":685586}],"strip":{"firstYear":20,"byYear":[5381,88182,322019,667120,945256,915256],"left":{"step":10000,"counts":[175047,149653,121906,93890,67349,42966,23219,9426,2053,77]}},"groups":[{"avg":-0.048,"n":14400,"lasts":0},{"avg":-0.042,"n":14400,"lasts":0},{"avg":-0.036,"n":14400,"lasts":0},{"avg":-0.032,"n":14400,"lasts":0},{"avg":-0.03,"n":28800,"lasts":0},{"avg":-0.026,"n":14400,"lasts":0},{"avg":-0.024,"n":14400,"lasts":0},{"avg":-0.022,"n":14400,"lasts":0},{"avg":-0.02,"n":43200,"lasts":0},{"avg":-0.018,"n":28800,"lasts":0},{"avg":-0.014,"n":28800,"lasts":0},{"avg":-0.012,"n":43200,"lasts":0},{"avg":-0.01,"n":14400,"lasts":0},{"avg":-0.008,"n":72000,"lasts":0},{"avg":-0.006,"n":28800,"lasts":0},{"avg":-0.004,"n":14400,"lasts":0},{"avg":-0.002,"n":57600,"lasts":0},{"avg":0,"n":43200,"lasts":0},{"avg":0.002,"n":28800,"lasts":0},{"avg":0.004,"n":86400,"lasts":0},{"avg":0.006,"n":57600,"lasts":0},{"avg":0.008,"n":28800,"lasts":0},{"avg":0.01,"n":72000,"lasts":0},{"avg":0.012,"n":57600,"lasts":0},{"avg":0.014,"n":28800,"lasts":0},{"avg":0.016,"n":100800,"lasts":0},{"avg":0.018,"n":86400,"lasts":0},{"avg":0.02,"n":28800,"lasts":1},{"avg":0.022,"n":86400,"lasts":14},{"avg":0.024,"n":57600,"lasts":32},{"avg":0.026,"n":57600,"lasts":70},{"avg":0.028,"n":129600,"lasts":403},{"avg":0.03,"n":72000,"lasts":489},{"avg":0.032,"n":57600,"lasts":703},{"avg":0.034,"n":86400,"lasts":1306},{"avg":0.036,"n":57600,"lasts":997},{"avg":0.038,"n":57600,"lasts":1668},{"avg":0.04,"n":144000,"lasts":5517},{"avg":0.042,"n":57600,"lasts":2695},{"avg":0.044,"n":57600,"lasts":3889},{"avg":0.046,"n":86400,"lasts":6453},{"avg":0.048,"n":57600,"lasts":4588},{"avg":0.05,"n":72000,"lasts":7597},{"avg":0.052,"n":129600,"lasts":16788},{"avg":0.054,"n":57600,"lasts":8392},{"avg":0.056,"n":57600,"lasts":10342},{"avg":0.058,"n":86400,"lasts":16633},{"avg":0.06,"n":28800,"lasts":5714},{"avg":0.062,"n":86400,"lasts":21822},{"avg":0.064,"n":100800,"lasts":27881},{"avg":0.066,"n":28800,"lasts":8072},{"avg":0.068,"n":57600,"lasts":19842},{"avg":0.07,"n":72000,"lasts":26890},{"avg":0.072,"n":28800,"lasts":11775},{"avg":0.074,"n":57600,"lasts":26477},{"avg":0.076,"n":86400,"lasts":40148},{"avg":0.078,"n":28800,"lasts":14718},{"avg":0.08,"n":43200,"lasts":24652},{"avg":0.082,"n":57600,"lasts":33411},{"avg":0.084,"n":14400,"lasts":9289},{"avg":0.086,"n":28800,"lasts":19516},{"avg":0.088,"n":72000,"lasts":48872},{"avg":0.09,"n":14400,"lasts":10863},{"avg":0.092,"n":43200,"lasts":34077},{"avg":0.094,"n":28800,"lasts":22974},{"avg":0.098,"n":28800,"lasts":25018},{"avg":0.1,"n":43200,"lasts":38324},{"avg":0.102,"n":14400,"lasts":13502},{"avg":0.104,"n":14400,"lasts":13498},{"avg":0.106,"n":14400,"lasts":13800},{"avg":0.11,"n":28800,"lasts":28395},{"avg":0.112,"n":14400,"lasts":14281},{"avg":0.116,"n":14400,"lasts":14398},{"avg":0.122,"n":14400,"lasts":14400},{"avg":0.128,"n":14400,"lasts":14400}]}</script>
 <script type="text/plain" id="worker-src">// The Order of Returns: every order of the ten cards, run exactly (SPEC.md section 3). Pure: no DOM, no I/O. It runs in a
 // Web Worker on the page (worker.js), in the page itself if a worker cannot start, and in the tests.
 //
@@ -549,6 +658,44 @@ function niceStep(x) {
   return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
 }
 
+/** The sorted-outcome distribution the page ships with (redesign v2, step 4): written by build.mjs for the story in
+ *  story.json only, so the deal at the top of the page answers at once, before (and without) the full count in the
+ *  worker. Years lasted are whole years paid in full, capped at the horizon (an order that runs out in year d lasted
+ *  d - 1), so many orders tie; `lasted` is sorted from the shortest to the longest. `strip` holds the bars of how the
+ *  orders end (by run-out year, then by money left in bins of `left.step`), and `groups` the share that last for each
+ *  set of first five years (by its average). */
+function distribution(res, cards) {
+  const s = summarize(res, cards), H = res.horizon, lasted = new Map();
+  for (let d = 1; d <= H; d++) if (s.byYear[d]) lasted.set(d - 1, s.byYear[d]);
+  if (s.lasts) lasted.set(H, s.lasts);
+  let y0 = H; for (let d = 1; d <= H; d++) if (s.byYear[d]) { y0 = d; break; }
+  // the strip's money-left bins are finer than the histogram's (about ten of them), so it reads as a strip of bars
+  let maxLeft = 0; for (let i = 0; i < res.total; i++) if (!res.dep[i] && res.value[i] > maxLeft) maxLeft = res.value[i];
+  const step = niceStep(maxLeft / 10), left = new Array(Math.max(1, Math.ceil(maxLeft / step + 1e-9))).fill(0);
+  for (let i = 0; i < res.total; i++) if (!res.dep[i]) left[Math.min(left.length - 1, Math.floor(res.value[i] / step))]++;
+  return {
+    total: s.total, horizon: H, lasts: s.lasts,
+    lasted: [...lasted.entries()].sort((a, b) => a[0] - b[0]).map(([years, count]) => ({ years, count })),
+    strip: { firstYear: y0, byYear: s.byYear.slice(y0), left: { step, counts: left } },
+    groups: s.groups.map((g) => ({ avg: g.avg, n: g.n, lasts: g.counts[0] })),
+  };
+}
+
+/** Whole years an outcome lasted: the depletion year minus one, or the horizon when the money lasts (dep 0). */
+function yearsLasted(dep, horizon) { return dep ? dep - 1 : horizon; }
+
+/** How many orders last no longer than `years` (ties counted: "at least as long as" this many). */
+function atLeastAsLong(dist, years) {
+  let n = 0; for (const o of dist.lasted) if (o.years <= years) n += o.count;
+  return n;
+}
+
+/** The strip bar an outcome falls in: by run-out year, or for an order that lasts, by money left. */
+function stripBar(dist, dep, value) {
+  const st = dist.strip, nDep = st.byYear.length;
+  return dep ? Math.max(0, dep - st.firstYear) : nDep + Math.min(st.left.counts.length - 1, Math.floor(value / st.left.step));
+}
+
 // The Order of Returns: the Web Worker. enumerate.mjs is inlined above this at build time; the page starts the worker
 // from a blob: URL, so it makes no request. It keeps each finished run so the page can ask where an order ranks.
 var runs = {};
@@ -610,6 +757,241 @@ function deskCrosshair(svg, o) {
   function move(e) { show(toSvg(e)); } function hide() { g.style.display = 'none'; }
   svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide);
   return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
+}
+
+// ---- The desk tool template (redesign v2, steps 4 to 6): readout, Go deeper, example tag, save and share, Save my
+// card, guess then reveal, the year chip. APIs in the header comment of shared/desk/desk-ui.mjs. ----
+var DESK_SITE = {"origin":"https://mo-portfolio-site.moe-chayeb.workers.dev","wordmark":"Mohammed El Chayeb"};
+var IN_APP_NOTICE = "Open this page in Safari or Chrome to save the file.", CARD_STAMP = "Example \u00b7 Education, not advice", EXAMPLE_TAG = "Example data";
+function inAppBrowser(ua) {
+  ua = String(ua || '');
+  if (/Instagram/i.test(ua)) return 'Instagram';
+  if (/LinkedInApp|LinkedIn\//i.test(ua)) return 'LinkedIn';
+  if (/FBAN\/|FBAV\/|FB_IAB|FBIOS|FB4A|FBSV\/|\[FB/i.test(ua)) return 'Facebook';
+  return null;
+}
+function siteAddress(origin) {
+  return String(origin || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+}
+function wordCount(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+function deeperIntro(titles) {
+  var t = (titles || []).map(function (x) { return String(x || '').replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  return t.length >= 3 ? 'In this section: ' + t.join(' \u00b7 ') : '';
+}
+function deeperPreview(titles) {
+  var t = (titles || []).map(function (x) { return String(x || '').replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  return t.length >= 2 ? t.join(' \u00b7 ') : '';
+}
+function wrapText(text, max, measure, maxLines) {
+  var words = String(text || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean), lines = [], cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var next = cur ? cur + ' ' + words[i] : words[i];
+    if (cur && measure(next) > max) { lines.push(cur); cur = words[i]; } else cur = next;
+  }
+  if (cur) lines.push(cur);
+  if (maxLines && lines.length > maxLines) {
+    var keep = lines.slice(0, maxLines), last = keep[maxLines - 1];
+    while (last.indexOf(' ') > 0 && measure(last + '\u2026') > max) last = last.slice(0, last.lastIndexOf(' '));
+    keep[maxLines - 1] = last + '\u2026';
+    return keep;
+  }
+  return lines;
+}
+function cardText(o, origin) {
+  o = o || {};
+  return {
+    head: String(o.head || ''),
+    question: String(o.question || ''),
+    bigValue: String(o.bigValue == null ? '' : o.bigValue),
+    line: String(o.line || ''),
+    labels: (o.labels || []).map(String).filter(Boolean).slice(0, 3),
+    stamp: CARD_STAMP,
+    address: siteAddress(origin),
+  };
+}
+
+// Has the visitor acted? A trusted pointer, key or input event in the last 1.5s (count-ups run only then).
+var deskActedAt = 0;
+['pointerdown', 'keydown', 'input', 'change'].forEach(function (t) { addEventListener(t, function (e) { if (e.isTrusted) deskActedAt = Date.now(); }, { capture: true, passive: true }); });
+function deskActed() { return deskActedAt > 0 && Date.now() - deskActedAt < 1500; }
+function deskStill() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+function deskEl(x) { return typeof x === 'string' ? document.querySelector(x) : x; }
+
+// 1. The big readout.
+function deskReadout(el, o) {
+  el = deskEl(el); o = o || {};
+  var v = el.querySelector('[data-readout-v]') || el.querySelector('.readout-v'), t = el.querySelector('[data-readout-t]') || el.querySelector('.readout-t'), k = el.querySelector('.readout-k');
+  if (!el.hasAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+  el.setAttribute('aria-atomic', 'true');
+  var cur = null, raf = 0, quiet = 0;
+  function busy() { el.setAttribute('aria-busy', 'true'); clearTimeout(quiet); quiet = setTimeout(function () { el.removeAttribute('aria-busy'); }, 250); }
+  function set(s) {
+    s = s || {}; busy(); cancelAnimationFrame(raf);
+    if (s.label != null && k) k.textContent = s.label;
+    if (s.line != null && t) t.textContent = s.line;
+    var fmt = s.format || o.format || String;
+    if (typeof s.n === 'number' && isFinite(s.n)) {
+      var from = cur, to = s.n; cur = to;
+      if (from == null || from === to || s.animate === false || !deskActed() || deskStill()) { v.textContent = fmt(to); return; }
+      var t0 = performance.now();
+      var step = function (now) {
+        var p = Math.min(1, (now - t0) / 300), e = 1 - Math.pow(1 - p, 3);
+        v.textContent = fmt(p < 1 ? from + (to - from) * e : to);
+        if (p < 1) raf = requestAnimationFrame(step); else busy();
+      };
+      raf = requestAnimationFrame(step);
+    } else { cur = null; v.textContent = s.text != null ? String(s.text) : ''; }
+  }
+  return { set: set, el: el };
+}
+
+// 2. Folds: the one-line preview under each summary, so a closed fold says what it holds. A Go deeper fold with two or
+//    more sub-sections lists them ("A \u00b7 B \u00b7 C", deeperPreview); any fold may give its own in data-preview instead.
+function deskDeeper() {
+  [].forEach.call(document.querySelectorAll('details.deeper, details.sources, details.fold, details.this-year'), function (d) {
+    var s = d.querySelector(':scope > summary'); if (!s) return;
+    var line = d.getAttribute('data-preview') || '';
+    if (!line && d.matches('.deeper')) {
+      var subs = [].filter.call(d.children, function (c) { return c.matches('.deeper-sub, section'); });
+      line = deeperPreview(subs.map(function (c) { var h = c.getAttribute('data-title') ? null : c.querySelector('h2, h3, h4, .card-hed, .sec-label'); return c.getAttribute('data-title') || (h ? h.textContent : ''); }));
+    }
+    var p = s.querySelector(':scope > .fold-p');
+    if (!line) { if (p && p.hasAttribute('data-auto')) p.remove(); return; }
+    if (p && !p.hasAttribute('data-auto')) return;
+    if (!p) { p = document.createElement('span'); p.className = 'fold-p' + (d.matches('.deeper') ? ' deeper-in' : ''); p.setAttribute('data-auto', ''); s.appendChild(p); }
+    p.textContent = line;
+  });
+}
+deskDeeper();
+
+// 3. The EXAMPLE DATA tag on a chart drawn at run time (once per chart).
+function deskExampleTag(fig) {
+  fig = deskEl(fig); if (!fig || fig.querySelector('.tag-example')) return;
+  var cap = fig.querySelector(':scope > figcaption'); if (!cap) { cap = document.createElement('figcaption'); fig.prepend(cap); }
+  var tag = document.createElement('span'); tag.className = 'chip tag-example'; tag.textContent = EXAMPLE_TAG; cap.appendChild(tag);
+}
+
+// 4. Save and share: the share sheet when it takes files, else a download link; the in-app browser notice.
+function deskInApp() { try { return inAppBrowser(navigator.userAgent); } catch (e) { return null; } }
+function deskSaveFile(o) {
+  var app = deskInApp(), notice = app ? IN_APP_NOTICE : null;
+  function done(via) { return { via: via, inApp: app, notice: notice }; }
+  function download() {
+    var url = URL.createObjectURL(o.blob), a = document.createElement('a');
+    a.href = url; a.download = o.name; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 20000);
+    return done('download');
+  }
+  var data = null;
+  try { data = { files: [new File([o.blob], o.name, { type: o.blob.type || 'application/octet-stream' })], title: o.title || o.name }; } catch (e) { data = null; }
+  var can = false;
+  try { can = !!(data && navigator.share && navigator.canShare && navigator.canShare(data)); } catch (e) { can = false; }
+  if (!can) return Promise.resolve(download());
+  return navigator.share(data).then(function () { return done('share'); }, function (e) { return e && e.name === 'AbortError' ? done('cancelled') : download(); });
+}
+function deskSaveButton(button, make) {
+  button = deskEl(button);
+  if (deskInApp() && !(button.nextElementSibling && button.nextElementSibling.classList.contains('save-note'))) {
+    var n = document.createElement('span'); n.className = 'save-note'; n.setAttribute('role', 'note'); n.textContent = IN_APP_NOTICE; button.after(n);
+  }
+  button.addEventListener('click', function () {
+    if (button.getAttribute('aria-busy') === 'true') return;
+    button.setAttribute('aria-busy', 'true');
+    Promise.resolve().then(make).then(deskSaveFile).catch(function () { return null; }).then(function () { button.removeAttribute('aria-busy'); });
+  });
+}
+
+// Save my card: a 1080x1350 PNG drawn in a canvas, in the page's current theme; nothing leaves the page.
+function deskCard(o) {
+  var W = 1080, H = 1350, P = 88, cs = getComputedStyle(document.documentElement);
+  var col = function (n, d) { return (cs.getPropertyValue('--t-' + n) || '').trim() || d; };
+  var C = { ground: col('ground', '#FCFDFD'), raised: col('raised', '#E8EEF3'), ink: col('ink', '#10161C'), ink2: col('ink2', '#36414C'), rule: col('rule', '#D3D8DD'), point: col('point', '#F2A93B') };
+  var serif = '"Source Serif 4 Variable", Georgia, serif', sans = '"Source Sans 3 Variable", system-ui, sans-serif';
+  var T = cardText({ head: DESK_SITE.wordmark, question: o.question, bigValue: o.bigValue, line: o.line, labels: o.labels }, DESK_SITE.origin);
+  var fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 72px ' + serif), document.fonts.load('400 50px ' + sans), document.fonts.load('700 40px ' + sans)]).catch(function () {}) : Promise.resolve();
+  return fonts.then(function () {
+    var c = document.createElement('canvas'); c.width = W; c.height = H;
+    var x = c.getContext('2d'), w = W - 2 * P, y = P;
+    var track = function (px) { if ('letterSpacing' in x) x.letterSpacing = px; };
+    var font = function (f) { x.font = f; track('0px'); };
+    var m = function (s) { return x.measureText(s).width; };
+    x.fillStyle = C.ground; x.fillRect(0, 0, W, H);
+    x.textBaseline = 'alphabetic'; x.fillStyle = C.ink;
+    // the wordmark over the site's double rule
+    font('600 44px ' + serif); y += 44; x.fillText(T.head, P, y);
+    y += 26; x.fillRect(P, y, w, 2); x.fillRect(P, y + 6, w, 2); y += 8;
+    // the question
+    font('600 72px ' + serif); y += 40;
+    wrapText(T.question, w, m, 4).forEach(function (l) { y += 80; x.fillText(l, P, y); });
+    // the big value, shrunk until it fits one line
+    var size = 230; font('600 ' + size + 'px ' + serif);
+    while (size > 96 && m(T.bigValue) > w) { size -= 6; font('600 ' + size + 'px ' + serif); }
+    y += Math.round(size * 0.95) + 40; x.fillText(T.bigValue, P, y);
+    // the one highlight: an amber rule under the figure, clear of its descenders
+    y += Math.round(size * 0.3); x.fillStyle = C.point; x.fillRect(P, y, Math.min(w, Math.max(160, m(T.bigValue))), 8); x.fillStyle = C.ink; y += 16;
+    // the one line
+    font('400 50px ' + sans);
+    wrapText(T.line, w, m, 3).forEach(function (l) { y += 66; x.fillText(l, P, y); });
+    // the labels as ruled chips
+    if (T.labels.length) {
+      y += 40; font('700 40px ' + sans); track('2px');
+      var cx = P, ch = 64;
+      T.labels.forEach(function (l) {
+        var s = l.toUpperCase(), lw = m(s) + 40;
+        if (cx > P && cx + lw > P + w) { cx = P; y += ch + 16; }
+        x.strokeStyle = C.rule; x.lineWidth = 2; x.strokeRect(cx + 1, y + 1, lw - 2, ch - 2);
+        x.fillStyle = C.ink2; x.fillText(s, cx + 20, y + 46); x.fillStyle = C.ink; cx += lw + 16;
+      });
+      y += ch;
+    }
+    // an optional small chart in the room that is left
+    var foot = H - P - 116;
+    if (typeof o.draw === 'function' && foot - y > 140) { try { o.draw(x, { x: P, y: y + 40, w: w, h: foot - y - 80 }, C); } catch (e) { /* the card still saves */ } }
+    // the foot: a 2px ink rule, the stamp and the site address
+    x.fillStyle = C.ink; x.fillRect(P, foot, w, 2);
+    font('700 40px ' + sans); x.fillText(T.stamp, P, foot + 56);
+    font('400 40px ' + sans); x.fillStyle = C.ink2; x.fillText(T.address, P, foot + 108);
+    return new Promise(function (res, rej) { c.toBlob(function (b) { if (b) res(b); else rej(new Error('the card could not be drawn')); }, 'image/png'); });
+  });
+}
+function deskSaveCard(o) {
+  return deskCard(o).then(function (blob) { return deskSaveFile({ blob: blob, name: o.name || 'my-card.png', title: o.question }); });
+}
+
+// 5. Guess, then reveal: skippable, and shown only when the tool calls show() after its first result.
+var deskGuessN = 0;
+function deskGuess(host, o) {
+  host = deskEl(host); o = o || {};
+  var id = 'desk-guess-' + (++deskGuessN), fmt = o.format || String, shown = false, done = false;
+  var mk = function (tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  host.textContent = ''; host.classList.add('guess'); host.setAttribute('data-guess', ''); host.hidden = true;
+  var k = mk('p', 'kicker', 'Guess first'), q = mk('p', 'guess-q', o.question || ''); q.id = id + '-q';
+  var row = mk('div', 'guess-row'), r = document.createElement('input'), out = mk('output', 'guess-v');
+  r.type = 'range'; r.id = id; r.min = o.min; r.max = o.max; r.step = o.step || 1; r.value = o.start != null ? o.start : o.min;
+  r.setAttribute('aria-labelledby', id + '-q'); out.setAttribute('for', id);
+  var paint = function () { out.textContent = fmt(Number(r.value)); r.setAttribute('aria-valuetext', out.textContent); };
+  r.addEventListener('input', paint); paint();
+  row.appendChild(out); row.appendChild(r);
+  var acts = mk('div', 'guess-actions'), go = mk('button', 'btn', 'Reveal'), skip = mk('button', 'btn-2', 'Skip');
+  go.type = 'button'; skip.type = 'button'; acts.appendChild(go); acts.appendChild(skip);
+  var said = mk('p', 'guess-out'); said.setAttribute('aria-live', 'polite'); said.hidden = true;
+  [k, q, row, acts, said].forEach(function (e) { host.appendChild(e); });
+  go.addEventListener('click', function () {
+    if (done) return; done = true;
+    var g = Number(r.value), a = typeof o.answer === 'function' ? o.answer() : o.answer;
+    said.textContent = o.reveal ? o.reveal(g, a) : 'Your guess: ' + fmt(g) + '. The answer: ' + fmt(a) + '.';
+    said.hidden = false; r.disabled = true; acts.hidden = true; said.setAttribute('tabindex', '-1'); said.focus();
+    if (o.onDone) o.onDone({ guess: g, answer: a, skipped: false });
+  });
+  skip.addEventListener('click', function () {
+    if (done) return; done = true; host.hidden = true;
+    var a = document.querySelector('[data-answer]'); if (a) { if (!a.hasAttribute('tabindex')) a.setAttribute('tabindex', '-1'); a.focus(); }
+    if (o.onDone) o.onDone({ skipped: true });
+  });
+  return { show: function () { if (shown || done) return; shown = true; host.hidden = false; }, el: host };
 }
 
 // The Order of Returns: the withdrawal engine (SPEC.md section 3). Pure: no DOM, no randomness, no I/O.
@@ -813,6 +1195,44 @@ function niceStep(x) {
   return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
 }
 
+/** The sorted-outcome distribution the page ships with (redesign v2, step 4): written by build.mjs for the story in
+ *  story.json only, so the deal at the top of the page answers at once, before (and without) the full count in the
+ *  worker. Years lasted are whole years paid in full, capped at the horizon (an order that runs out in year d lasted
+ *  d - 1), so many orders tie; `lasted` is sorted from the shortest to the longest. `strip` holds the bars of how the
+ *  orders end (by run-out year, then by money left in bins of `left.step`), and `groups` the share that last for each
+ *  set of first five years (by its average). */
+function distribution(res, cards) {
+  const s = summarize(res, cards), H = res.horizon, lasted = new Map();
+  for (let d = 1; d <= H; d++) if (s.byYear[d]) lasted.set(d - 1, s.byYear[d]);
+  if (s.lasts) lasted.set(H, s.lasts);
+  let y0 = H; for (let d = 1; d <= H; d++) if (s.byYear[d]) { y0 = d; break; }
+  // the strip's money-left bins are finer than the histogram's (about ten of them), so it reads as a strip of bars
+  let maxLeft = 0; for (let i = 0; i < res.total; i++) if (!res.dep[i] && res.value[i] > maxLeft) maxLeft = res.value[i];
+  const step = niceStep(maxLeft / 10), left = new Array(Math.max(1, Math.ceil(maxLeft / step + 1e-9))).fill(0);
+  for (let i = 0; i < res.total; i++) if (!res.dep[i]) left[Math.min(left.length - 1, Math.floor(res.value[i] / step))]++;
+  return {
+    total: s.total, horizon: H, lasts: s.lasts,
+    lasted: [...lasted.entries()].sort((a, b) => a[0] - b[0]).map(([years, count]) => ({ years, count })),
+    strip: { firstYear: y0, byYear: s.byYear.slice(y0), left: { step, counts: left } },
+    groups: s.groups.map((g) => ({ avg: g.avg, n: g.n, lasts: g.counts[0] })),
+  };
+}
+
+/** Whole years an outcome lasted: the depletion year minus one, or the horizon when the money lasts (dep 0). */
+function yearsLasted(dep, horizon) { return dep ? dep - 1 : horizon; }
+
+/** How many orders last no longer than `years` (ties counted: "at least as long as" this many). */
+function atLeastAsLong(dist, years) {
+  let n = 0; for (const o of dist.lasted) if (o.years <= years) n += o.count;
+  return n;
+}
+
+/** The strip bar an outcome falls in: by run-out year, or for an order that lasts, by money left. */
+function stripBar(dist, dep, value) {
+  const st = dist.strip, nDep = st.byYear.length;
+  return dep ? Math.max(0, dep - st.firstYear) : nDep + Math.min(st.left.counts.length - 1, Math.floor(value / st.left.step));
+}
+
 // The Order of Returns: the page. engine.mjs and enumerate.mjs are inlined above this script at build time.
 // Every number on the page is computed here from story.json, the engine and the confirmed facts; none is typed in.
 // Nothing the reader does is stored, put in the address or sent anywhere. A saved image is made in the browser.
@@ -855,7 +1275,7 @@ function niceStep(x) {
 
   const fill = {
     start: money(S.start), withdrawal: money(W0), indexation: pctF(S.indexation), avg: pct1(AVG), trim: pctF(S.flexTrim),
-    buffer: words(S.bufferYears), orders: intF.format(ORDERS), after: String(N + 1), nWords: words(N),
+    buffer: words(S.bufferYears), orders: intF.format(ORDERS), after: String(N + 1), nWords: words(N), horizon: String(HZ),
   };
   document.querySelectorAll('[data-v]').forEach((e) => { e.textContent = fill[e.dataset.v]; });
 
@@ -863,7 +1283,7 @@ function niceStep(x) {
   const NS = 'http://www.w3.org/2000/svg';
   // The one size rule (redesign v2): every piece of chart text is drawn at TXT px or more, at real pixel size (each chart
   // is drawn at its container's width, viewBox = width), so nothing is scaled down on a phone.
-  const TXT = 17;
+  const TXT = 17.5;
   const el = (name, attrs, parent, text) => {
     const e = document.createElementNS(NS, name);
     for (const k in attrs) if (attrs[k] !== undefined) e.setAttribute(k, attrs[k]);
@@ -923,7 +1343,7 @@ function niceStep(x) {
     const fs = TXT, lfs = narrow ? TXT : TXT + 1, rfs = TXT;
     // stacked label lines: the name (bold) then its reading, each in its real box, one pixel of air between boxes
     const mN = vm(lfs, 700), mR = vm(rfs), mF = vm(fs, 600), mT = vm(fs), air = 1;
-    const H = cfg.height ? cfg.height(W) : narrow ? 380 : Math.round(Math.min(520, Math.max(380, W * 0.3)));
+    const H = cfg.height ? cfg.height(W) : narrow ? 340 : Math.round(Math.min(520, Math.max(380, W * 0.3)));
     setup(svg, W, H);
     let max = cfg.yMax || 0; if (!cfg.yMax) for (const s of cfg.series) for (const v of s.pts) max = Math.max(max, v);
     const ys = yScale(max, narrow || cfg.compact ? 3 : 4);
@@ -933,7 +1353,9 @@ function niceStep(x) {
     const full = (s) => s.upto === undefined || s.upto >= HZ;
     // the labels go in a gutter on the right; on narrow and small charts their words wrap to keep the gutter slim
     const gutMax = tight ? (narrow ? 92 : 110) : 400;
-    for (const s of labelled) { s.nameLines = wrap(s.name, gutMax, lfs, 700); s.readLines = s.reading ? wrap(s.reading, gutMax, rfs, 400) : []; }
+    // on a phone "Lasts N years" reads "N years" under its name, so a reading keeps to one line in the slim gutter
+    const said = (r) => (narrow ? r.replace(/^Lasts (\d+ years?)$/, '$1') : r);
+    for (const s of labelled) { s.nameLines = wrap(s.name, gutMax, lfs, 700); s.readLines = s.reading ? wrap(said(s.reading), gutMax, rfs, 400) : []; }
     const gut = Math.ceil(Math.max(0, ...labelled.filter(full).flatMap((s) => s.nameLines.map((l) => tw(l, lfs, 700)).concat(s.readLines.map((l) => tw(l, rfs)))))) + 22;
     const B = 34 + (cfg.bottomPad || 0), R = gut;
     const x = (t) => L + t / HZ * (W - L - R);
@@ -965,7 +1387,7 @@ function niceStep(x) {
     for (const s of cfg.series) {
       const upto = s.upto === undefined ? s.pts.length - 1 : s.upto;
       const d = s.pts.slice(0, upto + 1).map((v, t) => (t ? 'L' : 'M') + x(t).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
-      el('path', { d, class: 'ln s-' + s.key + (s.thin ? ' thin' : '') + (s.dash ? ' dash' : '') }, gl);
+      el('path', { d, class: 'ln s-' + s.key + (s.thin ? ' thin' : '') + (s.dash ? ' dash' : '') + (s.faint ? ' faint' : '') }, gl);
       if (s.dep && s.dep <= upto) el('circle', { cx: x(s.dep), cy: y(0), r: s.thin ? 4 : 5.5, class: 'dot f-' + s.key }, gd);
     }
     // readings at the end of the dealt years
@@ -985,7 +1407,7 @@ function niceStep(x) {
       const upto = s.upto === undefined ? s.pts.length - 1 : s.upto;
       if (!full(s)) {
         const room = Math.max(60, W - R - x(upto) - 14);
-        s.nameLines = wrap(s.name, room, lfs, 700); s.readLines = s.reading ? wrap(s.reading, room, rfs, 400) : [];
+        s.nameLines = wrap(s.name, room, lfs, 700); s.readLines = s.reading ? wrap(said(s.reading), room, rfs, 400) : [];
       }
       const lines = s.nameLines.length + s.readLines.length;
       const size = s.nameLines.length * mN.h + s.readLines.length * mR.h + (lines - 1) * air;
@@ -1036,23 +1458,166 @@ function niceStep(x) {
     return out;
   }
 
-  // ---------- the lead chart ----------
+  // ---------- Ruth and Sam ----------
   const ruthS = (res = RUTH, extra = {}) => ({ key: 'ruth', name: 'Ruth', reading: short(res), pts: pts(res), dep: res.depletionYear, ...extra });
   const samS = (res = SAM, extra = {}) => ({ key: 'sam', name: 'Sam', reading: short(res), pts: pts(res), dep: res.depletionYear, ...extra });
-  // the question (built into the page from story.json) and, under it, the finding, from the engine
+  // the question (built into the page from story.json)
   $('headline').textContent = `Same ${words(N)} years. Why does one retiree run out?`;
-  const finding = RUTH.depletionYear === null && SAM.depletionYear
-    ? `Ruth’s savings last all ${HZ} years; Sam’s run out in year ${SAM.depletionYear}.`
-    : `Ruth’s savings: ${short(RUTH)}. Sam’s: ${short(SAM)}.`;
-  // a dek of 140 characters or fewer: who they are, what differs, the finding (the average return is in the prose below)
-  $('deck').textContent = `Ruth and Sam are made up. Same market years, different order. ${finding}`;
-  $('t-lead').textContent = RUTH.balances[N - 1] > SAM.balances[N - 1] ? `The gap opens in the first ${words(N)} years` : 'Ruth and Sam, year by year';
-  const fate = (name, res) => res.depletionYear ? `${name}\u2019s money runs out in year ${res.depletionYear}` : `${name} still has ${money(res.endBalance)} after ${HZ} years`;
-  $('s-lead').textContent = `After the ${words(N)} dealt years Ruth has ${money(RUTH.balances[N - 1])} and Sam ${money(SAM.balances[N - 1])}. ${fate('Ruth', RUTH)}; ${fate('Sam', SAM)}.`;
-  const drawLead = () => { const svg = $('c-lead'); dropCross(svg); addCross(svg, lineChart(svg, { series: [ruthS(), samS()], band: true, readAt: N })); };
+  // "lasts N years" (whole years paid in full) and "runs out in year N + 1" said together, so the chart's reading and the
+  // dot on the year axis agree with the words
+  const fate = (name, res) => res.depletionYear ? `${name}’s money lasts ${yrs(yearsLasted(res.depletionYear, HZ))} and runs out in year ${res.depletionYear}` : `${name} still has ${money(res.endBalance)} after ${HZ} years`;
 
-  // ---------- the cards ----------
-  for (const v of S.cards) { const li = document.createElement('li'); li.textContent = card(v); if (v < 0) li.className = 'down'; $('cards').appendChild(li); }
+  // ---------- the deal: ten face-down cards, the answer beside them (redesign v2, step 4) ----------
+  // The answer reads the sorted-outcome distribution written at build for the story (enumerate.mjs distribution()), so it
+  // is there at once; "lasts" counts whole years paid in full, capped at the horizon, so many orders tie and the share
+  // says "at least as long as".
+  const DIST = JSON.parse($('dist').textContent);
+  const lastedOf = (res) => yearsLasted(res.depletionYear || 0, HZ);
+  const yrs = (n) => n + (n === 1 ? ' year' : ' years');
+  const lastsPhrase = (res) => res.depletionYear ? `lasts ${yrs(lastedOf(res))}` : `lasts all ${HZ} years`;
+  let order = null, shown = 0, dealt = [], deals = 0, longest = null, shortest = null, guess = null;
+  const isFull = () => dealt.length === N;
+  const youRes = () => run(dealt, W0);
+  const deckEl = $('deck-cards'), dealBtn = $('deal'), oneBtn = $('one');
+  const cardEls = Array.from({ length: N }, (_, i) => {
+    const li = document.createElement('li'); li.className = 'card';
+    li.innerHTML = '<span class="card-in" aria-hidden="true"><span class="card-back"></span><span class="card-face"></span></span><span class="sr"></span>';
+    li.querySelector('.card-back').textContent = String(i + 1);
+    deckEl.appendChild(li); return li;
+  });
+  function paintCards(stagger) {
+    cardEls.forEach((li, i) => {
+      const up = i < shown, v = order ? order[i] : null;
+      li.querySelector('.card-face').textContent = v === null ? '' : card(v);
+      li.classList.toggle('neg', v !== null && v < 0);
+      li.querySelector('.card-in').style.transitionDelay = stagger ? (i * 40) + 'ms' : '';
+      li.classList.toggle('up', up);
+      li.querySelector('.sr').textContent = `Year ${i + 1}: ` + (up ? card(v) : 'face down');
+    });
+  }
+  // a new order: every card back face down at once, then dealt
+  function newOrder() {
+    const o = S.cards.slice();
+    for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
+    order = o; shown = 0;
+    deckEl.classList.add('instant'); cardEls.forEach((li) => li.classList.remove('up')); void deckEl.offsetWidth; deckEl.classList.remove('instant');
+  }
+
+  const answer = deskReadout('#answer', { format: (n) => yrs(Math.round(n)) });
+  // the guess asks for the share of orders that last the full horizon, so while it waits that share is not given away
+  let guessOpen = true;
+  const shareLine = (res) => {
+    const y = lastedOf(res);
+    if (!res.depletionYear && guessOpen) return `It lasts the full ${HZ} years. What share of orders do? Guess below.`;
+    if (!res.depletionYear) return `Like ${share(DIST.lasts, DIST.total)} of all ${intF.format(DIST.total)} orders, it lasts the full ${HZ} years.`;
+    return `It lasts at least as long as ${share(atLeastAsLong(DIST, y), DIST.total)} of all ${intF.format(DIST.total)} orders.`;
+  };
+  const startLine = `Ruth’s order ${lastsPhrase(RUTH)}. Sam’s ${lastsPhrase(SAM)}.`;
+  function drawDeal(svg = $('c-deal'), width) {
+    // before a deal Ruth and Sam are the story, drawn at full weight; once there is an order, they step back for it
+    const ctx = dealt.length ? { thin: true, faint: true } : {};
+    const series = [ruthS(RUTH, ctx), samS(SAM, { ...ctx, reading: lastsPhrase(SAM).replace(/^l/, 'L') })];
+    if (dealt.length) {
+      const r = youRes(), k = dealt.length;
+      series.push({ key: 'you', name: 'This order', reading: isFull() ? (r.depletionYear ? lastsPhrase(r).replace(/^l/, 'L') : short(r)) : money(r.balances[k - 1]) + ' after year ' + k, pts: pts(r), dep: r.depletionYear, upto: isFull() ? undefined : k });
+    }
+    const live = svg.id === 'c-deal';
+    if (live) dropCross(svg);
+    const g = lineChart(svg, { series, band: true, width });
+    if (live) addCross(svg, g);
+  }
+  function dealText() {
+    const r = youRes(), k = dealt.length;
+    $('t-deal').textContent = isFull() ? (r.depletionYear ? `This order lasts ${lastedOf(r)} years, between Ruth’s and Sam’s` : `This order lasts all ${HZ} years, with ${money(r.endBalance)} left`)
+      : k ? `This order so far: ${k} of ${N} years dealt` : `Ruth’s and Sam’s paths split in the first ${words(N)} years`;
+    $('sub-deal').textContent = k ? 'Savings at the end of each year: Ruth, Sam and this order (amber)' : 'Savings at the end of each year: Ruth and Sam';
+    $('s-deal').textContent = `After the ${words(N)} dealt years Ruth has ${money(RUTH.balances[N - 1])} and Sam ${money(SAM.balances[N - 1])}. ${fate('Ruth', RUTH)}; ${fate('Sam', SAM)}.` +
+      (isFull() ? ` This order: ${r.depletionYear ? 'the money runs out in year ' + r.depletionYear : money(r.endBalance) + ' left after ' + HZ + ' years'}.` : '');
+  }
+
+  // the strip: how every order ends, shortest to longest, this order's bar in amber
+  const stripBars = () => DIST.strip.byYear.concat(DIST.strip.left.counts);
+  function drawStrip() {
+    const svg = $('c-strip'), W = Math.max(240, Math.floor(svg.parentNode.getBoundingClientRect().width)), fs = TXT, mt = vm(fs);
+    const bars = stripBars(), nDep = DIST.strip.byYear.length, max = Math.max(...bars), barH = 64, H = barH + 8 + mt.h + 4;
+    setup(svg, W, H);
+    const gapX = 10, unit = (W - gapX) / bars.length, bw = Math.max(3, unit - 3);
+    const bx = (i) => i * unit + (i >= nDep ? gapX : 0);
+    const mine = isFull() ? (() => { const o = outcome(youRes()); return stripBar(DIST, o.dep, o.value); })() : -1;
+    bars.forEach((c, i) => {
+      const h = Math.max(c ? 2 : 0, c / max * barH);
+      el('rect', { x: bx(i), y: barH - h, width: bw, height: h, class: i === mine ? 'f-you' : 'bar strip-bar' }, svg);
+    });
+    el('line', { x1: 0, x2: W, y1: barH + 0.5, y2: barH + 0.5, class: 'zero' }, svg);
+    const ty = barH + 6 + mt.asc;
+    el('text', { x: 0, y: ty, class: 'ax', 'font-size': fs }, svg, 'Runs out sooner');
+    el('text', { x: W, y: ty, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, svg, 'Lasts longer');
+    $('strip-k').textContent = isFull() ? `This order (amber) among all ${intF.format(DIST.total)}` : `How all ${intF.format(DIST.total)} orders end`;
+    const first = DIST.strip.firstYear;
+    $('strip-s').textContent = `Bars: orders that run out in year ${first} to ${HZ}, then orders that last, by money left in steps of ${money(DIST.strip.left.step)}.` +
+      (mine >= 0 ? ` This order is in bar ${mine + 1} of ${bars.length}.` : '');
+  }
+  function drawTally() {
+    const t = $('tally');
+    t.hidden = !deals;
+    if (deals) t.textContent = `Deals ${intF.format(deals)} · Longest ${yrs(longest)} · Shortest ${yrs(shortest)}`;
+  }
+
+  function showDeal(stagger) {
+    dealt = order ? order.slice(0, shown) : [];
+    paintCards(stagger);
+    drawDeal(); dealText(); drawStrip();
+    if (!dealt.length) { answer.set({ text: '?', label: 'This order lasts', line: startLine }); }
+    else if (!isFull()) {
+      const r = youRes(), k = dealt.length;
+      answer.set({ text: '?', label: 'This order lasts', line: `${k} of ${N} dealt: ${money(r.balances[k - 1])} after year ${k}.` });
+    } else {
+      const r = youRes(), y = lastedOf(r);
+      deals++; longest = longest === null ? y : Math.max(longest, y); shortest = shortest === null ? y : Math.min(shortest, y);
+      answer.set({ n: y, label: 'This order lasts', line: shareLine(r) });
+      dealBtn.textContent = 'Deal again';
+      $('save-row').hidden = false;
+      if (guess) guess.show();
+      // while the guess waits, the strip of how every order ends (which would give the share away) steps aside
+      $('strip-box').hidden = guessOpen;
+    }
+    drawTally();
+    youChanged();
+  }
+  dealBtn.addEventListener('click', () => { newOrder(); shown = N; showDeal(true); });
+  oneBtn.addEventListener('click', () => { if (!order || shown === N) newOrder(); shown++; showDeal(false); });
+
+  // the optional bridge after the first deal: a guess, then the share, always skippable
+  guess = deskGuess('#guess', {
+    question: `What share of all orders last the full ${HZ} years?`, min: 0, max: 100, step: 1, start: 50,
+    format: (v) => v + '%', answer: () => DIST.lasts / DIST.total * 100,
+    reveal: (g) => `${share(DIST.lasts, DIST.total)}. You guessed ${g}%.`,
+    // once answered or skipped, a full-length deal on screen gets its share line back
+    onDone: () => { guessOpen = false; $('strip-box').hidden = false; drawStrip(); if (isFull()) $('answer-t').textContent = shareLine(youRes()); },
+  });
+
+  // Save my card: the dealt result as a 1080x1350 PNG drawn in this browser (deskCard), shared or downloaded
+  deskSaveButton($('save'), () => {
+    const r = youRes(), cs = getComputedStyle(document.documentElement), c = (k) => cs.getPropertyValue(k).trim();
+    return deskCard({
+      question: $('headline').textContent, bigValue: $('answer-v').textContent, line: $('answer-t').textContent,
+      labels: [r.depletionYear ? `Runs out in year ${r.depletionYear}` : `${money(r.endBalance)} left`, 'Made-up returns'],
+      draw: (ctx, box, C) => {
+        const all = [RUTH, SAM, r], max = Math.max(S.start, ...all.flatMap((x) => x.balances));
+        const X = (t) => box.x + t / HZ * box.w, Y = (v) => box.y + box.h - v / max * box.h;
+        ctx.fillStyle = C.raised; ctx.fillRect(X(0), box.y, X(N) - X(0), box.h);
+        ctx.fillStyle = C.ink; ctx.fillRect(box.x, box.y + box.h, box.w, 2);
+        [[RUTH, c('--t-d1'), 4], [SAM, c('--t-d4'), 4], [r, C.point, 9]].forEach(([res, colour, lw]) => {
+          ctx.strokeStyle = colour; ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.beginPath();
+          pts(res).forEach((v, t) => (t ? ctx.lineTo(X(t), Y(v)) : ctx.moveTo(X(t), Y(v)))); ctx.stroke();
+        });
+      },
+    }).then((blob) => ({ blob, name: 'order-of-returns-my-card.png', title: $('headline').textContent }));
+  });
+
+  // "How this is worked out", from the story and the distribution
+  $('how-1').textContent = `Each order starts with ${money(S.start)} and takes out ${money(W0)} in the first year, ${pctF(S.indexation)} more each year after. The ${words(N)} cards (${S.cards.map(card).join(', ')}) average ${pct1(AVG)}; from year ${N + 1} to year ${HZ}, every year earns that average. Ruth gets the cards best first, Sam worst first.`;
+  $('how-2').textContent = `A year counts when its whole withdrawal is paid, up to ${HZ}. Counted in whole years, many orders tie, so the share counts every order that lasts no longer than this one. It comes from all ${intF.format(DIST.total)} orders, worked out with the same engine when the page was built.`;
 
   // ---------- shuffle with no withdrawals ----------
   let samOrder = BAD.slice();
@@ -1079,61 +1644,75 @@ function niceStep(x) {
     shuffles++; drawShuffle();
   });
 
-  // ---------- deal the years ----------
-  let hand, dealt;
-  const handEl = $('hand'), dealtEl = $('dealt');
-  const youRes = () => run(dealt, W0);
-  const isFull = () => dealt.length === N;
-  function drawDeal(svg = $('c-deal'), width) {
-    const series = [ruthS(RUTH, { thin: false }), samS()];
-    if (dealt.length) {
-      const r = youRes(), k = dealt.length;
-      series.push({ key: 'you', name: 'Your order', reading: isFull() ? short(r) : money(r.balances[k - 1]) + ' after year ' + k, pts: pts(r), dep: r.depletionYear, upto: isFull() ? undefined : k });
+  // ---------- why: the share that last, by the first five years (the full heat strip's top row) ----------
+  function whyChart() {
+    const svg = $('c-why'), W = widthOf(svg), narrow = W < 600, fs = TXT, lfs = TXT + 1, mt = vm(fs), ml = vm(lfs, 700);
+    const gs = DIST.groups, lo = gs[0].avg, hi = gs[gs.length - 1].avg, minCw = tw('100%', fs) + 8;
+    const yLab = (p) => Math.round(p * 100) + '%';
+    const L = Math.ceil(tw(yLab(1), fs)) + 10, R = 4;
+    const ncOf = (bw) => Math.floor(hi / bw + 1e-9) - Math.floor(lo / bw + 1e-9) + 1;
+    let bw = niceStep((hi - lo) / 14);
+    while (ncOf(bw) * minCw > W - L - R) bw = niceStep(bw * 1.01);
+    const c0 = Math.floor(lo / bw + 1e-9), c1 = Math.floor(hi / bw + 1e-9), nc = c1 - c0 + 1;
+    const cols = Array.from({ length: nc }, () => ({ n: 0, lasts: 0 }));
+    // one rounding for the bars' labels and the sentence under the chart
+    const colPct = (c) => { const p = c.lasts / c.n; return p > 0 && p < 0.005 ? 'under 1%' : Math.round(p * 100) + '%'; };
+    const colOf = (avg) => Math.floor(avg / bw + 1e-9) - c0;
+    for (const g of gs) { const c = cols[colOf(g.avg)]; c.n += g.n; c.lasts += g.lasts; }
+    const T = mt.h + 4 + ml.h + 14 + mt.h + 6, plotH = narrow ? 180 : 240, B = 8 + mt.h + 10 + mt.h + 6, H = T + plotH + B;
+    setup(svg, W, H);
+    const cw = (W - L - R) / nc, cx = (i) => L + i * cw, y = (p) => T + (1 - p) * plotH, base = y(0);
+    for (const p of [0, 0.5, 1]) {
+      el('line', { x1: L, x2: W - R, y1: y(p), y2: y(p), class: p === 0 ? 'zero' : 'grid' }, svg);
+      el('text', { x: L - 8, y: y(p) + mt.asc / 2 - 2, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, svg, yLab(p));
     }
-    const live = svg.id === 'c-deal';
-    if (live) dropCross(svg);
-    const g = lineChart(svg, { series, band: true, width });
-    if (live) addCross(svg, g);
-  }
-  // the readout under the deal buttons: where your order ends, and (once every order is counted) how it ranks
-  function dealReadout() {
-    const r = youRes(), k = dealt.length, v = $('rv-deal');
-    v.hidden = !k;
-    if (!k) {
-      $('rk-deal').textContent = 'Your order';
-      $('rt-deal').textContent = 'Deal a card above, or deal the rest at random, to draw your path.';
-      $('rf-deal').textContent = '';
-      return;
-    }
-    $('rf-deal').textContent = `Ruth, best years first: ${short(RUTH)}. Sam, worst years first: ${short(SAM)}.`;
-    if (!isFull()) {
-      $('rk-deal').textContent = `Your order: ${k} of ${N} dealt`;
-      v.textContent = money(r.balances[k - 1]) + ' after year ' + k;
-      $('rt-deal').textContent = `Deal the other ${years(N - k)} to see where it ends and how it ranks among all ${intF.format(ORDERS)} orders.`;
-      return;
-    }
-    $('rk-deal').textContent = 'Where your order ends';
-    v.textContent = r.depletionYear ? 'Runs out in year ' + r.depletionYear : `Lasts all ${HZ} years, ${money(r.endBalance)} left`;
-    $('rt-deal').textContent = BASE ? 'Ranking it among every order…' : `Ranking it among all ${intF.format(ORDERS)} orders once the count below finishes…`;
-  }
-  function deal(focusNext) {
-    handEl.replaceChildren(); dealtEl.replaceChildren();
-    for (const v of dealt) { const li = document.createElement('li'); li.textContent = card(v); if (v < 0) li.className = 'down'; dealtEl.appendChild(li); }
-    hand.forEach((v, i) => {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = card(v); if (v < 0) b.className = 'down';
-      b.setAttribute('aria-label', 'Deal the year ' + card(v));
-      b.addEventListener('click', () => { dealt.push(v); hand.splice(i, 1); deal(true); });
-      handEl.appendChild(b);
+    const ms = marks().map((m) => ({ m, col: colOf(m.f5) })), markedCols = new Set(ms.map((x) => x.col));
+    const vals = [];
+    cols.forEach((c, i) => {
+      if (!c.n) return;
+      const p = c.lasts / c.n, top = y(p), you = ms.some((x) => x.m.key === 'you' && x.col === i);
+      el('rect', { x: cx(i) + 2, y: top, width: Math.max(1, cw - 4), height: Math.max(0, base - top), class: you ? 'f-you' : 'bar' }, svg);
+      const t = colPct(c).replace('under ', '<'), w = tw(t, fs);
+      vals.push({ i, t, p, x0: cx(i) + cw / 2 - w / 2, x1: cx(i) + cw / 2 + w / 2, prio: (markedCols.has(i) ? 2 : 0) + p });
     });
-    drawDeal();
-    const r = youRes(), k = dealt.length;
-    $('t-deal').textContent = isFull() ? 'Your order: the money ' + short(r).replace(/^(\$[\d,]+) left$/, 'lasts, with $1 left after ' + HZ + ' years') : k ? `Your order so far: ${k} of ${N} years dealt` : 'Deal a card to draw your path';
-    dealReadout();
-    if (focusNext) { const nb = handEl.querySelector('button'); (nb || $('s-deal')).focus(); }
-    youChanged();
+    // the columns left of the "all run out" rule say so in one annotation, so they carry no "0%" of their own
+    let allOut = -1; for (let i = 0; i < nc; i++) { if (cols[i].n && cols[i].lasts > 0) break; allOut = i; }
+    for (const v of thin(vals.filter((v) => v.i > allOut), 4)) el('text', { x: cx(v.i) + cw / 2, y: y(v.p) - 6, 'text-anchor': 'middle', class: 'ax val', 'font-size': fs }, svg, v.t);
+    // x ticks at whole-number averages, thinned to fit, and the axis title
+    const tickStep = niceStep(bw * Math.max(1, Math.ceil((tw('−10%', fs) + 12) / cw)));
+    for (let v = Math.ceil(c0 * bw / tickStep - 1e-9) * tickStep; v <= (c1 + 1) * bw + 1e-9; v += tickStep) {
+      const px = L + (v / bw - c0) * cw, t = minus(String(Math.round(v * 100))) + '%', w = tw(t, fs);
+      if (px - w / 2 < L - 2) continue; // clear of the 0% label on the axis
+      el('line', { x1: px, x2: px, y1: base, y2: base + 5, class: 'zero' }, svg);
+      el('text', { x: Math.min(W - w / 2, px), y: base + 8 + mt.asc, 'text-anchor': 'middle', class: 'ax', 'font-size': fs }, svg, t);
+    }
+    const gt = 'Average return of the first five years', gw = tw(gt, fs, 600);
+    el('text', { x: Math.max(gw / 2, Math.min(W - gw / 2, L + (W - L - R) / 2)), y: H - 6, 'text-anchor': 'middle', class: 'ax grp', 'font-size': fs, 'font-weight': 600 }, svg, gt);
+    // the one annotation: the rule left of which every order runs out, then the names over their columns
+    const all = ms.map((x) => ({ ...x, want: cx(x.col) + cw / 2, size: tw(x.m.name, lfs, 700) + 8 }));
+    if (allOut >= 0) { const t = narrow ? 'All run out' : 'Every order left of here runs out'; all.push({ rule: true, want: cx(allOut + 1), size: tw(t, fs, 600) + 8, t }); }
+    spread(all, 0, W - R, 6);
+    const emptyStack = {};
+    const ruleY = 2 + mt.asc, nameY = 2 + mt.h + 4 + ml.asc, nameBottom = nameY + ml.h - ml.asc;
+    for (const it of all) {
+      if (it.rule) {
+        const px = cx(allOut + 1);
+        el('line', { x1: px, x2: px, y1: ruleY + 6, y2: base, class: 'rule' }, svg);
+        el('text', { x: it.pos, y: ruleY, 'text-anchor': 'middle', class: 'ax halo', 'font-size': fs, 'font-weight': 600 }, svg, it.t);
+        continue;
+      }
+      const c = cols[it.col], top = y(c.lasts / c.n) - mt.h - 6;
+      // a name over a column with no bar sits just above the axis, under its column, with no leader across the grid
+      // names that share an empty column stack upwards instead of sitting on top of each other
+      if (!c.lasts) { const k = (emptyStack[it.col] = (emptyStack[it.col] || 0) + 1) - 1; el('text', { x: cx(it.col) + cw / 2, y: base - 8 - (ml.h - ml.asc) - k * (ml.h + 4), 'text-anchor': 'middle', class: 'halo t-' + it.m.key, 'font-size': lfs, 'font-weight': 700 }, svg, it.m.name); continue; }
+      el('text', { x: it.pos, y: nameY, 'text-anchor': 'middle', class: 'halo t-' + it.m.key, 'font-size': lfs, 'font-weight': 700 }, svg, it.m.name);
+      el('path', { d: `M${it.pos} ${nameBottom + 2}L${it.pos} ${nameBottom + 6}L${cx(it.col) + cw / 2} ${Math.min(top, T - 2)}L${cx(it.col) + cw / 2} ${top}`, class: 'leader s-' + it.m.key }, svg);
+    }
+    const ruthCol = cols[colOf(first5(GOOD))], samCol = cols[colOf(first5(BAD))];
+    let a = null; for (const g of gs) { if (g.lasts > 0) break; a = g.avg; }
+    $('s-why').textContent = (a !== null ? `Every order whose first five years average ${pct1(a)} or less runs out within ${HZ} years. ` : '') +
+      `In Ruth’s column ${colPct(ruthCol)} of orders last; in Sam’s, ${colPct(samCol)}. All ${words(N)} years average ${pct1(AVG)} in every order.`;
   }
-  $('reset').addEventListener('click', () => { hand = GOOD.slice(); dealt = []; deal(false); });
-  $('random').addEventListener('click', () => { while (hand.length) dealt.push(hand.splice(Math.floor(Math.random() * hand.length), 1)[0]); deal(false); });
 
   // ---------- every possible order: a Web Worker from a blob: URL, or the page itself if no worker can start ----------
   const Runner = (() => {
@@ -1173,7 +1752,7 @@ function niceStep(x) {
   const bucketOf = (sum, o) => { const y = firstYear(sum); return o.dep ? Math.max(0, o.dep - y) : HZ - y + 1 + Math.min(sum.left.counts.length - 1, Math.floor(o.value / sum.left.step)); };
   const marks = () => {
     const m = [{ key: 'ruth', name: 'Ruth', o: outcome(RUTH), f5: first5(GOOD) }, { key: 'sam', name: 'Sam', o: outcome(SAM), f5: first5(BAD) }];
-    if (dealt && isFull()) m.push({ key: 'you', name: 'Your order', o: outcome(youRes()), f5: first5(dealt) });
+    if (dealt && isFull()) m.push({ key: 'you', name: 'This order', o: outcome(youRes()), f5: first5(dealt) });
     return m;
   };
 
@@ -1335,7 +1914,7 @@ function niceStep(x) {
     if (a !== null) parts.push(`Every order whose first five years average ${pct1(a)} or less runs out within ${HZ} years.`);
     if (b !== null) parts.push(`Where they average ${pct1(b)} or more, at least half the orders last.`);
     parts.push(`Ruth’s first five average ${pct1(first5(GOOD))}; Sam’s, ${pct1(first5(BAD))}.`);
-    if (dealt && isFull()) parts.push(`Yours average ${pct1(first5(dealt))}.`);
+    if (dealt && isFull()) parts.push(`This order’s first five average ${pct1(first5(dealt))}.`);
     parts.push(`All ten years average ${pct1(AVG)} in every order.`);
     return parts.join(' ');
   }
@@ -1363,12 +1942,8 @@ function niceStep(x) {
     $('s-all').textContent = (best && worst ? 'Ruth has the best order; Sam has the worst. ' : '') + `${lastPct} of the orders last all ${HZ} years. The most common ending is running out in year ${top} (${share(s.byYear[top], s.total)} of orders). ` + (ranks.ruth ? rankText(ranks.ruth, 'Ruth’s order') + ' ' : '') + (ranks.sam ? rankText(ranks.sam, 'Sam’s order') : '');
   }
   function youChanged() {
-    drawRrif();
-    if (!BASE) return;
-    drawAll();
-    if (!isFull()) { $('s-rank').textContent = `Deal all ${words(N)} cards above to see where your order lands among them.`; return; }
-    const o = outcome(youRes()), at = dealt.join();
-    Runner.rank('base', o, (r) => { if (dealt.join() !== at) return; $('s-rank').textContent = rankText(r, 'Your order'); $('rt-deal').textContent = rankText(r, 'Your order'); });
+    whyChart(); drawRrif();
+    if (BASE) drawAll();
   }
 
   $('run-text').textContent = `Counting all ${intF.format(ORDERS)} orders…`;
@@ -1387,7 +1962,7 @@ function niceStep(x) {
   const SOLVE = largestLastingWithdrawal({ start: S.start, indexation: S.indexation, returns: returnsOf(BAD) });
   const SOLVED = run(BAD, SOLVE);
   $('h-rescue').textContent = `Sam’s money lasts if his first withdrawal is ${money(SOLVE)} or less`;
-  $('p-solver').textContent = `That is ${money(W0 - SOLVE)} less than the ${money(W0)} in the story, about ${Math.round((1 - SOLVE / W0) * 100)}% less, rising ${pctF(S.indexation)} a year the same way. The amount comes from running Sam’s order through the engine with different first-year withdrawals until the largest one that pays every year in full is found.`;
+  $('p-solver').textContent = `That is ${money(W0 - SOLVE)} less than the ${money(W0)} in the story, about ${Math.round((1 - SOLVE / W0) * 100)}% less, rising ${pctF(S.indexation)} a year the same way.`;
   function compare(after, before) {
     const a = after.depletionYear, b = before.depletionYear, d = total(after) - total(before);
     const paid = `Over the ${HZ} years it pays out ${money(total(after))} in total, ` + (Math.abs(d) < 0.5 ? 'the same as before.' : `${money(Math.abs(d))} ${d > 0 ? 'more' : 'less'} than before.`);
@@ -1443,10 +2018,10 @@ function niceStep(x) {
     return `At least ${pctF(first.factor)} must come out the year you turn ${first.age + 1}, rising to ${pctF(last.factor)} from the year you turn ${last.age + 1}`;
   };
   $('p-rrif').textContent = `Suppose all of Ruth’s and Sam’s savings are in a RRIF and they are ${S.startAge} when year 1 starts (an illustrative age). An RRSP must wind up by the end of the year its owner turns ${MAT} (most become a RRIF), and this sketch assumes theirs become a RRIF then. ${rrifRule()}. From year ${RRIF_T0 + 1}, the year they turn ${turns}, each year’s withdrawal is at least the balance at the start of that year times the factor for their age at the start of it (${pctF(f0)} at ${S.startAge + RRIF_T0}). When the minimum is more than they planned to take, the difference has to come out anyway, in good years and bad.`;
-  const srcEl = $('p-rrif-src');
-  srcEl.append('Sources: ');
-  [FX.maturity, FX.rrif].forEach((f, i) => {
-    const a = document.createElement('a'); a.href = f.source_url; a.textContent = f.title; srcEl.append(a, `, as of ${f.as_of}${i ? '.' : '; '}`);
+  // the Sources fold: the confirmed facts this page uses, with their links and as-of dates
+  [FX.maturity, FX.rrif].forEach((f) => {
+    const li = document.createElement('li'), a = document.createElement('a');
+    a.href = f.source_url; a.textContent = f.title; li.append(a, `, as of ${f.as_of}.`); $('src-list').appendChild(li);
   });
   const RR = { ruth: rr(GOOD), sam: rr(BAD) };
   const FT = { ruth: forcedTotals(GOOD, RR.ruth.on), sam: forcedTotals(BAD, RR.sam.on) };
@@ -1455,7 +2030,7 @@ function niceStep(x) {
     const miss = ['ruth', 'sam'].filter((k) => FT[k].all <= 0.5).map((k) => k === 'ruth' ? 'Ruth' : 'Sam');
     $('h-rrif').textContent = hit.length === 1 ? `From age ${turns}, the RRIF minimum takes extra from ${hit[0]}, not ${miss[0]}` : `What the RRIF minimum does from age ${turns}`;
   }
-  const rrifPanels = [{ key: 'ruth', name: 'Ruth', order: () => GOOD }, { key: 'sam', name: 'Sam', order: () => BAD }, { key: 'you', name: 'Your order', order: () => dealt }];
+  const rrifPanels = [{ key: 'ruth', name: 'Ruth', order: () => GOOD }, { key: 'sam', name: 'Sam', order: () => BAD }, { key: 'you', name: 'This order', order: () => dealt }];
   rrifPanels.forEach((p) => {
     const f = document.createElement('figure'); f.className = 'small-multiple';
     f.innerHTML = `<figcaption id="t-rr-${p.key}"></figcaption><svg id="c-rr-${p.key}" role="img" aria-labelledby="t-rr-${p.key} s-rr-${p.key}"></svg><p class="reading" id="s-rr-${p.key}"></p>`;
@@ -1500,12 +2075,12 @@ function niceStep(x) {
       const svg = $('c-rr-' + p.key);
       // an empty panel takes no room: its title and the line asking for a full deal stand alone
       svg.toggleAttribute('hidden', !p.r);
-      if (!p.r) { svg.replaceChildren(); svg.removeAttribute('viewBox'); svg.setAttribute('height', 0); $('s-rr-' + p.key).textContent = `Deal all ${words(N)} cards above to add your order here.`; continue; }
+      if (!p.r) { svg.replaceChildren(); svg.removeAttribute('viewBox'); svg.setAttribute('height', 0); $('s-rr-' + p.key).textContent = `Deal all ${words(N)} cards at the top to add this order here.`; continue; }
       rrifChart(svg, p.key, p.name, p.ord, p.r, on, yMax, fMax);
       $('s-rr-' + p.key).textContent = on ? rrifReading(p.name, p.ord, p.r) : `${p.name}: ${short(p.r.off)} without the minimum. Apply the minimums to compare.`;
     }
     // the readout under the switch: the share of all orders that run out, with the minimums and without
-    $('t-rrif-panels').textContent = on ? 'Ruth, Sam and your order, with and without the RRIF minimums' : 'Ruth, Sam and your order, without the RRIF minimums';
+    $('t-rrif-panels').textContent = on ? 'Ruth, Sam and the dealt order, with and without the RRIF minimums' : 'Ruth, Sam and the dealt order, without the RRIF minimums';
     $('rk-rrif-on').textContent = 'Orders that run out, with minimums';
     $('rk-rrif-off').textContent = on ? 'Without them' : 'Orders that run out, no minimums';
     $('rv-rrif-off').textContent = BASE ? share(BASE.total - BASE.lasts, BASE.total) : 'Counting…';
@@ -1524,53 +2099,19 @@ function niceStep(x) {
   }
   $('rrif').addEventListener('change', drawRrif);
 
-  // ---------- save the "your order" chart as an image, made in the browser ----------
-  const STYLE_PROPS = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-dasharray', 'stroke-linejoin', 'stroke-linecap', 'opacity', 'font-family', 'font-size', 'font-weight', 'paint-order', 'font-variant-numeric'];
-  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  $('save').addEventListener('click', () => {
-    const WIDTH = 1200, box = document.createElement('div');
-    box.className = 'offstage'; box.style.width = WIDTH + 'px';
-    const svg = document.createElementNS(NS, 'svg'); box.appendChild(svg); document.body.appendChild(box);
-    drawDeal(svg, WIDTH);
-    const src = svg.querySelectorAll('*'), clone = svg.cloneNode(true), dst = clone.querySelectorAll('*');
-    src.forEach((n, i) => { const cs = getComputedStyle(n); dst[i].setAttribute('style', STYLE_PROPS.map((p) => p + ':' + cs.getPropertyValue(p)).join(';')); dst[i].removeAttribute('class'); });
-    const H = Number(svg.getAttribute('height')); box.remove();
-    const root = getComputedStyle(document.documentElement), v = (k) => root.getPropertyValue(k).trim();
-    let fonts = '';
-    for (const sh of document.styleSheets) for (const rule of sh.cssRules) if (rule instanceof CSSFontFaceRule) fonts += rule.cssText;
-    const d = new Date(), date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const pad = 40, head = 84, foot = 76, OW = WIDTH + pad * 2, OH = head + H + foot;
-    const out = `<svg xmlns="${NS}" width="${OW}" height="${OH}" viewBox="0 0 ${OW} ${OH}"><style>${fonts}</style>` +
-      `<rect width="${OW}" height="${OH}" fill="${v('--t-ground')}"/>` +
-      `<text x="${pad}" y="56" fill="${v('--t-ink')}" style="font-family:${esc(v('--font-display'))};font-size:30px;font-weight:600">${esc($('t-deal').textContent)}</text>` +
-      `<g transform="translate(${pad} ${head})">${clone.innerHTML}</g>` +
-      `<text x="${pad}" y="${head + H + 32}" fill="${v('--t-ink2')}" style="font-family:${esc(v('--font-ui'))};font-size:17px">${esc($('assume').textContent)}</text>` +
-      `<text x="${pad}" y="${head + H + 58}" fill="${v('--t-ink2')}" style="font-family:${esc(v('--font-ui'))};font-size:17px">The Order of Returns, Mohammed El Chayeb. Saved ${date}.</text></svg>`;
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement('canvas'); c.width = OW * 2; c.height = OH * 2;
-      const ctx = c.getContext('2d'); ctx.scale(2, 2); ctx.drawImage(img, 0, 0);
-      c.toBlob((blob) => {
-        const a = document.createElement('a'), u = URL.createObjectURL(blob);
-        a.href = u; a.download = 'order-of-returns-your-order.png'; document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(u), 1000);
-        $('save-note').textContent = 'Saved order-of-returns-your-order.png, made in your browser.';
-      }, 'image/png');
-    };
-    img.onerror = () => { $('save-note').textContent = 'This browser could not make the image.'; };
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(out);
-  });
-
   // ---------- first draw, and redraw when the width or the fonts change ----------
-  function drawEverything() { drawLead(); drawShuffle(); drawDeal(); drawLevers(); drawMix(); drawRrif(); drawAll(); }
-  hand = GOOD.slice(); dealt = [];
-  deal(false); drawMix(); drawEverything();
+  // the first fill is not a deal: draw without counting it
+  function firstDraw() { dealt = []; paintCards(false); drawDeal(); dealText(); drawStrip(); answer.set({ text: '?', label: 'This order lasts', line: startLine }); whyChart(); drawRrif(); drawShuffle(); drawLevers(); drawMix(); drawAll(); }
+  firstDraw();
   // The first fill is not a change: drop the underline the shared layer gives a readout whose text changes (its observer
   // runs first, in the same microtask queue), so only what the reader's own action changes is underlined.
   Promise.resolve().then(() => 0).then(() => document.querySelectorAll('[data-flash].flash').forEach((e) => e.classList.remove('flash')));
+  // a redraw at a new width or once the fonts load, or when Go deeper opens (its charts are drawn at their real width)
+  function redraw() { paintCards(false); drawDeal(); dealText(); drawStrip(); whyChart(); drawRrif(); drawShuffle(); drawLevers(); drawMix(); drawAll(); }
+  $('deeper').addEventListener('toggle', () => { if ($('deeper').open) redraw(); });
   let lastW = innerWidth, t;
-  addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(t); t = setTimeout(drawEverything, 120); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawEverything);
+  addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(t); t = setTimeout(redraw, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
 })();
 </script>
 </body>

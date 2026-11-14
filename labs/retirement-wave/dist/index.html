@@ -64,7 +64,7 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 .desk-head{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 2rem;padding:1.2rem 0 1rem;line-height:1.6;border-bottom:3px double var(--t-ink)}
 .desk-brand{margin-right:auto;font-family:var(--font-display);font-weight:600;font-size:1.5rem;letter-spacing:-.01em;color:var(--t-ink);text-decoration:none;white-space:nowrap}
 .desk-nav ul{display:flex;flex-wrap:wrap;gap:.25rem 1.6rem;list-style:none;margin:0;padding:0}
-.desk-nav a{position:relative;display:inline-block;padding:.35rem 0;font-size:16.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t-ink);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+.desk-nav a{position:relative;display:inline-block;padding:.35rem 0;font-size:17.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t-ink);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
 .desk-nav a::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
 .desk-nav a:hover{border-bottom-color:var(--t-rule)}
 .desk-nav a[aria-current="true"]{border-bottom-color:var(--t-ink)}
@@ -81,7 +81,7 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 .desk-toolnav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 1.5rem;padding:.2rem 0;font-size:17.5px;border-bottom:1px solid var(--t-rule)}
 .desk-toolnav a{display:inline-flex;align-items:center;gap:.35rem;min-height:2.5rem;color:var(--t-ink);text-decoration:none;white-space:nowrap}
 .desk-toolnav a:hover{text-decoration:underline}
-.desk-next{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.35rem 1.5rem;margin:4rem 0 0;padding:1.4rem 1.5rem 1.5rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);color:var(--t-ink);text-decoration:none}
+.desk-next{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.35rem 1.5rem;margin:2.5rem 0 0;padding:1.4rem 1.5rem 1.5rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);color:var(--t-ink);text-decoration:none}
 .desk-next-k{grid-column:1/-1;color:var(--t-ink)}
 .desk-next-q{font-family:var(--font-display);font-weight:600;font-size:clamp(1.55rem,1.4vw + 1.1rem,2.3rem);line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
 .desk-next-go{font-family:var(--font-display);font-size:2rem;line-height:1}
@@ -106,12 +106,13 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 /* The chart frame: a 2px ink rule on top, a sans 700 title that states the takeaway, an ink2 subtitle with units, and
    an "Example data" chip where the numbers are illustrative. Inside the SVG: 1px gridlines, an ink zero line, named
    series 2.5px and context series 1.5px, one 600 annotation with a 1px leader, shaded regions at 40%. Every label
-   renders at 16.5px or more (shell-test.mjs expectTextSizes). */
+   renders at 17.5px or more (shell-test.mjs expectTextSizes). */
 figure.chart{margin:2rem 0 0;border-top:2px solid var(--t-ink);padding-top:.6rem}
 figure.chart>figcaption,.chart-head{margin:0 0 .6rem}
 .chart-title{margin:0;font:700 1.15rem/1.35 var(--font-ui);color:var(--t-ink)}
 .chart-sub{margin:.15rem 0 0;font-size:1.03rem;line-height:1.45;color:var(--t-ink2)}
-.tag-example{margin-top:.4rem}
+/* the example tag is a quiet label, not a box: nothing about it looks tappable */
+.chip.tag-example{display:block;margin-top:.35rem;padding:0;border:0;border-radius:0;background:none;color:var(--t-ink2)}
 .chart svg .grid{stroke:var(--t-rule);stroke-width:1;shape-rendering:crispEdges}
 .chart svg .zero{stroke:var(--t-ink);stroke-width:1;shape-rendering:crispEdges}
 .chart svg .s-named{stroke-width:2.5;fill:none}
@@ -121,7 +122,7 @@ figure.chart>figcaption,.chart-head{margin:0 0 .6rem}
 .chart svg .shade{fill-opacity:.4}
 
 /* Folds: "Go deeper" and the sources, closed by default. */
-details.deeper{margin-top:3rem;border-top:2px solid var(--t-ink);padding-top:.5rem}
+details.deeper{margin-top:2.5rem;border-top:2px solid var(--t-ink);padding-top:.5rem}
 /* Every fold shows that it opens: a chevron before its summary (a lab's display:flex summary hides the browser marker). */
 details>summary{list-style:none}
 details>summary::-webkit-details-marker{display:none}
@@ -129,15 +130,64 @@ details>summary::before{content:"";display:inline-block;flex:none;width:.45em;he
 details[open]>summary::before{transform:translateY(-.3em) rotate(45deg)}
 @media (prefers-reduced-motion:no-preference){details>summary::before{transition:transform .15s ease}}
 details.deeper>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-family:var(--type-label-font);font-weight:var(--type-label-weight);font-size:var(--type-label-size);letter-spacing:var(--type-label-tracking);text-transform:uppercase}
+/* One fold style for every tool (Go deeper, a tool's own fold, Sources): a 2px ink rule, the name in sentence case and,
+   under it, a one-line preview of what is inside (.fold-p: written by deskDeeper() from the fold's sub-sections, or from
+   the fold's data-preview). Folds in a run stack with no gap; the run sits one fixed gap under what comes before it.
+   Scoped under the page so a lab's own fold rules cannot drift from it. */
+body>.page details:is(.deeper,.sources,.fold,.this-year){margin:2.5rem 0 0;padding:0;border:0;border-top:2px solid var(--t-ink)}
+body>.page details:is(.deeper,.sources,.fold,.this-year)+details:is(.deeper,.sources,.fold,.this-year){margin-top:0}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;min-height:56px;padding:.75rem 0;cursor:pointer;font:700 1.2rem/1.3 var(--font-ui);letter-spacing:0;text-transform:none;color:var(--t-ink)}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary::before{align-self:center;grid-row:1}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary>.fold-p{grid-column:2;display:block;margin:.2rem 0 0;font:400 var(--type-small-size)/1.45 var(--font-ui);color:var(--t-ink2);text-transform:none;letter-spacing:0}
+body>.page details:is(.deeper,.sources,.fold,.this-year)[open]>summary>.fold-p{display:none}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.2em;text-decoration-color:var(--t-point)}
 
 /* Video tiles: the 56px ink play badge and the duration chip (as on the site). */
 .play-badge{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:rgb(16 22 28 / .88);color:#fff;border:0}
-.dur-chip{display:inline-block;padding:.15em .5em;font:700 17px/1.3 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:#fff;background:rgb(0 0 0 / .72)}
+.dur-chip{display:inline-block;padding:.15em .5em;font:700 17.5px/1.3 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:#fff;background:rgb(0 0 0 / .72)}
 
 .crosshair{pointer-events:none}
 .crosshair line{stroke:var(--t-ink);stroke-width:1;stroke-dasharray:3 3}
 .crosshair rect{fill:var(--t-raised);stroke:var(--t-rule)}
 .crosshair text{fill:var(--t-ink);font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
+
+/* ---- The desk tool template (steps 4 to 6; markup and APIs in the header comment). Generic names sit in :where() so a
+   lab's own rule still wins. Every size here is 17.5px or more (Mo: never smaller). ---- */
+/* 1. The big readout: "How this is worked out" is a closed fold under the one line. */
+.readout-how{margin:.5rem 0 0}
+.readout-how>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font:600 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
+.readout-how>:not(summary){margin:.35rem 0 .5rem;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+.readout[aria-busy="true"]{cursor:inherit}
+/* 2. Go deeper: the optional "In this section:" line and the sub-sections. */
+.deeper-in{margin:.5rem 0 1rem;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+:where(details.deeper) :where(.deeper-sub){margin-top:2rem}
+/* 3. The one assumptions line, beside the first control. */
+:where(.assume){margin:.6rem 0 0;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2);max-width:52ch}
+/* 4. Save and share: the in-app browser notice sits right after its button. */
+.save-note{display:block;margin:.5rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-ink);font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink);max-width:40ch}
+/* 5. Guess, then reveal: a ruled panel; the slider is a 44px target, its value in serif figures. */
+.guess{margin:1.5rem 0;padding:1rem 1.25rem 1.25rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);max-width:46rem}
+.guess[hidden]{display:none}
+.guess-q{margin:.25rem 0 .5rem;font-family:var(--type-card-font);font-weight:var(--type-card-weight);font-size:var(--type-card-size);line-height:var(--type-card-line);text-wrap:balance}
+.guess-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.guess-row input[type=range]{flex:1 1 9rem;min-width:0;height:44px;margin:0;accent-color:var(--t-ink);cursor:pointer}
+.guess-v{min-width:5ch;font-family:var(--type-readout-font);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.1;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+.guess-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem}
+.guess-actions[hidden],.guess-out[hidden]{display:none}
+.guess-out{margin:.75rem 0 0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+/* 6. The tool-bar year chip ("Born {year} · change · forget"): text buttons with 44px targets, scoped to the tool bar
+   so a lab's own button{} rule cannot restyle them. On phones it takes its own line under the two links. */
+.desk-toolnav .desk-year{display:inline-flex;flex-wrap:wrap;align-items:center;gap:0 .45rem;margin:0;min-height:2.5rem;font-size:17.5px;line-height:1.35;color:var(--t-ink)}
+.desk-toolnav .desk-year[hidden]{display:none}
+.desk-toolnav .desk-year b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+.desk-toolnav .desk-year button{position:relative;box-sizing:content-box;width:auto;height:auto;min-width:0;min-height:0;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;color:var(--t-ink);font:inherit;font-weight:600;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 35%,transparent);text-underline-offset:.2em;cursor:pointer}
+.desk-toolnav .desk-year button::after{content:"";position:absolute;left:-.3rem;right:-.3rem;top:50%;height:44px;transform:translateY(-50%)}
+.desk-toolnav .desk-year button:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
+@media (max-width:560px){.desk-toolnav .desk-year{order:3;flex-basis:100%}}
+.desk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 7. Motion only after a user action, and instant under reduced motion: one rule for every tool. */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;transition-delay:0s!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
 
 /* The retirement wave: only what the shared desk (desk-ui.mjs) does not already set. The type roles, kicker, lede,
    notes, links, buttons, readout, section labels, chart frame and the page container all come from the desk. */
@@ -146,14 +196,42 @@ html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
 :focus-visible{outline:2px solid var(--t-ink);outline-offset:3px}
 h1,h2{margin:0}
-.kicker{margin:2.5rem 0 0}
+.kicker{margin:1rem 0 0}
 h1{margin-top:.6rem}
-.lede{margin:1.1rem 0 0}
-.more{margin:.75rem 0 0;max-width:62ch}
+.lede{margin:.9rem 0 0}
 
-.controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem 1.75rem;margin:.75rem 0 0;padding:1rem 0;border-top:1px solid var(--t-rule);border-bottom:1px solid var(--t-rule)}
-.assume{margin:2rem 0 0}
-.controls .error,.controls .readout{flex-basis:100%;margin:0}
+/* Find an age: the one control and the big answer, then the assumptions line. Side by side from tablet width. */
+.ask{display:grid;gap:0 2.5rem;margin:0}
+.find{display:grid;gap:.35rem;align-content:start;margin:1rem 0 0;padding:.75rem 0 0;border-top:1px solid var(--t-rule)}
+.find>label{font-weight:700;font-size:1.05rem}
+.step{display:flex;align-items:stretch;width:fit-content}
+.step-b{display:inline-flex;align-items:center;justify-content:center;width:52px;min-height:56px;margin:0;padding:0;border:1.5px solid var(--t-ink);border-radius:0;background:transparent;color:var(--t-ink);font:600 1.6rem/1 var(--font-display);cursor:pointer}
+.step-b:hover:not(:disabled){background:var(--t-raised)}
+.step-b:disabled{color:var(--t-ink3);border-color:var(--t-ink3);cursor:default}
+.step input[type=number]{width:5.5rem;min-height:56px;margin:0 -1.5px;padding:.2rem .4rem;text-align:center;font:600 1.75rem/1 var(--font-display);font-variant-numeric:tabular-nums lining-nums;background:var(--t-ground);color:var(--t-ink);border:1.5px solid var(--t-ink);border-bottom:4px solid var(--t-point);border-radius:0;-moz-appearance:textfield;appearance:textfield}
+.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.step input:focus-visible{position:relative;z-index:1}
+.step-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem}
+.hint{flex:1 1 6.5rem;margin:0;font-size:17.5px;line-height:1.4;color:var(--t-ink2);max-width:22ch}
+.error{margin:0;color:var(--t-d4);font-weight:600;font-size:17.5px}
+.ask .readout{margin:.75rem 0 0}
+.readout-v .unit{font-family:var(--font-ui);font-weight:400;font-size:1.375rem;letter-spacing:0;white-space:nowrap}
+.ask .assume{margin:.75rem 0 0}
+@media (min-width:760px){
+  .ask{grid-template-columns:minmax(0,25rem) minmax(0,1fr);grid-template-areas:"head head" "find answer" "assume answer";align-items:start}
+  .ask-head{grid-area:head}
+  .ask .find{grid-area:find}
+  .ask .readout{grid-area:answer;margin:1.75rem 0 0}
+  .ask .assume{grid-area:assume;margin:1rem 0 0}
+}
+/* wide: the answer top-right beside the headline (its label level with the kicker); the last row takes the slack */
+@media (min-width:960px){
+  .ask{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;grid-template-areas:"head answer" "find answer" "assume answer";column-gap:clamp(2rem,4vw,4rem)}
+  .ask .readout{margin:1rem 0 0}
+}
+
+/* Change the view (closed, under the chart): place, gender and number or share. */
+.controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem 1.75rem;margin:.5rem 0 0;padding:.25rem 0 0}
 .field{display:grid;gap:.35rem;min-width:0;margin:0;padding:0;border:0}
 .field>label,.field legend{font-weight:650;font-size:17.5px;padding:0}
 .seg legend{margin-bottom:.35rem}
@@ -161,16 +239,10 @@ h1{margin-top:.6rem}
 .opts label{display:flex;align-items:center;gap:.45rem;min-height:44px;padding:.3rem .8rem .3rem .6rem;border:1px solid var(--t-rule);margin:0 -1px -1px 0;font-size:17.5px;cursor:pointer;background:var(--t-ground)}
 .opts label:has(input:checked){background:var(--t-raised);border-color:var(--t-ink);font-weight:650}
 input[type=radio]{width:1.05rem;height:1.05rem;margin:0;accent-color:var(--t-ink)}
-select,input[type=number]{font:inherit;font-size:17.5px;min-height:48px;padding:.4rem .6rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-ink3);border-radius:0;max-width:100%}
-select{width:100%}
-input[type=number]{width:7.5rem;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600}
-.born .row{display:flex;gap:.5rem;flex-wrap:wrap}
+select{font:inherit;font-size:17.5px;min-height:48px;padding:.4rem .6rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-ink3);border-radius:0;max-width:100%;width:100%}
 .field.place{flex:1 1 14rem;max-width:22rem}
-.error{color:var(--t-d4);font-weight:600}
-#born-readout{flex:0 0 100%;max-width:none;margin-top:.25rem}
-.readout-v .unit{font-family:var(--font-ui);font-weight:400;font-size:1.375rem;letter-spacing:0;white-space:nowrap}
 
-.heat-sec{margin-top:2.75rem}
+.heat-sec{margin-top:2.25rem}
 .heat-sec figure.chart{margin:0}
 .legend{margin:.75rem 0 .5rem;max-width:100%}
 .legend-t{font-size:17.5px;font-weight:650;color:var(--t-ink);margin:0 0 .3rem}
@@ -179,12 +251,18 @@ input[type=number]{width:7.5rem;font-family:var(--font-display);font-variant-num
 .frame{width:100%;padding:.25rem 0 0}
 #heat{width:100%;height:auto;touch-action:pan-y}
 .cell{shape-rendering:crispEdges}
+/* the one note on the chart, above the grid; each scheme names its own shade */
+.heat-note{fill:var(--t-ink);font-size:17.5px;font-weight:600}
+:root[data-theme="light"] .heat-note.only-dark,:root:not([data-theme="light"]) .heat-note.only-light{display:none}
+/* the amber band, drawn on once after the visitor changes the age (instant under reduced motion: the desk's rule) */
+@keyframes rw-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.diag.drawn,.diag-halo.drawn{stroke-dasharray:1 1;animation:rw-draw .5s ease-out both}
 /* Chart text is drawn at the container's own width (the viewBox is the drawn size), so these sizes are the rendered ones. */
-svg{font-size:17px}
-.lab{fill:var(--t-ink2);font-size:16.5px}
+svg{font-size:17.5px}
+.lab{fill:var(--t-ink2);font-size:17.5px}
 .rule{stroke:var(--t-ink);stroke-width:1.25;stroke-dasharray:5 3}
 .rule-halo{stroke:var(--t-ground);stroke-width:3.5;opacity:.8}
-.rule-n{fill:var(--t-ink);font-size:16.5px;font-weight:650}
+.rule-n{fill:var(--t-ink);font-size:17.5px;font-weight:650}
 .rule-n tspan.age{font-weight:700}
 .rule-n tspan.what{fill:var(--t-ink2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .leader{stroke:var(--t-ink3);stroke-width:1;fill:none}
@@ -194,7 +272,7 @@ svg{font-size:17px}
 .dot{fill:var(--t-point);stroke:var(--t-ground);stroke-width:2}
 :root[data-theme="light"] .dot{fill:var(--t-point-deep)}
 .tag-bg,.rule-n-bg{fill:var(--t-ground);opacity:.94}
-.tag{fill:var(--t-ink);font-size:16.5px;font-weight:600}
+.tag{fill:var(--t-ink);font-size:17.5px;font-weight:600}
 .tag tspan.v{font-weight:400;fill:var(--t-ink2)}
 .rule-key{list-style:none;margin:.6rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.2rem 1.1rem;font-size:17.5px;color:var(--t-ink)}
 .rule-key b{margin-right:.25rem}
@@ -202,17 +280,13 @@ svg{font-size:17px}
 .point{min-height:1.6em;margin:.6rem 0 0;font-size:17.5px;color:var(--t-ink);font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
 .actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:1.25rem 0 0}
 
-.diagonal{margin-top:3rem}
-.readings-h{margin:0 0 .75rem}
-.readings{list-style:none;margin:0;padding:0;display:grid;gap:.3rem;max-width:62ch}
-.readings li{padding-left:1.1rem;position:relative}
-.readings li::before{content:"";position:absolute;left:0;top:.62em;width:.5rem;height:.5rem;border-radius:999px;background:var(--t-ink)}
-.readings li.after::before{background:transparent;border:1.5px solid var(--t-ink3)}
-
 .fold{margin-top:2.5rem;border-top:1px solid var(--t-rule);padding-top:.75rem}
+.fold.view{margin-top:1.5rem}
+.deeper-sub h3{margin:0 0 .6rem;font-family:var(--font-ui);font-weight:700;font-size:1.15rem}
+.deeper-sub p{margin:0}
 .fold summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
 .table-wrap{overflow:auto;max-height:70vh;margin-top:.5rem}
-.nums{border-collapse:collapse;font-size:17px}
+.nums{border-collapse:collapse;font-size:17.5px}
 .nums caption{text-align:left;font-weight:650;padding:0 0 .5rem;caption-side:top}
 .nums th,.nums td{text-align:right;padding:.2rem .6rem;border-top:1px solid var(--t-rule);white-space:nowrap}
 .nums thead th{position:sticky;top:0;background:var(--t-ground);border-top:0;color:var(--t-ink2)}
@@ -223,6 +297,7 @@ svg{font-size:17px}
 .foot p{margin:0;max-width:75ch}
 .foot .desk-notes{color:var(--t-ink)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+details.deeper{margin-top:2rem}
 
 :root .q0{fill:#273f54;background:#273f54}
 :root .q1{fill:#2a455c;background:#2a455c}
@@ -291,47 +366,40 @@ svg{font-size:17px}
   </header>
   <nav class="desk-toolnav" aria-label="This tool">
     <a href="/tools/"><span aria-hidden="true">←</span> All tools</a>
+    <p class="desk-year" data-year-chip hidden><span>Born <b data-year-chip-y></b></span><span aria-hidden="true">·</span><button type="button" data-year-change aria-label="change the birth year">change</button><span aria-hidden="true">·</span><button type="button" data-year-forget aria-label="forget the birth year">forget</button></p><script>(function(){var c=document.querySelector('[data-year-chip]');if(!c)return;var K='mo.year';function get(){try{var y=sessionStorage.getItem(K);return y&&/^\d{4}$/.test(y)?y:null}catch(e){return null}}function show(){var y=get();c.querySelector('[data-year-chip-y]').textContent=y||'';c.hidden=!y}c.querySelector('[data-year-change]').addEventListener('click',function(){var f=document.querySelector('[data-year-control]')||document.querySelector('[data-first-move] input,[data-first-move] select,[data-first-move]');if(!f)return;f.scrollIntoView({block:'center'});f.focus({preventScroll:true});if(f.select)try{f.select()}catch(e){}});c.querySelector('[data-year-forget]').addEventListener('click',function(){try{sessionStorage.removeItem(K)}catch(e){}location.reload()});window.deskYearChip=show;show()})()</script>
     <a href="/tools/retirement-wave/how-i-made-it/">How I made this</a>
   </nav>
   </div>
 <div class="page">
   <main>
-    <p class="kicker">Data</p>
-    <h1 id="question">How many Canadians are about to turn 65?</h1>
-    <p class="lede" id="finding" aria-live="polite">2.66 million Canadians were 60 to 64 on July 1, 2026: 3.4 times as many as in 1971.</p>
-    <p class="more" id="lede">OAS can start at 65. People 65 to 89 were 19.1% of the whole population in 2026, against 7.9% in 1971.</p>
-
-    <p class="note assume" id="assume">Statistics Canada's estimates for July 1 of each year, 1971 to 2026, ages 50 to 89: counted, not forecast. Education, not advice.</p>
-    <form id="controls" class="controls" novalidate>
-      <div class="field place">
-        <label for="place">Place</label>
-        <select id="place"></select>
+    <div class="ask">
+      <div class="ask-head">
+        <p class="kicker">Data</p>
+        <h1 id="question">How many Canadians are about to turn 65?</h1>
+        <p class="lede" id="finding">2.66 million Canadians were 60 to 64 on July 1, 2026: 3.4 times as many as in 1971.</p>
       </div>
-      <fieldset class="field seg">
-        <legend>People</legend>
-        <div class="opts" id="genders"></div>
-      </fieldset>
-      <fieldset class="field seg">
-        <legend>Each square shows</legend>
-        <div class="opts">
-          <label><input type="radio" name="mode" value="count" checked> Number of people</label>
-          <label><input type="radio" name="mode" value="share"> Share of the population</label>
+      <div class="find" data-first-move>
+        <label for="age">Find an age</label>
+        <div class="step-row">
+          <div class="step">
+            <button type="button" class="step-b" id="age-down" aria-label="One year younger" aria-controls="age"><span aria-hidden="true">−</span></button>
+            <input id="age" type="number" inputmode="numeric" autocomplete="off" value="64" data-year-control aria-describedby="age-hint">
+            <button type="button" class="step-b" id="age-up" aria-label="One year older" aria-controls="age"><span aria-hidden="true">+</span></button>
+          </div>
+          <p class="hint" id="age-hint">Ages 50 to 89.</p>
         </div>
-      </fieldset>
-      <div class="field born">
-        <label for="born">Your diagonal: born in</label>
-        <div class="row"><input id="born" type="number" inputmode="numeric" autocomplete="off"><button type="submit" class="btn-you">Draw it</button></div>
+        <p class="error" id="error" role="alert" hidden></p>
       </div>
-      <p class="error" id="error" role="alert" hidden></p>
-      <div class="readout" id="born-readout" aria-live="polite">
-        <p class="readout-k" id="born-k"></p>
-        <p class="readout-v big" id="born-v" data-flash></p>
-        <p class="readout-t" id="born-t"></p>
-        <p class="readout-fine" id="born-note"></p>
+      <div class="readout" id="answer" data-answer aria-live="polite">
+        <p class="readout-k" id="answer-k">Aged 64 on July 1, 2026</p>
+        <p class="readout-v big"><span data-readout-v id="answer-v">532,225</span> <span class="unit" id="answer-unit">Canadians</span></p>
+        <p class="readout-t" data-readout-t id="answer-t">They all turn 65 by July 1, 2027.</p>
+        <details class="readout-how"><summary>How this is worked out</summary><p id="answer-how">Statistics Canada's estimate of Canadians aged 64 on July 1, 2026: 532,225, 1.27% of the population of all ages. They were born from July 2, 1961 to July 1, 1962. The amber band on the chart follows the same birth years back through time; the group's size changes with deaths and migration.</p></details>
       </div>
-    </form>
+      <p class="assume" id="assume" data-assumptions>Statistics Canada's estimates for July 1 of each year, 1971 to 2026, ages 50 to 89: counted, not forecast. Education, not advice.</p>
+    </div>
 
-    <section class="heat-sec" data-chapter="The chart" aria-labelledby="chart-h">
+    <section class="heat-sec" aria-labelledby="chart-h">
       <figure class="chart">
         <figcaption>
           <p class="chart-title" id="chart-h"></p>
@@ -341,29 +409,53 @@ svg{font-size:17px}
         <div class="frame" id="frame"><svg id="heat" role="img" aria-labelledby="heat-title"><title id="heat-title">Heatmap</title></svg></div>
         <ul class="rule-key" id="rule-key" aria-label="The rule ages on the dashed lines" hidden></ul>
         <p class="point" id="point" aria-live="polite"></p>
-        <p class="actions"><button type="button" id="save" class="btn-2">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
       </figure>
+      <details class="fold view" data-preview="Place, who is counted, and number or share">
+        <summary>Change the view</summary>
+        <form id="controls" class="controls" novalidate>
+          <div class="field place">
+            <label for="place">Place</label>
+            <select id="place"></select>
+          </div>
+          <fieldset class="field seg">
+            <legend>People</legend>
+            <div class="opts" id="genders"></div>
+          </fieldset>
+          <fieldset class="field seg">
+            <legend>Each square shows</legend>
+            <div class="opts">
+              <label><input type="radio" name="mode" value="count" checked> Number of people</label>
+              <label><input type="radio" name="mode" value="share"> Share of the population</label>
+            </div>
+          </fieldset>
+        </form>
+      </details>
     </section>
 
-    <section class="diagonal" data-chapter="Your diagonal" aria-labelledby="readings-h">
-      <p class="sec-label">Your diagonal</p>
-      <h2 class="readings-h" id="readings-h">Your diagonal</h2>
-      <ul class="readings" id="readings"></ul>
-    </section>
-
-    <details class="fold">
-      <summary>The numbers in the chart, as a table</summary>
-      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="grid-caption"><table class="nums"><caption id="grid-caption"></caption><thead><tr id="grid-head"></tr></thead><tbody id="grid-body"></tbody></table></div>
+    <details class="deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub">
+        <h3>The older share of the population</h3>
+        <p id="lede">OAS can start at 65. People 65 to 89 were 19.1% of the whole population in 2026, against 7.9% in 1971.</p>
+      </section>
+      <section class="deeper-sub">
+        <h3>The numbers in the chart, as a table</h3>
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="grid-caption"><table class="nums"><caption id="grid-caption"></caption><thead><tr id="grid-head"></tr></thead><tbody id="grid-body"></tbody></table></div>
+      </section>
+      <section class="deeper-sub">
+        <h3>Save the chart as an image</h3>
+        <p class="actions"><button type="button" id="save" class="btn-2">Save the chart</button> <span class="note">Made in this page; nothing is sent.</span></p>
+      </section>
     </details>
 
-    <details class="fold sources">
+    <details class="fold sources" data-preview="Statistics Canada’s table, its citation and notes">
       <summary>Sources and notes</summary>
       <p id="attribution"></p>
       <p id="citation"></p>
       <ul id="notes"></ul>
       <p>The ages on the dashed lines come from the verified facts file:</p>
       <ul id="fact-sources"></ul>
-      <p class="note">History only: every number is a published estimate for a July 1 that has passed. The people within a few years of a rule age are counted as they are today, not forecast. Nothing here says what anyone should do.</p>
+      <p class="note">History only: every number is a published estimate for a July 1 that has passed. The people within a few years of a rule age are counted as they are today, not forecast. Nothing here tells anyone what to do.</p>
     </details>
 
     <a class="desk-next" data-next href="/tools/your-year/"><span class="desk-next-k">Up next</span><span class="desk-next-q">What opens, and when, for your year?</span><span class="desk-next-go" aria-hidden="true">→</span></a>
@@ -419,6 +511,241 @@ function deskCrosshair(svg, o) {
   function move(e) { show(toSvg(e)); } function hide() { g.style.display = 'none'; }
   svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide);
   return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
+}
+
+// ---- The desk tool template (redesign v2, steps 4 to 6): readout, Go deeper, example tag, save and share, Save my
+// card, guess then reveal, the year chip. APIs in the header comment of shared/desk/desk-ui.mjs. ----
+var DESK_SITE = {"origin":"https://mo-portfolio-site.moe-chayeb.workers.dev","wordmark":"Mohammed El Chayeb"};
+var IN_APP_NOTICE = "Open this page in Safari or Chrome to save the file.", CARD_STAMP = "Example \u00b7 Education, not advice", EXAMPLE_TAG = "Example data";
+function inAppBrowser(ua) {
+  ua = String(ua || '');
+  if (/Instagram/i.test(ua)) return 'Instagram';
+  if (/LinkedInApp|LinkedIn\//i.test(ua)) return 'LinkedIn';
+  if (/FBAN\/|FBAV\/|FB_IAB|FBIOS|FB4A|FBSV\/|\[FB/i.test(ua)) return 'Facebook';
+  return null;
+}
+function siteAddress(origin) {
+  return String(origin || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+}
+function wordCount(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+function deeperIntro(titles) {
+  var t = (titles || []).map(function (x) { return String(x || '').replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  return t.length >= 3 ? 'In this section: ' + t.join(' \u00b7 ') : '';
+}
+function deeperPreview(titles) {
+  var t = (titles || []).map(function (x) { return String(x || '').replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  return t.length >= 2 ? t.join(' \u00b7 ') : '';
+}
+function wrapText(text, max, measure, maxLines) {
+  var words = String(text || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean), lines = [], cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var next = cur ? cur + ' ' + words[i] : words[i];
+    if (cur && measure(next) > max) { lines.push(cur); cur = words[i]; } else cur = next;
+  }
+  if (cur) lines.push(cur);
+  if (maxLines && lines.length > maxLines) {
+    var keep = lines.slice(0, maxLines), last = keep[maxLines - 1];
+    while (last.indexOf(' ') > 0 && measure(last + '\u2026') > max) last = last.slice(0, last.lastIndexOf(' '));
+    keep[maxLines - 1] = last + '\u2026';
+    return keep;
+  }
+  return lines;
+}
+function cardText(o, origin) {
+  o = o || {};
+  return {
+    head: String(o.head || ''),
+    question: String(o.question || ''),
+    bigValue: String(o.bigValue == null ? '' : o.bigValue),
+    line: String(o.line || ''),
+    labels: (o.labels || []).map(String).filter(Boolean).slice(0, 3),
+    stamp: CARD_STAMP,
+    address: siteAddress(origin),
+  };
+}
+
+// Has the visitor acted? A trusted pointer, key or input event in the last 1.5s (count-ups run only then).
+var deskActedAt = 0;
+['pointerdown', 'keydown', 'input', 'change'].forEach(function (t) { addEventListener(t, function (e) { if (e.isTrusted) deskActedAt = Date.now(); }, { capture: true, passive: true }); });
+function deskActed() { return deskActedAt > 0 && Date.now() - deskActedAt < 1500; }
+function deskStill() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+function deskEl(x) { return typeof x === 'string' ? document.querySelector(x) : x; }
+
+// 1. The big readout.
+function deskReadout(el, o) {
+  el = deskEl(el); o = o || {};
+  var v = el.querySelector('[data-readout-v]') || el.querySelector('.readout-v'), t = el.querySelector('[data-readout-t]') || el.querySelector('.readout-t'), k = el.querySelector('.readout-k');
+  if (!el.hasAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+  el.setAttribute('aria-atomic', 'true');
+  var cur = null, raf = 0, quiet = 0;
+  function busy() { el.setAttribute('aria-busy', 'true'); clearTimeout(quiet); quiet = setTimeout(function () { el.removeAttribute('aria-busy'); }, 250); }
+  function set(s) {
+    s = s || {}; busy(); cancelAnimationFrame(raf);
+    if (s.label != null && k) k.textContent = s.label;
+    if (s.line != null && t) t.textContent = s.line;
+    var fmt = s.format || o.format || String;
+    if (typeof s.n === 'number' && isFinite(s.n)) {
+      var from = cur, to = s.n; cur = to;
+      if (from == null || from === to || s.animate === false || !deskActed() || deskStill()) { v.textContent = fmt(to); return; }
+      var t0 = performance.now();
+      var step = function (now) {
+        var p = Math.min(1, (now - t0) / 300), e = 1 - Math.pow(1 - p, 3);
+        v.textContent = fmt(p < 1 ? from + (to - from) * e : to);
+        if (p < 1) raf = requestAnimationFrame(step); else busy();
+      };
+      raf = requestAnimationFrame(step);
+    } else { cur = null; v.textContent = s.text != null ? String(s.text) : ''; }
+  }
+  return { set: set, el: el };
+}
+
+// 2. Folds: the one-line preview under each summary, so a closed fold says what it holds. A Go deeper fold with two or
+//    more sub-sections lists them ("A \u00b7 B \u00b7 C", deeperPreview); any fold may give its own in data-preview instead.
+function deskDeeper() {
+  [].forEach.call(document.querySelectorAll('details.deeper, details.sources, details.fold, details.this-year'), function (d) {
+    var s = d.querySelector(':scope > summary'); if (!s) return;
+    var line = d.getAttribute('data-preview') || '';
+    if (!line && d.matches('.deeper')) {
+      var subs = [].filter.call(d.children, function (c) { return c.matches('.deeper-sub, section'); });
+      line = deeperPreview(subs.map(function (c) { var h = c.getAttribute('data-title') ? null : c.querySelector('h2, h3, h4, .card-hed, .sec-label'); return c.getAttribute('data-title') || (h ? h.textContent : ''); }));
+    }
+    var p = s.querySelector(':scope > .fold-p');
+    if (!line) { if (p && p.hasAttribute('data-auto')) p.remove(); return; }
+    if (p && !p.hasAttribute('data-auto')) return;
+    if (!p) { p = document.createElement('span'); p.className = 'fold-p' + (d.matches('.deeper') ? ' deeper-in' : ''); p.setAttribute('data-auto', ''); s.appendChild(p); }
+    p.textContent = line;
+  });
+}
+deskDeeper();
+
+// 3. The EXAMPLE DATA tag on a chart drawn at run time (once per chart).
+function deskExampleTag(fig) {
+  fig = deskEl(fig); if (!fig || fig.querySelector('.tag-example')) return;
+  var cap = fig.querySelector(':scope > figcaption'); if (!cap) { cap = document.createElement('figcaption'); fig.prepend(cap); }
+  var tag = document.createElement('span'); tag.className = 'chip tag-example'; tag.textContent = EXAMPLE_TAG; cap.appendChild(tag);
+}
+
+// 4. Save and share: the share sheet when it takes files, else a download link; the in-app browser notice.
+function deskInApp() { try { return inAppBrowser(navigator.userAgent); } catch (e) { return null; } }
+function deskSaveFile(o) {
+  var app = deskInApp(), notice = app ? IN_APP_NOTICE : null;
+  function done(via) { return { via: via, inApp: app, notice: notice }; }
+  function download() {
+    var url = URL.createObjectURL(o.blob), a = document.createElement('a');
+    a.href = url; a.download = o.name; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 20000);
+    return done('download');
+  }
+  var data = null;
+  try { data = { files: [new File([o.blob], o.name, { type: o.blob.type || 'application/octet-stream' })], title: o.title || o.name }; } catch (e) { data = null; }
+  var can = false;
+  try { can = !!(data && navigator.share && navigator.canShare && navigator.canShare(data)); } catch (e) { can = false; }
+  if (!can) return Promise.resolve(download());
+  return navigator.share(data).then(function () { return done('share'); }, function (e) { return e && e.name === 'AbortError' ? done('cancelled') : download(); });
+}
+function deskSaveButton(button, make) {
+  button = deskEl(button);
+  if (deskInApp() && !(button.nextElementSibling && button.nextElementSibling.classList.contains('save-note'))) {
+    var n = document.createElement('span'); n.className = 'save-note'; n.setAttribute('role', 'note'); n.textContent = IN_APP_NOTICE; button.after(n);
+  }
+  button.addEventListener('click', function () {
+    if (button.getAttribute('aria-busy') === 'true') return;
+    button.setAttribute('aria-busy', 'true');
+    Promise.resolve().then(make).then(deskSaveFile).catch(function () { return null; }).then(function () { button.removeAttribute('aria-busy'); });
+  });
+}
+
+// Save my card: a 1080x1350 PNG drawn in a canvas, in the page's current theme; nothing leaves the page.
+function deskCard(o) {
+  var W = 1080, H = 1350, P = 88, cs = getComputedStyle(document.documentElement);
+  var col = function (n, d) { return (cs.getPropertyValue('--t-' + n) || '').trim() || d; };
+  var C = { ground: col('ground', '#FCFDFD'), raised: col('raised', '#E8EEF3'), ink: col('ink', '#10161C'), ink2: col('ink2', '#36414C'), rule: col('rule', '#D3D8DD'), point: col('point', '#F2A93B') };
+  var serif = '"Source Serif 4 Variable", Georgia, serif', sans = '"Source Sans 3 Variable", system-ui, sans-serif';
+  var T = cardText({ head: DESK_SITE.wordmark, question: o.question, bigValue: o.bigValue, line: o.line, labels: o.labels }, DESK_SITE.origin);
+  var fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 72px ' + serif), document.fonts.load('400 50px ' + sans), document.fonts.load('700 40px ' + sans)]).catch(function () {}) : Promise.resolve();
+  return fonts.then(function () {
+    var c = document.createElement('canvas'); c.width = W; c.height = H;
+    var x = c.getContext('2d'), w = W - 2 * P, y = P;
+    var track = function (px) { if ('letterSpacing' in x) x.letterSpacing = px; };
+    var font = function (f) { x.font = f; track('0px'); };
+    var m = function (s) { return x.measureText(s).width; };
+    x.fillStyle = C.ground; x.fillRect(0, 0, W, H);
+    x.textBaseline = 'alphabetic'; x.fillStyle = C.ink;
+    // the wordmark over the site's double rule
+    font('600 44px ' + serif); y += 44; x.fillText(T.head, P, y);
+    y += 26; x.fillRect(P, y, w, 2); x.fillRect(P, y + 6, w, 2); y += 8;
+    // the question
+    font('600 72px ' + serif); y += 40;
+    wrapText(T.question, w, m, 4).forEach(function (l) { y += 80; x.fillText(l, P, y); });
+    // the big value, shrunk until it fits one line
+    var size = 230; font('600 ' + size + 'px ' + serif);
+    while (size > 96 && m(T.bigValue) > w) { size -= 6; font('600 ' + size + 'px ' + serif); }
+    y += Math.round(size * 0.95) + 40; x.fillText(T.bigValue, P, y);
+    // the one highlight: an amber rule under the figure, clear of its descenders
+    y += Math.round(size * 0.3); x.fillStyle = C.point; x.fillRect(P, y, Math.min(w, Math.max(160, m(T.bigValue))), 8); x.fillStyle = C.ink; y += 16;
+    // the one line
+    font('400 50px ' + sans);
+    wrapText(T.line, w, m, 3).forEach(function (l) { y += 66; x.fillText(l, P, y); });
+    // the labels as ruled chips
+    if (T.labels.length) {
+      y += 40; font('700 40px ' + sans); track('2px');
+      var cx = P, ch = 64;
+      T.labels.forEach(function (l) {
+        var s = l.toUpperCase(), lw = m(s) + 40;
+        if (cx > P && cx + lw > P + w) { cx = P; y += ch + 16; }
+        x.strokeStyle = C.rule; x.lineWidth = 2; x.strokeRect(cx + 1, y + 1, lw - 2, ch - 2);
+        x.fillStyle = C.ink2; x.fillText(s, cx + 20, y + 46); x.fillStyle = C.ink; cx += lw + 16;
+      });
+      y += ch;
+    }
+    // an optional small chart in the room that is left
+    var foot = H - P - 116;
+    if (typeof o.draw === 'function' && foot - y > 140) { try { o.draw(x, { x: P, y: y + 40, w: w, h: foot - y - 80 }, C); } catch (e) { /* the card still saves */ } }
+    // the foot: a 2px ink rule, the stamp and the site address
+    x.fillStyle = C.ink; x.fillRect(P, foot, w, 2);
+    font('700 40px ' + sans); x.fillText(T.stamp, P, foot + 56);
+    font('400 40px ' + sans); x.fillStyle = C.ink2; x.fillText(T.address, P, foot + 108);
+    return new Promise(function (res, rej) { c.toBlob(function (b) { if (b) res(b); else rej(new Error('the card could not be drawn')); }, 'image/png'); });
+  });
+}
+function deskSaveCard(o) {
+  return deskCard(o).then(function (blob) { return deskSaveFile({ blob: blob, name: o.name || 'my-card.png', title: o.question }); });
+}
+
+// 5. Guess, then reveal: skippable, and shown only when the tool calls show() after its first result.
+var deskGuessN = 0;
+function deskGuess(host, o) {
+  host = deskEl(host); o = o || {};
+  var id = 'desk-guess-' + (++deskGuessN), fmt = o.format || String, shown = false, done = false;
+  var mk = function (tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  host.textContent = ''; host.classList.add('guess'); host.setAttribute('data-guess', ''); host.hidden = true;
+  var k = mk('p', 'kicker', 'Guess first'), q = mk('p', 'guess-q', o.question || ''); q.id = id + '-q';
+  var row = mk('div', 'guess-row'), r = document.createElement('input'), out = mk('output', 'guess-v');
+  r.type = 'range'; r.id = id; r.min = o.min; r.max = o.max; r.step = o.step || 1; r.value = o.start != null ? o.start : o.min;
+  r.setAttribute('aria-labelledby', id + '-q'); out.setAttribute('for', id);
+  var paint = function () { out.textContent = fmt(Number(r.value)); r.setAttribute('aria-valuetext', out.textContent); };
+  r.addEventListener('input', paint); paint();
+  row.appendChild(out); row.appendChild(r);
+  var acts = mk('div', 'guess-actions'), go = mk('button', 'btn', 'Reveal'), skip = mk('button', 'btn-2', 'Skip');
+  go.type = 'button'; skip.type = 'button'; acts.appendChild(go); acts.appendChild(skip);
+  var said = mk('p', 'guess-out'); said.setAttribute('aria-live', 'polite'); said.hidden = true;
+  [k, q, row, acts, said].forEach(function (e) { host.appendChild(e); });
+  go.addEventListener('click', function () {
+    if (done) return; done = true;
+    var g = Number(r.value), a = typeof o.answer === 'function' ? o.answer() : o.answer;
+    said.textContent = o.reveal ? o.reveal(g, a) : 'Your guess: ' + fmt(g) + '. The answer: ' + fmt(a) + '.';
+    said.hidden = false; r.disabled = true; acts.hidden = true; said.setAttribute('tabindex', '-1'); said.focus();
+    if (o.onDone) o.onDone({ guess: g, answer: a, skipped: false });
+  });
+  skip.addEventListener('click', function () {
+    if (done) return; done = true; host.hidden = true;
+    var a = document.querySelector('[data-answer]'); if (a) { if (!a.hasAttribute('tabindex')) a.setAttribute('tabindex', '-1'); a.focus(); }
+    if (o.onDone) o.onDone({ skipped: true });
+  });
+  return { show: function () { if (shown || done) return; shown = true; host.hidden = false; }, el: host };
 }
 
 // The retirement wave: everything the page shows, computed from the dated Statistics Canada snapshot and the confirmed
@@ -517,6 +844,30 @@ function finding(M, V) {
   return { lede, more, now, then, ratio, oldNow, oldThen, lo, hi };
 }
 
+// "Find an age" (redesign v2 section 5): the age the page opens on (a year short of the OAS age: "about to turn" it),
+// and the answer for one age on the latest July 1 in one view: the label, the count, its unit, one line on when that
+// group reaches the OAS age (or how many there were when they did), and the longer "How this is worked out" text.
+const num = (v) => Math.round(v).toLocaleString('en-CA');
+const defaultAge = (M) => Math.min(M.ages[1], Math.max(M.ages[0], M.oasLo - 1));
+const inAges = (M, a) => Number.isInteger(a) && a >= M.ages[0] && a <= M.ages[1];
+function ageAnswer(M, V, age) {
+  const [y0, y1] = M.years, [a0] = M.ages, oas = M.oasLo, b = y1 - age, y65 = b + oas;
+  const count = V.counts[y1][age - a0], share = count / V.totals[y1];
+  const plain = V.place === 'CA' && V.gender === 'all';
+  const where = V.place === 'CA' ? 'Canada' : V.place === 'TR' ? 'The territories' : placeName(M, V.place);
+  const prefix = plain ? '' : `${where}${V.gender === 'all' ? '' : ` (${V.gender})`}: `;
+  let tail;
+  if (age < oas) tail = `they all turn ${oas} by July 1, ${y65}.`;
+  else if (age === oas) tail = `they turned ${oas} in the year to July 1, ${y1}.`;
+  else if (y65 >= y0) tail = `at ${oas}, on July 1, ${y65}, the group numbered ${num(V.counts[y65][oas - a0])}.`;
+  else tail = `they were ${oas} on July 1, ${y65}.`;
+  const line = plain ? tail[0].toUpperCase() + tail.slice(1) : prefix + tail;
+  const how = `Statistics Canada's estimate of ${who(M, V.place, V.gender)} aged ${age} on July 1, ${y1}: ${num(count)}, `
+    + `${pct(share, 2)} of the population of all ages. They were born from July 2, ${b - 1} to July 1, ${b}. The amber band on `
+    + `the chart follows the same birth years back through time; the group's size changes with deaths and migration.`;
+  return { age, b, y65, count, share, label: `Aged ${age} on July 1, ${y1}`, unit: V.place === 'CA' ? 'Canadians' : 'people', line, how };
+}
+
 // A birth year's diagonal. The people aged a on July 1 of year b + a were born between July 2 of b - 1 and July 1 of b.
 const bornRange = (M) => [M.years[0] - M.ages[1], M.years[1] - M.ages[0]];
 function diagonal(M, V, mode, b) {
@@ -542,22 +893,26 @@ function niceTicks(lo, hi, n) {
 const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((steps - 1) * (v - lo) / (hi - lo || 1))));
 
 // The retirement wave. The model (counts by place, gender, year and age; each year's population; the rule ages from the
-// confirmed facts) is embedded in #data, and the calculations come from model.mjs, inlined above this script. The birth
-// year, place and choices stay in this page: not stored, not put in the address, not sent anywhere. A birth year set in
-// Your year this visit (sessionStorage 'mo.year', read by the <head> script into <html data-year>) is the one it opens
-// on, but only when the data covers that age on the latest July 1; otherwise the labelled example shows. The only file this
-// page makes is an image the visitor asks to save.
+// confirmed facts) is embedded in #data, and the calculations come from model.mjs, inlined above this script. The age,
+// place and choices stay in this page: not stored, not put in the address, not sent anywhere. A birth year set elsewhere
+// on the site this visit (sessionStorage 'mo.year', read by the <head> script into <html data-year>) sets the age it opens
+// on, but only when the data covers that age on the latest July 1; otherwise it opens a year short of the OAS age and says
+// which ages the data covers. The only file this page makes is an image the visitor asks to save.
 (() => {
   'use strict';
   const D = JSON.parse(document.getElementById('data').textContent), M = D.model, STEPS = D.steps;
-  const EXAMPLE_BIRTH = 1950;
-  const [y0, y1] = M.years, [a0, a1] = M.ages, [bLo, bHi] = bornRange(M);
+  const [y0, y1] = M.years, [a0, a1] = M.ages;
   const NS = 'http://www.w3.org/2000/svg';
   const $ = (id) => document.getElementById(id);
-  const n = (v) => Math.round(v).toLocaleString('en-CA');
-  const state = { place: 'CA', gender: 'all', mode: 'count', born: EXAMPLE_BIRTH, example: true };
+  const n = num;
+  const state = { place: 'CA', gender: 'all', mode: 'count', age: defaultAge(M) };
   const carried = Number(document.documentElement.getAttribute('data-year'));
-  if (Number.isInteger(carried) && y1 - carried >= a0 && y1 - carried <= a1) { state.born = carried; state.example = false; }
+  let hint = `Ages ${a0} to ${a1}.`;
+  if (/^\d{4}$/.test(String(document.documentElement.getAttribute('data-year') || ''))) {
+    if (inAges(M, y1 - carried)) { state.age = y1 - carried; hint = `From your birth year, ${carried}.`; }
+    else hint = `This data covers ages ${a0} to ${a1}.`;
+  }
+  const born = () => y1 - state.age;
   let V = view(M, state.place, state.gender);
   const fmt = (v, mode = state.mode) => (mode === 'share' ? pct(v, 2) : n(v));
   function el(tag, attrs, parent, text) {
@@ -608,7 +963,7 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
   // where the pointer is, read before the chart's own listeners (the crosshair reads across; this gives the row)
   let pointerY = null;
   for (const ev of ['pointermove', 'pointerdown']) $('frame').addEventListener(ev, (e) => { pointerY = e.clientY; }, true);
-  let unhair = null;
+  let unhair = null, drawOn = false;
   function drawHeat() {
     const svg = $('heat');
     if (unhair) unhair();
@@ -617,9 +972,20 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
     // The grid runs the full width. Wide: the rule names sit inside the grid on a ground-coloured backing, wherever the
     // line is clear of the diagonal's readings. Narrow: a thin gutter on the right holds the rule ages, and the names are
     // in the key under the chart.
-    const left = narrow ? 26 : 34, right = narrow ? 28 : 3, top = 8, bottom = 30;
+    const left = narrow ? 26 : 34, right = narrow ? 28 : 3, bottom = 30;
+    // the one note on the chart, in a band above the grid (so it hides no square): one line when it fits, else two. The
+    // light scheme shades many people dark, the dark scheme bright, so each scheme has its own words (CSS shows one).
+    const NM = metrics(svg, 'heat-note'), notes = [['Darker = more people.', 'only-light'], ['Brighter = more people.', 'only-dark']], col = 'Each column is a year.';
+    const probe = el('text', { class: 'heat-note', x: 0, y: 0 }, svg, `${notes[1][0]} ${col}`), oneLine = probe.getBBox().width <= W - left - right; probe.remove();
+    const top = 6 + (oneLine ? 1 : 2) * NM.lh + 8;
+    for (const [t, c] of notes) {
+      const tx = el('text', { class: `heat-note ${c}`, x: left }, svg);
+      if (oneLine) { tx.setAttribute('y', (6 + NM.lh / 2 + NM.mid).toFixed(1)); tx.textContent = `${t} ${col}`; }
+      else [t, col].forEach((line, k) => el('tspan', { x: left, y: (6 + NM.lh * (k + 0.5) + NM.mid).toFixed(1) }, tx, line));
+    }
     const cols = y1 - y0 + 1, rows = a1 - a0 + 1, cw = (W - left - right) / cols;
-    const ch = narrow ? Math.min(9, Math.max(8, cw * 1.5)) : Math.min(15, Math.max(9, cw * 0.75));
+    // rows tall enough on a phone that a reading fits between two rule lines five ages apart
+    const ch = narrow ? Math.min(12, Math.max(11, cw * 2)) : Math.min(15, Math.max(9, cw * 0.75));
     const plotW = cols * cw, plotH = rows * ch, H = top + plotH + bottom, R = left + plotW;
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
     const X = (y) => left + (y - y0) * cw, Y = (a) => top + (a1 - a) * ch, Yc = (a) => Y(a) + ch / 2;
@@ -642,13 +1008,14 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
     }
 
     // the diagonal: one group of people, a year older every July 1
-    const d = diagonal(M, V, state.mode, state.born);
+    const d = diagonal(M, V, state.mode, born());
     if (d.cells.length) {
-      // A band through the diagonal's cells: from the first cell's bottom edge to the last cell's top edge.
-      const [fy, fa] = d.cells[0], [ly, la] = d.last;
+      // A band through the diagonal's cells: from the first cell's bottom edge to the last cell's top edge. Drawn on
+      // (half a second) only when the visitor has just changed the age; at once otherwise and under reduced motion.
+      const [fy, fa] = d.cells[0], [ly, la] = d.last, cls = drawOn ? ' drawn' : '';
       const pts = [[X(fy), Y(fa) + ch], [X(fy) + cw, Y(fa) + ch], [X(ly) + cw, Y(la)], [X(ly), Y(la)]].map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' ');
-      el('polygon', { class: 'diag-halo', points: pts }, svg);
-      el('polygon', { class: 'diag', points: pts }, svg);
+      el('polygon', { class: 'diag-halo' + cls, points: pts, pathLength: 1 }, svg);
+      el('polygon', { class: 'diag' + cls, points: pts, pathLength: 1 }, svg);
     }
     // readings where the diagonal crosses each rule age, and where it starts and ends in the data; crossings a year or
     // two apart share one tag, so their readings never sit on top of each other
@@ -671,6 +1038,17 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
       const k = narrow && g.length > 1 ? g.length : 1;
       return { g, cx, cy, want: cy, h: TM.h + (k - 1) * TM.lh + back };
     }), 3, top + 2, top + plotH - 2);
+    // On a phone a reading never sits across a dashed rule line: each is moved, in order, to the nearest place clear of
+    // every rule line and of the readings already placed (the leader then ties it to its dot).
+    if (narrow) {
+      const lines = M.rules.map((r) => Yc(r.age)), done = [];
+      const free = (y, h) => lines.every((ly) => Math.abs(ly - y) > h / 2 + 2) && done.every((o) => Math.abs(o.y - y) > (o.h + h) / 2 + 3) && y - h / 2 >= top + 2 && y + h / 2 <= top + plotH - 2;
+      for (const it of tags) {
+        let best = it.y;
+        for (let k = 0; k <= plotH; k++) { if (free(it.y - k, it.h)) { best = it.y - k; break; } if (free(it.y + k, it.h)) { best = it.y + k; break; } }
+        it.y = best; done.push(it);
+      }
+    }
     for (const it of tags) {
       const xs2 = it.g.map((m) => X(m.year) + cw / 2), xl = Math.min(...xs2) - 9, xr = Math.max(...xs2) + 9;
       // One line when it fits beside the dots; otherwise one reading per line, in the same backing.
@@ -709,7 +1087,7 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
       const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: RM.h + back })), 3, top, top + plotH);
       const placed = [];
       for (const it of rl) {
-        const age = it.r.age, yc = state.born + age;
+        const age = it.r.age, yc = born() + age;
         // the diagonal's own cells near this line are kept clear too
         const zone = yc >= y0 && yc <= y1 ? [{ x: X(yc - 1), r: X(yc + 2), y: it.y - RM.h / 2, b: it.y + RM.h / 2 }] : [];
         const L = label(ruleLayer, 'rule-n', [[[String(age), 'age'], [`  ${it.r.label}`, 'what']]], left + 6, it.y, 'start', RM);
@@ -725,7 +1103,7 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
     }
     $('rule-key').hidden = !narrow;
 
-    $('heat-title').textContent = `Heatmap of ${state.mode === 'share' ? 'each age’s share of the population' : 'the number of people at each age'}, ${who(M, state.place, state.gender)}, ages ${a0} to ${a1}, July 1, ${y0} to ${y1}, with the rule ages as dashed lines and the diagonal for people born in ${state.born}. The numbers are in the table below the chart.`;
+    $('heat-title').textContent = `Heatmap of ${state.mode === 'share' ? 'each age’s share of the population' : 'the number of people at each age'}, ${who(M, state.place, state.gender)}, ages ${a0} to ${a1}, July 1, ${y0} to ${y1}, with the rule ages as dashed lines and an amber band following the people aged ${state.age} on July 1, ${y1} back through time. The numbers are in the table under Go deeper.`;
     svg.onpointermove = (e) => {
       const r = svg.getBoundingClientRect(), k = W / r.width, px = (e.clientX - r.left) * k, py = (e.clientY - r.top) * k;
       const y = y0 + Math.floor((px - left) / cw), a = a1 - Math.floor((py - top) / ch);
@@ -764,7 +1142,8 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
   }
 
   // ---------- everything for the current choices ----------
-  function render() {
+  const readout = deskReadout('#answer', { format: n });
+  function render(changed) {
     V = view(M, state.place, state.gender);
     const f = finding(M, V), W = who(M, state.place, state.gender);
     $('finding').textContent = f.lede;
@@ -775,45 +1154,19 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
     $('chart-h').textContent = state.mode === 'share'
       ? `The biggest single age: ${pct(top[2], 2)} of ${W} were ${top[1]} on July 1, ${top[0]}`
       : `The biggest single age: ${n(top[2])} ${W} were ${top[1]} on July 1, ${top[0]}`;
-    $('chart-sub').textContent = `Each square is one age (rows, ${a0} at the bottom to ${a1} at the top) on July 1 of one year (columns, ${y0} to ${y1}). `
-      + (state.mode === 'share' ? 'The stronger the shade, the bigger that age’s share of the whole population, all ages, that year. ' : 'The stronger the shade, the more people were that age. ')
-      + 'Dashed lines mark the rule ages; the amber outline is one group of people, a year older every July 1.';
-    const d = drawHeat();
-    // the readings as text
-    const b = state.born, ul = $('readings'); ul.textContent = '';
-    $('readings-h').textContent = `${state.example ? 'Example diagonal' : 'Your diagonal'}: born July 2, ${b - 1} to July 1, ${b}`;
-    for (const c of d.crossings) {
-      const li = html('li', null, c.when === 'in' ? '' : 'after');
-      const what = c.rule.text;
-      if (c.when === 'in') li.textContent = `${c.age} in ${c.year} (${what}): ${n(V.counts[c.year][c.age - a0])} people, ${pct(value(M, V, 'share', c.year, c.age), 2)} of the population.`;
-      else if (c.when === 'after') li.textContent = `${c.age} in ${c.year} (${what}): after the data ends.`;
-      else li.textContent = `${c.age} in ${c.year} (${what}): before the data starts.`;
-      ul.appendChild(li);
-    }
-    if (d.last && !d.crossings.some((c) => c.year === d.last[0])) ul.appendChild(html('li', `${d.last[1]} in ${d.last[0]}${d.last[0] === y1 ? ', the latest year' : ''}: ${n(V.counts[d.last[0]][d.last[1] - a0])} people, ${pct(value(M, V, 'share', d.last[0], d.last[1]), 2)} of the population.`));
-    $('born-note').textContent = state.example
-      ? `An example: born ${EXAMPLE_BIRTH}. Type your own year; it stays in this page.`
-      : 'The year stays in this page.';
-    bornReadout(d);
+    $('chart-sub').textContent = `Rows are ages, ${a0} at the bottom to ${a1} at the top; columns are July 1, ${y0} to ${y1}. `
+      + (state.mode === 'share' ? 'Each square is that age’s share of the whole population that year. ' : '')
+      + `Dashed lines mark the rule ages; the amber band follows the people aged ${state.age} in ${y1} back through time.`;
+    drawOn = changed === 'age' && deskActed();
+    drawHeat();
+    drawOn = false;
+    // the big answer: the people that age on the latest July 1
+    const A = ageAnswer(M, V, state.age);
+    readout.set({ n: A.count, label: A.label, line: A.line, animate: changed === 'age' });
+    $('answer-unit').textContent = A.unit;
+    $('answer-how').textContent = A.how;
     $('point').textContent = 'Point at a square to read it.';
     drawTable(W);
-  }
-
-  // the diagonal's key reading, under the birth year: how many of these people there were in the latest year they appear,
-  // and the rule age they reached most recently (or reach next, after the data ends)
-  function bornReadout(d) {
-    const b = state.born;
-    $('born-k').textContent = `Born July 2, ${b - 1} to July 1, ${b}`;
-    if (!d.last) { $('born-v').textContent = 'Not in the data'; $('born-t').textContent = `The chart covers ages ${a0} to ${a1} on July 1, ${y0} to ${y1}.`; return; }
-    const [ly, la] = d.last, count = V.counts[ly][la - a0], share = value(M, V, 'share', ly, la);
-    // the figure big, its unit beside it at text size
-    const bv = $('born-v'); bv.textContent = '';
-    bv.append(state.mode === 'share' ? pct(share, 2) : n(count), ' ', html('span', state.mode === 'share' ? 'of the population' : 'people', 'unit'));
-    const past = d.crossings.filter((c) => c.when === 'in').at(-1), next = d.crossings.find((c) => c.when === 'after');
-    let t = `They were ${la} on July 1, ${ly}${ly === y1 ? ', the latest year' : ''}: ${state.mode === 'share' ? `${n(count)} ${who(M, state.place, state.gender)}` : `${pct(share, 2)} of the population`}.`;
-    if (past) t += ` They reached ${past.age} (${past.rule.text}) in ${past.year}.`;
-    if (next) t += ` They reach ${next.age} (${next.rule.text}) in ${next.year}, after the data ends.`;
-    $('born-t').textContent = t;
   }
 
   function drawTable(W) {
@@ -841,16 +1194,30 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
     lab.append(inp, document.createTextNode(' ' + t)); $('genders').appendChild(lab);
   }
   document.querySelectorAll('input[name=mode]').forEach((r) => r.addEventListener('change', () => { state.mode = r.value; render(); }));
-  const born = $('born'); born.min = String(bLo); born.max = String(bHi); born.value = String(state.born);
-  $('controls').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const v = Number(born.value), err = $('error');
-    if (!born.value || !Number.isInteger(v) || v < bLo || v > bHi) {
-      err.textContent = `Type a birth year from ${bLo} to ${bHi}: the chart covers ages ${a0} to ${a1} on July 1, ${y0} to ${y1}.`;
-      err.hidden = false; born.setAttribute('aria-invalid', 'true'); return;
-    }
-    err.hidden = true; born.removeAttribute('aria-invalid'); state.born = v; state.example = false; render();
+  // "Find an age": a number field with a step either side (each a 48px target); a typed age counts once it is whole and
+  // in the data's range, and a value out of range says which ages the data covers.
+  const ageIn = $('age'), down = $('age-down'), up = $('age-up'), err = $('error');
+  ageIn.min = String(a0); ageIn.max = String(a1); ageIn.value = String(state.age); $('age-hint').textContent = hint;
+  const steps = () => { down.disabled = state.age <= a0; up.disabled = state.age >= a1; };
+  const ok = () => { err.hidden = true; ageIn.removeAttribute('aria-invalid'); };
+  function setAge(a) {
+    a = Math.min(a1, Math.max(a0, a)); ok();
+    ageIn.value = String(a);
+    if (a === state.age) return;
+    state.age = a; steps(); render('age');
+  }
+  down.addEventListener('click', () => setAge(state.age - 1));
+  up.addEventListener('click', () => setAge(state.age + 1));
+  ageIn.addEventListener('input', () => { const v = Number(ageIn.value); if (ageIn.value !== '' && inAges(M, v)) setAge(v); });
+  ageIn.addEventListener('change', () => {
+    const v = Number(ageIn.value);
+    if (ageIn.value !== '' && inAges(M, v)) { setAge(v); return; }
+    err.textContent = `This data covers ages ${a0} to ${a1}. Type a whole number in that range.`;
+    err.hidden = false; ageIn.setAttribute('aria-invalid', 'true');
   });
+  ageIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); ageIn.dispatchEvent(new Event('change')); } });
+  steps();
+  $('controls').addEventListener('submit', (e) => e.preventDefault());
 
   // ---------- sources ----------
   const src = M.source;
@@ -866,37 +1233,37 @@ const level = (v, lo, hi, steps) => Math.max(0, Math.min(steps - 1, Math.round((
   }
   $('foot-src').textContent = `Data: Statistics Canada, Table 17-10-0005-01, released ${src.released}, read ${src.retrieved}; the rule ages from official federal sources, listed under Sources and notes.`;
 
-  // ---------- save the chart as an image, made in the browser ----------
-  $('save').addEventListener('click', () => {
+  // ---------- save the chart as an image, made in the browser: the share sheet where it takes files, else a download ----------
+  deskSaveButton($('save'), () => new Promise((resolve, reject) => {
     const svg = $('heat'), clone = svg.cloneNode(true), W = Number(svg.getAttribute('width')), H = Number(svg.getAttribute('height'));
     clone.setAttribute('xmlns', NS);
     const live = svg.querySelectorAll('*'), copy = clone.querySelectorAll('*');
     live.forEach((node, i) => {
       const cs = getComputedStyle(node), s = copy[i];
-      for (const p of ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity', 'font-size', 'font-weight']) s.setAttribute(p, cs.getPropertyValue(p));
-      if (node.nodeName === 'text') s.setAttribute('font-family', 'Libre Franklin, Helvetica, Arial, sans-serif');
+      for (const p of ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity', 'font-size', 'font-weight', 'display']) s.setAttribute(p, cs.getPropertyValue(p));
+      if (node.nodeName === 'text') s.setAttribute('font-family', 'Helvetica, Arial, sans-serif');
     });
-    const pad = 32, head = 74, foot = 56, img = new Image(), cs = getComputedStyle(document.documentElement), col = (k) => cs.getPropertyValue('--t-' + k).trim();
+    const pad = 32, head = 96, foot = 56, img = new Image(), cs = getComputedStyle(document.documentElement), col = (k) => cs.getPropertyValue('--t-' + k).trim();
+    img.onerror = reject;
     img.onload = () => {
       const cv = document.createElement('canvas'), k = 2, w = W + pad * 2, h = H + pad * 2 + head + foot;
       cv.width = w * k; cv.height = h * k;
       const g = cv.getContext('2d'); g.scale(k, k); g.fillStyle = col('ground'); g.fillRect(0, 0, w, h);
-      g.fillStyle = col('ink'); g.font = '600 19px Georgia, serif'; g.fillText($('question').textContent, pad, pad + 8, W);
-      g.fillStyle = col('ink2'); g.font = '14px Helvetica, Arial, sans-serif'; g.fillText($('finding').textContent, pad, pad + 30, W);
-      g.fillText($('chart-h').textContent, pad, pad + 48, W);
+      g.fillStyle = col('ink'); g.font = '600 22px Georgia, serif'; g.fillText($('question').textContent, pad, pad + 12, W);
+      g.fillStyle = col('ink2'); g.font = '16px Helvetica, Arial, sans-serif'; g.fillText($('finding').textContent, pad, pad + 38, W);
+      g.fillText(`${$('answer-k').textContent}: ${$('answer-v').textContent} ${$('answer-unit').textContent}. ${$('answer-t').textContent}`, pad, pad + 62, W);
       g.drawImage(img, pad, pad + head, W, H);
-      g.fillStyle = col('ink3'); g.font = '12px Helvetica, Arial, sans-serif';
+      g.fillStyle = col('ink3'); g.font = '14px Helvetica, Arial, sans-serif';
       g.fillText(src.attribution, pad, pad + head + H + 26, W);
-      g.fillText('The retirement wave. Education only, not advice. Mohammed El Chayeb.', pad, pad + head + H + 44, W);
-      cv.toBlob((blob) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `retirement-wave-${state.place}-${state.born}.png`; document.body.appendChild(a); a.click(); a.remove(); });
+      g.fillText('The retirement wave. Education only, not advice. Mohammed El Chayeb.', pad, pad + head + H + 46, W);
+      cv.toBlob((blob) => (blob ? resolve({ blob, name: `retirement-wave-${state.place}-age-${state.age}.png`, title: $('question').textContent }) : reject(new Error('no image'))), 'image/png');
     };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(clone));
-  });
+  }));
 
-  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 120); });
+  let rt, lastW = innerWidth;
+  window.addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(rt); rt = setTimeout(() => render(), 120); });
   render();
-  // the first fill is not a change: no underline on load
-  requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
 })();
 </script>
 </body>

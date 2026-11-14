@@ -17,7 +17,7 @@ const OUT = y1 - a0 + 10;                     // younger than the data's first a
 const FIRST = () => {
   window.__first = {};
   new MutationObserver(() => {
-    for (const id of ['example-note', 'born-note', 'finding']) {
+    for (const id of ['example-note', 'finding']) {
       const e = document.getElementById(id);
       if (e && e.textContent.trim() && !(id in window.__first)) window.__first[id] = e.textContent;
     }
@@ -34,8 +34,8 @@ for (const width of [390, 1440]) {
       const errors = []; page.on('pageerror', (e) => errors.push(e.message));
       await page.addInitScript(FIRST);
       await page.goto(YY);
-      await expect(page.locator('#example-note')).toContainText('example');
-      await page.fill('#year', String(IN)); await page.click('button[type=submit]');
+      await expect(page.locator('#example-note')).toContainText(/example/i);
+      await page.fill('#year', String(IN));
       await expect(page.locator('#example-note')).toContainText(`born in ${IN}`);
       expect(await page.evaluate(() => sessionStorage.getItem('mo.year'))).toBe(String(IN));
       await expectStorageClean(page);
@@ -50,11 +50,10 @@ for (const width of [390, 1440]) {
       expect(await address(page)).toEqual(['', '', false]);
       await expectStorageClean(page);
 
-      // Retirement wave: the data covers that age, so it opens on the year's diagonal
+      // Retirement wave: the data covers that age, so it opens on the age that year gives on the data's latest July 1
       await page.goto(RW);
-      await expect(page.locator('#born')).toHaveValue(String(IN));
-      await expect(page.locator('#readings-h')).toContainText('Your diagonal');
-      expect(await first(page, 'born-note')).not.toContain('example');
+      await expect(page.locator('#age')).toHaveValue(String(y1 - IN));
+      await expect(page.locator('#age-hint')).toHaveText(`From your birth year, ${IN}.`);
       expect(await address(page)).toEqual(['', '', false]);
       await expectStorageClean(page);
 
@@ -63,13 +62,14 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#year')).toHaveValue(String(IN));
       expect(await first(page, 'example-note')).toContain(`born in ${IN}`);
 
-      // a year outside the population data: Money, then and now follows it, Retirement wave shows its example
-      await page.fill('#year', String(OUT)); await page.click('button[type=submit]');
+      // a year outside the population data: Money, then and now follows it, Retirement wave keeps its opening age and
+      // says plainly which ages its data covers (nothing looks broken)
+      await page.fill('#year', String(OUT));
       await page.goto(MTN);
       await expect(page.locator('#year')).toHaveValue(String(OUT));
       await page.goto(RW);
-      await expect(page.locator('#readings-h')).toContainText('Example diagonal');
-      await expect(page.locator('#born-note')).toContainText('example');
+      await expect(page.locator('#age-hint')).toHaveText(`This data covers ages ${a0} to ${a1}.`);
+      await expect(page.locator('#age')).not.toHaveValue(String(y1 - OUT));
       await expectStorageClean(page);
       expect(errors).toEqual([]);
     });
@@ -81,15 +81,15 @@ for (const width of [390, 1440]) {
       });
       await page.goto(YY);
       expect(await page.evaluate(() => { try { return sessionStorage.length < 0; } catch (e) { return 'blocked'; } }), 'storage is really blocked').toBe('blocked');
-      await expect(page.locator('#example-note')).toContainText('example');
-      await expect(page.locator('#finding')).toContainText('At ');
-      await page.fill('#year', String(IN)); await page.click('button[type=submit]');
+      await expect(page.locator('#example-note')).toContainText(/example/i);
+      await expect(page.locator('#cpi-now')).toHaveText(/^\$[\d,.]+$/);
+      await page.fill('#year', String(IN));
       await expect(page.locator('#example-note')).toContainText(`born in ${IN}`);
-      await expect(page.locator('#error')).toBeHidden();
       await page.goto(MTN);
       await expect(page.locator('#example-note')).toContainText('example');
       await page.goto(RW);
-      await expect(page.locator('#readings-h')).toContainText('Example diagonal');
+      await expect(page.locator('#age')).toHaveValue(/^\d+$/);
+      await expect(page.locator('#age-hint')).not.toContainText('From your birth year');
       expect(errors).toEqual([]);
     });
 

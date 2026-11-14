@@ -21,7 +21,7 @@ section.opening{margin-top:0}
 .you-rank{font-weight:600}
 .reading{font-size:17.5px;line-height:1.45;color:var(--t-ink);margin:.4rem 0 0}
 
-/* charts: the full content width; text inside them is drawn at real pixel sizes, never under 17px (app.js TXT) */
+/* charts: the full content width; text inside them is drawn at real pixel sizes, never under 17.5px (app.js TXT) */
 figure.chart{width:100%;min-width:0;margin-bottom:.5rem}
 figure.chart svg{display:block;width:100%;height:auto;overflow:visible}
 figure.chart.group>figcaption{margin-bottom:1rem}
@@ -33,7 +33,7 @@ figure.chart.group>figcaption{margin-bottom:1rem}
 
 /* chart marks, coloured by what they show: Ruth blue, Sam rose, your order amber, every order teal, before grey */
 svg text{font-family:var(--font-ui)}
-svg{font-size:17px}
+svg{font-size:17.5px}
 .ax{fill:var(--t-ink2)}
 .ax.val,.ax.grp{fill:var(--t-ink)}
 .grid{stroke:var(--t-rule);stroke-width:1;shape-rendering:crispEdges}
@@ -54,14 +54,14 @@ svg{font-size:17px}
 .f-ruth{fill:var(--t-d1)}.f-sam{fill:var(--t-d4)}.f-you{fill:var(--t-d2)}.f-before{fill:var(--t-ink3)}
 .f-ruth.light,.f-sam.light,.f-you.light{fill-opacity:.45}
 .t-ruth{fill:var(--t-d1)}.t-sam{fill:var(--t-d4)}.t-you{fill:var(--you-text)}.t-before,.t-ink2{fill:var(--t-ink2)}
-.crosshair text{font-size:17px}
+.crosshair text{font-size:17.5px}
 
 /* controls: the buttons are the shared .btn / .btn-2 / .btn-you; the cards in the hand are this page's own */
 a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--t-point);outline-offset:2px}
 :root[data-theme="light"] a:focus-visible,:root[data-theme="light"] button:focus-visible,:root[data-theme="light"] input:focus-visible,:root[data-theme="light"] summary:focus-visible,:root[data-theme="light"] [tabindex]:focus-visible{outline-color:var(--t-ink)}
 .row{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0 0}
 .cards{list-style:none;padding:0;margin:.4rem 0 1rem;display:flex;flex-wrap:wrap;gap:.4rem;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
-.cards li,.hand button{min-width:4.1rem;text-align:center;padding:.45rem .5rem;border-radius:2px;font-weight:600;font-size:17px}
+.cards li,.hand button{min-width:4.1rem;text-align:center;padding:.45rem .5rem;border-radius:2px;font-weight:600;font-size:17.5px}
 .cards li{background:var(--t-raised);color:var(--t-ink)}
 .hand button{font-family:inherit;line-height:1.55;min-height:44px;border:0;cursor:pointer;background:var(--t-raised);color:var(--t-ink)}
 .cards li.down,.hand button.down{background:transparent;color:var(--t-ink);box-shadow:inset 0 0 0 1px var(--t-ink3)}
@@ -100,9 +100,55 @@ td{text-align:right}
 .readout .order-k{margin-top:1rem}
 .readout-v{width:fit-content;max-width:100%}
 .cards.mini{margin:.35rem 0 0;width:fit-content;max-width:100%}
-.cards.mini li{min-width:3.6rem;font-size:17px;padding:.3rem .4rem}
+.cards.mini li{min-width:3.6rem;font-size:17.5px;padding:.3rem .4rem}
 .cards.mini li{box-shadow:inset 0 -3px 0 var(--t-d4)}
 .cards.mini li.down{box-shadow:inset 0 0 0 1px var(--t-ink3),inset 0 -3px 0 var(--t-d4)}
 .save-note{margin:0}
 .save-note:empty{display:none}
 svg[hidden]{display:none}
+
+/* ---- The deal (redesign v2, step 4): the question, ten face-down cards and the answer beside them ---- */
+.opening .kicker{margin:.75rem 0 .5rem}
+.opening .lede{margin:.6rem 0 .2rem}
+.desk-deal{display:grid;gap:.6rem 3rem;align-items:start}
+/* wide: the question, the cards and the path on the left; the answer top-right beside the headline (its label level with
+   the kicker); the last row takes the slack so the left blocks keep their own heights */
+@media (min-width:900px){
+  .desk-deal{grid-template-columns:minmax(0,1fr) minmax(20rem,26rem);grid-template-rows:auto auto auto 1fr;grid-template-areas:"head answer" "table answer" "assume answer" "chart answer"}
+  .deal-head{grid-area:head}.deal-table{grid-area:table}.deal-answer{grid-area:answer;margin-top:.75rem}.desk-deal>.assume{grid-area:assume}.deal-chart{grid-area:chart;min-width:0}
+  .deck .card{height:64px}.deck .card-face{font-size:24px}
+}
+.deal-answer .readout{margin:0}
+.deck{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-width:40rem}
+@media (min-width:1200px){.deck{grid-template-columns:repeat(10,minmax(0,1fr));max-width:none}}
+.card{position:relative;height:52px;perspective:700px}
+.card-in{position:absolute;inset:0;transform-style:preserve-3d}
+@media (prefers-reduced-motion:no-preference){.card-in{transition:transform .3s ease}}
+.deck.instant .card-in{transition:none}
+.card.up .card-in{transform:rotateY(180deg)}
+.card-back,.card-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:3px;-webkit-backface-visibility:hidden;backface-visibility:hidden;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600;line-height:1}
+/* the back: a ruled card with its year number; the face: the year's return, an amber foot like the path it draws */
+.card-back{background:var(--t-raised) repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--t-ink) 9%,transparent) 7px 8px);box-shadow:inset 0 0 0 1px var(--t-rule);color:var(--t-ink2);font-size:19px}
+.card-face{transform:rotateY(180deg);background:var(--t-raised);color:var(--t-ink);font-size:22px;box-shadow:inset 0 -4px 0 var(--t-d2)}
+.card.neg .card-face{background:var(--t-ground);box-shadow:inset 0 0 0 1.5px var(--t-ink3),inset 0 -4px 0 var(--t-d2)}
+.deal-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 1.25rem;margin:.7rem 0 0}
+.btn-text{min-height:44px;padding:0;border:0;background:transparent;color:var(--t-ink);font:600 1.05rem/1.3 var(--font-ui);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 40%,transparent);text-underline-offset:.22em;cursor:pointer}
+.btn-text:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
+.strip{margin:.9rem 0 0;max-width:46rem}
+.strip-k{margin:0 0 .3rem;font-size:17.5px;line-height:1.4;color:var(--t-ink)}
+.strip svg{display:block;width:100%;height:auto;overflow:visible}
+.strip-bar{fill-opacity:.55}
+.tally{margin:.6rem 0 0;font-size:17.5px;line-height:1.45;color:var(--t-ink)}
+.tally[hidden],.save-row[hidden],.strip[hidden]{display:none}
+.save-row{margin:.6rem 0 0}
+.deal-answer .guess{margin:.9rem 0 0}
+.opening .assume{margin:.4rem 0 0}
+.deal-chart figure.chart{margin-top:1.25rem}
+.ln.faint{stroke-opacity:.55}
+.why{margin-top:2.25rem}
+.why figure.chart{margin-top:.25rem}
+details.deeper>section.deeper-sub:first-of-type{margin-top:1rem}
+.sources{margin-top:2rem;border-top:1px solid var(--t-rule);padding-top:.5rem}
+.sources summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
+.sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:17.5px;color:var(--t-ink)}
+.sources .note{max-width:68ch}

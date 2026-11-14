@@ -1,5 +1,5 @@
 {
-  "_note": "The planning calendar: situations a household can combine, the dated rules each one brings, and quick picks (examples). Every value comes from shared/facts.json at build time; placeholders in braces are filled from the facts and the date. No date, age, count or amount is written here.",
+  "_note": "The planning calendar: situations a household can combine, the dated rules each one brings, and quick picks (examples). Every value comes from shared/facts.json at build time; placeholders in braces are filled from the facts and the date. No date, age, count or amount is written here. A rule marked \"yearEnd\": \"corporation\" follows the corporation's year-end month the visitor picks (December unless changed).",
   "kinds": {
     "pay": "Money due",
     "file": "A return due",
@@ -47,6 +47,7 @@
       "text": "Returns of self-employed people for the {prev} tax year are due {date}."
     },
     "t2": {
+      "yearEnd": "corporation",
       "label": "Corporation's T2 return due",
       "what": "the T2 return",
       "kind": "file",
@@ -55,12 +56,13 @@
       "text": "A corporation's T2 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."
     },
     "corp_ye": {
+      "yearEnd": "corporation",
       "label": "Corporation's year-end",
       "what": "the corporation's year-end",
       "kind": "cutoff",
       "facts": ["t2_filing_deadline_rule"],
       "rule": "year_end",
-      "text": "A corporation with a December year-end closes its tax year; its next T2 return is counted from here."
+      "text": "A corporation whose tax year ends in {endMonth} closes its tax year; its next T2 return is counted from here."
     },
     "t3": {
       "label": "Trust's T3 return due",
@@ -132,7 +134,7 @@
     { "id": "self_employed", "label": "Self-employed", "rules": ["se_return", "balance"] },
     { "id": "instalments", "label": "Pays tax by instalments", "rules": ["inst"] },
     { "id": "rrsp", "label": "Contributes to an RRSP", "rules": ["rrsp"] },
-    { "id": "corporation", "label": "Owns a corporation (December year-end)", "rules": ["t2", "corp_ye"] },
+    { "id": "corporation", "label": "Owns a corporation", "rules": ["t2", "corp_ye"] },
     { "id": "trust", "label": "Has a family trust (December year-end)", "rules": ["t3", "trust_ye"] },
     { "id": "turning", "label": "Turning {rrsp_maturity_age} this year, with an RRSP", "rules": ["mature"] },
     { "id": "rrif", "label": "Draws from a RRIF", "rules": ["rrif_min"] },

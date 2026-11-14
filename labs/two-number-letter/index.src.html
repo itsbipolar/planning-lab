@@ -5,49 +5,67 @@
 <script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>When does waiting for CPP pay off? · Mohammed El Chayeb</title>
-<meta name="description" content="Drag the start age in a sample planning letter to a made-up couple and see when waiting for CPP and OAS pays more in total. Every rule sourced. Education only, not advice.">
+<meta name="description" content="Slide a start age for CPP or OAS and see the age after which waiting pays more in total, then read it as a sample planning letter. Every rule sourced. Education only, not advice.">
 <style>/*@@CSS@@*/</style>
 </head>
 <body>
 <!--@@TOOLBAR@@-->
 <div class="page">
   <main>
-    <p class="kicker">Letter</p>
-    <h1>When does waiting for CPP pay off?</h1>
-    <p class="lede" id="finding"></p>
-    <p class="intro"><span data-name="a"></span> and <span data-name="b"></span> are made up, and so are their amounts. Drag any amber number in their letter, or focus it and use the arrow keys, and the answer, the charts and the letter rewrite themselves.</p>
-    <p class="note assume" id="assume">Totals add up the example amounts month by month, before tax: no inflation or indexing, no investment return and no odds of living to each age. Education, not advice.</p>
-    <noscript><p class="note">This letter needs JavaScript to fill in its numbers and sources.</p></noscript>
-    <p class="sr-only" id="status" aria-live="polite"></p>
-
-    <section class="charts" data-chapter="The charts" aria-labelledby="charts-h">
-      <p class="sec-label">The charts</p>
-      <div class="charts-head">
-        <h2 id="charts-h">Total received by each age</h2>
-        <div class="who" role="group" aria-label="Whose example amounts the charts show">
-          <button type="button" data-who="a" aria-pressed="true"></button><button type="button" data-who="b" aria-pressed="false"></button>
+    <div class="play">
+      <div class="play-head">
+        <p class="kicker">Pensions</p>
+        <h1>When does waiting for CPP pay off?</h1>
+        <noscript><p class="note">This page needs JavaScript to work out its numbers and sources.</p></noscript>
+      </div>
+      <div class="mover" data-first-move>
+        <div class="mover-row">
+          <label class="label" for="start">Start age</label>
+          <div class="plan" role="group" aria-label="Which pension">
+            <button type="button" data-plan="cpp" aria-pressed="true">CPP</button><button type="button" data-plan="oas" aria-pressed="false">OAS</button>
+          </div>
+        </div>
+        <div class="start" id="start-box">
+          <output class="bubble" id="bubble" for="start" aria-hidden="true"></output>
+          <input type="range" id="start" step="1">
+          <div class="ticks" id="ticks" aria-hidden="true"></div>
         </div>
       </div>
-      <div class="readouts" id="readouts">
-        <div class="readout" id="rd-cpp"><p class="readout-k" id="rd-cpp-k">CPP</p><p class="readout-v big" id="rd-cpp-v" data-flash></p><p class="readout-t" id="rd-cpp-t"></p></div>
-        <div class="readout" id="rd-oas"><p class="readout-k" id="rd-oas-k">OAS</p><p class="readout-v" id="rd-oas-v" data-flash></p><p class="readout-t" id="rd-oas-t"></p></div>
-        <div class="readout" id="rd-rec"><p class="readout-k" id="rd-rec-k">OAS recovered</p><p class="readout-v" id="rd-rec-v" data-flash></p><p class="readout-t" id="rd-rec-t"></p></div>
+      <div class="answer-col">
+        <div class="readout" id="answer" data-answer aria-live="polite">
+          <p class="readout-k" id="answer-k"></p>
+          <p class="readout-v big" id="answer-v" data-readout-v></p>
+          <p class="readout-t" id="answer-t" data-readout-t></p>
+          <p class="readout-sub" id="answer-sub"><b id="answer-pct"></b> <span id="answer-pct-t"></span></p>
+          <details class="readout-how"><summary>How this is worked out</summary><p id="how"></p></details>
+        </div>
+        <p class="save-row"><button type="button" id="save" class="btn-2">Save my card</button></p>
       </div>
-      <div class="panels">
-        <figure class="chart panel" aria-labelledby="cpp-h" aria-describedby="cpp-sub">
-          <figcaption><p class="chart-title" id="cpp-h"></p><p class="chart-sub" id="cpp-sub">Total Canada Pension Plan received by each age, in dollars, with <span data-out="who.name"></span>'s example amounts.</p><span class="chip tag-example">Example data</span></figcaption>
-          <div class="plot" id="plot-cpp"></div>
-        </figure>
-        <figure class="chart panel" aria-labelledby="oas-h" aria-describedby="oas-sub">
-          <figcaption><p class="chart-title" id="oas-h"></p><p class="chart-sub" id="oas-sub">Total Old Age Security received by each age, in dollars, with <span data-out="who.name"></span>'s example amounts; every start age gets the <span data-out="oasBoost"></span> rise from age <span data-out="oasBoostAge"></span>.</p><span class="chip tag-example">Example data</span></figcaption>
-          <div class="plot" id="plot-oas"></div>
-        </figure>
-      </div>
-    </section>
+      <p class="assume" id="assume" data-assumptions>Totals in today&rsquo;s dollars, before tax. No investment return, and no odds of living to each age. Education, not advice.</p>
+    </div>
 
-    <section class="letter-sec" data-chapter="The letter" aria-labelledby="letter-h">
-    <p class="sec-label">The letter</p>
+    <figure class="chart" id="fig-main" aria-labelledby="main-h" aria-describedby="main-sub">
+      <figcaption><p class="chart-title" id="main-h"></p><p class="chart-sub" id="main-sub"></p><span class="chip tag-example">Example data</span></figcaption>
+      <div class="plot" id="plot-main"></div>
+    </figure>
+
+    <p class="letter-open"><button type="button" class="btn-text" id="open-letter" aria-expanded="false" aria-controls="letter-view">Read it as a planning letter</button></p>
+    <p class="sr-only" id="status" aria-live="polite"></p>
+
+    <section class="letter-view" id="letter-view" hidden aria-labelledby="letter-h">
     <h2 id="letter-h">A sample letter to <span data-name="a"></span> and <span data-name="b"></span></h2>
+    <p class="lede letter-lede"><span data-name="a"></span> and <span data-name="b"></span> are made up. Drag any amber number and the letter rewrites itself.</p>
+    <div class="letter-readings">
+      <div class="who" role="group" aria-label="Whose numbers the readings show">
+        <button type="button" data-who="a" aria-pressed="true"></button><button type="button" data-who="b" aria-pressed="false"></button>
+      </div>
+      <div class="readouts" id="readouts">
+        <div class="readout" id="rd-cpp"><p class="readout-k" id="rd-cpp-k">CPP</p><p class="readout-v" id="rd-cpp-v" data-flash></p><p class="readout-t" id="rd-cpp-t"></p></div>
+        <div class="readout" id="rd-oas"><p class="readout-k" id="rd-oas-k">OAS</p><p class="readout-v" id="rd-oas-v" data-flash></p><p class="readout-t" id="rd-oas-t"></p></div>
+        <div class="readout" id="rd-rec"><p class="readout-k" id="rd-rec-k">OAS taken back</p><p class="readout-v" id="rd-rec-v" data-flash></p><p class="readout-t" id="rd-rec-t"></p></div>
+      </div>
+      <p class="note">Recovery tax: OAS is reduced when a person&rsquo;s own net income is above a yearly threshold; the letter sets out the rule.</p>
+    </div>
     <article class="letter" aria-label="Sample letter">
       <div class="para first"><div class="txt">
         <p class="letterhead"><span>Sample letter, for illustration</span><span id="letter-date"></span></p>
@@ -66,7 +84,7 @@
       <div class="para"><div class="txt">
         <p>One way to compare start ages is the age at which the lifetime totals cross. Counting only the dollars received, with no inflation, tax or investment return: <span data-out="a.cppCross"></span> <span data-out="b.cppCross"></span> The crossing age depends only on the two start ages, not on the size of the pension, so it is the same for both of you.</p>
       </div>
-      <aside class="side"><p class="sn">The charts above draw these totals with the example amounts. Use the buttons beside them to switch between <span data-name="a"></span> and <span data-name="b"></span>.</p></aside></div>
+      <aside class="side"><p class="sn">Go deeper, below, draws these totals with the example amounts for <span data-name="a"></span> and for <span data-name="b"></span>.</p></aside></div>
 
       <div class="para"><div class="txt">
         <h2 class="lh">Old Age Security</h2>
@@ -101,20 +119,39 @@
     </article>
     </section>
 
-    <section class="controls" data-chapter="Adjust" aria-labelledby="h-controls">
-      <p class="sec-label">Adjust the numbers</p>
-      <h2 id="h-controls">The same ten numbers, as sliders</h2>
-      <p class="note">Each one moves the headline, the charts and the letter, as dragging it in the letter does.</p>
-      <div class="sliders" id="sliders"></div>
-    </section>
-
-    <details class="sources">
-      <summary>Sources and assumptions</summary>
-      <ul id="sources"></ul>
-      <p class="note">Every rule above is read from the official page listed, on the date shown (<span id="rules-asof"></span>). The couple, their pension amounts and their other income are invented examples. Net income here is other income plus both pensions in a year when both are paid; the real definition of net income has more parts.</p>
+    <details class="deeper" id="deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub charts" aria-labelledby="charts-h">
+        <div class="charts-head">
+          <h3 id="charts-h"><span data-name="a"></span> and <span data-name="b"></span>: total received by each age</h3>
+          <div class="who" role="group" aria-label="Whose example amounts the charts show">
+            <button type="button" data-who="a" aria-pressed="true"></button><button type="button" data-who="b" aria-pressed="false"></button>
+          </div>
+        </div>
+        <div class="panels">
+          <figure class="chart panel" aria-labelledby="cpp-h" aria-describedby="cpp-sub">
+            <figcaption><p class="chart-title" id="cpp-h"></p><p class="chart-sub" id="cpp-sub">Total Canada Pension Plan received by each age, in dollars, with <span data-out="who.name"></span>'s example amounts.</p><span class="chip tag-example">Example data</span></figcaption>
+            <div class="plot" id="plot-cpp"></div>
+          </figure>
+          <figure class="chart panel" aria-labelledby="oas-h" aria-describedby="oas-sub">
+            <figcaption><p class="chart-title" id="oas-h"></p><p class="chart-sub" id="oas-sub">Total Old Age Security received by each age, in dollars, with <span data-out="who.name"></span>'s example amounts; every start age gets the <span data-out="oasBoost"></span> rise from age <span data-out="oasBoostAge"></span>.</p><span class="chip tag-example">Example data</span></figcaption>
+            <div class="plot" id="plot-oas"></div>
+          </figure>
+        </div>
+      </section>
+      <section class="deeper-sub controls" aria-labelledby="h-controls">
+        <h3 id="h-controls">The letter&rsquo;s ten numbers, as sliders</h3>
+        <p class="note">Each one moves the letter, its readings and the charts above, as dragging it in the letter does.</p>
+        <div class="sliders" id="sliders"></div>
+      </section>
     </details>
 
-    <p class="note credit">The idea of a document you can adjust follows Bret Victor's reactive documents (Tangle); the margin notes follow Edward Tufte's layout. The code and words are new.</p>
+    <details class="sources" data-preview="Each rule’s official page, the day it was read, and what this page assumes">
+      <summary>Sources and assumptions</summary>
+      <ul id="sources"></ul>
+      <p class="note">Every rule above is read from the official page listed, on the date shown (<span id="rules-asof"></span>). The chart&rsquo;s amount per month at the standard age is an example, and the crossing ages do not depend on it. The couple, their pension amounts and their other income are invented examples. Net income here is other income plus both pensions in a year when both are paid; the real definition of net income has more parts.</p>
+      <p class="note credit">The idea of a document you can adjust follows Bret Victor's reactive documents (Tangle); the margin notes follow Edward Tufte's layout. The code and words are new.</p>
+    </details>
 
     <!--@@NEXT@@-->
 

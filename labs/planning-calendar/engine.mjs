@@ -33,16 +33,18 @@ const yearEnd = (y) => lastDayOfMonth(y, 12);
 
 // One rule in one calendar year: its dates (every rule here places its dates inside that year), any period around them,
 // or why it has none. `pending` lists the facts held but not confirmed; `absent` the facts the file does not hold.
-export function ruleYear(rule, F, year, held) {
+// `m` is the month (1-12) the tax year ends in: 12 for every rule except a corporation's, whose year-end month the
+// visitor may change (calendar.json marks those rules "yearEnd": "corporation").
+export function ruleYear(rule, F, year, held, m = 12) {
   const want = ids(rule, year), missing = want.filter((id) => !F.has(id));
   if (missing.length) return missing.some((id) => held.has(id)) ? { pending: missing } : { absent: missing };
   const f = want.map((id) => F.get(id)), dates = [], windows = [];
   switch (rule.rule) {
     case 'fact_date': dates.push(String(f[0].value)); break;
     case 'fact_dates_in_year': dates.push(...monthDays(f[0], year)); break;
-    case 'year_end': dates.push(yearEnd(year)); break;
-    case 'days_after_prev_year_end': dates.push(iso(ms(yearEnd(year - 1)) + countIn(f[0], 'days') * DAY)); break;
-    case 'months_after_prev_year_end': dates.push(lastDayOfMonth(year - 1, 12 + countIn(f[0], 'months'))); break; // a month-end year-end
+    case 'year_end': dates.push(lastDayOfMonth(year, m)); break;
+    case 'days_after_prev_year_end': dates.push(iso(ms(lastDayOfMonth(year - 1, m)) + countIn(f[0], 'days') * DAY)); break;
+    case 'months_after_prev_year_end': dates.push(lastDayOfMonth(year - 1, m + countIn(f[0], 'months'))); break; // a month-end year-end
     case 'window_around_year_end': {
       // The superficial-loss period around a sale on the last day of the year: the facts file's day count either side.
       const n = countIn(f[0], 'days'), sale = yearEnd(year);
@@ -55,6 +57,8 @@ export function ruleYear(rule, F, year, held) {
   return { dates, windows, facts: want };
 }
 
+export const MONTH_NAMES = MONTHS.map((x) => x[0].toUpperCase() + x.slice(1));
+
 // The rules a set of situations brings, each once, in the config's order.
 export const rulesFor = (config, picked) => {
   const want = new Set(config.situations.filter((s) => picked.includes(s.id)).flatMap((s) => s.rules));
@@ -62,16 +66,21 @@ export const rulesFor = (config, picked) => {
 };
 
 // Everything the page shows for one household from `today` (YYYY-MM-DD) for twelve months (the end is exclusive).
-export function rolling(config, factsFile, today, picked) {
+// opts.corpYearEnd: the month (1-12) a corporation's tax year ends in (December when not given).
+export function rolling(config, factsFile, today, picked, opts = {}) {
+  const corpM = Number.isInteger(opts.corpYearEnd) && opts.corpYearEnd >= 1 && opts.corpYearEnd <= 12 ? opts.corpYearEnd : 12;
   const F = factIndex(factsFile), held = new Set(factsFile.facts.map((f) => f.id));
   const y0 = +today.slice(0, 4), start = ms(today), end = Date.UTC(y0 + 1, +today.slice(5, 7) - 1, +today.slice(8));
   const events = [], windows = [], pending = [], seen = new Set();
   const src = (id) => { const f = F.get(id); return { id, title: f.title, url: f.source_url, authority: f.authority, as_of: f.as_of }; };
   for (const rid of rulesFor(config, picked)) {
-    const r = config.rules[rid];
-    // The year before only matters for a period that runs into this one; its dates are all before today.
-    for (const y of [y0 - 1, y0, y0 + 1]) {
-      const out = ruleYear(r, F, y, held), ctx = { prev: String(y - 1), year: String(y) };
+    const r = config.rules[rid], m = r.yearEnd === 'corporation' ? corpM : 12;
+    // The year before only matters for a period that runs into this one; its dates are all before today. A rule whose
+    // facts carry no year (a corporation's) also reads the year after next: with a year-end early in the year, its
+    // return can fall two calendar years on.
+    const years = r.facts.some((id) => id.includes('{')) ? [y0 - 1, y0, y0 + 1] : [y0 - 1, y0, y0 + 1, y0 + 2];
+    for (const y of years) {
+      const out = ruleYear(r, F, y, held, m), ctx = { prev: String(y - 1), year: String(y), endMonth: MONTH_NAMES[m - 1] };
       if (out.pending) {
         const key = `${rid}|${out.pending.join()}`;
         if (y >= y0 && !seen.has(key)) { seen.add(key); pending.push({ rule: rid, year: y, kind: r.kind, label: fill(r.label, ctx, F), facts: out.pending, sources: out.pending.map((id) => factsFile.facts.find((f) => f.id === id)).filter(Boolean).map((f) => ({ id: f.id, title: f.title, url: f.source_url })) }); }
@@ -87,13 +96,13 @@ export function rolling(config, factsFile, today, picked) {
         if (t < start || t >= end || seen.has(key)) continue;
         seen.add(key);
         const w = out.windows.find((x) => x.sale === date);
-        const c = { ...ctx, value: String(F.get(out.facts[0]).value), date: longDate(date), prevEnd: longDate(yearEnd(y - 1)), ...(w ? { from: longDate(w.from), to: longDate(w.to) } : {}) };
+        const c = { ...ctx, value: String(F.get(out.facts[0]).value), date: longDate(date), prevEnd: longDate(lastDayOfMonth(y - 1, m)), ...(w ? { from: longDate(w.from), to: longDate(w.to) } : {}) };
         events.push({ key, rule: rid, kind: r.kind, date, days: (t - start) / DAY, label: fill(r.label, c, F), what: r.what, text: fill(r.text, c, F), sources: out.facts.map(src) });
       }
     }
   }
   events.sort((a, b) => a.date.localeCompare(b.date) || Object.keys(config.rules).indexOf(a.rule) - Object.keys(config.rules).indexOf(b.rule));
-  return { today, end: iso(end - DAY), situations: [...picked], events, windows, pending, weeks: weeks(start, end, events) };
+  return { today, end: iso(end - DAY), situations: [...picked], corpYearEnd: corpM, events, windows, pending, weeks: weeks(start, end, events) };
 }
 
 // Monday-to-Sunday weeks covering the twelve months; each holds the dates that fall in it (the first and last are partial).
@@ -104,20 +113,19 @@ export function weeks(start, end, events) {
   return out;
 }
 
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-// The answer under the question: the household's next confirmed date and how many fall in the twelve months.
-export function finding(cal, noun) {
-  const who = noun ?? 'this household';
-  if (!cal.situations.length) return 'Tick at least one situation to build a household’s calendar.';
-  const p = cal.pending.length, more = p ? `, ${p} more not confirmed yet` : '';
-  if (!cal.events.length) return `For ${who}, no confirmed date falls in the next twelve months${more}.`;
-  const first = cal.events[0], same = cal.events.filter((e) => e.date === first.date).length;
-  const when = first.days === 0 ? 'today' : first.days === 1 ? 'tomorrow' : `in ${first.days} days`;
-  const on = first.date.slice(0, 4) === cal.today.slice(0, 4) ? monthDay(first.date) : longDate(first.date);
-  const what = same > 1 ? `${first.what} and ${plural(same - 1, 'other', 'others')}` : first.what;
-  // a dek (140 characters or fewer): the next date first, the count after it (the household is the chip picked above)
-  return `Next up: ${what}, ${on}, ${when}. ${plural(cal.events.length, 'date', 'dates')} in the next twelve months${more}.`;
+const wordsIn = (t) => t.trim().split(/\s+/).filter(Boolean).length;
+
+// The big answer: the household's next confirmed date as a countdown (n days, or a word for today and tomorrow), and
+// one line of 14 words or fewer: the date and what falls on it. Pending dates never count as next.
+export function nextUp(cal) {
+  if (!cal.situations.length) return { text: 'None', line: 'Pick a household, or tick a situation under Fine-tune.' };
+  if (!cal.events.length) return { text: 'None', line: 'No confirmed date falls in the next twelve months.' };
+  const e = cal.events[0], same = cal.events.filter((x) => x.date === e.date).length - 1;
+  const head = `${longDate(e.date)} · ${e.what}`;
+  let line = same ? `${head}, and ${same} more that day` : head;
+  if (wordsIn(line) > 14) line = `${head}, and ${same} more`;
+  return { ...(e.days === 0 ? { text: 'Today' } : e.days === 1 ? { text: 'Tomorrow' } : { n: e.days }), line, event: e, same };
 }
 
 // iCalendar (RFC 5545): text escaped, lines folded at 75 octets without splitting a character, CRLF line ends.

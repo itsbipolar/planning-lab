@@ -96,12 +96,12 @@ export async function expectStorageClean(page) {
   expect(['', '#this-year']).toContain(s.hash);
 }
 
-/** The rendered size of every visible piece of text (redesign v2, "One size rule"; Mo: small text 17px or more): 17px for
- *  text, 16.5px for a label set in capitals or an SVG chart label. The size is the computed font-size, times the
+/** The rendered size of every visible piece of text (redesign v2, "One size rule"; Mo asked twice for bigger text): small
+ *  text, labels set in capitals and SVG chart labels all 17.5px or more by default. The size is the computed font-size, times the
  *  SVG's getScreenCTM() scale for text inside an SVG, so a chart label drawn small and scaled down is caught. Skips text
  *  that is not drawn (closed folds, display:none, visibility:hidden, opacity 0) and screen-reader-only text (a box of 1px
  *  or less). Returns the offenders as { text, px, at }, smallest first. */
-export async function textSizeOffenders(page, min = 17, labelMin = 16.5) {
+export async function textSizeOffenders(page, min = 17.5, labelMin = 17.5) {
   return page.evaluate(([min, labelMin]) => {
     const out = [];
     const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -127,11 +127,105 @@ export async function textSizeOffenders(page, min = 17, labelMin = 16.5) {
   }, [min, labelMin]);
 }
 
-/** Asserts that every visible piece of text renders at min px or more (17 by default; labels and SVG labels 16.5), SVG
+/** Asserts that every visible piece of text renders at min px or more (17.5 by default, labels and SVG labels too), SVG
  *  scale included; returns the
  *  offenders it found (an empty list when it passes). Call it at 390 and 1440, in each state that shows new text. */
-export async function expectTextSizes(page, min = 17, labelMin = 16.5) {
+export async function expectTextSizes(page, min = 17.5, labelMin = 17.5) {
   const bad = await textSizeOffenders(page, min, labelMin);
   expect(bad, `text rendered under ${min}px`).toEqual([]);
   return bad;
+}
+
+/** The desk tool template's budgets (redesign v2 section 5 and step 4's acceptance; markup in desk-ui.mjs's header).
+ *  Always: exactly one [data-first-move], one big readout [data-answer] (aria-live polite; its label 6 words or fewer,
+ *  its one line 14 words or fewer, the figure in the serif with tabular figures, "How this is worked out" closed),
+ *  exactly one [data-assumptions], exactly one a[data-next], and every Go deeper fold closed. At phone width (390, or
+ *  any width up to 430): the first move's top at y <= 700, the readout's top at y <= 700 (a tool may opt out with
+ *  answerOptOut: '<the named reason>'), the first Go deeper summary at y <= 2800 and at most one chart (figure.chart or
+ *  an svg[data-chart] outside one) whose top is above y = 700. Positions are page positions (scrolling does not matter).
+ *  With { width }, the viewport is set to that width for the check and put back after. Returns the measurements. */
+export async function expectTemplate(page, { width, answerOptOut = null } = {}) {
+  const before = page.viewportSize();
+  if (width && width !== before.width) await page.setViewportSize({ width, height: before.height });
+  try {
+    const w = page.viewportSize().width, phone = w <= 430;
+    const m = await page.evaluate(() => {
+      const top = (e) => e.getBoundingClientRect().top + scrollY;
+      const shown = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && e.checkVisibility(); };
+      const words = (s) => (s || '').trim().split(/\s+/).filter(Boolean).length;
+      const first = [...document.querySelectorAll('[data-first-move]')];
+      const ans = [...document.querySelectorAll('[data-answer]')];
+      const a = ans[0], fig = a && (a.querySelector('[data-readout-v]') || a.querySelector('.readout-v')), how = a && a.querySelector('details');
+      const deeper = [...document.querySelectorAll('details.deeper')];
+      const charts = [...document.querySelectorAll('figure.chart, svg[data-chart]')].filter((e) => !(e.matches('svg') && e.closest('figure.chart')));
+      return {
+        firstMoves: first.length, firstTop: first[0] ? top(first[0]) : null,
+        answers: ans.length, answerTop: a ? top(a) : null, answerLive: a ? a.getAttribute('aria-live') : null,
+        label: a && a.querySelector('.readout-k') ? words(a.querySelector('.readout-k').textContent) : 0,
+        line: a && (a.querySelector('[data-readout-t]') || a.querySelector('.readout-t')) ? words((a.querySelector('[data-readout-t]') || a.querySelector('.readout-t')).textContent) : 0,
+        figure: fig ? [getComputedStyle(fig).fontFamily, getComputedStyle(fig).fontVariantNumeric] : null,
+        howOpen: how ? how.open : false,
+        deeper: deeper.length, deeperOpen: deeper.filter((d) => d.open).length,
+        deeperTop: deeper[0] && deeper[0].querySelector('summary') ? top(deeper[0].querySelector('summary')) : null,
+        chartsAbove: charts.filter((e) => shown(e) && top(e) < 700).map((e) => e.id || e.className.baseVal || e.className),
+        assumptions: document.querySelectorAll('[data-assumptions]').length,
+        nexts: document.querySelectorAll('a[data-next]').length,
+      };
+    });
+    expect(m.firstMoves, 'exactly one [data-first-move]').toBe(1);
+    expect(m.answers, 'exactly one big readout [data-answer]').toBe(1);
+    expect(m.answerLive, 'the readout is aria-live polite').toBe('polite');
+    expect(m.label, 'the readout label is 6 words or fewer').toBeLessThanOrEqual(6);
+    expect(m.line, 'the readout line is 14 words or fewer').toBeLessThanOrEqual(14);
+    if (m.figure) {
+      expect(m.figure[0], 'the readout figure is set in Source Serif 4').toMatch(/Source Serif 4/);
+      expect(m.figure[1], 'the readout figure has tabular figures').toMatch(/tabular-nums/);
+    }
+    expect(m.howOpen, '"How this is worked out" starts closed').toBe(false);
+    expect(m.assumptions, 'exactly one [data-assumptions]').toBe(1);
+    expect(m.nexts, 'exactly one a[data-next]').toBe(1);
+    expect(m.deeper, 'a Go deeper fold').toBeGreaterThanOrEqual(1);
+    expect(m.deeperOpen, 'every Go deeper fold starts closed').toBe(0);
+    if (phone) {
+      expect(m.firstTop, '[data-first-move] top at y <= 700').toBeLessThanOrEqual(700);
+      if (answerOptOut) expect(String(answerOptOut).trim().length, 'an answer opt-out names its reason').toBeGreaterThan(8);
+      else expect(m.answerTop, 'the big readout top at y <= 700').toBeLessThanOrEqual(700);
+      expect(m.deeperTop, 'the Go deeper summary at y <= 2800').toBeLessThanOrEqual(2800);
+      expect(m.chartsAbove.length, `at most one chart above y = 700 (${m.chartsAbove.join(', ')})`).toBeLessThanOrEqual(1);
+    }
+    return m;
+  } finally {
+    if (width && width !== before.width) await page.setViewportSize(before);
+  }
+}
+
+/** Reduced motion makes every transition instant (redesign v2, Motion): emulates prefers-reduced-motion: reduce, runs
+ *  act(page) (the tool's first move), then asserts that no element has a transition or animation that takes time, that
+ *  no animation is running, and (unless stableReadout is false, for a readout filled by a worker) that the big readout
+ *  [data-answer] is already final: its text does not change in the next 400ms (no count-up). Returns the readout text. */
+export async function expectReducedMotion(page, act, { stableReadout = true } = {}) {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  if (act) await act(page);
+  const read = () => page.evaluate(() => { const a = document.querySelector('[data-answer]'); return a ? a.textContent.replace(/\s+/g, ' ').trim() : null; });
+  const now = await read();
+  const slow = await page.evaluate(() => {
+    const takes = (v) => String(v || '').split(',').some((x) => parseFloat(x) > 0);
+    const out = [];
+    for (const e of document.querySelectorAll('*')) {
+      for (const p of [null, '::before', '::after']) {
+        const s = getComputedStyle(e, p);
+        if (takes(s.transitionDuration) || takes(s.transitionDelay) || (s.animationName !== 'none' && (takes(s.animationDuration) || takes(s.animationDelay)))) out.push(e.tagName.toLowerCase() + (p || '') + (e.id ? '#' + e.id : ''));
+      }
+    }
+    const running = document.getAnimations().filter((a) => a.playState === 'running').map((a) => a.animationName || a.transitionProperty || 'animation');
+    return { out: out.slice(0, 12), running };
+  });
+  expect(slow.out, 'transitions and animations are instant under reduced motion').toEqual([]);
+  expect(slow.running, 'no animation runs under reduced motion').toEqual([]);
+  if (stableReadout && now != null) {
+    await page.waitForTimeout(400);
+    expect(await read(), 'the readout is final at once (no count-up under reduced motion)').toBe(now);
+  }
+  return now;
 }

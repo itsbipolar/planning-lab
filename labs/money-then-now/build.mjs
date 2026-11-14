@@ -1,21 +1,22 @@
 // Builds labs/money-then-now/dist/index.html: one self-contained page (the Data desk look and fonts, the yearly series
 // computed here from the dated snapshots in shared/data/, the arithmetic and the script), so it makes no request after
 // it loads. Run: node labs/money-then-now/build.mjs
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { series } from '../money-stripes/build.mjs';
+import { series } from './series.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 import { deskPage, toolFor, questionOf } from '../../shared/desk/desk-page.mjs';
 import { EXAMPLE, worth, counts } from './model.mjs';
 import { writePoster, r as rnd } from '../../shared/desk/poster.mjs';
 import { dollars } from '../../shared/desk/your-year-core.mjs';
+import { buildModel } from '../money-year/model.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
 
-// The yearly series: price change and prime rate from money-stripes' series(), plus the yearly average price level
+// The yearly series: price change and prime rate from series() (series.mjs), plus the yearly average price level
 // (the mean of a year's twelve monthly CPI values; complete years only), which the purchasing-power line needs.
 export function annual(cpiText, rateText) {
   const s = series(cpiText, rateText), cpi = JSON.parse(cpiText), rate = JSON.parse(rateText);
@@ -38,8 +39,22 @@ export function annual(cpiText, rateText) {
   };
 }
 
+// This year in money (the #this-year section; money-year merged here, redesign v2): money-year's model of the dated
+// Bank of Canada snapshot and the confirmed Budget facts, unchanged, plus the budget's name, read from the facts' ids
+// (budget<year>_...), so no year is typed into the page.
+export function thisYear(snapText, factsText) {
+  const facts = JSON.parse(factsText), m = buildModel(JSON.parse(snapText), facts);
+  const ids = m.proposals.flatMap((p) => p.facts), yrs = [...new Set(ids.map((i) => (i.match(/^budget(\d{4})_/) || [])[1]).filter(Boolean))];
+  if (yrs.length > 1) throw new Error(`the proposals come from more than one budget: ${yrs.join(', ')}`);
+  return { ...m, budgetName: yrs.length ? `Budget ${yrs[0]}` : null };
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const M = annual(read(join(root, 'shared', 'data', 'cpi-monthly.json')), read(join(root, 'shared', 'data', 'prime-rate-weekly.json')));
+  // the latest dated snapshot (MONEY_YEAR=<year> to build another)
+  const snaps = readdirSync(join(root, 'shared', 'data')).filter((f) => /^money-year-\d{4}\.json$/.test(f)).sort();
+  const snap = process.env.MONEY_YEAR ? `money-year-${process.env.MONEY_YEAR}.json` : snaps.at(-1);
+  M.now = thisYear(read(join(root, 'shared', 'data', snap)), read(join(root, 'shared', 'facts.json')));
   const css = [deskCSS(), deskUICSS(), read(join(here, 'style.css'))].join('\n');
   const js = deskUIJS() + '\n' + read(join(here, 'model.mjs')).replace(/^export /gm, '') + '\n' + read(join(here, 'app.js'));
   // The question's amount is the page's example amount (model.mjs), so no figure is typed into the page's words.
@@ -74,5 +89,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     });
     console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
   }
-  console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): price years ${M.first}-${M.last}, prime from ${M.primeFirst}`);
+  console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): price years ${M.first}-${M.last}, prime from ${M.primeFirst}; this year ${M.now.year}: ${M.now.panels.length} measures, ${M.now.proposals.length} proposals`);
 }

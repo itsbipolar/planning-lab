@@ -1,5 +1,5 @@
 // The letter's arithmetic. Every rule comes from the confirmed facts passed in (shared/facts.json); nothing is written here.
-// Start ages are whole years, counted in months as the rules count them. Amounts are nominal dollars: no inflation
+// Start ages are whole months (an age like 67 and 4 months is 67 + 4/12), counted in months as the rules count them. Amounts are nominal dollars: no inflation
 // indexing, tax, survivor benefits or investment return.
 
 const NEED = ['cpp_standard_start_age', 'cpp_earliest_start_age', 'cpp_latest_start_age', 'cpp_early_start_reduction',
@@ -45,20 +45,26 @@ export function rules(facts) {
   };
 }
 
+// An age is accepted when it is a whole number of months inside the range (the slider steps a month at a time).
+export function monthsOf(age) {
+  const m = Math.round(age * 12);
+  return Number.isFinite(age) && Math.abs(age * 12 - m) < 1e-6 ? m : null;
+}
 function wholeAge(age, lo, hi, what) {
-  if (!Number.isInteger(age) || age < lo || age > hi) throw new RangeError(`${what} must be a whole age from ${lo} to ${hi}`);
+  const m = monthsOf(age);
+  if (m === null || m < lo * 12 || m > hi * 12) throw new RangeError(`${what} must be an age in whole months from ${lo} to ${hi}`);
 }
 
 // The monthly pension as a share of the amount at the standard age (CPP) or the start age (OAS).
 export function cppFactor(r, age) {
   wholeAge(age, r.cpp.earliest, r.cpp.latest, 'CPP start age');
-  const months = (age - r.cpp.standard) * 12;
+  const months = monthsOf(age) - r.cpp.standard * 12;
   return months < 0 ? 1 + months * r.cpp.reductionPerMonth : 1 + months * r.cpp.increasePerMonth;
 }
 
 export function oasFactor(r, age) {
   wholeAge(age, r.oas.start, r.oas.latest, 'OAS start age');
-  return 1 + (age - r.oas.start) * 12 * r.oas.increasePerMonth;
+  return 1 + (monthsOf(age) - r.oas.start * 12) * r.oas.increasePerMonth;
 }
 
 // The planning-timeline break-even, in "years of the standard pension": a start at `a` paying `share` of the standard
@@ -69,13 +75,13 @@ export function breakEven(share, a, std) {
 }
 
 export function cppCrossing(r, age) {
-  return age === r.cpp.standard ? null : breakEven(cppFactor(r, age), age, r.cpp.standard);
+  return monthsOf(age) === r.cpp.standard * 12 ? null : breakEven(cppFactor(r, age), age, r.cpp.standard);
 }
 
 // OAS against a start at the earliest age, counting the rise at the boost age for both starts.
 export function oasCrossing(r, age) {
   const a0 = r.oas.start;
-  if (age === a0) return null;
+  if (monthsOf(age) === a0 * 12) return null;
   const s = oasFactor(r, age), B = r.oas.boostAge, b = r.oas.boost;
   const before = breakEven(s, age, a0);
   if (before <= B) return before;

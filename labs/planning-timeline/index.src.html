@@ -6,7 +6,7 @@
 <!--@@YEAR@@-->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your year · Mohammed El Chayeb</title>
-<meta name="description" content="Type a birth year and see where you stand on Canada's TFSA, CPP, OAS and RRSP rules: what is open, what is closed, and what each start age is worth.">
+<meta name="description" content="Pick a birth year: what a hundred dollars from that year costs now, and when Canada's TFSA, CPP, OAS and RRSP rules open and close for it. Education only, not advice.">
 <meta name="robots" content="noindex, nofollow">
 <style>/*@@CSS@@*/</style>
 </head>
@@ -14,39 +14,78 @@
 <!--@@TOOLBAR@@-->
 <div class="page">
   <main>
-    <p class="kicker">Tool</p>
-    <h1 class="display">What opens, and when, for your year?</h1>
-    <p class="lede" id="finding" aria-live="polite"></p>
-    <p class="lede prices" id="prices" aria-live="polite"></p>
+    <div class="yy-top">
+      <div class="yy-lead">
+        <p class="kicker">Tool</p>
+        <h1 class="display">What opens, and when, for your year?</h1>
+        <div class="yy-ask" data-first-move>
+          <div class="yy-row">
+            <label for="year" class="yy-q">Born in</label>
+            <div class="yy-step">
+              <button type="button" class="yy-btn" data-step="-1" aria-label="One year earlier" aria-controls="year"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+              <input id="year" class="yy-input" name="year" type="number" inputmode="numeric" step="1" autocomplete="off" aria-describedby="year-range" data-year-control>
+              <button type="button" class="yy-btn" data-step="1" aria-label="One year later" aria-controls="year"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
+            </div>
+          </div>
+          <div class="yy-chips" id="chips" role="group" aria-label="Jump to a year"></div>
+          <p id="year-range" class="sr-only"></p>
+          <p class="assume" id="example-note" data-assumptions></p>
+        </div>
 
-    <form id="form" class="ask" novalidate>
-      <label for="year">Born in</label>
-      <input id="year" name="year" type="number" inputmode="numeric" autocomplete="off" required>
-      <button type="submit" class="btn-you">Show my timeline</button>
-      <p class="note" id="example-note"></p>
-      <p class="error" id="error" role="alert" hidden></p>
-    </form>
+        <div class="readout yy-answer" id="answer" data-answer aria-live="polite">
+          <p class="readout-k" id="answer-k">Prices since</p>
+          <p class="readout-v big yy-big"><span id="base"></span><svg class="yy-arrow" viewBox="0 0 40 24" aria-hidden="true"><path d="M2 12h34M26 3l10 9-10 9"/></svg><span class="sr-only"> became </span><span id="cpi-now" data-readout-v></span></p>
+          <p class="readout-t" id="answer-t" data-readout-t></p>
+          <details class="readout-how"><summary>How this is worked out</summary><p id="answer-how"></p></details>
+        </div>
+      </div>
 
-    <section class="tl" data-chapter="Timeline" aria-labelledby="tl-h">
-      <p class="sec-label">Timeline</p>
-      <h2 id="tl-h">Every rule on one line, by age</h2>
-      <figure class="chart">
-        <figcaption>
-          <p class="chart-title" id="tl-take"></p>
-          <p class="chart-sub">Ages along the bottom, with the calendar year under each. The years already lived are faded.</p>
-          <span class="chip tag-example" id="tl-example">Example data</span>
-        </figcaption>
-        <div class="tl-frame" id="tl-frame"><svg id="tl" role="img" aria-labelledby="tl-title"><title id="tl-title">Your planning timeline</title></svg></div>
-      </figure>
-      <ul class="sr-only" id="tl-text"></ul>
-      <p class="tl-actions"><button type="button" id="save" class="btn-2">Save the timeline as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
-    </section>
+      <section class="yy-box" aria-labelledby="box-h">
+        <h2 class="sec-label" id="box-h">What opens, and when</h2>
+        <dl class="box" id="box"></dl>
+      </section>
+    </div>
 
-    <div class="choices">
-      <section class="choice" id="cpp" data-chapter="CPP" aria-labelledby="cpp-h">
+    <figure class="chart yy-life">
+      <figcaption>
+        <p class="chart-title" id="tl-take"></p>
+        <p class="chart-sub">Ages along the bottom, with the calendar year under each. The years already lived are faded.</p>
+        <span class="chip tag-example" id="tl-example">Example data</span>
+      </figcaption>
+      <div class="tl-frame" id="tl-frame"><svg id="tl" role="img" aria-labelledby="tl-title"><title id="tl-title">Your planning timeline</title></svg></div>
+    </figure>
+    <ul class="sr-only" id="tl-text"></ul>
+    <p class="yy-save"><button type="button" id="save" class="btn-2">Save my card</button> <span class="note">A picture made in this page; nothing is sent.</span></p>
+
+    <details class="deeper">
+      <summary>Go deeper</summary>
+
+      <section class="deeper-sub choice" id="rrif" aria-labelledby="rrif-h">
         <div class="copy">
-          <p class="sec-label">Canada Pension Plan</p>
-          <h2 id="cpp-h" class="card-hed">When to start CPP</h2>
+          <h3 id="rrif-h" class="card-hed">The RRIF minimum, year by year</h3>
+          <p id="rrif-text"></p>
+          <label for="fund">A fund of <span class="hint">(an example)</span></label>
+          <input id="fund" type="number" inputmode="numeric" step="10000" min="0">
+          <div class="readout" id="fund-readout" aria-live="polite">
+            <p class="readout-k" id="fund-k">The minimum</p>
+            <p class="readout-v"><output id="fund-big" data-flash></output></p>
+            <p class="readout-t" id="fund-text"></p>
+            <p class="readout-fine" id="fund-fine" hidden></p>
+          </div>
+        </div>
+        <figure class="chart fig">
+          <figcaption>
+            <p class="chart-title">The minimum rises every year, and the fund left shrinks</p>
+            <p class="chart-sub"><span class="key key-bar"></span>Bars: the minimum each year, as a share of the fund (left scale). <span class="key key-dash"></span>Dashed line: the share left if only the minimum comes out and the fund earns nothing (top: all of it; bottom: none). Ages are the year you turn each one.</p>
+          </figcaption>
+          <svg class="mini" id="rrif-chart" role="img" aria-labelledby="rrif-chart-t"><title id="rrif-chart-t">The RRIF minimum withdrawal by age, and the share of a fund left if only the minimum comes out</title></svg>
+        </figure>
+      </section>
+
+      <section class="deeper-sub choice" id="cpp" aria-labelledby="cpp-h">
+        <div class="copy">
+          <h3 id="cpp-h" class="card-hed">CPP start ages, in total</h3>
+          <p class="yy-door">Both spouses, taxes and the full trade-offs: <a href="/tools/when-to-start-cpp/">When does waiting for CPP pay off?</a></p>
           <label class="slider"><span>Start at <output id="cpp-age"></output></span><input type="range" id="cpp-range"></label>
           <div class="readout" id="cpp-readout" aria-live="polite">
             <p class="readout-k" id="cpp-k">Each month, against the standard age</p>
@@ -63,10 +102,9 @@
         </figure>
       </section>
 
-      <section class="choice" id="oas" data-chapter="OAS" aria-labelledby="oas-h">
+      <section class="deeper-sub choice" id="oas" aria-labelledby="oas-h">
         <div class="copy">
-          <p class="sec-label">Old Age Security</p>
-          <h2 id="oas-h" class="card-hed">When to start OAS</h2>
+          <h3 id="oas-h" class="card-hed">OAS start ages, in total</h3>
           <label class="slider"><span>Start at <output id="oas-age"></output></span><input type="range" id="oas-range"></label>
           <div class="readout" id="oas-readout" aria-live="polite">
             <p class="readout-k" id="oas-k">Monthly, for life</p>
@@ -91,44 +129,12 @@
           <svg class="mini" id="oas-chart" role="img" aria-labelledby="oas-chart-t"><title id="oas-chart-t">Total OAS received by age, for this start age and the earliest age</title></svg>
         </figure>
       </section>
+    </details>
 
-      <section class="choice" id="rrif" data-chapter="RRIF" aria-labelledby="rrif-h">
-        <div class="copy">
-          <p class="sec-label">RRSP to RRIF</p>
-          <h2 id="rrif-h" class="card-hed">The minimum that must come out</h2>
-          <p id="rrif-text"></p>
-          <label for="fund">A fund of <span class="hint">(an example)</span></label>
-          <input id="fund" type="number" inputmode="numeric" step="10000" min="0">
-          <div class="readout" id="fund-readout" aria-live="polite">
-            <p class="readout-k" id="fund-k">The minimum</p>
-            <p class="readout-v"><output id="fund-big" data-flash></output></p>
-            <p class="readout-t" id="fund-text"></p>
-            <p class="readout-fine" id="fund-fine" hidden></p>
-          </div>
-        </div>
-        <figure class="chart fig">
-          <figcaption>
-            <p class="chart-title">The minimum rises every year, and the fund left shrinks</p>
-            <p class="chart-sub"><span class="key key-bar"></span>Bars: the minimum each year, as a share of the fund (left scale). <span class="key key-dash"></span>Dashed line: the share left if only the minimum comes out and the fund earns nothing (top: all of it; bottom: none). Ages on January 1.</p>
-          </figcaption>
-          <svg class="mini" id="rrif-chart" role="img" aria-labelledby="rrif-chart-t"><title id="rrif-chart-t">The RRIF minimum withdrawal by age, and the share of a fund left if only the minimum comes out</title></svg>
-        </figure>
-      </section>
-    </div>
-
-    <section class="people" id="people" data-chapter="Your age" aria-labelledby="people-h" hidden>
-      <p class="sec-label">People your age</p>
-      <h2 id="people-h">How many Canadians share your age</h2>
-      <div class="readout" id="people-readout" aria-live="polite">
-        <p class="readout-k" id="people-k">Canadians your age</p>
-        <p class="readout-v"><output id="people-big" data-flash></output></p>
-        <p class="readout-t" id="people-text"></p>
-      </div>
-    </section>
-
-    <details class="sources">
+    <details class="sources" data-preview="Each rule’s official page, the day it was read, and what this page assumes">
       <summary>Sources and assumptions</summary>
       <ul id="sources"></ul>
+      <p class="note" id="rrif-convention"></p>
       <p class="note">The rules are today's. Someone who reached an age in the past met the rules of that time. Amounts depend on a person's own contributions, residence and income, which this page does not know.</p>
     </details>
 

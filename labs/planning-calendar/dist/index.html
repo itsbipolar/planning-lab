@@ -63,7 +63,7 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 .desk-head{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 2rem;padding:1.2rem 0 1rem;line-height:1.6;border-bottom:3px double var(--t-ink)}
 .desk-brand{margin-right:auto;font-family:var(--font-display);font-weight:600;font-size:1.5rem;letter-spacing:-.01em;color:var(--t-ink);text-decoration:none;white-space:nowrap}
 .desk-nav ul{display:flex;flex-wrap:wrap;gap:.25rem 1.6rem;list-style:none;margin:0;padding:0}
-.desk-nav a{position:relative;display:inline-block;padding:.35rem 0;font-size:16.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t-ink);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+.desk-nav a{position:relative;display:inline-block;padding:.35rem 0;font-size:17.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t-ink);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
 .desk-nav a::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
 .desk-nav a:hover{border-bottom-color:var(--t-rule)}
 .desk-nav a[aria-current="true"]{border-bottom-color:var(--t-ink)}
@@ -80,7 +80,7 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 .desk-toolnav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 1.5rem;padding:.2rem 0;font-size:17.5px;border-bottom:1px solid var(--t-rule)}
 .desk-toolnav a{display:inline-flex;align-items:center;gap:.35rem;min-height:2.5rem;color:var(--t-ink);text-decoration:none;white-space:nowrap}
 .desk-toolnav a:hover{text-decoration:underline}
-.desk-next{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.35rem 1.5rem;margin:4rem 0 0;padding:1.4rem 1.5rem 1.5rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);color:var(--t-ink);text-decoration:none}
+.desk-next{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.35rem 1.5rem;margin:2.5rem 0 0;padding:1.4rem 1.5rem 1.5rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);color:var(--t-ink);text-decoration:none}
 .desk-next-k{grid-column:1/-1;color:var(--t-ink)}
 .desk-next-q{font-family:var(--font-display);font-weight:600;font-size:clamp(1.55rem,1.4vw + 1.1rem,2.3rem);line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
 .desk-next-go{font-family:var(--font-display);font-size:2rem;line-height:1}
@@ -105,12 +105,13 @@ a:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
 /* The chart frame: a 2px ink rule on top, a sans 700 title that states the takeaway, an ink2 subtitle with units, and
    an "Example data" chip where the numbers are illustrative. Inside the SVG: 1px gridlines, an ink zero line, named
    series 2.5px and context series 1.5px, one 600 annotation with a 1px leader, shaded regions at 40%. Every label
-   renders at 16.5px or more (shell-test.mjs expectTextSizes). */
+   renders at 17.5px or more (shell-test.mjs expectTextSizes). */
 figure.chart{margin:2rem 0 0;border-top:2px solid var(--t-ink);padding-top:.6rem}
 figure.chart>figcaption,.chart-head{margin:0 0 .6rem}
 .chart-title{margin:0;font:700 1.15rem/1.35 var(--font-ui);color:var(--t-ink)}
 .chart-sub{margin:.15rem 0 0;font-size:1.03rem;line-height:1.45;color:var(--t-ink2)}
-.tag-example{margin-top:.4rem}
+/* the example tag is a quiet label, not a box: nothing about it looks tappable */
+.chip.tag-example{display:block;margin-top:.35rem;padding:0;border:0;border-radius:0;background:none;color:var(--t-ink2)}
 .chart svg .grid{stroke:var(--t-rule);stroke-width:1;shape-rendering:crispEdges}
 .chart svg .zero{stroke:var(--t-ink);stroke-width:1;shape-rendering:crispEdges}
 .chart svg .s-named{stroke-width:2.5;fill:none}
@@ -120,7 +121,7 @@ figure.chart>figcaption,.chart-head{margin:0 0 .6rem}
 .chart svg .shade{fill-opacity:.4}
 
 /* Folds: "Go deeper" and the sources, closed by default. */
-details.deeper{margin-top:3rem;border-top:2px solid var(--t-ink);padding-top:.5rem}
+details.deeper{margin-top:2.5rem;border-top:2px solid var(--t-ink);padding-top:.5rem}
 /* Every fold shows that it opens: a chevron before its summary (a lab's display:flex summary hides the browser marker). */
 details>summary{list-style:none}
 details>summary::-webkit-details-marker{display:none}
@@ -128,15 +129,64 @@ details>summary::before{content:"";display:inline-block;flex:none;width:.45em;he
 details[open]>summary::before{transform:translateY(-.3em) rotate(45deg)}
 @media (prefers-reduced-motion:no-preference){details>summary::before{transition:transform .15s ease}}
 details.deeper>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-family:var(--type-label-font);font-weight:var(--type-label-weight);font-size:var(--type-label-size);letter-spacing:var(--type-label-tracking);text-transform:uppercase}
+/* One fold style for every tool (Go deeper, a tool's own fold, Sources): a 2px ink rule, the name in sentence case and,
+   under it, a one-line preview of what is inside (.fold-p: written by deskDeeper() from the fold's sub-sections, or from
+   the fold's data-preview). Folds in a run stack with no gap; the run sits one fixed gap under what comes before it.
+   Scoped under the page so a lab's own fold rules cannot drift from it. */
+body>.page details:is(.deeper,.sources,.fold,.this-year){margin:2.5rem 0 0;padding:0;border:0;border-top:2px solid var(--t-ink)}
+body>.page details:is(.deeper,.sources,.fold,.this-year)+details:is(.deeper,.sources,.fold,.this-year){margin-top:0}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;min-height:56px;padding:.75rem 0;cursor:pointer;font:700 1.2rem/1.3 var(--font-ui);letter-spacing:0;text-transform:none;color:var(--t-ink)}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary::before{align-self:center;grid-row:1}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary>.fold-p{grid-column:2;display:block;margin:.2rem 0 0;font:400 var(--type-small-size)/1.45 var(--font-ui);color:var(--t-ink2);text-transform:none;letter-spacing:0}
+body>.page details:is(.deeper,.sources,.fold,.this-year)[open]>summary>.fold-p{display:none}
+body>.page details:is(.deeper,.sources,.fold,.this-year)>summary:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.2em;text-decoration-color:var(--t-point)}
 
 /* Video tiles: the 56px ink play badge and the duration chip (as on the site). */
 .play-badge{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:rgb(16 22 28 / .88);color:#fff;border:0}
-.dur-chip{display:inline-block;padding:.15em .5em;font:700 17px/1.3 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:#fff;background:rgb(0 0 0 / .72)}
+.dur-chip{display:inline-block;padding:.15em .5em;font:700 17.5px/1.3 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:#fff;background:rgb(0 0 0 / .72)}
 
 .crosshair{pointer-events:none}
 .crosshair line{stroke:var(--t-ink);stroke-width:1;stroke-dasharray:3 3}
 .crosshair rect{fill:var(--t-raised);stroke:var(--t-rule)}
 .crosshair text{fill:var(--t-ink);font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
+
+/* ---- The desk tool template (steps 4 to 6; markup and APIs in the header comment). Generic names sit in :where() so a
+   lab's own rule still wins. Every size here is 17.5px or more (Mo: never smaller). ---- */
+/* 1. The big readout: "How this is worked out" is a closed fold under the one line. */
+.readout-how{margin:.5rem 0 0}
+.readout-how>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font:600 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
+.readout-how>:not(summary){margin:.35rem 0 .5rem;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+.readout[aria-busy="true"]{cursor:inherit}
+/* 2. Go deeper: the optional "In this section:" line and the sub-sections. */
+.deeper-in{margin:.5rem 0 1rem;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+:where(details.deeper) :where(.deeper-sub){margin-top:2rem}
+/* 3. The one assumptions line, beside the first control. */
+:where(.assume){margin:.6rem 0 0;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2);max-width:52ch}
+/* 4. Save and share: the in-app browser notice sits right after its button. */
+.save-note{display:block;margin:.5rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-ink);font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink);max-width:40ch}
+/* 5. Guess, then reveal: a ruled panel; the slider is a 44px target, its value in serif figures. */
+.guess{margin:1.5rem 0;padding:1rem 1.25rem 1.25rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);max-width:46rem}
+.guess[hidden]{display:none}
+.guess-q{margin:.25rem 0 .5rem;font-family:var(--type-card-font);font-weight:var(--type-card-weight);font-size:var(--type-card-size);line-height:var(--type-card-line);text-wrap:balance}
+.guess-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.guess-row input[type=range]{flex:1 1 9rem;min-width:0;height:44px;margin:0;accent-color:var(--t-ink);cursor:pointer}
+.guess-v{min-width:5ch;font-family:var(--type-readout-font);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.1;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+.guess-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem}
+.guess-actions[hidden],.guess-out[hidden]{display:none}
+.guess-out{margin:.75rem 0 0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+/* 6. The tool-bar year chip ("Born {year} · change · forget"): text buttons with 44px targets, scoped to the tool bar
+   so a lab's own button{} rule cannot restyle them. On phones it takes its own line under the two links. */
+.desk-toolnav .desk-year{display:inline-flex;flex-wrap:wrap;align-items:center;gap:0 .45rem;margin:0;min-height:2.5rem;font-size:17.5px;line-height:1.35;color:var(--t-ink)}
+.desk-toolnav .desk-year[hidden]{display:none}
+.desk-toolnav .desk-year b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+.desk-toolnav .desk-year button{position:relative;box-sizing:content-box;width:auto;height:auto;min-width:0;min-height:0;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;color:var(--t-ink);font:inherit;font-weight:600;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 35%,transparent);text-underline-offset:.2em;cursor:pointer}
+.desk-toolnav .desk-year button::after{content:"";position:absolute;left:-.3rem;right:-.3rem;top:50%;height:44px;transform:translateY(-50%)}
+.desk-toolnav .desk-year button:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
+@media (max-width:560px){.desk-toolnav .desk-year{order:3;flex-basis:100%}}
+.desk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 7. Motion only after a user action, and instant under reduced motion: one rule for every tool. */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;transition-delay:0s!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
@@ -150,23 +200,36 @@ h2{margin:0 0 .9rem}
 :focus-visible{outline:2px solid var(--t-ink);outline-offset:3px}
 section{margin-top:2.75rem}
 
-/* build your household */
-.picks{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem}
-.pick-row{display:flex;flex-wrap:wrap;gap:.5rem}
-.pick-row button{font:inherit;font-size:17.5px;font-weight:600;min-height:44px;padding:.4rem .9rem;background:transparent;color:var(--t-ink);border:1px solid var(--t-rule);border-radius:2px;cursor:pointer}
-.pick-row button[aria-pressed="true"]{background:var(--t-raised);border-color:var(--t-ink3);box-shadow:inset 0 -3px 0 var(--t-ink)}
-.sits{border:0;padding:0;margin:1.25rem 0 0;min-width:0}
+/* pick a household: the first move, one row of chips that scrolls sideways on a phone (never the page) */
+.pick{margin:1.5rem 0 0;min-width:0}
+.pick .label{margin:0 0 .5rem}
+.pick-row{display:flex;flex-wrap:nowrap;gap:.5rem;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:3px 3px 8px;margin:0 -3px;scroll-padding-inline:2.5rem}
+/* on a phone the row says it scrolls: its edges fade where more chips sit beyond them (classes set by app.js) */
+.pick-row.more-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 2.5rem),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 2.5rem),transparent)}
+.pick-row.more-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 2.5rem);mask-image:linear-gradient(to right,transparent,#000 2.5rem)}
+.pick-row.more-l.more-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent);mask-image:linear-gradient(to right,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent)}
+.pick-row button{flex:none;white-space:nowrap;font:inherit;font-size:17.5px;font-weight:600;min-height:44px;padding:.4rem .9rem;background:transparent;color:var(--t-ink);border:1px solid var(--t-rule);border-radius:4px;cursor:pointer}
+.pick-row button:hover{border-color:var(--t-ink)}
+.pick-row button[aria-pressed="true"]{border-color:var(--t-ink);box-shadow:inset 0 -3px 0 var(--t-point)}
+.sits{border:0;padding:0;margin:1rem 0 0;min-width:0}
 .sits legend{padding:0;margin:0 0 .6rem;color:var(--t-ink)}
-.assume{margin:0 0 .75rem}
+.pick+.assume{margin:.35rem 0 0}
 .sit-grid{display:grid;gap:0 1.5rem;grid-template-columns:minmax(0,1fr)}
 @media (min-width:700px){.sit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:1100px){.sit-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .sit{display:flex;align-items:center;gap:.65rem;min-height:44px;padding:.25rem 0;border-top:1px solid var(--t-rule);cursor:pointer}
 .sit input{width:1.15rem;height:1.15rem;margin:0;flex:none;accent-color:var(--t-ink)}
-.sit .n{margin-left:auto;white-space:nowrap;padding-left:.5rem;font-size:17px;color:var(--t-ink3)}
+.sit .n{margin-left:auto;white-space:nowrap;padding-left:.5rem;font-size:17.5px;color:var(--t-ink3)}
+.ye-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:1.25rem 0 0}
+.ye-row[hidden]{display:none}
+.ye-row select{font:inherit;font-weight:600;min-height:44px;padding:.3rem 2.2rem .3rem .75rem;color:var(--t-ink);background:var(--t-ground);border:1.5px solid var(--t-ink3);border-radius:2px;cursor:pointer}
+#ye-note{margin:.4rem 0 0}
+details.tune{margin-top:2rem}
+details.tune[open]{padding-bottom:.5rem}
 
 /* the pile-up strip, in the shared chart frame (figure.chart) */
 .pile figure.chart{margin:1rem 0 0}
+.pile figcaption .tag-example{margin-top:.5rem}
 .frame{width:100%;padding:.5rem 0;border-bottom:1px solid var(--t-rule)}
 #strip{display:block;width:100%;height:auto;overflow:visible}
 #strip text{font-family:var(--font-ui);fill:var(--t-ink2)}
@@ -185,18 +248,33 @@ section{margin-top:2.75rem}
 .sw{display:inline-block;width:12px;height:12px;flex:none}
 .sw.hatch{width:18px;height:10px;background:repeating-linear-gradient(135deg,var(--t-ink2) 0 1.5px,transparent 1.5px 5px);border:1px solid var(--t-ink3)}
 
-/* the answer for the household, under the quick picks */
-.readouts{display:grid;gap:0 2.5rem;margin:1.1rem 0 .25rem}
-@media (min-width:700px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.readouts .readout{margin:.5rem 0}
+/* the big answer, right under the chips */
+.result{margin:1.5rem 0 0}
+#answer{margin:0}
+#answer .readout-v{margin-bottom:.3rem}
+/* on a wide screen the answer and its action sit side by side, so the first screen holds the question, the chips, the
+   answer and the button with no empty half */
+@media (min-width:900px){.result{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 3rem;align-items:start}.result .save{margin-top:.35rem}}
+/* wide: the question on the left and the answer top-right beside it; the household chips in one row across both; then
+   the assumptions under the chips and the one action under the answer */
+@media (min-width:960px){
+  .td-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;grid-template-areas:"head answer" "pick pick" "assume save";column-gap:clamp(2rem,4vw,4rem);align-items:start}
+  .td-head{grid-area:head}.td-hero>.pick{grid-area:pick;min-width:0}.td-hero>.assume{grid-area:assume}
+  .td-hero>.result{display:contents}
+  .td-hero #answer{grid-area:answer;margin-top:1.75rem}
+  .td-hero .save{grid-area:save;margin-top:.6rem}
+}
 .hint{font-size:17.5px;color:var(--t-ink3);margin:.5rem 0 0}
 #strip{touch-action:pan-y}
-#strip .crosshair text{font-size:17px;fill:var(--t-ink)}
+#strip .crosshair text{font-size:17.5px;fill:var(--t-ink)}
 #strip .crosshair tspan{fill:var(--t-ink)}
 
-/* save */
-.save{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:1.5rem}
-.save .note{margin:0;max-width:60ch}
+/* save: the one amber action, its counts on the line below, one privacy line */
+.save{margin-top:1.25rem}
+.save .btn-you{min-height:52px;font-size:1.15rem}
+.save-count{margin:.6rem 0 0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+.lock{display:flex;align-items:flex-start;gap:.5rem;margin:.35rem 0 0;max-width:60ch}
+.lock-i{flex:none;width:1em;height:1em;margin-top:.25em;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}
 #ics:disabled{background:var(--t-raised);border-color:var(--t-rule);color:var(--t-ink3);cursor:default;text-decoration:none}
 
 /* the dates */
@@ -210,23 +288,24 @@ section{margin-top:2.75rem}
 .dates p{margin:.2rem 0 0;max-width:68ch}
 .dates .src{font-size:17.5px;color:var(--t-ink3)}
 .pending{max-width:62rem;margin-top:1.25rem;border-top:1px solid var(--t-rule);padding-top:.9rem}
-.pending h3{font-size:1rem;margin:0 0 .4rem}
+.pending h3{font-size:1.15rem;margin:0 0 .4rem}
+.deeper-sub .card-hed{margin:0 0 .75rem}
 .pending ul{margin:0;padding-left:1.1rem;color:var(--t-ink)}
 .pending li{margin:.3rem 0}
 .own p,.own ul{max-width:68ch}
 .own ul{padding-left:1.1rem;color:var(--t-ink)}
 .own li{margin:.3rem 0}
 
-.sources{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1rem}
+.sources{margin-top:1.5rem;border-top:1px solid var(--t-rule);padding-top:1rem}
 .sources summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
 .sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:17.5px;color:var(--t-ink3)}
 .sources p{max-width:72ch}
 .foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:17.5px;color:var(--t-ink3);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
 .foot p{margin:0}
 
-/* Chart labels render at 17px (the one size rule: 16.5px or more); app.js reads this size to place them, and draws the
-   strip at the frame's own width so nothing scales them down. */
-svg,#strip{font-size:17px}
+/* Chart labels render at 17.5px (Mo: small text and labels 17.5px or more); app.js reads this size to place them, and
+   draws the strip at the frame's own width so nothing scales them down. */
+svg,#strip{font-size:17.5px}
 </style>
 <link rel="canonical" href="https://mo-portfolio-site.moe-chayeb.workers.dev/tools/tax-dates/">
 <meta property="og:type" content="website">
@@ -252,61 +331,72 @@ svg,#strip{font-size:17px}
   </div>
 <div class="page">
   <main>
-    <p class="kicker">Tool</p>
-    <h1 id="q">What’s your next tax date?</h1>
-    <p class="lede" id="finding"></p>
+    <div class="td-hero">
+    <div class="td-head">
+      <p class="kicker">Tool</p>
+      <h1 id="q">What’s your next tax date?</h1>
+    </div>
 
-    <section class="build" data-chapter="Household" aria-labelledby="build-h">
-      <p class="sec-label">Household</p>
-      <h2 id="build-h">Build your household</h2>
-      <p class="note assume" id="assume"></p>
-      <div class="picks" role="group" aria-labelledby="picks-l">
-        <span class="label" id="picks-l">Quick picks (examples)</span>
-        <div class="pick-row" id="picks"></div>
-      </div>
-      <div class="readouts" id="readouts">
-        <div class="readout" id="rd-next" aria-live="polite"><p class="readout-k">Next confirmed date</p><p class="readout-v big" id="rd-next-v" data-flash></p><p class="readout-t" id="rd-next-t"></p></div>
-        <div class="readout" id="rd-count" aria-live="polite"><p class="readout-k">In the next twelve months</p><p class="readout-v" id="rd-count-v" data-flash></p><p class="readout-t" id="rd-count-t"></p><p class="readout-fine" id="rd-count-fine" hidden></p></div>
-      </div>
+    <div class="pick" data-first-move role="group" aria-labelledby="picks-l">
+      <p class="label" id="picks-l">Pick a household</p>
+      <div class="pick-row" id="picks"></div>
+    </div>
+    <p class="assume" data-assumptions id="assume"></p>
+
+    <div class="result">
+    <div class="readout" id="answer" data-answer aria-live="polite">
+      <p class="readout-k" id="answer-k">Next confirmed date</p>
+      <p class="readout-v big" data-readout-v id="answer-v"></p>
+      <p class="readout-t" data-readout-t id="answer-t"></p>
+      <details class="readout-how"><summary>How this is worked out</summary><p id="answer-how"></p></details>
+    </div>
+
+    <div class="save">
+      <button type="button" id="ics" class="btn-you">Add these dates to my calendar</button>
+      <p class="save-count" id="ics-count"></p>
+      <p class="lock note"><svg class="lock-i" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.75" y="7" width="10.5" height="7.25" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg><span>Made in this page from its own date. Nothing is sent or stored, and your picks stay out of the address.</span></p>
+    </div>
+    </div>
+    </div>
+
+    <details class="deeper tune" id="tune" data-preview="The situations that apply, and the corporation’s year-end month">
+      <summary>Fine-tune your household</summary>
       <fieldset class="sits">
         <legend>Tick every situation that applies; they combine into one calendar.</legend>
         <div class="sit-grid" id="sits"></div>
       </fieldset>
-    </section>
+      <p class="ye-row"><label for="ye">The corporation’s tax year ends in</label> <select id="ye"></select></p>
+      <p class="note" id="ye-note"></p>
+    </details>
 
-    <section class="pile" data-chapter="The year" aria-labelledby="pile-h">
-      <p class="sec-label">The year</p>
-      <h2 id="pile-h">Where the dates pile up, week by week</h2>
-      <figure class="chart" aria-labelledby="chart-title">
-        <figcaption><p class="chart-title" id="chart-title"></p><p class="chart-sub" id="chart-sub"></p></figcaption>
+    <section class="pile" aria-labelledby="chart-title">
+      <figure class="chart" id="pile-fig" aria-labelledby="chart-title">
+        <figcaption><h2 class="chart-title" id="chart-title"></h2><p class="chart-sub" id="chart-sub"></p><span class="chip tag-example" id="pile-tag">Example household</span></figcaption>
         <div class="frame" id="frame"><svg id="strip" role="img" aria-labelledby="strip-t"><title id="strip-t">How many dates fall in each week</title></svg></div>
         <p class="legend" id="legend"></p>
         <p class="hint">Point at a week, or tap it, to read its dates.</p>
       </figure>
-      <div class="save" role="group" aria-label="Add to my calendar">
-        <button type="button" id="ics" class="btn-you">Add to my calendar</button>
-        <p class="note" id="ics-note"></p>
-      </div>
     </section>
 
-    <section class="list" data-chapter="Each date" aria-labelledby="list-h">
-      <p class="sec-label">Each date</p>
-      <h2 id="list-h">Each date and the rule behind it</h2>
-      <ol class="dates" id="dates"></ol>
-      <div class="pending" id="pending"></div>
-    </section>
+    <details class="deeper" id="deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub list" aria-labelledby="list-h">
+        <h3 class="card-hed" id="list-h">Each date and the rule behind it</h3>
+        <ol class="dates" id="dates"></ol>
+        <div class="pending" id="pending"></div>
+      </section>
+      <section class="deeper-sub own" aria-labelledby="own-h">
+        <h3 class="card-hed" id="own-h">Rules on each person’s own date</h3>
+        <p>These depend on a birthday or the day a trust was created, so they have no single date to place on the calendar.</p>
+        <ul id="own"></ul>
+      </section>
+    </details>
 
-    <section class="own" aria-labelledby="own-h">
-      <h2 id="own-h">Rules on each person's own date</h2>
-      <p>These depend on a birthday or the day a trust was created, so they have no single date to place on the calendar.</p>
-      <ul id="own"></ul>
-    </section>
-
-    <details class="sources">
+    <details class="sources" data-preview="The rule behind each date, its official page, and what this page assumes">
       <summary>Sources and assumptions</summary>
       <p>Every date on this page comes from a rule in the verified facts file:</p>
       <ul id="sources"></ul>
-      <p class="note">The twelve months start on this page's own date, from your device's clock. Corporations and trusts are shown with a December year-end. When a share sale counts for tax at year-end (the trade date or the settlement date) is not in the facts file, so only the superficial-loss period is shown. Due dates that fall on a weekend or holiday can move; the dates here are as the sources state them. A date whose rule is not confirmed in the facts file yet is listed as not confirmed and left out of the calendar file. General rules only: nothing here says what anyone should do.</p>
+      <p class="note">The twelve months start on this page’s own date, from your device’s clock. A corporation’s year-end is December unless you pick another month under “Fine-tune your household”, and it is taken as the last day of that month; a trust is shown with a December year-end. When a share sale counts for tax at year-end (the trade date or the settlement date) is not in the facts file, so only the superficial-loss period is shown. Due dates that fall on a weekend or holiday can move; the dates here are as the sources state them. A date whose rule is not confirmed in the facts file yet is listed as not confirmed and left out of the calendar file. General rules only, for education; not advice for anyone’s own situation.</p>
     </details>
 
     <a class="desk-next" data-next href="/tools/retirement-wave/"><span class="desk-next-k">Up next</span><span class="desk-next-q">How many Canadians are about to turn 65?</span><span class="desk-next-go" aria-hidden="true">→</span></a>
@@ -317,7 +407,7 @@ svg,#strip{font-size:17px}
     </footer>
   </main>
 </div>
-<script type="application/json" id="data">{"config":{"_note":"The planning calendar: situations a household can combine, the dated rules each one brings, and quick picks (examples). Every value comes from shared/facts.json at build time; placeholders in braces are filled from the facts and the date. No date, age, count or amount is written here.","kinds":{"pay":"Money due","file":"A return due","cutoff":"A cut-off: a year-end or a contribution deadline"},"rules":{"file":{"label":"Personal returns due ({prev} tax year)","what":"the filing deadline","kind":"file","facts":["t1_filing_deadline.{prev}"],"rule":"fact_date","text":"Most individuals' income tax returns for the {prev} tax year are due {date}."},"balance":{"label":"Balance owing due ({prev} tax year)","what":"the balance owing","kind":"pay","facts":["t1_balance_due_date.{prev}"],"rule":"fact_date","text":"Any balance owing on a personal return for the {prev} tax year is due {date}."},"rrsp":{"label":"RRSP contribution deadline ({prev} tax year)","what":"the RRSP deadline","kind":"cutoff","facts":["rrsp_contribution_deadline.{prev}"],"rule":"fact_date","text":"Contributions to an RRSP made by {date} can count for the {prev} tax year."},"inst":{"label":"Tax instalment due","what":"an instalment","kind":"pay","facts":["individual_instalment_due_dates"],"rule":"fact_dates_in_year","text":"People who pay their tax by instalments pay on {value}."},"se_return":{"label":"Self-employed returns due ({prev} tax year)","what":"the self-employed filing deadline","kind":"file","facts":["t1_self_employed_filing_deadline.{prev}"],"rule":"fact_date","text":"Returns of self-employed people for the {prev} tax year are due {date}."},"t2":{"label":"Corporation's T2 return due","what":"the T2 return","kind":"file","facts":["t2_filing_deadline_rule"],"rule":"months_after_prev_year_end","text":"A corporation's T2 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."},"corp_ye":{"label":"Corporation's year-end","what":"the corporation's year-end","kind":"cutoff","facts":["t2_filing_deadline_rule"],"rule":"year_end","text":"A corporation with a December year-end closes its tax year; its next T2 return is counted from here."},"t3":{"label":"Trust's T3 return due","what":"the T3 return","kind":"file","facts":["t3_filing_deadline_rule"],"rule":"days_after_prev_year_end","text":"A trust's T3 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."},"trust_ye":{"label":"Trust's year-end","what":"the trust's year-end","kind":"cutoff","facts":["t3_filing_deadline_rule"],"rule":"year_end","text":"A trust with a December year-end closes its tax year; its next T3 return is counted from here."},"mature":{"label":"RRSP maturity: the year-end for a holder turning {value} this year","what":"the RRSP maturity deadline","kind":"cutoff","facts":["rrsp_maturity_age"],"rule":"year_end","text":"An RRSP must wind up by the end of the year its holder turns {value} (most become a RRIF)."},"rrif_min":{"label":"RRIF: the year's minimum paid by year-end","what":"the RRIF minimum deadline","kind":"cutoff","facts":["rrif_minimum_payment_timing"],"rule":"year_end","text":"A RRIF pays out at least a minimum amount each year; the first minimum is paid {value}."},"losses":{"label":"A sale at a loss on the year's last day: the superficial-loss period","what":"a year-end sale at a loss","kind":"cutoff","facts":["superficial_loss_period"],"rule":"window_around_year_end","text":"A loss is superficial if the same or identical property is bought in the period from {value}, and is still owned at the end of it. For a sale on {date}, that period runs from {from} to {to}."},"fhsa":{"label":"End of the FHSA contribution year","what":"the end of the FHSA year","kind":"cutoff","facts":["fhsa_contribution_period"],"rule":"year_end","text":"FHSA contributions count for the year they are made in: the contribution period is {value}."},"resp":{"label":"End of the RESP grant year","what":"the end of the RESP grant year","kind":"cutoff","facts":["cesg_basic_rate"],"rule":"year_end","text":"The basic grant is {value}, so each calendar year's contributions count for that year."},"gifts":{"label":"Last day for gifts claimed on this year's return","what":"the last day for this year's gifts","kind":"cutoff","facts":["donations_claim_year"],"rule":"year_end","text":"A year's return claims {value}."}},"situations":[{"id":"personal","label":"Files a personal return (employee or retiree)","rules":["file","balance"]},{"id":"self_employed","label":"Self-employed","rules":["se_return","balance"]},{"id":"instalments","label":"Pays tax by instalments","rules":["inst"]},{"id":"rrsp","label":"Contributes to an RRSP","rules":["rrsp"]},{"id":"corporation","label":"Owns a corporation (December year-end)","rules":["t2","corp_ye"]},{"id":"trust","label":"Has a family trust (December year-end)","rules":["t3","trust_ye"]},{"id":"turning","label":"Turning 71 this year, with an RRSP","rules":["mature"]},{"id":"rrif","label":"Draws from a RRIF","rules":["rrif_min"]},{"id":"losses","label":"Sells shares at a loss near year-end","rules":["losses"]},{"id":"fhsa","label":"Saves in an FHSA","rules":["fhsa"]},{"id":"resp","label":"Saves in an RESP","rules":["resp"]},{"id":"donor","label":"Gives to charity","rules":["gifts"]}],"presets":[{"id":"employee","label":"Employee","noun":"an employee","situations":["personal","rrsp"]},{"id":"first_home","label":"First-home saver","noun":"a first-home saver","situations":["personal","rrsp","fhsa"]},{"id":"family","label":"Family with an RESP","noun":"a family with an RESP","situations":["personal","rrsp","resp","donor"]},{"id":"self_employed","label":"Self-employed","noun":"a self-employed person","situations":["self_employed","instalments","rrsp"]},{"id":"owner","label":"Business owner","noun":"a business owner","situations":["personal","corporation","instalments","rrsp"]},{"id":"owner_trust","label":"Owner with a family trust","noun":"an owner with a family trust","situations":["personal","corporation","trust","instalments","rrsp"]},{"id":"retiree","label":"Retiree with a RRIF","noun":"a retiree with a RRIF","situations":["personal","rrif","instalments","donor","losses"]}],"example":"owner","ownDates":[{"label":"CPP can start","facts":["cpp_earliest_start_age"]},{"label":"Standard CPP start age","facts":["cpp_standard_start_age"]},{"label":"OAS starts","facts":["oas_start_age"]},{"label":"Latest CPP start","facts":["cpp_latest_start_age"]},{"label":"OAS deferral ends","facts":["oas_deferral_max_age"]},{"label":"Trust deemed to dispose of its property","facts":["trust_deemed_disposition_years"]}]},"facts":{"facts":[{"id":"rrsp_contribution_deadline.2025","title":"RRSP contribution deadline for the tax year","value":"2026-03-02","unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"confirmed"},{"id":"rrsp_contribution_deadline.2026","title":"RRSP contribution deadline for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"pending"},{"id":"rrsp_contribution_deadline.2027","title":"RRSP contribution deadline for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"pending"},{"id":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","value":"71","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"oas_start_age","title":"Age at which OAS pension eligibility starts (Old Age Security Act 3(1))","value":"65","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"oas_deferral_max_age","title":"Age after whose month the OAS deferral increase stops (Old Age Security Act 7.1(4)(b))","value":"70","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"cpp_standard_start_age","title":"Standard age to start the CPP retirement pension","value":"65","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"cpp_earliest_start_age","title":"Earliest age to start the CPP retirement pension","value":"60","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"cpp_latest_start_age","title":"Latest age to start the CPP retirement pension (no benefit to wait after it)","value":"70","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"t1_filing_deadline.2026","title":"Income tax filing deadline for most individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_self_employed_filing_deadline.2026","title":"Income tax filing deadline for self-employed individuals, for the tax year","value":"2027-06-15","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t1_balance_due_date.2026","title":"Balance-due date for individuals' income tax, for the tax year","value":"2027-04-30","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"individual_instalment_due_dates","title":"Tax instalment due dates for individuals (the same four dates each year)","value":"March 15, June 15, September 15, December 15","unit":"text","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t3_filing_deadline_rule","title":"When a trust's T3 return is due","value":"no later than 90 days after the trust's tax year-end","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/trust-administrators/t3-return/filing-trust-return/when-file.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t2_filing_deadline_rule","title":"When a corporation's T2 return is due","value":"within six months of the end of each tax year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/t4012/t2-corporation-income-tax-guide-before-you-start.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"trust_deemed_disposition_years","title":"Years after a trust's creation at which it is deemed to dispose of its property (Income Tax Act 104(4)(b))","value":"21","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-104.html","as_of":"2026-11-11","authority":"statute","status":"confirmed"},{"id":"t1_filing_deadline.2027","title":"Income tax filing deadline for most individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_self_employed_filing_deadline.2027","title":"Income tax filing deadline for self-employed individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_balance_due_date.2027","title":"Balance-due date for individuals' income tax, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"superficial_loss_period","title":"The period around a sale in which buying the same property back makes the loss superficial","value":"30 calendar days before the sale to 30 calendar days after the sale","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/personal-income/line-12700-capital-gains/capital-losses-deductions.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"fhsa_contribution_period","title":"FHSA contribution period (contributions are deductible for the calendar year they are made in)","value":"January 1 to December 31 of the same year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/first-home-savings-account/tax-deductions-fhsa-contributions.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"rrif_minimum_payment_timing","title":"When the first RRIF minimum amount must be paid","value":"in the year following the year the RRIF is entered into","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-retirement-income-fund-rrif.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"donations_claim_year","title":"Donations claimed on a year's return are the ones made in that year (unused amounts can be carried forward)","value":"donations and gifts made in the year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-34900-donations-gifts/how-claim.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"cesg_basic_rate","title":"Basic Canada Education Savings Grant, figured on each year's contributions","value":"20% of annual personal contributions","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-education-savings-plans-resps/canada-education-savings-programs-cesp/canada-education-savings-grant-cesg.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"}]},"own":[{"label":"CPP can start","value":"60","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"Standard CPP start age","value":"65","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"OAS starts","value":"65","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html"},{"label":"Latest CPP start","value":"70","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"OAS deferral ends","value":"70","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html"},{"label":"Trust deemed to dispose of its property","value":"21","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-104.html"}]}</script>
+<script type="application/json" id="data">{"config":{"_note":"The planning calendar: situations a household can combine, the dated rules each one brings, and quick picks (examples). Every value comes from shared/facts.json at build time; placeholders in braces are filled from the facts and the date. No date, age, count or amount is written here. A rule marked \"yearEnd\": \"corporation\" follows the corporation's year-end month the visitor picks (December unless changed).","kinds":{"pay":"Money due","file":"A return due","cutoff":"A cut-off: a year-end or a contribution deadline"},"rules":{"file":{"label":"Personal returns due ({prev} tax year)","what":"the filing deadline","kind":"file","facts":["t1_filing_deadline.{prev}"],"rule":"fact_date","text":"Most individuals' income tax returns for the {prev} tax year are due {date}."},"balance":{"label":"Balance owing due ({prev} tax year)","what":"the balance owing","kind":"pay","facts":["t1_balance_due_date.{prev}"],"rule":"fact_date","text":"Any balance owing on a personal return for the {prev} tax year is due {date}."},"rrsp":{"label":"RRSP contribution deadline ({prev} tax year)","what":"the RRSP deadline","kind":"cutoff","facts":["rrsp_contribution_deadline.{prev}"],"rule":"fact_date","text":"Contributions to an RRSP made by {date} can count for the {prev} tax year."},"inst":{"label":"Tax instalment due","what":"an instalment","kind":"pay","facts":["individual_instalment_due_dates"],"rule":"fact_dates_in_year","text":"People who pay their tax by instalments pay on {value}."},"se_return":{"label":"Self-employed returns due ({prev} tax year)","what":"the self-employed filing deadline","kind":"file","facts":["t1_self_employed_filing_deadline.{prev}"],"rule":"fact_date","text":"Returns of self-employed people for the {prev} tax year are due {date}."},"t2":{"yearEnd":"corporation","label":"Corporation's T2 return due","what":"the T2 return","kind":"file","facts":["t2_filing_deadline_rule"],"rule":"months_after_prev_year_end","text":"A corporation's T2 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."},"corp_ye":{"yearEnd":"corporation","label":"Corporation's year-end","what":"the corporation's year-end","kind":"cutoff","facts":["t2_filing_deadline_rule"],"rule":"year_end","text":"A corporation whose tax year ends in {endMonth} closes its tax year; its next T2 return is counted from here."},"t3":{"label":"Trust's T3 return due","what":"the T3 return","kind":"file","facts":["t3_filing_deadline_rule"],"rule":"days_after_prev_year_end","text":"A trust's T3 return is due {value}: for a tax year that ended {prevEnd}, that is {date}."},"trust_ye":{"label":"Trust's year-end","what":"the trust's year-end","kind":"cutoff","facts":["t3_filing_deadline_rule"],"rule":"year_end","text":"A trust with a December year-end closes its tax year; its next T3 return is counted from here."},"mature":{"label":"RRSP maturity: the year-end for a holder turning {value} this year","what":"the RRSP maturity deadline","kind":"cutoff","facts":["rrsp_maturity_age"],"rule":"year_end","text":"An RRSP must wind up by the end of the year its holder turns {value} (most become a RRIF)."},"rrif_min":{"label":"RRIF: the year's minimum paid by year-end","what":"the RRIF minimum deadline","kind":"cutoff","facts":["rrif_minimum_payment_timing"],"rule":"year_end","text":"A RRIF pays out at least a minimum amount each year; the first minimum is paid {value}."},"losses":{"label":"A sale at a loss on the year's last day: the superficial-loss period","what":"a year-end sale at a loss","kind":"cutoff","facts":["superficial_loss_period"],"rule":"window_around_year_end","text":"A loss is superficial if the same or identical property is bought in the period from {value}, and is still owned at the end of it. For a sale on {date}, that period runs from {from} to {to}."},"fhsa":{"label":"End of the FHSA contribution year","what":"the end of the FHSA year","kind":"cutoff","facts":["fhsa_contribution_period"],"rule":"year_end","text":"FHSA contributions count for the year they are made in: the contribution period is {value}."},"resp":{"label":"End of the RESP grant year","what":"the end of the RESP grant year","kind":"cutoff","facts":["cesg_basic_rate"],"rule":"year_end","text":"The basic grant is {value}, so each calendar year's contributions count for that year."},"gifts":{"label":"Last day for gifts claimed on this year's return","what":"the last day for this year's gifts","kind":"cutoff","facts":["donations_claim_year"],"rule":"year_end","text":"A year's return claims {value}."}},"situations":[{"id":"personal","label":"Files a personal return (employee or retiree)","rules":["file","balance"]},{"id":"self_employed","label":"Self-employed","rules":["se_return","balance"]},{"id":"instalments","label":"Pays tax by instalments","rules":["inst"]},{"id":"rrsp","label":"Contributes to an RRSP","rules":["rrsp"]},{"id":"corporation","label":"Owns a corporation","rules":["t2","corp_ye"]},{"id":"trust","label":"Has a family trust (December year-end)","rules":["t3","trust_ye"]},{"id":"turning","label":"Turning 71 this year, with an RRSP","rules":["mature"]},{"id":"rrif","label":"Draws from a RRIF","rules":["rrif_min"]},{"id":"losses","label":"Sells shares at a loss near year-end","rules":["losses"]},{"id":"fhsa","label":"Saves in an FHSA","rules":["fhsa"]},{"id":"resp","label":"Saves in an RESP","rules":["resp"]},{"id":"donor","label":"Gives to charity","rules":["gifts"]}],"presets":[{"id":"employee","label":"Employee","noun":"an employee","situations":["personal","rrsp"]},{"id":"first_home","label":"First-home saver","noun":"a first-home saver","situations":["personal","rrsp","fhsa"]},{"id":"family","label":"Family with an RESP","noun":"a family with an RESP","situations":["personal","rrsp","resp","donor"]},{"id":"self_employed","label":"Self-employed","noun":"a self-employed person","situations":["self_employed","instalments","rrsp"]},{"id":"owner","label":"Business owner","noun":"a business owner","situations":["personal","corporation","instalments","rrsp"]},{"id":"owner_trust","label":"Owner with a family trust","noun":"an owner with a family trust","situations":["personal","corporation","trust","instalments","rrsp"]},{"id":"retiree","label":"Retiree with a RRIF","noun":"a retiree with a RRIF","situations":["personal","rrif","instalments","donor","losses"]}],"example":"owner","ownDates":[{"label":"CPP can start","facts":["cpp_earliest_start_age"]},{"label":"Standard CPP start age","facts":["cpp_standard_start_age"]},{"label":"OAS starts","facts":["oas_start_age"]},{"label":"Latest CPP start","facts":["cpp_latest_start_age"]},{"label":"OAS deferral ends","facts":["oas_deferral_max_age"]},{"label":"Trust deemed to dispose of its property","facts":["trust_deemed_disposition_years"]}]},"facts":{"facts":[{"id":"rrsp_contribution_deadline.2025","title":"RRSP contribution deadline for the tax year","value":"2026-03-02","unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"confirmed"},{"id":"rrsp_contribution_deadline.2026","title":"RRSP contribution deadline for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"pending"},{"id":"rrsp_contribution_deadline.2027","title":"RRSP contribution deadline for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-09","authority":"official_publication","status":"pending"},{"id":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","value":"71","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"oas_start_age","title":"Age at which OAS pension eligibility starts (Old Age Security Act 3(1))","value":"65","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"oas_deferral_max_age","title":"Age after whose month the OAS deferral increase stops (Old Age Security Act 7.1(4)(b))","value":"70","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-10","authority":"statute","status":"confirmed"},{"id":"cpp_standard_start_age","title":"Standard age to start the CPP retirement pension","value":"65","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"cpp_earliest_start_age","title":"Earliest age to start the CPP retirement pension","value":"60","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"cpp_latest_start_age","title":"Latest age to start the CPP retirement pension (no benefit to wait after it)","value":"70","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication","status":"confirmed"},{"id":"t1_filing_deadline.2026","title":"Income tax filing deadline for most individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_self_employed_filing_deadline.2026","title":"Income tax filing deadline for self-employed individuals, for the tax year","value":"2027-06-15","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t1_balance_due_date.2026","title":"Balance-due date for individuals' income tax, for the tax year","value":"2027-04-30","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"individual_instalment_due_dates","title":"Tax instalment due dates for individuals (the same four dates each year)","value":"March 15, June 15, September 15, December 15","unit":"text","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t3_filing_deadline_rule","title":"When a trust's T3 return is due","value":"no later than 90 days after the trust's tax year-end","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/trust-administrators/t3-return/filing-trust-return/when-file.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"t2_filing_deadline_rule","title":"When a corporation's T2 return is due","value":"within six months of the end of each tax year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/t4012/t2-corporation-income-tax-guide-before-you-start.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"},{"id":"trust_deemed_disposition_years","title":"Years after a trust's creation at which it is deemed to dispose of its property (Income Tax Act 104(4)(b))","value":"21","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-104.html","as_of":"2026-11-11","authority":"statute","status":"confirmed"},{"id":"t1_filing_deadline.2027","title":"Income tax filing deadline for most individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_self_employed_filing_deadline.2027","title":"Income tax filing deadline for self-employed individuals, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"t1_balance_due_date.2027","title":"Balance-due date for individuals' income tax, for the tax year","value":null,"unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","as_of":"2026-11-11","authority":"official_publication","status":"pending"},{"id":"superficial_loss_period","title":"The period around a sale in which buying the same property back makes the loss superficial","value":"30 calendar days before the sale to 30 calendar days after the sale","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/personal-income/line-12700-capital-gains/capital-losses-deductions.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"fhsa_contribution_period","title":"FHSA contribution period (contributions are deductible for the calendar year they are made in)","value":"January 1 to December 31 of the same year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/first-home-savings-account/tax-deductions-fhsa-contributions.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"rrif_minimum_payment_timing","title":"When the first RRIF minimum amount must be paid","value":"in the year following the year the RRIF is entered into","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-retirement-income-fund-rrif.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"donations_claim_year","title":"Donations claimed on a year's return are the ones made in that year (unused amounts can be carried forward)","value":"donations and gifts made in the year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-34900-donations-gifts/how-claim.html","as_of":"2026-11-11","authority":"cra_position","status":"confirmed"},{"id":"cesg_basic_rate","title":"Basic Canada Education Savings Grant, figured on each year's contributions","value":"20% of annual personal contributions","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-education-savings-plans-resps/canada-education-savings-programs-cesp/canada-education-savings-grant-cesg.html","as_of":"2026-11-11","authority":"official_publication","status":"confirmed"}]},"own":[{"label":"CPP can start","value":"60","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"Standard CPP start age","value":"65","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"OAS starts","value":"65","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html"},{"label":"Latest CPP start","value":"70","unit":"years","url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html"},{"label":"OAS deferral ends","value":"70","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html"},{"label":"Trust deemed to dispose of its property","value":"21","unit":"years","url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-104.html"}]}</script>
 <script>
 (function () {
   'use strict';
@@ -362,6 +452,241 @@ function deskCrosshair(svg, o) {
   return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
 }
 
+// ---- The desk tool template (redesign v2, steps 4 to 6): readout, Go deeper, example tag, save and share, Save my
+// card, guess then reveal, the year chip. APIs in the header comment of shared/desk/desk-ui.mjs. ----
+var DESK_SITE = {"origin":"https://mo-portfolio-site.moe-chayeb.workers.dev","wordmark":"Mohammed El Chayeb"};
+var IN_APP_NOTICE = "Open this page in Safari or Chrome to save the file.", CARD_STAMP = "Example \u00b7 Education, not advice", EXAMPLE_TAG = "Example data";
+function inAppBrowser(ua) {
+  ua = String(ua || '');
+  if (/Instagram/i.test(ua)) return 'Instagram';
+  if (/LinkedInApp|LinkedIn\//i.test(ua)) return 'LinkedIn';
+  if (/FBAN\/|FBAV\/|FB_IAB|FBIOS|FB4A|FBSV\/|\[FB/i.test(ua)) return 'Facebook';
+  return null;
+}
+function siteAddress(origin) {
+  return String(origin || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+}
+function wordCount(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+function deeperIntro(titles) {
+  var t = (titles || []).map(function (x) { return String(x || '').replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  return t.length >= 3 ? 'In this section: ' + t.join(' \u00b7 ') : '';
+}
+function deeperPreview(titles) {
+  var t = (titles || []).map(function (x) { return String(x || '').replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  return t.length >= 2 ? t.join(' \u00b7 ') : '';
+}
+function wrapText(text, max, measure, maxLines) {
+  var words = String(text || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean), lines = [], cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var next = cur ? cur + ' ' + words[i] : words[i];
+    if (cur && measure(next) > max) { lines.push(cur); cur = words[i]; } else cur = next;
+  }
+  if (cur) lines.push(cur);
+  if (maxLines && lines.length > maxLines) {
+    var keep = lines.slice(0, maxLines), last = keep[maxLines - 1];
+    while (last.indexOf(' ') > 0 && measure(last + '\u2026') > max) last = last.slice(0, last.lastIndexOf(' '));
+    keep[maxLines - 1] = last + '\u2026';
+    return keep;
+  }
+  return lines;
+}
+function cardText(o, origin) {
+  o = o || {};
+  return {
+    head: String(o.head || ''),
+    question: String(o.question || ''),
+    bigValue: String(o.bigValue == null ? '' : o.bigValue),
+    line: String(o.line || ''),
+    labels: (o.labels || []).map(String).filter(Boolean).slice(0, 3),
+    stamp: CARD_STAMP,
+    address: siteAddress(origin),
+  };
+}
+
+// Has the visitor acted? A trusted pointer, key or input event in the last 1.5s (count-ups run only then).
+var deskActedAt = 0;
+['pointerdown', 'keydown', 'input', 'change'].forEach(function (t) { addEventListener(t, function (e) { if (e.isTrusted) deskActedAt = Date.now(); }, { capture: true, passive: true }); });
+function deskActed() { return deskActedAt > 0 && Date.now() - deskActedAt < 1500; }
+function deskStill() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+function deskEl(x) { return typeof x === 'string' ? document.querySelector(x) : x; }
+
+// 1. The big readout.
+function deskReadout(el, o) {
+  el = deskEl(el); o = o || {};
+  var v = el.querySelector('[data-readout-v]') || el.querySelector('.readout-v'), t = el.querySelector('[data-readout-t]') || el.querySelector('.readout-t'), k = el.querySelector('.readout-k');
+  if (!el.hasAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+  el.setAttribute('aria-atomic', 'true');
+  var cur = null, raf = 0, quiet = 0;
+  function busy() { el.setAttribute('aria-busy', 'true'); clearTimeout(quiet); quiet = setTimeout(function () { el.removeAttribute('aria-busy'); }, 250); }
+  function set(s) {
+    s = s || {}; busy(); cancelAnimationFrame(raf);
+    if (s.label != null && k) k.textContent = s.label;
+    if (s.line != null && t) t.textContent = s.line;
+    var fmt = s.format || o.format || String;
+    if (typeof s.n === 'number' && isFinite(s.n)) {
+      var from = cur, to = s.n; cur = to;
+      if (from == null || from === to || s.animate === false || !deskActed() || deskStill()) { v.textContent = fmt(to); return; }
+      var t0 = performance.now();
+      var step = function (now) {
+        var p = Math.min(1, (now - t0) / 300), e = 1 - Math.pow(1 - p, 3);
+        v.textContent = fmt(p < 1 ? from + (to - from) * e : to);
+        if (p < 1) raf = requestAnimationFrame(step); else busy();
+      };
+      raf = requestAnimationFrame(step);
+    } else { cur = null; v.textContent = s.text != null ? String(s.text) : ''; }
+  }
+  return { set: set, el: el };
+}
+
+// 2. Folds: the one-line preview under each summary, so a closed fold says what it holds. A Go deeper fold with two or
+//    more sub-sections lists them ("A \u00b7 B \u00b7 C", deeperPreview); any fold may give its own in data-preview instead.
+function deskDeeper() {
+  [].forEach.call(document.querySelectorAll('details.deeper, details.sources, details.fold, details.this-year'), function (d) {
+    var s = d.querySelector(':scope > summary'); if (!s) return;
+    var line = d.getAttribute('data-preview') || '';
+    if (!line && d.matches('.deeper')) {
+      var subs = [].filter.call(d.children, function (c) { return c.matches('.deeper-sub, section'); });
+      line = deeperPreview(subs.map(function (c) { var h = c.getAttribute('data-title') ? null : c.querySelector('h2, h3, h4, .card-hed, .sec-label'); return c.getAttribute('data-title') || (h ? h.textContent : ''); }));
+    }
+    var p = s.querySelector(':scope > .fold-p');
+    if (!line) { if (p && p.hasAttribute('data-auto')) p.remove(); return; }
+    if (p && !p.hasAttribute('data-auto')) return;
+    if (!p) { p = document.createElement('span'); p.className = 'fold-p' + (d.matches('.deeper') ? ' deeper-in' : ''); p.setAttribute('data-auto', ''); s.appendChild(p); }
+    p.textContent = line;
+  });
+}
+deskDeeper();
+
+// 3. The EXAMPLE DATA tag on a chart drawn at run time (once per chart).
+function deskExampleTag(fig) {
+  fig = deskEl(fig); if (!fig || fig.querySelector('.tag-example')) return;
+  var cap = fig.querySelector(':scope > figcaption'); if (!cap) { cap = document.createElement('figcaption'); fig.prepend(cap); }
+  var tag = document.createElement('span'); tag.className = 'chip tag-example'; tag.textContent = EXAMPLE_TAG; cap.appendChild(tag);
+}
+
+// 4. Save and share: the share sheet when it takes files, else a download link; the in-app browser notice.
+function deskInApp() { try { return inAppBrowser(navigator.userAgent); } catch (e) { return null; } }
+function deskSaveFile(o) {
+  var app = deskInApp(), notice = app ? IN_APP_NOTICE : null;
+  function done(via) { return { via: via, inApp: app, notice: notice }; }
+  function download() {
+    var url = URL.createObjectURL(o.blob), a = document.createElement('a');
+    a.href = url; a.download = o.name; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 20000);
+    return done('download');
+  }
+  var data = null;
+  try { data = { files: [new File([o.blob], o.name, { type: o.blob.type || 'application/octet-stream' })], title: o.title || o.name }; } catch (e) { data = null; }
+  var can = false;
+  try { can = !!(data && navigator.share && navigator.canShare && navigator.canShare(data)); } catch (e) { can = false; }
+  if (!can) return Promise.resolve(download());
+  return navigator.share(data).then(function () { return done('share'); }, function (e) { return e && e.name === 'AbortError' ? done('cancelled') : download(); });
+}
+function deskSaveButton(button, make) {
+  button = deskEl(button);
+  if (deskInApp() && !(button.nextElementSibling && button.nextElementSibling.classList.contains('save-note'))) {
+    var n = document.createElement('span'); n.className = 'save-note'; n.setAttribute('role', 'note'); n.textContent = IN_APP_NOTICE; button.after(n);
+  }
+  button.addEventListener('click', function () {
+    if (button.getAttribute('aria-busy') === 'true') return;
+    button.setAttribute('aria-busy', 'true');
+    Promise.resolve().then(make).then(deskSaveFile).catch(function () { return null; }).then(function () { button.removeAttribute('aria-busy'); });
+  });
+}
+
+// Save my card: a 1080x1350 PNG drawn in a canvas, in the page's current theme; nothing leaves the page.
+function deskCard(o) {
+  var W = 1080, H = 1350, P = 88, cs = getComputedStyle(document.documentElement);
+  var col = function (n, d) { return (cs.getPropertyValue('--t-' + n) || '').trim() || d; };
+  var C = { ground: col('ground', '#FCFDFD'), raised: col('raised', '#E8EEF3'), ink: col('ink', '#10161C'), ink2: col('ink2', '#36414C'), rule: col('rule', '#D3D8DD'), point: col('point', '#F2A93B') };
+  var serif = '"Source Serif 4 Variable", Georgia, serif', sans = '"Source Sans 3 Variable", system-ui, sans-serif';
+  var T = cardText({ head: DESK_SITE.wordmark, question: o.question, bigValue: o.bigValue, line: o.line, labels: o.labels }, DESK_SITE.origin);
+  var fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 72px ' + serif), document.fonts.load('400 50px ' + sans), document.fonts.load('700 40px ' + sans)]).catch(function () {}) : Promise.resolve();
+  return fonts.then(function () {
+    var c = document.createElement('canvas'); c.width = W; c.height = H;
+    var x = c.getContext('2d'), w = W - 2 * P, y = P;
+    var track = function (px) { if ('letterSpacing' in x) x.letterSpacing = px; };
+    var font = function (f) { x.font = f; track('0px'); };
+    var m = function (s) { return x.measureText(s).width; };
+    x.fillStyle = C.ground; x.fillRect(0, 0, W, H);
+    x.textBaseline = 'alphabetic'; x.fillStyle = C.ink;
+    // the wordmark over the site's double rule
+    font('600 44px ' + serif); y += 44; x.fillText(T.head, P, y);
+    y += 26; x.fillRect(P, y, w, 2); x.fillRect(P, y + 6, w, 2); y += 8;
+    // the question
+    font('600 72px ' + serif); y += 40;
+    wrapText(T.question, w, m, 4).forEach(function (l) { y += 80; x.fillText(l, P, y); });
+    // the big value, shrunk until it fits one line
+    var size = 230; font('600 ' + size + 'px ' + serif);
+    while (size > 96 && m(T.bigValue) > w) { size -= 6; font('600 ' + size + 'px ' + serif); }
+    y += Math.round(size * 0.95) + 40; x.fillText(T.bigValue, P, y);
+    // the one highlight: an amber rule under the figure, clear of its descenders
+    y += Math.round(size * 0.3); x.fillStyle = C.point; x.fillRect(P, y, Math.min(w, Math.max(160, m(T.bigValue))), 8); x.fillStyle = C.ink; y += 16;
+    // the one line
+    font('400 50px ' + sans);
+    wrapText(T.line, w, m, 3).forEach(function (l) { y += 66; x.fillText(l, P, y); });
+    // the labels as ruled chips
+    if (T.labels.length) {
+      y += 40; font('700 40px ' + sans); track('2px');
+      var cx = P, ch = 64;
+      T.labels.forEach(function (l) {
+        var s = l.toUpperCase(), lw = m(s) + 40;
+        if (cx > P && cx + lw > P + w) { cx = P; y += ch + 16; }
+        x.strokeStyle = C.rule; x.lineWidth = 2; x.strokeRect(cx + 1, y + 1, lw - 2, ch - 2);
+        x.fillStyle = C.ink2; x.fillText(s, cx + 20, y + 46); x.fillStyle = C.ink; cx += lw + 16;
+      });
+      y += ch;
+    }
+    // an optional small chart in the room that is left
+    var foot = H - P - 116;
+    if (typeof o.draw === 'function' && foot - y > 140) { try { o.draw(x, { x: P, y: y + 40, w: w, h: foot - y - 80 }, C); } catch (e) { /* the card still saves */ } }
+    // the foot: a 2px ink rule, the stamp and the site address
+    x.fillStyle = C.ink; x.fillRect(P, foot, w, 2);
+    font('700 40px ' + sans); x.fillText(T.stamp, P, foot + 56);
+    font('400 40px ' + sans); x.fillStyle = C.ink2; x.fillText(T.address, P, foot + 108);
+    return new Promise(function (res, rej) { c.toBlob(function (b) { if (b) res(b); else rej(new Error('the card could not be drawn')); }, 'image/png'); });
+  });
+}
+function deskSaveCard(o) {
+  return deskCard(o).then(function (blob) { return deskSaveFile({ blob: blob, name: o.name || 'my-card.png', title: o.question }); });
+}
+
+// 5. Guess, then reveal: skippable, and shown only when the tool calls show() after its first result.
+var deskGuessN = 0;
+function deskGuess(host, o) {
+  host = deskEl(host); o = o || {};
+  var id = 'desk-guess-' + (++deskGuessN), fmt = o.format || String, shown = false, done = false;
+  var mk = function (tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  host.textContent = ''; host.classList.add('guess'); host.setAttribute('data-guess', ''); host.hidden = true;
+  var k = mk('p', 'kicker', 'Guess first'), q = mk('p', 'guess-q', o.question || ''); q.id = id + '-q';
+  var row = mk('div', 'guess-row'), r = document.createElement('input'), out = mk('output', 'guess-v');
+  r.type = 'range'; r.id = id; r.min = o.min; r.max = o.max; r.step = o.step || 1; r.value = o.start != null ? o.start : o.min;
+  r.setAttribute('aria-labelledby', id + '-q'); out.setAttribute('for', id);
+  var paint = function () { out.textContent = fmt(Number(r.value)); r.setAttribute('aria-valuetext', out.textContent); };
+  r.addEventListener('input', paint); paint();
+  row.appendChild(out); row.appendChild(r);
+  var acts = mk('div', 'guess-actions'), go = mk('button', 'btn', 'Reveal'), skip = mk('button', 'btn-2', 'Skip');
+  go.type = 'button'; skip.type = 'button'; acts.appendChild(go); acts.appendChild(skip);
+  var said = mk('p', 'guess-out'); said.setAttribute('aria-live', 'polite'); said.hidden = true;
+  [k, q, row, acts, said].forEach(function (e) { host.appendChild(e); });
+  go.addEventListener('click', function () {
+    if (done) return; done = true;
+    var g = Number(r.value), a = typeof o.answer === 'function' ? o.answer() : o.answer;
+    said.textContent = o.reveal ? o.reveal(g, a) : 'Your guess: ' + fmt(g) + '. The answer: ' + fmt(a) + '.';
+    said.hidden = false; r.disabled = true; acts.hidden = true; said.setAttribute('tabindex', '-1'); said.focus();
+    if (o.onDone) o.onDone({ guess: g, answer: a, skipped: false });
+  });
+  skip.addEventListener('click', function () {
+    if (done) return; done = true; host.hidden = true;
+    var a = document.querySelector('[data-answer]'); if (a) { if (!a.hasAttribute('tabindex')) a.setAttribute('tabindex', '-1'); a.focus(); }
+    if (o.onDone) o.onDone({ skipped: true });
+  });
+  return { show: function () { if (shown || done) return; shown = true; host.hidden = false; }, el: host };
+}
+
 // The planning calendar: the dated rules a household meets in the twelve months from a given day, from confirmed facts
 // only. A date whose fact the file holds but has not confirmed is pending (never guessed); one the file lacks is left out.
 // The same code runs in the build's tests and, inlined, in the page (the page passes in its own date). No date, day count,
@@ -397,16 +722,18 @@ const yearEnd = (y) => lastDayOfMonth(y, 12);
 
 // One rule in one calendar year: its dates (every rule here places its dates inside that year), any period around them,
 // or why it has none. `pending` lists the facts held but not confirmed; `absent` the facts the file does not hold.
-function ruleYear(rule, F, year, held) {
+// `m` is the month (1-12) the tax year ends in: 12 for every rule except a corporation's, whose year-end month the
+// visitor may change (calendar.json marks those rules "yearEnd": "corporation").
+function ruleYear(rule, F, year, held, m = 12) {
   const want = ids(rule, year), missing = want.filter((id) => !F.has(id));
   if (missing.length) return missing.some((id) => held.has(id)) ? { pending: missing } : { absent: missing };
   const f = want.map((id) => F.get(id)), dates = [], windows = [];
   switch (rule.rule) {
     case 'fact_date': dates.push(String(f[0].value)); break;
     case 'fact_dates_in_year': dates.push(...monthDays(f[0], year)); break;
-    case 'year_end': dates.push(yearEnd(year)); break;
-    case 'days_after_prev_year_end': dates.push(iso(ms(yearEnd(year - 1)) + countIn(f[0], 'days') * DAY)); break;
-    case 'months_after_prev_year_end': dates.push(lastDayOfMonth(year - 1, 12 + countIn(f[0], 'months'))); break; // a month-end year-end
+    case 'year_end': dates.push(lastDayOfMonth(year, m)); break;
+    case 'days_after_prev_year_end': dates.push(iso(ms(lastDayOfMonth(year - 1, m)) + countIn(f[0], 'days') * DAY)); break;
+    case 'months_after_prev_year_end': dates.push(lastDayOfMonth(year - 1, m + countIn(f[0], 'months'))); break; // a month-end year-end
     case 'window_around_year_end': {
       // The superficial-loss period around a sale on the last day of the year: the facts file's day count either side.
       const n = countIn(f[0], 'days'), sale = yearEnd(year);
@@ -419,6 +746,8 @@ function ruleYear(rule, F, year, held) {
   return { dates, windows, facts: want };
 }
 
+const MONTH_NAMES = MONTHS.map((x) => x[0].toUpperCase() + x.slice(1));
+
 // The rules a set of situations brings, each once, in the config's order.
 const rulesFor = (config, picked) => {
   const want = new Set(config.situations.filter((s) => picked.includes(s.id)).flatMap((s) => s.rules));
@@ -426,16 +755,21 @@ const rulesFor = (config, picked) => {
 };
 
 // Everything the page shows for one household from `today` (YYYY-MM-DD) for twelve months (the end is exclusive).
-function rolling(config, factsFile, today, picked) {
+// opts.corpYearEnd: the month (1-12) a corporation's tax year ends in (December when not given).
+function rolling(config, factsFile, today, picked, opts = {}) {
+  const corpM = Number.isInteger(opts.corpYearEnd) && opts.corpYearEnd >= 1 && opts.corpYearEnd <= 12 ? opts.corpYearEnd : 12;
   const F = factIndex(factsFile), held = new Set(factsFile.facts.map((f) => f.id));
   const y0 = +today.slice(0, 4), start = ms(today), end = Date.UTC(y0 + 1, +today.slice(5, 7) - 1, +today.slice(8));
   const events = [], windows = [], pending = [], seen = new Set();
   const src = (id) => { const f = F.get(id); return { id, title: f.title, url: f.source_url, authority: f.authority, as_of: f.as_of }; };
   for (const rid of rulesFor(config, picked)) {
-    const r = config.rules[rid];
-    // The year before only matters for a period that runs into this one; its dates are all before today.
-    for (const y of [y0 - 1, y0, y0 + 1]) {
-      const out = ruleYear(r, F, y, held), ctx = { prev: String(y - 1), year: String(y) };
+    const r = config.rules[rid], m = r.yearEnd === 'corporation' ? corpM : 12;
+    // The year before only matters for a period that runs into this one; its dates are all before today. A rule whose
+    // facts carry no year (a corporation's) also reads the year after next: with a year-end early in the year, its
+    // return can fall two calendar years on.
+    const years = r.facts.some((id) => id.includes('{')) ? [y0 - 1, y0, y0 + 1] : [y0 - 1, y0, y0 + 1, y0 + 2];
+    for (const y of years) {
+      const out = ruleYear(r, F, y, held, m), ctx = { prev: String(y - 1), year: String(y), endMonth: MONTH_NAMES[m - 1] };
       if (out.pending) {
         const key = `${rid}|${out.pending.join()}`;
         if (y >= y0 && !seen.has(key)) { seen.add(key); pending.push({ rule: rid, year: y, kind: r.kind, label: fill(r.label, ctx, F), facts: out.pending, sources: out.pending.map((id) => factsFile.facts.find((f) => f.id === id)).filter(Boolean).map((f) => ({ id: f.id, title: f.title, url: f.source_url })) }); }
@@ -451,13 +785,13 @@ function rolling(config, factsFile, today, picked) {
         if (t < start || t >= end || seen.has(key)) continue;
         seen.add(key);
         const w = out.windows.find((x) => x.sale === date);
-        const c = { ...ctx, value: String(F.get(out.facts[0]).value), date: longDate(date), prevEnd: longDate(yearEnd(y - 1)), ...(w ? { from: longDate(w.from), to: longDate(w.to) } : {}) };
+        const c = { ...ctx, value: String(F.get(out.facts[0]).value), date: longDate(date), prevEnd: longDate(lastDayOfMonth(y - 1, m)), ...(w ? { from: longDate(w.from), to: longDate(w.to) } : {}) };
         events.push({ key, rule: rid, kind: r.kind, date, days: (t - start) / DAY, label: fill(r.label, c, F), what: r.what, text: fill(r.text, c, F), sources: out.facts.map(src) });
       }
     }
   }
   events.sort((a, b) => a.date.localeCompare(b.date) || Object.keys(config.rules).indexOf(a.rule) - Object.keys(config.rules).indexOf(b.rule));
-  return { today, end: iso(end - DAY), situations: [...picked], events, windows, pending, weeks: weeks(start, end, events) };
+  return { today, end: iso(end - DAY), situations: [...picked], corpYearEnd: corpM, events, windows, pending, weeks: weeks(start, end, events) };
 }
 
 // Monday-to-Sunday weeks covering the twelve months; each holds the dates that fall in it (the first and last are partial).
@@ -468,20 +802,19 @@ function weeks(start, end, events) {
   return out;
 }
 
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-// The answer under the question: the household's next confirmed date and how many fall in the twelve months.
-function finding(cal, noun) {
-  const who = noun ?? 'this household';
-  if (!cal.situations.length) return 'Tick at least one situation to build a household’s calendar.';
-  const p = cal.pending.length, more = p ? `, ${p} more not confirmed yet` : '';
-  if (!cal.events.length) return `For ${who}, no confirmed date falls in the next twelve months${more}.`;
-  const first = cal.events[0], same = cal.events.filter((e) => e.date === first.date).length;
-  const when = first.days === 0 ? 'today' : first.days === 1 ? 'tomorrow' : `in ${first.days} days`;
-  const on = first.date.slice(0, 4) === cal.today.slice(0, 4) ? monthDay(first.date) : longDate(first.date);
-  const what = same > 1 ? `${first.what} and ${plural(same - 1, 'other', 'others')}` : first.what;
-  // a dek (140 characters or fewer): the next date first, the count after it (the household is the chip picked above)
-  return `Next up: ${what}, ${on}, ${when}. ${plural(cal.events.length, 'date', 'dates')} in the next twelve months${more}.`;
+const wordsIn = (t) => t.trim().split(/\s+/).filter(Boolean).length;
+
+// The big answer: the household's next confirmed date as a countdown (n days, or a word for today and tomorrow), and
+// one line of 14 words or fewer: the date and what falls on it. Pending dates never count as next.
+function nextUp(cal) {
+  if (!cal.situations.length) return { text: 'None', line: 'Pick a household, or tick a situation under Fine-tune.' };
+  if (!cal.events.length) return { text: 'None', line: 'No confirmed date falls in the next twelve months.' };
+  const e = cal.events[0], same = cal.events.filter((x) => x.date === e.date).length - 1;
+  const head = `${longDate(e.date)} · ${e.what}`;
+  let line = same ? `${head}, and ${same} more that day` : head;
+  if (wordsIn(line) > 14) line = `${head}, and ${same} more`;
+  return { ...(e.days === 0 ? { text: 'Today' } : e.days === 1 ? { text: 'Tomorrow' } : { n: e.days }), line, event: e, same };
 }
 
 // iCalendar (RFC 5545): text escaped, lines folded at 75 octets without splitting a character, CRLF line ends.
@@ -524,7 +857,7 @@ function toICS(cal) {
   const $ = (id) => document.getElementById(id);
   const now = new Date(), TODAY = iso(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
   const example = C.presets.find((p) => p.id === C.example) ?? C.presets[0];
-  const state = { picked: example.situations.slice(), touched: false };
+  const state = { picked: example.situations.slice(), touched: false, ye: 12 };
   const short = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const weekday = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { weekday: 'long', timeZone: 'UTC' });
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
@@ -544,17 +877,21 @@ function toICS(cal) {
     if (parent) parent.appendChild(e);
     return e;
   }
-  const cal = (picked) => rolling(C, FF, TODAY, picked);
+  const cal = (picked) => rolling(C, FF, TODAY, picked, { corpYearEnd: state.ye });
 
   // Fixed for the page: every situation at once (for the sources) and each situation alone (the count beside its box).
   const ALL = cal(C.situations.map((x) => x.id));
   const alone = Object.fromEntries(C.situations.map((x) => { const c = cal([x.id]); return [x.id, [c.events.length, c.pending.length]]; }));
 
-  // ---------- build your household ----------
+  // ---------- pick a household (the first move), then fine-tune it ----------
   for (const p of C.presets) {
     const b = h('button', { type: 'button', 'data-preset': p.id, 'aria-pressed': 'false' }, $('picks'), p.label);
     b.addEventListener('click', () => { state.picked = p.situations.slice(); state.touched = true; render(); });
   }
+  // the corporation's year-end month (December unless the visitor picks another)
+  MONTH_NAMES.forEach((name, k) => h('option', { value: String(k + 1) }, $('ye'), name));
+  $('ye').value = String(state.ye);
+  $('ye').addEventListener('change', () => { state.ye = +$('ye').value; state.touched = true; render(); });
   for (const x of C.situations) {
     const l = h('label', { class: 'sit' }, $('sits'));
     const i = h('input', { type: 'checkbox', value: x.id }, l);
@@ -579,9 +916,9 @@ function toICS(cal) {
     clear(svg);
     const W = Math.max(280, $('frame').clientWidth), narrow = W < 640, wk = c.weeks, n = wk.length;
     // the SVG is drawn at the frame's own width (viewBox = width), so a label's font size is the size it renders at
-    const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 11 : 16;
+    const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 14 : 17;
     const fs = parseFloat(getComputedStyle(svg).fontSize); // the chart's label size, from style.css (#strip)
-    const tall = Math.max(4, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1);
+    const tall = Math.max(2, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1);
     // the axis: the month row, then the year row a full text line under it (a label's box is about 1.4 times its size)
     const lineH = Math.ceil(fs * 1.45), ay = base + fs + 16, yy = ay + lineH, H = yy + Math.ceil(fs / 2);
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
@@ -715,11 +1052,11 @@ function toICS(cal) {
       const src = h('p', { class: 'src' }, body, 'Source: ');
       e.sources.forEach((x, k) => { if (k) src.append('; '); h('a', { href: x.url }, src, x.title); if (x.authority === 'cra_position') src.append(' (CRA’s position)'); });
     }
-    if (!c.events.length) h('li', {}, ol, c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Tick a situation above to see its dates.');
+    if (!c.events.length) h('li', {}, ol, c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Pick a household, or tick a situation under “Fine-tune your household”, to see its dates.');
     const pd = $('pending'); pd.textContent = ''; pd.hidden = !c.pending.length;
     if (c.pending.length) {
       h('h3', {}, pd, 'Not confirmed yet');
-      h('p', { class: 'note' }, pd, 'The rule for these dates is not confirmed in the verified facts file yet, so they are not on the strip or in the calendar file.');
+      h('p', { class: 'note' }, pd, 'The rule for these dates is not confirmed in the verified facts file yet, so they are never counted as next and are not on the strip or in the calendar file.');
       const ul = h('ul', {}, pd);
       for (const p of c.pending) {
         const li = h('li', {}, ul, `${p.label}, in ${p.year}. `);
@@ -728,54 +1065,40 @@ function toICS(cal) {
     }
   }
 
-  // ---------- add to my calendar ----------
+  // ---------- add to my calendar: an .ics made in this page, shared or downloaded (deskSaveFile) ----------
   let current = null;
-  $('ics').addEventListener('click', () => {
-    if (!current || !current.events.length) return;
-    const url = URL.createObjectURL(new Blob([toICS(current)], { type: 'text/calendar;charset=utf-8' }));
-    const a = h('a', { href: url, download: `planning-dates-${current.today}.ics` }, document.body);
-    a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
+  deskSaveButton($('ics'), () => (current && current.events.length
+    ? { blob: new Blob([toICS(current)], { type: 'text/calendar' }), name: `tax-dates-${current.today}.ics`, title: 'Tax dates' }
+    : Promise.reject(new Error('nothing to save'))));
 
-  // the household's answer, under the quick picks: the next date, and how many there are
-  const KIND_WORDS = { pay: ['payment due', 'payments due'], file: ['return due', 'returns due'], cutoff: ['cut-off', 'cut-offs'] };
-  function readouts(c) {
-    const np = c.pending.length, fine = $('rd-count-fine');
-    fine.hidden = !np;
-    if (np) fine.textContent = `${plural(np, 'more date is', 'more dates are')} not confirmed yet; listed under the dates, left out of the calendar file.`;
-    if (!c.events.length) {
-      $('rd-next-v').textContent = 'None';
-      $('rd-next-t').textContent = c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Tick a situation to see its dates.';
-      $('rd-count-v').textContent = plural(0, 'date', 'dates');
-      $('rd-count-t').textContent = 'Nothing to add to a calendar yet.';
-      return;
-    }
-    const e = c.events[0], same = c.events.filter((x) => x.date === e.date).length;
-    $('rd-next-v').textContent = e.days === 0 ? 'Today' : e.days === 1 ? 'Tomorrow' : `In ${plural(e.days, 'day', 'days')}`;
-    $('rd-next-t').textContent = `${longDate(e.date)} · ${e.label}${same > 1 ? ` · and ${plural(same - 1, 'other', 'others')} that day` : ''}`;
-    $('rd-count-v').textContent = plural(c.events.length, 'date', 'dates');
-    const parts = KINDS.map((k) => [k, c.events.filter((x) => x.kind === k).length]).filter(([, m]) => m)
-      .map(([k, m]) => (KIND_WORDS[k] ? `${m} ${KIND_WORDS[k][m === 1 ? 0 : 1]}` : `${m}: ${C.kinds[k]}`));
-    $('rd-count-t').textContent = `${parts.join(', ')}, through ${longDate(c.end)}.`;
+  // ---------- the big answer: the next confirmed date, counted down ----------
+  const answer = deskReadout('#answer', { format: (n) => `In ${plural(Math.round(n), 'day', 'days')}` });
+  function readout(c) {
+    const a = nextUp(c), np = c.pending.length;
+    answer.set(a.n != null ? { n: a.n, line: a.line } : { text: a.text, line: a.line });
+    $('answer-how').textContent = `Counted from today, ${longDate(c.today)}, on your device’s clock, to the first date in the next twelve months whose rule is confirmed in the facts file.`
+      + (np ? ` ${plural(np, 'date', 'dates')} not confirmed yet ${np === 1 ? 'is' : 'are'} listed under Go deeper and never counted as next.` : '')
+      + ' Weekend and holiday moves are not applied.';
   }
 
   function render() {
-    const c = cal(state.picked), p = presetOf(state.picked);
+    const c = cal(state.picked), p = presetOf(state.picked), n = c.events.length, np = c.pending.length;
     current = c;
-    readouts(c);
-    $('finding').textContent = finding(c, p ? p.noun : null);
-    $('assume').textContent = (p && p.id === example.id && !state.touched ? `An example to start: ${p.noun}. ` : '') +
-      'Assumes a December year-end for a corporation or trust, and no weekend or holiday moves.';
+    readout(c);
+    $('assume').textContent = (p && p.id === example.id && !state.touched ? `An example to start: ${p.noun}. ` : p ? '' : 'Your own mix of situations. ') +
+      (state.picked.includes('corporation') && state.ye !== 12 ? `Assumes a ${MONTH_NAMES[state.ye - 1]} year-end for the corporation, December for a trust, ` : 'Assumes a December year-end for a corporation or trust, ') +
+      'and no weekend or holiday moves.';
     document.querySelectorAll('#picks button').forEach((b) => b.setAttribute('aria-pressed', String(!!p && b.dataset.preset === p.id)));
     document.querySelectorAll('#sits input').forEach((i) => { i.checked = state.picked.includes(i.value); });
+    const corp = state.picked.includes('corporation');
+    $('ye').closest('.ye-row').hidden = !corp;
+    $('ye-note').textContent = corp ? 'The T2 return and the year-end follow this month; a year-end is taken as the last day of the month.' : 'Tick “Owns a corporation” to set its year-end month.';
     drawStrip(c); legend(c); list(c);
-    const np = c.pending.length;
-    $('ics').disabled = !c.events.length;
-    $('ics').textContent = c.events.length ? `Add ${c.events.length === 1 ? 'this date' : `these ${c.events.length} dates`} to my calendar` : 'Add to my calendar';
-    $('ics-note').textContent = c.events.length
-      ? `A file of ${plural(c.events.length, 'all-day date', 'all-day dates')} for any calendar app, each with its rule, its source and “${EDU}” Made in this page; nothing is sent.${np ? ` ${plural(np, 'date', 'dates')} not confirmed yet ${np === 1 ? 'is' : 'are'} left out.` : ''}`
-      : 'Nothing to save yet: no confirmed date falls in these twelve months.';
+    $('ics').disabled = !n;
+    $('ics').textContent = n ? `Add ${n === 1 ? 'this date' : `these ${n} dates`} to my calendar` : 'Add to my calendar';
+    $('ics-count').textContent = n
+      ? `${plural(n, 'confirmed date', 'confirmed dates')} through ${longDate(c.end)}${np ? ` · ${plural(np, 'more', 'more')} not confirmed yet, listed but left out of the file` : ''}.`
+      : 'Nothing to add yet: no confirmed date falls in these twelve months.';
   }
 
   // ---------- own-date rules and sources ----------
@@ -788,10 +1111,20 @@ function toICS(cal) {
   for (const x of used.values()) { const li = h('li', {}, $('sources')); h('a', { href: x.url }, li, x.title); li.append(`, read ${x.as_of}${x.authority === 'cra_position' ? ' (CRA’s position)' : ''}.`); }
 
   render();
-  // the first fill is not a change: no underline on load
-  requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
+  // on a phone the chips scroll sideways: show the example's pressed chip at once (no animation), with part of the chip
+  // before it in view so the row reads as one that scrolls; again once the fonts are in, as the widths change
+  const showPicked = () => {
+    const row = $('picks'), on = row.querySelector('[aria-pressed="true"]');
+    if (state.touched || !on || row.scrollWidth <= row.clientWidth) return;
+    row.scrollLeft += on.getBoundingClientRect().left - row.getBoundingClientRect().left - 56;
+  };
+  // the row's edges fade where more chips sit beyond them, so a cut chip reads as one that scrolls
+  const edges = () => { const r = $('picks'); r.classList.toggle('more-l', r.scrollLeft > 2); r.classList.toggle('more-r', r.scrollLeft + r.clientWidth < r.scrollWidth - 2); };
+  $('picks').addEventListener('scroll', edges, { passive: true });
+  addEventListener('resize', edges);
+  showPicked(); edges();
   // the first drawing may measure labels before the inlined fonts are ready: place them again once they are
-  if (document.fonts) document.fonts.ready.then(() => current && drawStrip(current));
+  if (document.fonts) document.fonts.ready.then(() => { showPicked(); edges(); if (current) drawStrip(current); });
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => current && drawStrip(current), 150); });
 })();
 </script>

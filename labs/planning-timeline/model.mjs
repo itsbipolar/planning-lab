@@ -92,3 +92,65 @@ export function finding(M, p) {
   const list = bits.length > 1 ? bits.slice(0, -1).join(', ') + ' and ' + bits.at(-1) : bits[0];
   return `At ${p.age}, ${list}.`;
 }
+
+// ---------- the box score (redesign v2, Your year): the rows under the big answer, in the tense for the visitor's year ----------
+// Each row is { key, label, value, line }. Plain strings, so the page and the tests read the
+// same words. `thisYear` is the visitor's calendar year (the page passes new Date().getFullYear()).
+const pctText = (v) => {
+  const r = Math.round(v * 100) / 100;
+  return r.toLocaleString('en-CA', { maximumFractionDigits: 2 }) + '%';
+};
+const moneyText = (v) => '$' + Math.round(v).toLocaleString('en-CA');
+
+/** The one RRIF sentence used across the labs: "At least A% must come out the year you turn X, rising to B% from the
+ *  year you turn Y." (the factor is set by the age on January 1, so it applies the year you turn one more). */
+export function rrifRule(M) {
+  const first = M.rrif.filter((r) => r.age >= M.r.rrsp)[0], last = M.rrif[M.rrif.length - 1];
+  return `At least ${pctText(first.factor * 100)} must come out the year you turn ${first.age + 1}, rising to ${pctText(last.factor * 100)} from the year you turn ${last.age + 1}.`;
+}
+
+/** The change in the monthly amount at each end of the CPP window and at the latest OAS start, in percent. */
+export function windowChanges(M) {
+  const R = M.r;
+  return {
+    cppEarly: Math.round((R.cppStd - R.cppLo) * 12 * R.cppRed * 100) / 100,
+    cppLate: Math.round((R.cppHi - R.cppStd) * 12 * R.cppInc * 100) / 100,
+    oasLate: Math.round((R.oasHi - R.oasLo) * 12 * R.oasInc * 100) / 100,
+  };
+}
+
+/** A start window in the tense for that year: the whole window ahead, open now, or passed. */
+export function windowText(state, from, to) {
+  if (state === 'ahead') return `Can start ${from} to ${to}`;
+  if (state === 'open') return `Can start any month until ${to}`;
+  return `Could start from ${from} (that window has passed)`;
+}
+
+export function boxScore(M, p) {
+  const R = M.r, Y = p.core, C = windowChanges(M), rows = [];
+  // TFSA: the confirmed limits added up, to the last confirmed year only ("2026" for one year, never "2026 to 2026")
+  const span = Y.tfsaStart === Y.tfsaSumTo ? `${Y.tfsaStart} only` : `${Y.tfsaStart} to ${Y.tfsaSumTo}`;
+  rows.push(Y.tfsaSum > 0
+    ? { key: 'tfsa', label: 'TFSA limits added up', value: moneyText(Y.tfsaSum),
+      line: `${span}, before any contributions or withdrawals; if ${R.tfsaAge} or older and living in Canada each year.` }
+    : { key: 'tfsa', label: 'TFSA limits added up', value: `opens in ${Y.tfsaStart}`,
+      line: `The year you turn ${R.tfsaAge}, if living in Canada; limits are confirmed to ${Y.tfsaSumTo}.` });
+  // A window that has passed was met under the rules of its time, which the facts file does not hold: the figures are
+  // today's and the line says so, rather than reading as the terms that cohort had.
+  const rules = (state, line) => (state === 'past' ? `Under today’s rules, ${line[0].toLowerCase()}${line.slice(1)}` : line);
+  const cpp = windowText(Y.cppTense, Y.y60, Y.y70);
+  rows.push({ key: 'cpp', label: 'CPP, if you qualify', value: cpp,
+    line: rules(Y.cppTense, `At ${R.cppLo} a ${pctText(C.cppEarly)} smaller cheque, for life; at ${R.cppHi}, ${pctText(C.cppLate)} bigger.`) });
+  const oas = windowText(Y.oasTense, Y.oasFrom, Y.oasTo);
+  // The year of the increase is given only while it is ahead: the facts hold no date the increase began, so "since"
+  // a year before it could be false (a missing rule is left out).
+  const boost = Y.oasBoostYear > p.thisYear ? ` (in ${Y.oasBoostYear})` : '';
+  rows.push({ key: 'oas', label: 'OAS, if you meet the residence rules', value: oas,
+    line: rules(Y.oasTense, `From ${R.oasLo}, or wait to ${R.oasHi} for up to ${pctText(C.oasLate)} more a month; ${pctText(R.oasBoost)} more from ${M.oasBoostAge}${boost}.`) });
+  const must = Y.rrspTense === 'past' ? 'Had to' : 'Must';
+  rows.push({ key: 'rrsp', label: 'RRSP', value: `${must} wind up by the end of ${Y.y71} (most become a RRIF)`, line: rrifRule(M) });
+  // the age cohort, only where the Statistics Canada snapshot has the age (absent otherwise, never "not in the data")
+  if (p.popCount) rows.push({ key: 'cohort', label: `Canadians aged ${p.age}`, value: p.popCount.toLocaleString('en-CA'),
+    line: `On July 1, ${M.pop.year}, by Statistics Canada’s estimate.` });
+  return rows;
+}

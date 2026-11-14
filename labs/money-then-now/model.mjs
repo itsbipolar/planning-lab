@@ -2,6 +2,9 @@
 // build.mjs inlines this file into the page and the tests import it.
 // The example the page opens on (an illustration, labelled as one): an amount and a year it is shown from.
 export const EXAMPLE = { year: 1990, amount: 100 };
+// The year chips under the control (redesign v2: "Your year" when one is carried, then these): a spread of starting
+// points, not figures from the data. A chip outside the data's years is left out.
+export const CHIP_YEARS = [1970, 1990, 2000, 2010];
 
 export function yearsOf(M) { const out = []; for (let y = M.first; y <= M.last; y++) out.push(y); return out; }
 
@@ -41,4 +44,12 @@ export function counts(M) {
     years: ys.length, rose: ys.filter((y) => M.infl[y] > 0).length, fell: ys.filter((y) => M.infl[y] < 0).length,
     primeYears: py.length, below: py.filter((y) => realRate(M, y) < 0).length,
   };
+}
+
+// The largest yearly price rise after the year an amount is shown from, up to the latest year (the line chart's one
+// annotation). Null when the span holds no later year.
+export function steepest(M, from) {
+  let best = null;
+  for (let y = from + 1; y <= M.last; y++) if (best == null || M.infl[y] > M.infl[best]) best = y;
+  return best;
 }

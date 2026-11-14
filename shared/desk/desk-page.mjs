@@ -47,7 +47,22 @@ const THEME_BUTTON = `<button type="button" class="desk-theme" data-theme-toggle
   + `b.addEventListener('click',function(){var t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);r.style.colorScheme=t;`
   + `try{localStorage.setItem('theme',t)}catch(e){}p()})})()</script>`;
 
-export function toolBar(tool) {
+// The year chip (redesign v2 section 7; Mo approved the carry): on a page that carries <!--@@YEAR@@-->, the tool bar holds
+// "Born {year} · change · forget", shown only when sessionStorage mo.year holds a 4-digit year. "change" focuses the
+// page's year control ([data-year-control], else the first field in [data-first-move]); "forget" removes the key and
+// reloads, so the page opens on its labelled example. window.deskYearChip() re-reads the key (a page calls it after the
+// visitor sets a year). The year is read from storage on this device only; it never reaches the address.
+const YEAR_CHIP = `<p class="desk-year" data-year-chip hidden><span>Born <b data-year-chip-y></b></span><span aria-hidden="true">·</span>`
+  + `<button type="button" data-year-change aria-label="change the birth year">change</button><span aria-hidden="true">·</span><button type="button" data-year-forget aria-label="forget the birth year">forget</button></p>`
+  + `<script>(function(){var c=document.querySelector('[data-year-chip]');if(!c)return;var K='mo.year';`
+  + `function get(){try{var y=sessionStorage.getItem(K);return y&&/^\\d{4}$/.test(y)?y:null}catch(e){return null}}`
+  + `function show(){var y=get();c.querySelector('[data-year-chip-y]').textContent=y||'';c.hidden=!y}`
+  + `c.querySelector('[data-year-change]').addEventListener('click',function(){var f=document.querySelector('[data-year-control]')||document.querySelector('[data-first-move] input,[data-first-move] select,[data-first-move]');`
+  + `if(!f)return;f.scrollIntoView({block:'center'});f.focus({preventScroll:true});if(f.select)try{f.select()}catch(e){}});`
+  + `c.querySelector('[data-year-forget]').addEventListener('click',function(){try{sessionStorage.removeItem(K)}catch(e){}location.reload()});`
+  + `window.deskYearChip=show;show()})()</script>`;
+
+export function toolBar(tool, { year = false } = {}) {
   const nav = SITE.nav.map((n) => `<li><a href="${esc(n.href)}"${n.href === '/tools/' ? ' aria-current="true"' : ''}>${esc(n.label)}</a></li>`).join('');
   return `<div class="desk-top">
   <header class="desk-head">
@@ -56,7 +71,7 @@ export function toolBar(tool) {
     ${THEME_BUTTON}
   </header>
   <nav class="desk-toolnav" aria-label="This tool">
-    <a href="/tools/"><span aria-hidden="true">←</span> All tools</a>
+    <a href="/tools/"><span aria-hidden="true">←</span> All tools</a>${year ? '\n    ' + YEAR_CHIP : ''}
     <a href="/tools/${esc(tool.slug)}/how-i-made-it/">How I made this</a>
   </nav>
   </div>`;
@@ -109,10 +124,12 @@ export function deskPage(html, labSlug) {
   for (const m of ['<!--@@TOOLBAR@@-->', '<!--@@NEXT@@-->', '<!--@@NOTES@@-->', '</head>']) once(html, m, labSlug);
   if (/data-next/.test(html)) throw new Error(`${labSlug}: data-next is reserved for the one Up next card`);
   if (html.split('<!--@@YEAR@@-->').length > 2) throw new Error(`${labSlug}: expected at most one <!--@@YEAR@@-->`);
+  // assumptions said once (redesign v2 section 7): at most one data-assumptions block (expectTemplate wants exactly one)
+  if ((html.match(/<[a-z][^>]*\sdata-assumptions[\s>=]/gi) || []).length > 1) throw new Error(`${labSlug}: expected at most one data-assumptions block`);
   const out = html
     .replace('<!--@@YEAR@@-->', () => YEAR_HEAD)
     .replace('</head>', () => headTags(html, tool) + '\n</head>')
-    .replace('<!--@@TOOLBAR@@-->', () => toolBar(tool))
+    .replace('<!--@@TOOLBAR@@-->', () => toolBar(tool, { year: html.includes('<!--@@YEAR@@-->') }))
     .replace('<!--@@NEXT@@-->', () => upNext(tool))
     .replace('<!--@@NOTES@@-->', () => notes())
     // rules replace ornament (redesign v2, step 2): a section label carries no number

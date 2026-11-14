@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildModel, view, value, sumAges, finding, question, diagonal, bornRange, big, RULES } from '../model.mjs';
+import { buildModel, view, value, sumAges, finding, question, diagonal, bornRange, big, RULES, ageAnswer, defaultAge, inAges, num } from '../model.mjs';
 
 const json = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const snap = json('../../../shared/data/population-by-age-places.json');
@@ -103,6 +103,33 @@ test('a missing headline fact stops the build; any other missing rule is left of
   assert.ok(!m.rules.some((r) => r.facts.some((f) => f.id === 'rrsp_maturity_age')));
   const unconfirmed = facts.facts.map((f) => (f.id === 'oas_age75_increase' ? { ...f, status: 'unverified' } : f));
   assert.ok(!buildModel({ facts: unconfirmed }, snap).rules.some((r) => r.facts.some((f) => f.id === 'oas_age75_increase')));
+});
+
+test('Find an age: opens a year short of the OAS age; the answer is the latest July 1 count; label and line fit the readout', () => {
+  const oas = Number(confirmed.get('oas_start_age').value), words = (t) => t.trim().split(/\s+/).length;
+  assert.equal(defaultAge(M), oas - 1);
+  assert.ok(inAges(M, a0) && inAges(M, a1) && !inAges(M, a0 - 1) && !inAges(M, a1 + 1) && !inAges(M, a0 + 0.5));
+  for (const p of snap.places) for (const g of ['all', ...snap.genders]) {
+    const V = view(M, p.id, g);
+    for (let a = a0; a <= a1; a++) {
+      const A = ageAnswer(M, V, a);
+      assert.equal(A.count, V.counts[y1][a - a0]);
+      assert.equal(A.label, `Aged ${a} on July 1, ${y1}`);
+      assert.ok(words(A.label) <= 6, A.label);
+      assert.ok(words(A.line) <= 14, `${p.id} ${g} ${a}: ${A.line}`);
+      assert.equal(A.y65, y1 - a + oas);
+      assert.equal(A.unit, p.id === 'CA' ? 'Canadians' : 'people');
+      assert.match(A.how, new RegExp(`born from July 2, ${y1 - a - 1} to July 1, ${y1 - a}`));
+      if (a < oas) assert.match(A.line, new RegExp(`turn ${oas} by July 1, ${y1 - a + oas}\\.$`));
+      if (a === oas) assert.match(A.line, new RegExp(`turned ${oas} in the year to July 1, ${y1}\\.$`));
+      if (a > oas) assert.ok(A.line.endsWith(`at ${oas}, on July 1, ${A.y65}, the group numbered ${num(V.counts[A.y65][oas - a0])}.`.replace(/^at/, A.line.startsWith('At') ? 'At' : 'at')), A.line);
+    }
+  }
+  // Canada, all genders: no place prefix, a capital first letter; elsewhere the place leads
+  assert.match(ageAnswer(M, view(M, 'CA', 'all'), oas - 1).line, /^They all turn/);
+  assert.match(ageAnswer(M, view(M, 'ON', 'Women+'), oas - 1).line, /^Ontario \(Women\+\): they all turn/);
+  assert.match(ageAnswer(M, view(M, 'TR', 'all'), oas - 1).line, /^The territories: /);
+  assert.match(ageAnswer(M, view(M, 'CA', 'Men+'), oas - 1).line, /^Canada \(Men\+\): /);
 });
 
 const ids = ['cpp_earliest_start_age', 'cpp_standard_start_age', 'cpp_latest_start_age', 'cpp_early_start_reduction', 'cpp_late_start_increase',

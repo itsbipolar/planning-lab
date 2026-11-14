@@ -40,7 +40,7 @@
 
   const fill = {
     start: money(S.start), withdrawal: money(W0), indexation: pctF(S.indexation), avg: pct1(AVG), trim: pctF(S.flexTrim),
-    buffer: words(S.bufferYears), orders: intF.format(ORDERS), after: String(N + 1), nWords: words(N),
+    buffer: words(S.bufferYears), orders: intF.format(ORDERS), after: String(N + 1), nWords: words(N), horizon: String(HZ),
   };
   document.querySelectorAll('[data-v]').forEach((e) => { e.textContent = fill[e.dataset.v]; });
 
@@ -48,7 +48,7 @@
   const NS = 'http://www.w3.org/2000/svg';
   // The one size rule (redesign v2): every piece of chart text is drawn at TXT px or more, at real pixel size (each chart
   // is drawn at its container's width, viewBox = width), so nothing is scaled down on a phone.
-  const TXT = 17;
+  const TXT = 17.5;
   const el = (name, attrs, parent, text) => {
     const e = document.createElementNS(NS, name);
     for (const k in attrs) if (attrs[k] !== undefined) e.setAttribute(k, attrs[k]);
@@ -108,7 +108,7 @@
     const fs = TXT, lfs = narrow ? TXT : TXT + 1, rfs = TXT;
     // stacked label lines: the name (bold) then its reading, each in its real box, one pixel of air between boxes
     const mN = vm(lfs, 700), mR = vm(rfs), mF = vm(fs, 600), mT = vm(fs), air = 1;
-    const H = cfg.height ? cfg.height(W) : narrow ? 380 : Math.round(Math.min(520, Math.max(380, W * 0.3)));
+    const H = cfg.height ? cfg.height(W) : narrow ? 340 : Math.round(Math.min(520, Math.max(380, W * 0.3)));
     setup(svg, W, H);
     let max = cfg.yMax || 0; if (!cfg.yMax) for (const s of cfg.series) for (const v of s.pts) max = Math.max(max, v);
     const ys = yScale(max, narrow || cfg.compact ? 3 : 4);
@@ -118,7 +118,9 @@
     const full = (s) => s.upto === undefined || s.upto >= HZ;
     // the labels go in a gutter on the right; on narrow and small charts their words wrap to keep the gutter slim
     const gutMax = tight ? (narrow ? 92 : 110) : 400;
-    for (const s of labelled) { s.nameLines = wrap(s.name, gutMax, lfs, 700); s.readLines = s.reading ? wrap(s.reading, gutMax, rfs, 400) : []; }
+    // on a phone "Lasts N years" reads "N years" under its name, so a reading keeps to one line in the slim gutter
+    const said = (r) => (narrow ? r.replace(/^Lasts (\d+ years?)$/, '$1') : r);
+    for (const s of labelled) { s.nameLines = wrap(s.name, gutMax, lfs, 700); s.readLines = s.reading ? wrap(said(s.reading), gutMax, rfs, 400) : []; }
     const gut = Math.ceil(Math.max(0, ...labelled.filter(full).flatMap((s) => s.nameLines.map((l) => tw(l, lfs, 700)).concat(s.readLines.map((l) => tw(l, rfs)))))) + 22;
     const B = 34 + (cfg.bottomPad || 0), R = gut;
     const x = (t) => L + t / HZ * (W - L - R);
@@ -150,7 +152,7 @@
     for (const s of cfg.series) {
       const upto = s.upto === undefined ? s.pts.length - 1 : s.upto;
       const d = s.pts.slice(0, upto + 1).map((v, t) => (t ? 'L' : 'M') + x(t).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
-      el('path', { d, class: 'ln s-' + s.key + (s.thin ? ' thin' : '') + (s.dash ? ' dash' : '') }, gl);
+      el('path', { d, class: 'ln s-' + s.key + (s.thin ? ' thin' : '') + (s.dash ? ' dash' : '') + (s.faint ? ' faint' : '') }, gl);
       if (s.dep && s.dep <= upto) el('circle', { cx: x(s.dep), cy: y(0), r: s.thin ? 4 : 5.5, class: 'dot f-' + s.key }, gd);
     }
     // readings at the end of the dealt years
@@ -170,7 +172,7 @@
       const upto = s.upto === undefined ? s.pts.length - 1 : s.upto;
       if (!full(s)) {
         const room = Math.max(60, W - R - x(upto) - 14);
-        s.nameLines = wrap(s.name, room, lfs, 700); s.readLines = s.reading ? wrap(s.reading, room, rfs, 400) : [];
+        s.nameLines = wrap(s.name, room, lfs, 700); s.readLines = s.reading ? wrap(said(s.reading), room, rfs, 400) : [];
       }
       const lines = s.nameLines.length + s.readLines.length;
       const size = s.nameLines.length * mN.h + s.readLines.length * mR.h + (lines - 1) * air;
@@ -221,23 +223,166 @@
     return out;
   }
 
-  // ---------- the lead chart ----------
+  // ---------- Ruth and Sam ----------
   const ruthS = (res = RUTH, extra = {}) => ({ key: 'ruth', name: 'Ruth', reading: short(res), pts: pts(res), dep: res.depletionYear, ...extra });
   const samS = (res = SAM, extra = {}) => ({ key: 'sam', name: 'Sam', reading: short(res), pts: pts(res), dep: res.depletionYear, ...extra });
-  // the question (built into the page from story.json) and, under it, the finding, from the engine
+  // the question (built into the page from story.json)
   $('headline').textContent = `Same ${words(N)} years. Why does one retiree run out?`;
-  const finding = RUTH.depletionYear === null && SAM.depletionYear
-    ? `Ruth’s savings last all ${HZ} years; Sam’s run out in year ${SAM.depletionYear}.`
-    : `Ruth’s savings: ${short(RUTH)}. Sam’s: ${short(SAM)}.`;
-  // a dek of 140 characters or fewer: who they are, what differs, the finding (the average return is in the prose below)
-  $('deck').textContent = `Ruth and Sam are made up. Same market years, different order. ${finding}`;
-  $('t-lead').textContent = RUTH.balances[N - 1] > SAM.balances[N - 1] ? `The gap opens in the first ${words(N)} years` : 'Ruth and Sam, year by year';
-  const fate = (name, res) => res.depletionYear ? `${name}\u2019s money runs out in year ${res.depletionYear}` : `${name} still has ${money(res.endBalance)} after ${HZ} years`;
-  $('s-lead').textContent = `After the ${words(N)} dealt years Ruth has ${money(RUTH.balances[N - 1])} and Sam ${money(SAM.balances[N - 1])}. ${fate('Ruth', RUTH)}; ${fate('Sam', SAM)}.`;
-  const drawLead = () => { const svg = $('c-lead'); dropCross(svg); addCross(svg, lineChart(svg, { series: [ruthS(), samS()], band: true, readAt: N })); };
+  // "lasts N years" (whole years paid in full) and "runs out in year N + 1" said together, so the chart's reading and the
+  // dot on the year axis agree with the words
+  const fate = (name, res) => res.depletionYear ? `${name}’s money lasts ${yrs(yearsLasted(res.depletionYear, HZ))} and runs out in year ${res.depletionYear}` : `${name} still has ${money(res.endBalance)} after ${HZ} years`;
 
-  // ---------- the cards ----------
-  for (const v of S.cards) { const li = document.createElement('li'); li.textContent = card(v); if (v < 0) li.className = 'down'; $('cards').appendChild(li); }
+  // ---------- the deal: ten face-down cards, the answer beside them (redesign v2, step 4) ----------
+  // The answer reads the sorted-outcome distribution written at build for the story (enumerate.mjs distribution()), so it
+  // is there at once; "lasts" counts whole years paid in full, capped at the horizon, so many orders tie and the share
+  // says "at least as long as".
+  const DIST = JSON.parse($('dist').textContent);
+  const lastedOf = (res) => yearsLasted(res.depletionYear || 0, HZ);
+  const yrs = (n) => n + (n === 1 ? ' year' : ' years');
+  const lastsPhrase = (res) => res.depletionYear ? `lasts ${yrs(lastedOf(res))}` : `lasts all ${HZ} years`;
+  let order = null, shown = 0, dealt = [], deals = 0, longest = null, shortest = null, guess = null;
+  const isFull = () => dealt.length === N;
+  const youRes = () => run(dealt, W0);
+  const deckEl = $('deck-cards'), dealBtn = $('deal'), oneBtn = $('one');
+  const cardEls = Array.from({ length: N }, (_, i) => {
+    const li = document.createElement('li'); li.className = 'card';
+    li.innerHTML = '<span class="card-in" aria-hidden="true"><span class="card-back"></span><span class="card-face"></span></span><span class="sr"></span>';
+    li.querySelector('.card-back').textContent = String(i + 1);
+    deckEl.appendChild(li); return li;
+  });
+  function paintCards(stagger) {
+    cardEls.forEach((li, i) => {
+      const up = i < shown, v = order ? order[i] : null;
+      li.querySelector('.card-face').textContent = v === null ? '' : card(v);
+      li.classList.toggle('neg', v !== null && v < 0);
+      li.querySelector('.card-in').style.transitionDelay = stagger ? (i * 40) + 'ms' : '';
+      li.classList.toggle('up', up);
+      li.querySelector('.sr').textContent = `Year ${i + 1}: ` + (up ? card(v) : 'face down');
+    });
+  }
+  // a new order: every card back face down at once, then dealt
+  function newOrder() {
+    const o = S.cards.slice();
+    for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
+    order = o; shown = 0;
+    deckEl.classList.add('instant'); cardEls.forEach((li) => li.classList.remove('up')); void deckEl.offsetWidth; deckEl.classList.remove('instant');
+  }
+
+  const answer = deskReadout('#answer', { format: (n) => yrs(Math.round(n)) });
+  // the guess asks for the share of orders that last the full horizon, so while it waits that share is not given away
+  let guessOpen = true;
+  const shareLine = (res) => {
+    const y = lastedOf(res);
+    if (!res.depletionYear && guessOpen) return `It lasts the full ${HZ} years. What share of orders do? Guess below.`;
+    if (!res.depletionYear) return `Like ${share(DIST.lasts, DIST.total)} of all ${intF.format(DIST.total)} orders, it lasts the full ${HZ} years.`;
+    return `It lasts at least as long as ${share(atLeastAsLong(DIST, y), DIST.total)} of all ${intF.format(DIST.total)} orders.`;
+  };
+  const startLine = `Ruth’s order ${lastsPhrase(RUTH)}. Sam’s ${lastsPhrase(SAM)}.`;
+  function drawDeal(svg = $('c-deal'), width) {
+    // before a deal Ruth and Sam are the story, drawn at full weight; once there is an order, they step back for it
+    const ctx = dealt.length ? { thin: true, faint: true } : {};
+    const series = [ruthS(RUTH, ctx), samS(SAM, { ...ctx, reading: lastsPhrase(SAM).replace(/^l/, 'L') })];
+    if (dealt.length) {
+      const r = youRes(), k = dealt.length;
+      series.push({ key: 'you', name: 'This order', reading: isFull() ? (r.depletionYear ? lastsPhrase(r).replace(/^l/, 'L') : short(r)) : money(r.balances[k - 1]) + ' after year ' + k, pts: pts(r), dep: r.depletionYear, upto: isFull() ? undefined : k });
+    }
+    const live = svg.id === 'c-deal';
+    if (live) dropCross(svg);
+    const g = lineChart(svg, { series, band: true, width });
+    if (live) addCross(svg, g);
+  }
+  function dealText() {
+    const r = youRes(), k = dealt.length;
+    $('t-deal').textContent = isFull() ? (r.depletionYear ? `This order lasts ${lastedOf(r)} years, between Ruth’s and Sam’s` : `This order lasts all ${HZ} years, with ${money(r.endBalance)} left`)
+      : k ? `This order so far: ${k} of ${N} years dealt` : `Ruth’s and Sam’s paths split in the first ${words(N)} years`;
+    $('sub-deal').textContent = k ? 'Savings at the end of each year: Ruth, Sam and this order (amber)' : 'Savings at the end of each year: Ruth and Sam';
+    $('s-deal').textContent = `After the ${words(N)} dealt years Ruth has ${money(RUTH.balances[N - 1])} and Sam ${money(SAM.balances[N - 1])}. ${fate('Ruth', RUTH)}; ${fate('Sam', SAM)}.` +
+      (isFull() ? ` This order: ${r.depletionYear ? 'the money runs out in year ' + r.depletionYear : money(r.endBalance) + ' left after ' + HZ + ' years'}.` : '');
+  }
+
+  // the strip: how every order ends, shortest to longest, this order's bar in amber
+  const stripBars = () => DIST.strip.byYear.concat(DIST.strip.left.counts);
+  function drawStrip() {
+    const svg = $('c-strip'), W = Math.max(240, Math.floor(svg.parentNode.getBoundingClientRect().width)), fs = TXT, mt = vm(fs);
+    const bars = stripBars(), nDep = DIST.strip.byYear.length, max = Math.max(...bars), barH = 64, H = barH + 8 + mt.h + 4;
+    setup(svg, W, H);
+    const gapX = 10, unit = (W - gapX) / bars.length, bw = Math.max(3, unit - 3);
+    const bx = (i) => i * unit + (i >= nDep ? gapX : 0);
+    const mine = isFull() ? (() => { const o = outcome(youRes()); return stripBar(DIST, o.dep, o.value); })() : -1;
+    bars.forEach((c, i) => {
+      const h = Math.max(c ? 2 : 0, c / max * barH);
+      el('rect', { x: bx(i), y: barH - h, width: bw, height: h, class: i === mine ? 'f-you' : 'bar strip-bar' }, svg);
+    });
+    el('line', { x1: 0, x2: W, y1: barH + 0.5, y2: barH + 0.5, class: 'zero' }, svg);
+    const ty = barH + 6 + mt.asc;
+    el('text', { x: 0, y: ty, class: 'ax', 'font-size': fs }, svg, 'Runs out sooner');
+    el('text', { x: W, y: ty, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, svg, 'Lasts longer');
+    $('strip-k').textContent = isFull() ? `This order (amber) among all ${intF.format(DIST.total)}` : `How all ${intF.format(DIST.total)} orders end`;
+    const first = DIST.strip.firstYear;
+    $('strip-s').textContent = `Bars: orders that run out in year ${first} to ${HZ}, then orders that last, by money left in steps of ${money(DIST.strip.left.step)}.` +
+      (mine >= 0 ? ` This order is in bar ${mine + 1} of ${bars.length}.` : '');
+  }
+  function drawTally() {
+    const t = $('tally');
+    t.hidden = !deals;
+    if (deals) t.textContent = `Deals ${intF.format(deals)} · Longest ${yrs(longest)} · Shortest ${yrs(shortest)}`;
+  }
+
+  function showDeal(stagger) {
+    dealt = order ? order.slice(0, shown) : [];
+    paintCards(stagger);
+    drawDeal(); dealText(); drawStrip();
+    if (!dealt.length) { answer.set({ text: '?', label: 'This order lasts', line: startLine }); }
+    else if (!isFull()) {
+      const r = youRes(), k = dealt.length;
+      answer.set({ text: '?', label: 'This order lasts', line: `${k} of ${N} dealt: ${money(r.balances[k - 1])} after year ${k}.` });
+    } else {
+      const r = youRes(), y = lastedOf(r);
+      deals++; longest = longest === null ? y : Math.max(longest, y); shortest = shortest === null ? y : Math.min(shortest, y);
+      answer.set({ n: y, label: 'This order lasts', line: shareLine(r) });
+      dealBtn.textContent = 'Deal again';
+      $('save-row').hidden = false;
+      if (guess) guess.show();
+      // while the guess waits, the strip of how every order ends (which would give the share away) steps aside
+      $('strip-box').hidden = guessOpen;
+    }
+    drawTally();
+    youChanged();
+  }
+  dealBtn.addEventListener('click', () => { newOrder(); shown = N; showDeal(true); });
+  oneBtn.addEventListener('click', () => { if (!order || shown === N) newOrder(); shown++; showDeal(false); });
+
+  // the optional bridge after the first deal: a guess, then the share, always skippable
+  guess = deskGuess('#guess', {
+    question: `What share of all orders last the full ${HZ} years?`, min: 0, max: 100, step: 1, start: 50,
+    format: (v) => v + '%', answer: () => DIST.lasts / DIST.total * 100,
+    reveal: (g) => `${share(DIST.lasts, DIST.total)}. You guessed ${g}%.`,
+    // once answered or skipped, a full-length deal on screen gets its share line back
+    onDone: () => { guessOpen = false; $('strip-box').hidden = false; drawStrip(); if (isFull()) $('answer-t').textContent = shareLine(youRes()); },
+  });
+
+  // Save my card: the dealt result as a 1080x1350 PNG drawn in this browser (deskCard), shared or downloaded
+  deskSaveButton($('save'), () => {
+    const r = youRes(), cs = getComputedStyle(document.documentElement), c = (k) => cs.getPropertyValue(k).trim();
+    return deskCard({
+      question: $('headline').textContent, bigValue: $('answer-v').textContent, line: $('answer-t').textContent,
+      labels: [r.depletionYear ? `Runs out in year ${r.depletionYear}` : `${money(r.endBalance)} left`, 'Made-up returns'],
+      draw: (ctx, box, C) => {
+        const all = [RUTH, SAM, r], max = Math.max(S.start, ...all.flatMap((x) => x.balances));
+        const X = (t) => box.x + t / HZ * box.w, Y = (v) => box.y + box.h - v / max * box.h;
+        ctx.fillStyle = C.raised; ctx.fillRect(X(0), box.y, X(N) - X(0), box.h);
+        ctx.fillStyle = C.ink; ctx.fillRect(box.x, box.y + box.h, box.w, 2);
+        [[RUTH, c('--t-d1'), 4], [SAM, c('--t-d4'), 4], [r, C.point, 9]].forEach(([res, colour, lw]) => {
+          ctx.strokeStyle = colour; ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.beginPath();
+          pts(res).forEach((v, t) => (t ? ctx.lineTo(X(t), Y(v)) : ctx.moveTo(X(t), Y(v)))); ctx.stroke();
+        });
+      },
+    }).then((blob) => ({ blob, name: 'order-of-returns-my-card.png', title: $('headline').textContent }));
+  });
+
+  // "How this is worked out", from the story and the distribution
+  $('how-1').textContent = `Each order starts with ${money(S.start)} and takes out ${money(W0)} in the first year, ${pctF(S.indexation)} more each year after. The ${words(N)} cards (${S.cards.map(card).join(', ')}) average ${pct1(AVG)}; from year ${N + 1} to year ${HZ}, every year earns that average. Ruth gets the cards best first, Sam worst first.`;
+  $('how-2').textContent = `A year counts when its whole withdrawal is paid, up to ${HZ}. Counted in whole years, many orders tie, so the share counts every order that lasts no longer than this one. It comes from all ${intF.format(DIST.total)} orders, worked out with the same engine when the page was built.`;
 
   // ---------- shuffle with no withdrawals ----------
   let samOrder = BAD.slice();
@@ -264,61 +409,75 @@
     shuffles++; drawShuffle();
   });
 
-  // ---------- deal the years ----------
-  let hand, dealt;
-  const handEl = $('hand'), dealtEl = $('dealt');
-  const youRes = () => run(dealt, W0);
-  const isFull = () => dealt.length === N;
-  function drawDeal(svg = $('c-deal'), width) {
-    const series = [ruthS(RUTH, { thin: false }), samS()];
-    if (dealt.length) {
-      const r = youRes(), k = dealt.length;
-      series.push({ key: 'you', name: 'Your order', reading: isFull() ? short(r) : money(r.balances[k - 1]) + ' after year ' + k, pts: pts(r), dep: r.depletionYear, upto: isFull() ? undefined : k });
+  // ---------- why: the share that last, by the first five years (the full heat strip's top row) ----------
+  function whyChart() {
+    const svg = $('c-why'), W = widthOf(svg), narrow = W < 600, fs = TXT, lfs = TXT + 1, mt = vm(fs), ml = vm(lfs, 700);
+    const gs = DIST.groups, lo = gs[0].avg, hi = gs[gs.length - 1].avg, minCw = tw('100%', fs) + 8;
+    const yLab = (p) => Math.round(p * 100) + '%';
+    const L = Math.ceil(tw(yLab(1), fs)) + 10, R = 4;
+    const ncOf = (bw) => Math.floor(hi / bw + 1e-9) - Math.floor(lo / bw + 1e-9) + 1;
+    let bw = niceStep((hi - lo) / 14);
+    while (ncOf(bw) * minCw > W - L - R) bw = niceStep(bw * 1.01);
+    const c0 = Math.floor(lo / bw + 1e-9), c1 = Math.floor(hi / bw + 1e-9), nc = c1 - c0 + 1;
+    const cols = Array.from({ length: nc }, () => ({ n: 0, lasts: 0 }));
+    // one rounding for the bars' labels and the sentence under the chart
+    const colPct = (c) => { const p = c.lasts / c.n; return p > 0 && p < 0.005 ? 'under 1%' : Math.round(p * 100) + '%'; };
+    const colOf = (avg) => Math.floor(avg / bw + 1e-9) - c0;
+    for (const g of gs) { const c = cols[colOf(g.avg)]; c.n += g.n; c.lasts += g.lasts; }
+    const T = mt.h + 4 + ml.h + 14 + mt.h + 6, plotH = narrow ? 180 : 240, B = 8 + mt.h + 10 + mt.h + 6, H = T + plotH + B;
+    setup(svg, W, H);
+    const cw = (W - L - R) / nc, cx = (i) => L + i * cw, y = (p) => T + (1 - p) * plotH, base = y(0);
+    for (const p of [0, 0.5, 1]) {
+      el('line', { x1: L, x2: W - R, y1: y(p), y2: y(p), class: p === 0 ? 'zero' : 'grid' }, svg);
+      el('text', { x: L - 8, y: y(p) + mt.asc / 2 - 2, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, svg, yLab(p));
     }
-    const live = svg.id === 'c-deal';
-    if (live) dropCross(svg);
-    const g = lineChart(svg, { series, band: true, width });
-    if (live) addCross(svg, g);
-  }
-  // the readout under the deal buttons: where your order ends, and (once every order is counted) how it ranks
-  function dealReadout() {
-    const r = youRes(), k = dealt.length, v = $('rv-deal');
-    v.hidden = !k;
-    if (!k) {
-      $('rk-deal').textContent = 'Your order';
-      $('rt-deal').textContent = 'Deal a card above, or deal the rest at random, to draw your path.';
-      $('rf-deal').textContent = '';
-      return;
-    }
-    $('rf-deal').textContent = `Ruth, best years first: ${short(RUTH)}. Sam, worst years first: ${short(SAM)}.`;
-    if (!isFull()) {
-      $('rk-deal').textContent = `Your order: ${k} of ${N} dealt`;
-      v.textContent = money(r.balances[k - 1]) + ' after year ' + k;
-      $('rt-deal').textContent = `Deal the other ${years(N - k)} to see where it ends and how it ranks among all ${intF.format(ORDERS)} orders.`;
-      return;
-    }
-    $('rk-deal').textContent = 'Where your order ends';
-    v.textContent = r.depletionYear ? 'Runs out in year ' + r.depletionYear : `Lasts all ${HZ} years, ${money(r.endBalance)} left`;
-    $('rt-deal').textContent = BASE ? 'Ranking it among every order…' : `Ranking it among all ${intF.format(ORDERS)} orders once the count below finishes…`;
-  }
-  function deal(focusNext) {
-    handEl.replaceChildren(); dealtEl.replaceChildren();
-    for (const v of dealt) { const li = document.createElement('li'); li.textContent = card(v); if (v < 0) li.className = 'down'; dealtEl.appendChild(li); }
-    hand.forEach((v, i) => {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = card(v); if (v < 0) b.className = 'down';
-      b.setAttribute('aria-label', 'Deal the year ' + card(v));
-      b.addEventListener('click', () => { dealt.push(v); hand.splice(i, 1); deal(true); });
-      handEl.appendChild(b);
+    const ms = marks().map((m) => ({ m, col: colOf(m.f5) })), markedCols = new Set(ms.map((x) => x.col));
+    const vals = [];
+    cols.forEach((c, i) => {
+      if (!c.n) return;
+      const p = c.lasts / c.n, top = y(p), you = ms.some((x) => x.m.key === 'you' && x.col === i);
+      el('rect', { x: cx(i) + 2, y: top, width: Math.max(1, cw - 4), height: Math.max(0, base - top), class: you ? 'f-you' : 'bar' }, svg);
+      const t = colPct(c).replace('under ', '<'), w = tw(t, fs);
+      vals.push({ i, t, p, x0: cx(i) + cw / 2 - w / 2, x1: cx(i) + cw / 2 + w / 2, prio: (markedCols.has(i) ? 2 : 0) + p });
     });
-    drawDeal();
-    const r = youRes(), k = dealt.length;
-    $('t-deal').textContent = isFull() ? 'Your order: the money ' + short(r).replace(/^(\$[\d,]+) left$/, 'lasts, with $1 left after ' + HZ + ' years') : k ? `Your order so far: ${k} of ${N} years dealt` : 'Deal a card to draw your path';
-    dealReadout();
-    if (focusNext) { const nb = handEl.querySelector('button'); (nb || $('s-deal')).focus(); }
-    youChanged();
+    // the columns left of the "all run out" rule say so in one annotation, so they carry no "0%" of their own
+    let allOut = -1; for (let i = 0; i < nc; i++) { if (cols[i].n && cols[i].lasts > 0) break; allOut = i; }
+    for (const v of thin(vals.filter((v) => v.i > allOut), 4)) el('text', { x: cx(v.i) + cw / 2, y: y(v.p) - 6, 'text-anchor': 'middle', class: 'ax val', 'font-size': fs }, svg, v.t);
+    // x ticks at whole-number averages, thinned to fit, and the axis title
+    const tickStep = niceStep(bw * Math.max(1, Math.ceil((tw('−10%', fs) + 12) / cw)));
+    for (let v = Math.ceil(c0 * bw / tickStep - 1e-9) * tickStep; v <= (c1 + 1) * bw + 1e-9; v += tickStep) {
+      const px = L + (v / bw - c0) * cw, t = minus(String(Math.round(v * 100))) + '%', w = tw(t, fs);
+      if (px - w / 2 < L - 2) continue; // clear of the 0% label on the axis
+      el('line', { x1: px, x2: px, y1: base, y2: base + 5, class: 'zero' }, svg);
+      el('text', { x: Math.min(W - w / 2, px), y: base + 8 + mt.asc, 'text-anchor': 'middle', class: 'ax', 'font-size': fs }, svg, t);
+    }
+    const gt = 'Average return of the first five years', gw = tw(gt, fs, 600);
+    el('text', { x: Math.max(gw / 2, Math.min(W - gw / 2, L + (W - L - R) / 2)), y: H - 6, 'text-anchor': 'middle', class: 'ax grp', 'font-size': fs, 'font-weight': 600 }, svg, gt);
+    // the one annotation: the rule left of which every order runs out, then the names over their columns
+    const all = ms.map((x) => ({ ...x, want: cx(x.col) + cw / 2, size: tw(x.m.name, lfs, 700) + 8 }));
+    if (allOut >= 0) { const t = narrow ? 'All run out' : 'Every order left of here runs out'; all.push({ rule: true, want: cx(allOut + 1), size: tw(t, fs, 600) + 8, t }); }
+    spread(all, 0, W - R, 6);
+    const emptyStack = {};
+    const ruleY = 2 + mt.asc, nameY = 2 + mt.h + 4 + ml.asc, nameBottom = nameY + ml.h - ml.asc;
+    for (const it of all) {
+      if (it.rule) {
+        const px = cx(allOut + 1);
+        el('line', { x1: px, x2: px, y1: ruleY + 6, y2: base, class: 'rule' }, svg);
+        el('text', { x: it.pos, y: ruleY, 'text-anchor': 'middle', class: 'ax halo', 'font-size': fs, 'font-weight': 600 }, svg, it.t);
+        continue;
+      }
+      const c = cols[it.col], top = y(c.lasts / c.n) - mt.h - 6;
+      // a name over a column with no bar sits just above the axis, under its column, with no leader across the grid
+      // names that share an empty column stack upwards instead of sitting on top of each other
+      if (!c.lasts) { const k = (emptyStack[it.col] = (emptyStack[it.col] || 0) + 1) - 1; el('text', { x: cx(it.col) + cw / 2, y: base - 8 - (ml.h - ml.asc) - k * (ml.h + 4), 'text-anchor': 'middle', class: 'halo t-' + it.m.key, 'font-size': lfs, 'font-weight': 700 }, svg, it.m.name); continue; }
+      el('text', { x: it.pos, y: nameY, 'text-anchor': 'middle', class: 'halo t-' + it.m.key, 'font-size': lfs, 'font-weight': 700 }, svg, it.m.name);
+      el('path', { d: `M${it.pos} ${nameBottom + 2}L${it.pos} ${nameBottom + 6}L${cx(it.col) + cw / 2} ${Math.min(top, T - 2)}L${cx(it.col) + cw / 2} ${top}`, class: 'leader s-' + it.m.key }, svg);
+    }
+    const ruthCol = cols[colOf(first5(GOOD))], samCol = cols[colOf(first5(BAD))];
+    let a = null; for (const g of gs) { if (g.lasts > 0) break; a = g.avg; }
+    $('s-why').textContent = (a !== null ? `Every order whose first five years average ${pct1(a)} or less runs out within ${HZ} years. ` : '') +
+      `In Ruth’s column ${colPct(ruthCol)} of orders last; in Sam’s, ${colPct(samCol)}. All ${words(N)} years average ${pct1(AVG)} in every order.`;
   }
-  $('reset').addEventListener('click', () => { hand = GOOD.slice(); dealt = []; deal(false); });
-  $('random').addEventListener('click', () => { while (hand.length) dealt.push(hand.splice(Math.floor(Math.random() * hand.length), 1)[0]); deal(false); });
 
   // ---------- every possible order: a Web Worker from a blob: URL, or the page itself if no worker can start ----------
   const Runner = (() => {
@@ -358,7 +517,7 @@
   const bucketOf = (sum, o) => { const y = firstYear(sum); return o.dep ? Math.max(0, o.dep - y) : HZ - y + 1 + Math.min(sum.left.counts.length - 1, Math.floor(o.value / sum.left.step)); };
   const marks = () => {
     const m = [{ key: 'ruth', name: 'Ruth', o: outcome(RUTH), f5: first5(GOOD) }, { key: 'sam', name: 'Sam', o: outcome(SAM), f5: first5(BAD) }];
-    if (dealt && isFull()) m.push({ key: 'you', name: 'Your order', o: outcome(youRes()), f5: first5(dealt) });
+    if (dealt && isFull()) m.push({ key: 'you', name: 'This order', o: outcome(youRes()), f5: first5(dealt) });
     return m;
   };
 
@@ -520,7 +679,7 @@
     if (a !== null) parts.push(`Every order whose first five years average ${pct1(a)} or less runs out within ${HZ} years.`);
     if (b !== null) parts.push(`Where they average ${pct1(b)} or more, at least half the orders last.`);
     parts.push(`Ruth’s first five average ${pct1(first5(GOOD))}; Sam’s, ${pct1(first5(BAD))}.`);
-    if (dealt && isFull()) parts.push(`Yours average ${pct1(first5(dealt))}.`);
+    if (dealt && isFull()) parts.push(`This order’s first five average ${pct1(first5(dealt))}.`);
     parts.push(`All ten years average ${pct1(AVG)} in every order.`);
     return parts.join(' ');
   }
@@ -548,12 +707,8 @@
     $('s-all').textContent = (best && worst ? 'Ruth has the best order; Sam has the worst. ' : '') + `${lastPct} of the orders last all ${HZ} years. The most common ending is running out in year ${top} (${share(s.byYear[top], s.total)} of orders). ` + (ranks.ruth ? rankText(ranks.ruth, 'Ruth’s order') + ' ' : '') + (ranks.sam ? rankText(ranks.sam, 'Sam’s order') : '');
   }
   function youChanged() {
-    drawRrif();
-    if (!BASE) return;
-    drawAll();
-    if (!isFull()) { $('s-rank').textContent = `Deal all ${words(N)} cards above to see where your order lands among them.`; return; }
-    const o = outcome(youRes()), at = dealt.join();
-    Runner.rank('base', o, (r) => { if (dealt.join() !== at) return; $('s-rank').textContent = rankText(r, 'Your order'); $('rt-deal').textContent = rankText(r, 'Your order'); });
+    whyChart(); drawRrif();
+    if (BASE) drawAll();
   }
 
   $('run-text').textContent = `Counting all ${intF.format(ORDERS)} orders…`;
@@ -572,7 +727,7 @@
   const SOLVE = largestLastingWithdrawal({ start: S.start, indexation: S.indexation, returns: returnsOf(BAD) });
   const SOLVED = run(BAD, SOLVE);
   $('h-rescue').textContent = `Sam’s money lasts if his first withdrawal is ${money(SOLVE)} or less`;
-  $('p-solver').textContent = `That is ${money(W0 - SOLVE)} less than the ${money(W0)} in the story, about ${Math.round((1 - SOLVE / W0) * 100)}% less, rising ${pctF(S.indexation)} a year the same way. The amount comes from running Sam’s order through the engine with different first-year withdrawals until the largest one that pays every year in full is found.`;
+  $('p-solver').textContent = `That is ${money(W0 - SOLVE)} less than the ${money(W0)} in the story, about ${Math.round((1 - SOLVE / W0) * 100)}% less, rising ${pctF(S.indexation)} a year the same way.`;
   function compare(after, before) {
     const a = after.depletionYear, b = before.depletionYear, d = total(after) - total(before);
     const paid = `Over the ${HZ} years it pays out ${money(total(after))} in total, ` + (Math.abs(d) < 0.5 ? 'the same as before.' : `${money(Math.abs(d))} ${d > 0 ? 'more' : 'less'} than before.`);
@@ -628,10 +783,10 @@
     return `At least ${pctF(first.factor)} must come out the year you turn ${first.age + 1}, rising to ${pctF(last.factor)} from the year you turn ${last.age + 1}`;
   };
   $('p-rrif').textContent = `Suppose all of Ruth’s and Sam’s savings are in a RRIF and they are ${S.startAge} when year 1 starts (an illustrative age). An RRSP must wind up by the end of the year its owner turns ${MAT} (most become a RRIF), and this sketch assumes theirs become a RRIF then. ${rrifRule()}. From year ${RRIF_T0 + 1}, the year they turn ${turns}, each year’s withdrawal is at least the balance at the start of that year times the factor for their age at the start of it (${pctF(f0)} at ${S.startAge + RRIF_T0}). When the minimum is more than they planned to take, the difference has to come out anyway, in good years and bad.`;
-  const srcEl = $('p-rrif-src');
-  srcEl.append('Sources: ');
-  [FX.maturity, FX.rrif].forEach((f, i) => {
-    const a = document.createElement('a'); a.href = f.source_url; a.textContent = f.title; srcEl.append(a, `, as of ${f.as_of}${i ? '.' : '; '}`);
+  // the Sources fold: the confirmed facts this page uses, with their links and as-of dates
+  [FX.maturity, FX.rrif].forEach((f) => {
+    const li = document.createElement('li'), a = document.createElement('a');
+    a.href = f.source_url; a.textContent = f.title; li.append(a, `, as of ${f.as_of}.`); $('src-list').appendChild(li);
   });
   const RR = { ruth: rr(GOOD), sam: rr(BAD) };
   const FT = { ruth: forcedTotals(GOOD, RR.ruth.on), sam: forcedTotals(BAD, RR.sam.on) };
@@ -640,7 +795,7 @@
     const miss = ['ruth', 'sam'].filter((k) => FT[k].all <= 0.5).map((k) => k === 'ruth' ? 'Ruth' : 'Sam');
     $('h-rrif').textContent = hit.length === 1 ? `From age ${turns}, the RRIF minimum takes extra from ${hit[0]}, not ${miss[0]}` : `What the RRIF minimum does from age ${turns}`;
   }
-  const rrifPanels = [{ key: 'ruth', name: 'Ruth', order: () => GOOD }, { key: 'sam', name: 'Sam', order: () => BAD }, { key: 'you', name: 'Your order', order: () => dealt }];
+  const rrifPanels = [{ key: 'ruth', name: 'Ruth', order: () => GOOD }, { key: 'sam', name: 'Sam', order: () => BAD }, { key: 'you', name: 'This order', order: () => dealt }];
   rrifPanels.forEach((p) => {
     const f = document.createElement('figure'); f.className = 'small-multiple';
     f.innerHTML = `<figcaption id="t-rr-${p.key}"></figcaption><svg id="c-rr-${p.key}" role="img" aria-labelledby="t-rr-${p.key} s-rr-${p.key}"></svg><p class="reading" id="s-rr-${p.key}"></p>`;
@@ -685,12 +840,12 @@
       const svg = $('c-rr-' + p.key);
       // an empty panel takes no room: its title and the line asking for a full deal stand alone
       svg.toggleAttribute('hidden', !p.r);
-      if (!p.r) { svg.replaceChildren(); svg.removeAttribute('viewBox'); svg.setAttribute('height', 0); $('s-rr-' + p.key).textContent = `Deal all ${words(N)} cards above to add your order here.`; continue; }
+      if (!p.r) { svg.replaceChildren(); svg.removeAttribute('viewBox'); svg.setAttribute('height', 0); $('s-rr-' + p.key).textContent = `Deal all ${words(N)} cards at the top to add this order here.`; continue; }
       rrifChart(svg, p.key, p.name, p.ord, p.r, on, yMax, fMax);
       $('s-rr-' + p.key).textContent = on ? rrifReading(p.name, p.ord, p.r) : `${p.name}: ${short(p.r.off)} without the minimum. Apply the minimums to compare.`;
     }
     // the readout under the switch: the share of all orders that run out, with the minimums and without
-    $('t-rrif-panels').textContent = on ? 'Ruth, Sam and your order, with and without the RRIF minimums' : 'Ruth, Sam and your order, without the RRIF minimums';
+    $('t-rrif-panels').textContent = on ? 'Ruth, Sam and the dealt order, with and without the RRIF minimums' : 'Ruth, Sam and the dealt order, without the RRIF minimums';
     $('rk-rrif-on').textContent = 'Orders that run out, with minimums';
     $('rk-rrif-off').textContent = on ? 'Without them' : 'Orders that run out, no minimums';
     $('rv-rrif-off').textContent = BASE ? share(BASE.total - BASE.lasts, BASE.total) : 'Counting…';
@@ -709,51 +864,17 @@
   }
   $('rrif').addEventListener('change', drawRrif);
 
-  // ---------- save the "your order" chart as an image, made in the browser ----------
-  const STYLE_PROPS = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-dasharray', 'stroke-linejoin', 'stroke-linecap', 'opacity', 'font-family', 'font-size', 'font-weight', 'paint-order', 'font-variant-numeric'];
-  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  $('save').addEventListener('click', () => {
-    const WIDTH = 1200, box = document.createElement('div');
-    box.className = 'offstage'; box.style.width = WIDTH + 'px';
-    const svg = document.createElementNS(NS, 'svg'); box.appendChild(svg); document.body.appendChild(box);
-    drawDeal(svg, WIDTH);
-    const src = svg.querySelectorAll('*'), clone = svg.cloneNode(true), dst = clone.querySelectorAll('*');
-    src.forEach((n, i) => { const cs = getComputedStyle(n); dst[i].setAttribute('style', STYLE_PROPS.map((p) => p + ':' + cs.getPropertyValue(p)).join(';')); dst[i].removeAttribute('class'); });
-    const H = Number(svg.getAttribute('height')); box.remove();
-    const root = getComputedStyle(document.documentElement), v = (k) => root.getPropertyValue(k).trim();
-    let fonts = '';
-    for (const sh of document.styleSheets) for (const rule of sh.cssRules) if (rule instanceof CSSFontFaceRule) fonts += rule.cssText;
-    const d = new Date(), date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const pad = 40, head = 84, foot = 76, OW = WIDTH + pad * 2, OH = head + H + foot;
-    const out = `<svg xmlns="${NS}" width="${OW}" height="${OH}" viewBox="0 0 ${OW} ${OH}"><style>${fonts}</style>` +
-      `<rect width="${OW}" height="${OH}" fill="${v('--t-ground')}"/>` +
-      `<text x="${pad}" y="56" fill="${v('--t-ink')}" style="font-family:${esc(v('--font-display'))};font-size:30px;font-weight:600">${esc($('t-deal').textContent)}</text>` +
-      `<g transform="translate(${pad} ${head})">${clone.innerHTML}</g>` +
-      `<text x="${pad}" y="${head + H + 32}" fill="${v('--t-ink2')}" style="font-family:${esc(v('--font-ui'))};font-size:17px">${esc($('assume').textContent)}</text>` +
-      `<text x="${pad}" y="${head + H + 58}" fill="${v('--t-ink2')}" style="font-family:${esc(v('--font-ui'))};font-size:17px">The Order of Returns, Mohammed El Chayeb. Saved ${date}.</text></svg>`;
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement('canvas'); c.width = OW * 2; c.height = OH * 2;
-      const ctx = c.getContext('2d'); ctx.scale(2, 2); ctx.drawImage(img, 0, 0);
-      c.toBlob((blob) => {
-        const a = document.createElement('a'), u = URL.createObjectURL(blob);
-        a.href = u; a.download = 'order-of-returns-your-order.png'; document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(u), 1000);
-        $('save-note').textContent = 'Saved order-of-returns-your-order.png, made in your browser.';
-      }, 'image/png');
-    };
-    img.onerror = () => { $('save-note').textContent = 'This browser could not make the image.'; };
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(out);
-  });
-
   // ---------- first draw, and redraw when the width or the fonts change ----------
-  function drawEverything() { drawLead(); drawShuffle(); drawDeal(); drawLevers(); drawMix(); drawRrif(); drawAll(); }
-  hand = GOOD.slice(); dealt = [];
-  deal(false); drawMix(); drawEverything();
+  // the first fill is not a deal: draw without counting it
+  function firstDraw() { dealt = []; paintCards(false); drawDeal(); dealText(); drawStrip(); answer.set({ text: '?', label: 'This order lasts', line: startLine }); whyChart(); drawRrif(); drawShuffle(); drawLevers(); drawMix(); drawAll(); }
+  firstDraw();
   // The first fill is not a change: drop the underline the shared layer gives a readout whose text changes (its observer
   // runs first, in the same microtask queue), so only what the reader's own action changes is underlined.
   Promise.resolve().then(() => 0).then(() => document.querySelectorAll('[data-flash].flash').forEach((e) => e.classList.remove('flash')));
+  // a redraw at a new width or once the fonts load, or when Go deeper opens (its charts are drawn at their real width)
+  function redraw() { paintCards(false); drawDeal(); dealText(); drawStrip(); whyChart(); drawRrif(); drawShuffle(); drawLevers(); drawMix(); drawAll(); }
+  $('deeper').addEventListener('toggle', () => { if ($('deeper').open) redraw(); });
   let lastW = innerWidth, t;
-  addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(t); t = setTimeout(drawEverything, 120); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawEverything);
+  addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(t); t = setTimeout(redraw, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
 })();

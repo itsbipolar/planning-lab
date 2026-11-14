@@ -1,4 +1,6 @@
-// The model's numbers come from the snapshot and the confirmed facts; none is typed into the page's code.
+// The money-year model (kept here after the lab was archived: the money-year reel's data model, reels/money-year/reel.json,
+// and Money, then and now's #this-year section both use it). Its numbers come from the snapshot and the confirmed facts;
+// none is typed into its code. The old page's tests are in labs/_archive/money-year/.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -30,9 +32,8 @@ test('every proposal comes from confirmed budget facts, and an unconfirmed one i
   assert.ok(m.proposals.some((p) => p.id === 't1135'));
 });
 
-test('no figure from the facts or the data is written into the page source', () => {
-  // The stylesheet holds sizes, not figures.
-  const src = ['app.js', 'index.src.html', 'model.mjs'].map((f) => [f, read(`../${f}`)]);
+test('no figure from the facts or the data is written into the model', () => {
+  const src = ['model.mjs'].map((f) => [f, read(`../${f}`)]);
   assert.ok(src.every(([, text]) => text.length > 1000), 'every source file is read whole');
   const budget = facts.facts.filter((f) => f.id.startsWith('budget2026_') && f.status === 'confirmed').map((f) => String(f.value)).filter((v) => /\d{3,}/.test(v));
   const rates = [...new Set(Object.values(snap.series).flatMap((s) => s.points.map((p) => String(p[1]))))].filter((v) => /\.\d/.test(v));

@@ -120,11 +120,28 @@ test('bad inputs are refused, and a missing confirmed fact stops the rules', () 
   assert.throws(() => cppFactor(r, r.cpp.earliest - 1), RangeError);
   assert.throws(() => cppFactor(r, r.cpp.latest + 1), RangeError);
   assert.throws(() => oasFactor(r, r.oas.start - 1), RangeError);
-  assert.throws(() => cppFactor(r, r.cpp.standard + 0.5), RangeError);
+  assert.throws(() => cppFactor(r, r.cpp.standard + 0.3), RangeError);
+  assert.throws(() => oasFactor(r, r.oas.start + 0.05), RangeError);
   assert.throws(() => spouse(r, { cppAge: r.cpp.standard, oasAge: r.oas.start, cppAt65: -1, oasAt65: 1, other: 0 }), RangeError);
   for (const id of ['cpp_late_start_increase', 'oas_age75_increase', 'oas_recovery_rate']) {
     assert.throws(() => rules(facts.filter((f) => f.id !== id)), /missing/, id);
   }
   assert.throws(() => rules(facts.filter((f) => f.series !== 'oas_recovery_threshold')), /missing/);
   assert.throws(() => rules(facts.map((f) => (f.id === 'oas_recovery_rate' ? { ...f, status: 'unverified' } : f))), /missing/);
+});
+
+test('start ages step a month at a time, as the rules count them', () => {
+  const m = 1 / 12;
+  close(cppFactor(r, r.cpp.standard + m), 1 + r.cpp.increasePerMonth, 'one month late');
+  close(cppFactor(r, r.cpp.standard - m), 1 - r.cpp.reductionPerMonth, 'one month early');
+  close(oasFactor(r, r.oas.start + 4 * m), 1 + 4 * r.oas.increasePerMonth, 'four months of OAS deferral');
+  // every month of the range rises, and each later CPP start catches up with the standard one later in life
+  let prev = -Infinity, prevCross = -Infinity;
+  for (let k = r.cpp.earliest * 12; k <= r.cpp.latest * 12; k++) {
+    const f = cppFactor(r, k / 12);
+    assert.ok(f > prev, `month ${k}`); prev = f;
+    if (k > r.cpp.standard * 12) { const c = cppCrossing(r, k / 12); assert.ok(c > prevCross && c > k / 12); prevCross = c; }
+  }
+  for (let k = r.oas.start * 12 + 1; k <= r.oas.latest * 12; k++) assert.ok(oasCrossing(r, k / 12) > k / 12, `OAS month ${k}`);
+  assert.equal(cppCrossing(r, (r.cpp.standard * 12) / 12), null);
 });

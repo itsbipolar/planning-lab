@@ -13,61 +13,72 @@
 <!--@@TOOLBAR@@-->
 <div class="page">
   <main>
-    <p class="kicker">Tool</p>
-    <h1 id="q">What’s your next tax date?</h1>
-    <p class="lede" id="finding"></p>
+    <div class="td-hero">
+    <div class="td-head">
+      <p class="kicker">Tool</p>
+      <h1 id="q">What’s your next tax date?</h1>
+    </div>
 
-    <section class="build" data-chapter="Household" aria-labelledby="build-h">
-      <p class="sec-label">Household</p>
-      <h2 id="build-h">Build your household</h2>
-      <p class="note assume" id="assume"></p>
-      <div class="picks" role="group" aria-labelledby="picks-l">
-        <span class="label" id="picks-l">Quick picks (examples)</span>
-        <div class="pick-row" id="picks"></div>
-      </div>
-      <div class="readouts" id="readouts">
-        <div class="readout" id="rd-next" aria-live="polite"><p class="readout-k">Next confirmed date</p><p class="readout-v big" id="rd-next-v" data-flash></p><p class="readout-t" id="rd-next-t"></p></div>
-        <div class="readout" id="rd-count" aria-live="polite"><p class="readout-k">In the next twelve months</p><p class="readout-v" id="rd-count-v" data-flash></p><p class="readout-t" id="rd-count-t"></p><p class="readout-fine" id="rd-count-fine" hidden></p></div>
-      </div>
+    <div class="pick" data-first-move role="group" aria-labelledby="picks-l">
+      <p class="label" id="picks-l">Pick a household</p>
+      <div class="pick-row" id="picks"></div>
+    </div>
+    <p class="assume" data-assumptions id="assume"></p>
+
+    <div class="result">
+    <div class="readout" id="answer" data-answer aria-live="polite">
+      <p class="readout-k" id="answer-k">Next confirmed date</p>
+      <p class="readout-v big" data-readout-v id="answer-v"></p>
+      <p class="readout-t" data-readout-t id="answer-t"></p>
+      <details class="readout-how"><summary>How this is worked out</summary><p id="answer-how"></p></details>
+    </div>
+
+    <div class="save">
+      <button type="button" id="ics" class="btn-you">Add these dates to my calendar</button>
+      <p class="save-count" id="ics-count"></p>
+      <p class="lock note"><svg class="lock-i" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.75" y="7" width="10.5" height="7.25" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg><span>Made in this page from its own date. Nothing is sent or stored, and your picks stay out of the address.</span></p>
+    </div>
+    </div>
+    </div>
+
+    <details class="deeper tune" id="tune" data-preview="The situations that apply, and the corporation’s year-end month">
+      <summary>Fine-tune your household</summary>
       <fieldset class="sits">
         <legend>Tick every situation that applies; they combine into one calendar.</legend>
         <div class="sit-grid" id="sits"></div>
       </fieldset>
-    </section>
+      <p class="ye-row"><label for="ye">The corporation’s tax year ends in</label> <select id="ye"></select></p>
+      <p class="note" id="ye-note"></p>
+    </details>
 
-    <section class="pile" data-chapter="The year" aria-labelledby="pile-h">
-      <p class="sec-label">The year</p>
-      <h2 id="pile-h">Where the dates pile up, week by week</h2>
-      <figure class="chart" aria-labelledby="chart-title">
-        <figcaption><p class="chart-title" id="chart-title"></p><p class="chart-sub" id="chart-sub"></p></figcaption>
+    <section class="pile" aria-labelledby="chart-title">
+      <figure class="chart" id="pile-fig" aria-labelledby="chart-title">
+        <figcaption><h2 class="chart-title" id="chart-title"></h2><p class="chart-sub" id="chart-sub"></p><span class="chip tag-example" id="pile-tag">Example household</span></figcaption>
         <div class="frame" id="frame"><svg id="strip" role="img" aria-labelledby="strip-t"><title id="strip-t">How many dates fall in each week</title></svg></div>
         <p class="legend" id="legend"></p>
         <p class="hint">Point at a week, or tap it, to read its dates.</p>
       </figure>
-      <div class="save" role="group" aria-label="Add to my calendar">
-        <button type="button" id="ics" class="btn-you">Add to my calendar</button>
-        <p class="note" id="ics-note"></p>
-      </div>
     </section>
 
-    <section class="list" data-chapter="Each date" aria-labelledby="list-h">
-      <p class="sec-label">Each date</p>
-      <h2 id="list-h">Each date and the rule behind it</h2>
-      <ol class="dates" id="dates"></ol>
-      <div class="pending" id="pending"></div>
-    </section>
+    <details class="deeper" id="deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub list" aria-labelledby="list-h">
+        <h3 class="card-hed" id="list-h">Each date and the rule behind it</h3>
+        <ol class="dates" id="dates"></ol>
+        <div class="pending" id="pending"></div>
+      </section>
+      <section class="deeper-sub own" aria-labelledby="own-h">
+        <h3 class="card-hed" id="own-h">Rules on each person’s own date</h3>
+        <p>These depend on a birthday or the day a trust was created, so they have no single date to place on the calendar.</p>
+        <ul id="own"></ul>
+      </section>
+    </details>
 
-    <section class="own" aria-labelledby="own-h">
-      <h2 id="own-h">Rules on each person's own date</h2>
-      <p>These depend on a birthday or the day a trust was created, so they have no single date to place on the calendar.</p>
-      <ul id="own"></ul>
-    </section>
-
-    <details class="sources">
+    <details class="sources" data-preview="The rule behind each date, its official page, and what this page assumes">
       <summary>Sources and assumptions</summary>
       <p>Every date on this page comes from a rule in the verified facts file:</p>
       <ul id="sources"></ul>
-      <p class="note">The twelve months start on this page's own date, from your device's clock. Corporations and trusts are shown with a December year-end. When a share sale counts for tax at year-end (the trade date or the settlement date) is not in the facts file, so only the superficial-loss period is shown. Due dates that fall on a weekend or holiday can move; the dates here are as the sources state them. A date whose rule is not confirmed in the facts file yet is listed as not confirmed and left out of the calendar file. General rules only: nothing here says what anyone should do.</p>
+      <p class="note">The twelve months start on this page’s own date, from your device’s clock. A corporation’s year-end is December unless you pick another month under “Fine-tune your household”, and it is taken as the last day of that month; a trust is shown with a December year-end. When a share sale counts for tax at year-end (the trade date or the settlement date) is not in the facts file, so only the superficial-loss period is shown. Due dates that fall on a weekend or holiday can move; the dates here are as the sources state them. A date whose rule is not confirmed in the facts file yet is listed as not confirmed and left out of the calendar file. General rules only, for education; not advice for anyone’s own situation.</p>
     </details>
 
     <!--@@NEXT@@-->

@@ -8,7 +8,7 @@
   const $ = (id) => document.getElementById(id);
   const now = new Date(), TODAY = iso(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
   const example = C.presets.find((p) => p.id === C.example) ?? C.presets[0];
-  const state = { picked: example.situations.slice(), touched: false };
+  const state = { picked: example.situations.slice(), touched: false, ye: 12 };
   const short = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const weekday = (d) => new Date(ms(d)).toLocaleDateString('en-CA', { weekday: 'long', timeZone: 'UTC' });
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
@@ -28,17 +28,21 @@
     if (parent) parent.appendChild(e);
     return e;
   }
-  const cal = (picked) => rolling(C, FF, TODAY, picked);
+  const cal = (picked) => rolling(C, FF, TODAY, picked, { corpYearEnd: state.ye });
 
   // Fixed for the page: every situation at once (for the sources) and each situation alone (the count beside its box).
   const ALL = cal(C.situations.map((x) => x.id));
   const alone = Object.fromEntries(C.situations.map((x) => { const c = cal([x.id]); return [x.id, [c.events.length, c.pending.length]]; }));
 
-  // ---------- build your household ----------
+  // ---------- pick a household (the first move), then fine-tune it ----------
   for (const p of C.presets) {
     const b = h('button', { type: 'button', 'data-preset': p.id, 'aria-pressed': 'false' }, $('picks'), p.label);
     b.addEventListener('click', () => { state.picked = p.situations.slice(); state.touched = true; render(); });
   }
+  // the corporation's year-end month (December unless the visitor picks another)
+  MONTH_NAMES.forEach((name, k) => h('option', { value: String(k + 1) }, $('ye'), name));
+  $('ye').value = String(state.ye);
+  $('ye').addEventListener('change', () => { state.ye = +$('ye').value; state.touched = true; render(); });
   for (const x of C.situations) {
     const l = h('label', { class: 'sit' }, $('sits'));
     const i = h('input', { type: 'checkbox', value: x.id }, l);
@@ -63,9 +67,9 @@
     clear(svg);
     const W = Math.max(280, $('frame').clientWidth), narrow = W < 640, wk = c.weeks, n = wk.length;
     // the SVG is drawn at the frame's own width (viewBox = width), so a label's font size is the size it renders at
-    const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 11 : 16;
+    const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 14 : 17;
     const fs = parseFloat(getComputedStyle(svg).fontSize); // the chart's label size, from style.css (#strip)
-    const tall = Math.max(4, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1);
+    const tall = Math.max(2, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1);
     // the axis: the month row, then the year row a full text line under it (a label's box is about 1.4 times its size)
     const lineH = Math.ceil(fs * 1.45), ay = base + fs + 16, yy = ay + lineH, H = yy + Math.ceil(fs / 2);
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
@@ -199,11 +203,11 @@
       const src = h('p', { class: 'src' }, body, 'Source: ');
       e.sources.forEach((x, k) => { if (k) src.append('; '); h('a', { href: x.url }, src, x.title); if (x.authority === 'cra_position') src.append(' (CRA’s position)'); });
     }
-    if (!c.events.length) h('li', {}, ol, c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Tick a situation above to see its dates.');
+    if (!c.events.length) h('li', {}, ol, c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Pick a household, or tick a situation under “Fine-tune your household”, to see its dates.');
     const pd = $('pending'); pd.textContent = ''; pd.hidden = !c.pending.length;
     if (c.pending.length) {
       h('h3', {}, pd, 'Not confirmed yet');
-      h('p', { class: 'note' }, pd, 'The rule for these dates is not confirmed in the verified facts file yet, so they are not on the strip or in the calendar file.');
+      h('p', { class: 'note' }, pd, 'The rule for these dates is not confirmed in the verified facts file yet, so they are never counted as next and are not on the strip or in the calendar file.');
       const ul = h('ul', {}, pd);
       for (const p of c.pending) {
         const li = h('li', {}, ul, `${p.label}, in ${p.year}. `);
@@ -212,54 +216,40 @@
     }
   }
 
-  // ---------- add to my calendar ----------
+  // ---------- add to my calendar: an .ics made in this page, shared or downloaded (deskSaveFile) ----------
   let current = null;
-  $('ics').addEventListener('click', () => {
-    if (!current || !current.events.length) return;
-    const url = URL.createObjectURL(new Blob([toICS(current)], { type: 'text/calendar;charset=utf-8' }));
-    const a = h('a', { href: url, download: `planning-dates-${current.today}.ics` }, document.body);
-    a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
+  deskSaveButton($('ics'), () => (current && current.events.length
+    ? { blob: new Blob([toICS(current)], { type: 'text/calendar' }), name: `tax-dates-${current.today}.ics`, title: 'Tax dates' }
+    : Promise.reject(new Error('nothing to save'))));
 
-  // the household's answer, under the quick picks: the next date, and how many there are
-  const KIND_WORDS = { pay: ['payment due', 'payments due'], file: ['return due', 'returns due'], cutoff: ['cut-off', 'cut-offs'] };
-  function readouts(c) {
-    const np = c.pending.length, fine = $('rd-count-fine');
-    fine.hidden = !np;
-    if (np) fine.textContent = `${plural(np, 'more date is', 'more dates are')} not confirmed yet; listed under the dates, left out of the calendar file.`;
-    if (!c.events.length) {
-      $('rd-next-v').textContent = 'None';
-      $('rd-next-t').textContent = c.situations.length ? 'No confirmed date falls in the next twelve months for this household.' : 'Tick a situation to see its dates.';
-      $('rd-count-v').textContent = plural(0, 'date', 'dates');
-      $('rd-count-t').textContent = 'Nothing to add to a calendar yet.';
-      return;
-    }
-    const e = c.events[0], same = c.events.filter((x) => x.date === e.date).length;
-    $('rd-next-v').textContent = e.days === 0 ? 'Today' : e.days === 1 ? 'Tomorrow' : `In ${plural(e.days, 'day', 'days')}`;
-    $('rd-next-t').textContent = `${longDate(e.date)} · ${e.label}${same > 1 ? ` · and ${plural(same - 1, 'other', 'others')} that day` : ''}`;
-    $('rd-count-v').textContent = plural(c.events.length, 'date', 'dates');
-    const parts = KINDS.map((k) => [k, c.events.filter((x) => x.kind === k).length]).filter(([, m]) => m)
-      .map(([k, m]) => (KIND_WORDS[k] ? `${m} ${KIND_WORDS[k][m === 1 ? 0 : 1]}` : `${m}: ${C.kinds[k]}`));
-    $('rd-count-t').textContent = `${parts.join(', ')}, through ${longDate(c.end)}.`;
+  // ---------- the big answer: the next confirmed date, counted down ----------
+  const answer = deskReadout('#answer', { format: (n) => `In ${plural(Math.round(n), 'day', 'days')}` });
+  function readout(c) {
+    const a = nextUp(c), np = c.pending.length;
+    answer.set(a.n != null ? { n: a.n, line: a.line } : { text: a.text, line: a.line });
+    $('answer-how').textContent = `Counted from today, ${longDate(c.today)}, on your device’s clock, to the first date in the next twelve months whose rule is confirmed in the facts file.`
+      + (np ? ` ${plural(np, 'date', 'dates')} not confirmed yet ${np === 1 ? 'is' : 'are'} listed under Go deeper and never counted as next.` : '')
+      + ' Weekend and holiday moves are not applied.';
   }
 
   function render() {
-    const c = cal(state.picked), p = presetOf(state.picked);
+    const c = cal(state.picked), p = presetOf(state.picked), n = c.events.length, np = c.pending.length;
     current = c;
-    readouts(c);
-    $('finding').textContent = finding(c, p ? p.noun : null);
-    $('assume').textContent = (p && p.id === example.id && !state.touched ? `An example to start: ${p.noun}. ` : '') +
-      'Assumes a December year-end for a corporation or trust, and no weekend or holiday moves.';
+    readout(c);
+    $('assume').textContent = (p && p.id === example.id && !state.touched ? `An example to start: ${p.noun}. ` : p ? '' : 'Your own mix of situations. ') +
+      (state.picked.includes('corporation') && state.ye !== 12 ? `Assumes a ${MONTH_NAMES[state.ye - 1]} year-end for the corporation, December for a trust, ` : 'Assumes a December year-end for a corporation or trust, ') +
+      'and no weekend or holiday moves.';
     document.querySelectorAll('#picks button').forEach((b) => b.setAttribute('aria-pressed', String(!!p && b.dataset.preset === p.id)));
     document.querySelectorAll('#sits input').forEach((i) => { i.checked = state.picked.includes(i.value); });
+    const corp = state.picked.includes('corporation');
+    $('ye').closest('.ye-row').hidden = !corp;
+    $('ye-note').textContent = corp ? 'The T2 return and the year-end follow this month; a year-end is taken as the last day of the month.' : 'Tick “Owns a corporation” to set its year-end month.';
     drawStrip(c); legend(c); list(c);
-    const np = c.pending.length;
-    $('ics').disabled = !c.events.length;
-    $('ics').textContent = c.events.length ? `Add ${c.events.length === 1 ? 'this date' : `these ${c.events.length} dates`} to my calendar` : 'Add to my calendar';
-    $('ics-note').textContent = c.events.length
-      ? `A file of ${plural(c.events.length, 'all-day date', 'all-day dates')} for any calendar app, each with its rule, its source and “${EDU}” Made in this page; nothing is sent.${np ? ` ${plural(np, 'date', 'dates')} not confirmed yet ${np === 1 ? 'is' : 'are'} left out.` : ''}`
-      : 'Nothing to save yet: no confirmed date falls in these twelve months.';
+    $('ics').disabled = !n;
+    $('ics').textContent = n ? `Add ${n === 1 ? 'this date' : `these ${n} dates`} to my calendar` : 'Add to my calendar';
+    $('ics-count').textContent = n
+      ? `${plural(n, 'confirmed date', 'confirmed dates')} through ${longDate(c.end)}${np ? ` · ${plural(np, 'more', 'more')} not confirmed yet, listed but left out of the file` : ''}.`
+      : 'Nothing to add yet: no confirmed date falls in these twelve months.';
   }
 
   // ---------- own-date rules and sources ----------
@@ -272,9 +262,19 @@
   for (const x of used.values()) { const li = h('li', {}, $('sources')); h('a', { href: x.url }, li, x.title); li.append(`, read ${x.as_of}${x.authority === 'cra_position' ? ' (CRA’s position)' : ''}.`); }
 
   render();
-  // the first fill is not a change: no underline on load
-  requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
+  // on a phone the chips scroll sideways: show the example's pressed chip at once (no animation), with part of the chip
+  // before it in view so the row reads as one that scrolls; again once the fonts are in, as the widths change
+  const showPicked = () => {
+    const row = $('picks'), on = row.querySelector('[aria-pressed="true"]');
+    if (state.touched || !on || row.scrollWidth <= row.clientWidth) return;
+    row.scrollLeft += on.getBoundingClientRect().left - row.getBoundingClientRect().left - 56;
+  };
+  // the row's edges fade where more chips sit beyond them, so a cut chip reads as one that scrolls
+  const edges = () => { const r = $('picks'); r.classList.toggle('more-l', r.scrollLeft > 2); r.classList.toggle('more-r', r.scrollLeft + r.clientWidth < r.scrollWidth - 2); };
+  $('picks').addEventListener('scroll', edges, { passive: true });
+  addEventListener('resize', edges);
+  showPicked(); edges();
   // the first drawing may measure labels before the inlined fonts are ready: place them again once they are
-  if (document.fonts) document.fonts.ready.then(() => current && drawStrip(current));
+  if (document.fonts) document.fonts.ready.then(() => { showPicked(); edges(); if (current) drawStrip(current); });
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => current && drawStrip(current), 150); });
 })();

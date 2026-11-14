@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { buildModel, question, finding, view, range, level, big } from './model.mjs';
+import { buildModel, question, finding, view, range, level, big, ageAnswer, defaultAge, num } from './model.mjs';
 import { scaleCSS, STEPS } from './scale.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
@@ -19,9 +19,10 @@ const js = deskUIJS() + '\n' + read(join(here, 'model.mjs')).replace(/^export /g
 // The words the page opens on, computed from the model (Canada, all genders) and written in at build, so the first paint
 // already reads right; the script rewrites the answer when the place or gender changes.
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const f = finding(model, view(model, 'CA', 'all'));
+const f = finding(model, view(model, 'CA', 'all')), A = ageAnswer(model, view(model, 'CA', 'all'), defaultAge(model));
 const words = {
   question: question(model), lede: f.lede, more: f.more,
+  age: A.age, hint: `Ages ${model.ages.join(' to ')}.`, label: A.label, count: num(A.count), unit: A.unit, line: A.line, how: A.how,
   assume: `Statistics Canada's estimates for July 1 of each year, ${model.years.join(' to ')}, ages ${model.ages.join(' to ')}: counted, not forecast. Education, not advice.`,
 };
 const src = read(join(here, 'index.src.html')).replace(/\{\{(\w+)\}\}/g, (m, k) => { if (!(k in words)) throw new Error(`index.src.html: no value for ${m}`); return esc(words[k]); });

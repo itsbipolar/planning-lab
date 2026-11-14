@@ -10,7 +10,7 @@ import { mixSound } from './voice.mjs';
 
 const NM = join(ROOT, 'node_modules');
 const FONT_FILES = [
-  [join(ROOT, 'labs', 'money-milestones', 'fonts', 'archivo-latin-wght-normal.woff2'), 'archivo-latin-wght-normal.woff2'],
+  [join(ROOT, 'reels', 'shell', 'fonts', 'archivo-latin-wght-normal.woff2'), 'archivo-latin-wght-normal.woff2'],
   [join(NM, '@fontsource', 'source-serif-4', 'files', 'source-serif-4-latin-600-normal.woff2'), 'source-serif-4-latin-600-normal.woff2'],
   [join(NM, '@fontsource', 'source-serif-4', 'files', 'source-serif-4-latin-400-normal.woff2'), 'source-serif-4-latin-400-normal.woff2'],
 ];

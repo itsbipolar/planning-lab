@@ -13,27 +13,61 @@
 <div class="page">
   <main>
     <article>
-      <section data-chapter="Ruth and Sam" class="opening">
-      <p class="kicker">Game</p>
-      <h1 id="headline" class="display">Same @@N_WORDS@@ years. Why does one retiree run out?</h1>
-      <p class="lede" id="deck">Two made-up retirees get the same market years in a different order.</p>
-      <p class="note assume" id="assume">Made-up returns, not history or a forecast. No taxes, fees or benefits. Education, not advice.</p>
-      <noscript><p class="note">This page needs JavaScript to run the numbers.</p></noscript>
-
-      <figure class="chart" id="fig-lead">
-        <figcaption><p class="chart-title" id="t-lead"></p><p class="chart-sub">Savings at the end of each year, after that year’s withdrawal</p><span class="chip tag-example">Example data</span></figcaption>
-        <svg id="c-lead" role="img" aria-labelledby="t-lead s-lead"></svg>
+      <section class="opening" aria-labelledby="headline">
+      <div class="desk-deal">
+        <div class="deal-head">
+          <p class="kicker">Game</p>
+          <h1 id="headline" class="display">Same @@N_WORDS@@ years. Why does one retiree run out?</h1>
+          <p class="lede" id="deck">Ruth and Sam are made up. Same market years, opposite order.</p>
+          <noscript><p class="note">This page needs JavaScript to deal the cards.</p></noscript>
+        </div>
+        <div class="deal-table" data-first-move>
+          <ol class="deck" id="deck-cards" aria-label="The @@N_WORDS@@ market years, in the order dealt"></ol>
+          <p class="deal-row"><button type="button" id="deal" class="btn-you">Deal my @@N_WORDS@@ years</button><button type="button" id="one" class="btn-text">Deal one at a time</button></p>
+        </div>
+        <div class="deal-answer">
+          <div class="readout" id="answer" data-answer aria-live="polite" tabindex="-1">
+            <p class="readout-k" id="answer-k">This order lasts</p>
+            <p class="readout-v big" id="answer-v" data-readout-v>?</p>
+            <p class="readout-t" id="answer-t" data-readout-t></p>
+            <details class="readout-how"><summary>How this is worked out</summary>
+              <p id="how-1"></p>
+              <p id="how-2"></p>
+            </details>
+          </div>
+          <div class="strip" id="strip-box">
+            <p class="strip-k" id="strip-k"></p>
+            <svg id="c-strip" role="img" aria-labelledby="strip-k strip-s"></svg>
+            <p class="sr" id="strip-s"></p>
+          </div>
+          <p class="tally" id="tally" hidden></p>
+          <div id="guess"></div>
+          <p class="save-row" id="save-row" hidden><button type="button" id="save" class="btn-2">Save my card</button></p>
+        </div>
+        <p class="assume" id="assume" data-assumptions>Made-up returns, not history or a forecast. No taxes, fees or benefits. Education, not advice.</p>
+        <div class="deal-chart">
+      <figure class="chart" id="fig-deal">
+        <figcaption><p class="chart-title" id="t-deal"></p><p class="chart-sub" id="sub-deal">Savings at the end of each year: Ruth and Sam</p><span class="chip tag-example">Example data</span></figcaption>
+        <svg id="c-deal" role="img" aria-labelledby="t-deal s-deal"></svg>
       </figure>
-      <p class="summary" id="s-lead"></p>
-      <div class="prose">
-        <p>Each retires with <strong data-v="start"></strong> and takes out <strong data-v="withdrawal"></strong> in the first year, <span data-v="indexation"></span> more each year after to keep up with prices. Their first <span data-v="nWords"></span> years are the same <span data-v="nWords"></span> market years:</p>
-        <ul class="cards" id="cards" aria-label="The market years"></ul>
-        <p>The average of the <span data-v="nWords"></span> is <strong data-v="avg"></strong> a year. Ruth gets them best first, Sam worst first. From year <span data-v="after"></span> on, every year earns that same average, for both of them.</p>
-        <p>Further down, the page runs all <span data-v="orders"></span> possible orders of those years, lets you deal your own, and tries to rescue Sam.</p>
+      <p class="summary" id="s-deal"></p>
+        </div>
       </div>
       </section>
 
-      <section data-chapter="No withdrawals" aria-labelledby="h-shuffle">
+      <section class="why" aria-labelledby="h-why">
+        <p class="sec-label">Why?</p>
+        <figure class="chart" id="fig-why">
+          <figcaption><p class="chart-title" id="h-why">The first five years decide most of it</p><p class="chart-sub">Share of orders that last all <span data-v="horizon"></span> years, grouped by the average return of their first five years</p><span class="chip tag-example">Example data</span></figcaption>
+          <svg id="c-why" role="img" aria-labelledby="h-why s-why"></svg>
+        </figure>
+        <p class="summary" id="s-why"></p>
+      </section>
+
+      <details class="deeper" id="deeper">
+      <summary>Go deeper</summary>
+
+      <section class="deeper-sub" data-chapter="No withdrawals" aria-labelledby="h-shuffle">
         <p class="sec-label">No withdrawals</p>
         <h2 id="h-shuffle"></h2>
         <div class="prose">
@@ -54,57 +88,7 @@
         <div class="prose"><p>With money coming out, a bad year early does more damage: the withdrawal is taken from savings that have just shrunk, and that money is not there when the good years come.</p></div>
       </section>
 
-      <section data-chapter="Your turn" aria-labelledby="h-deal">
-        <p class="sec-label">Your turn</p>
-        <h2 id="h-deal">Deal the ten years yourself</h2>
-        <div class="prose"><p>Pick the order one card at a time. Same savings, same withdrawals, same average. Your path is drawn in amber.</p></div>
-        <div class="deal">
-          <div><p class="label">Your order so far</p><ol class="cards dealt" id="dealt" aria-label="Your order so far"></ol></div>
-          <div><p class="label">Cards left to deal</p><div class="cards hand" id="hand" role="group" aria-label="Cards left to deal"></div></div>
-          <p class="row"><button type="button" id="random" class="btn-you">Deal the rest at random</button><button type="button" id="reset" class="btn-2">Start again</button><button type="button" id="save" class="btn-2">Save this chart as an image</button></p>
-        </div>
-        <div class="readout" id="s-deal" aria-live="polite" tabindex="-1">
-          <p class="readout-k" id="rk-deal"></p>
-          <p class="readout-v big" id="rv-deal" data-flash></p>
-          <p class="readout-t" id="rt-deal"></p>
-          <p class="readout-fine" id="rf-deal"></p>
-        </div>
-        <p class="note save-note" id="save-note" aria-live="polite"></p>
-        <figure class="chart">
-          <figcaption><p class="chart-title" id="t-deal"></p><p class="chart-sub">Savings at the end of each year: Ruth, Sam and your order (amber)</p><span class="chip tag-example">Example data</span></figcaption>
-          <svg id="c-deal" role="img" aria-labelledby="t-deal s-deal"></svg>
-        </figure>
-      </section>
-
-      <section data-chapter="Every order" aria-labelledby="h-all">
-        <p class="sec-label">Every possible order</p>
-        <h2 id="h-all">Running every possible order of the ten years</h2>
-        <div class="prose">
-          <p>The ten years can be dealt in <strong data-v="orders"></strong> different orders. This page runs every one of them through the same engine, in your browser, and counts how each one ends.</p>
-          <div class="run" id="run"><progress id="run-bar" max="1" value="0" aria-label="Orders worked out"></progress> <span id="run-text" aria-live="polite">Counting every order…</span></div>
-        </div>
-        <figure class="chart">
-          <figcaption><p class="chart-title" id="t-all">How the orders end</p><p class="chart-sub">Share of all orders, by the year the money runs out, or the money left at the end</p><span class="chip tag-example">Example data</span></figcaption>
-          <svg id="c-all" role="img" aria-labelledby="t-all s-all"></svg>
-        </figure>
-        <p class="summary" id="s-all" aria-live="polite"></p>
-        <p class="summary you-rank" id="s-rank" aria-live="polite"></p>
-        <details class="table"><summary>The counts behind the chart</summary><table id="tab-all"><caption class="sr">Orders by how they end</caption><thead><tr><th scope="col">How the order ends</th><th scope="col">Orders</th><th scope="col">Share</th></tr></thead><tbody></tbody></table></details>
-        <p class="note">Better means the money lasts longer; if both last, more is left at the end; if both run out in the same year, more was paid out before it did.</p>
-      </section>
-
-      <section data-chapter="The first years" aria-labelledby="h-early">
-        <p class="sec-label">Why the order matters</p>
-        <h2 id="h-early">The first five years decide most of it</h2>
-        <div class="prose"><p>Group the orders by the average return of their first five years. Each column below is one group; the shading shows how that group's orders end.</p></div>
-        <figure class="chart">
-          <figcaption><p class="chart-title" id="t-early">The better the first five years, the more orders last</p><p class="chart-sub">Each column is a group of orders with the same average return in their first five years. Darker: a larger share of that group ends that way</p><span class="chip tag-example">Example data</span></figcaption>
-          <svg id="c-early" role="img" aria-labelledby="t-early s-early"></svg>
-        </figure>
-        <p class="summary" id="s-early" aria-live="polite"></p>
-      </section>
-
-      <section data-chapter="Rescuing Sam" aria-labelledby="h-rescue">
+      <section class="deeper-sub" data-chapter="Rescuing Sam" aria-labelledby="h-rescue">
         <p class="sec-label">Rescuing Sam</p>
         <h2 id="h-rescue"></h2>
         <div class="prose">
@@ -136,12 +120,33 @@
         </figure>
       </section>
 
-      <section data-chapter="RRIF minimums" aria-labelledby="h-rrif">
+      <section class="deeper-sub" data-chapter="Every order" aria-labelledby="h-all">
+        <p class="sec-label">Every possible order</p>
+        <h2 id="h-all">Running every possible order of the @@N_WORDS@@ years</h2>
+        <div class="prose">
+          <p>The @@N_WORDS@@ years can be dealt in <strong data-v="orders"></strong> different orders. This page runs every one of them through the same engine, in your browser, and counts how each one ends.</p>
+          <div class="run" id="run"><progress id="run-bar" max="1" value="0" aria-label="Orders worked out"></progress> <span id="run-text" aria-live="polite">Counting every order…</span></div>
+        </div>
+        <figure class="chart">
+          <figcaption><p class="chart-title" id="t-all">How the orders end</p><p class="chart-sub">Share of all orders, by the year the money runs out, or the money left at the end</p><span class="chip tag-example">Example data</span></figcaption>
+          <svg id="c-all" role="img" aria-labelledby="t-all s-all"></svg>
+        </figure>
+        <p class="summary" id="s-all" aria-live="polite"></p>
+        <details class="table"><summary>The counts behind the chart</summary><table id="tab-all"><caption class="sr">Orders by how they end</caption><thead><tr><th scope="col">How the order ends</th><th scope="col">Orders</th><th scope="col">Share</th></tr></thead><tbody></tbody></table></details>
+        <h3 id="h-early">Every order, by its first five years</h3>
+        <div class="prose"><p>The same orders, grouped by the average return of their first five years. Each column below is one group; the shading shows how that group's orders end.</p></div>
+        <figure class="chart">
+          <figcaption><p class="chart-title" id="t-early">The better the first five years, the more orders last</p><p class="chart-sub">Each column is a group of orders with the same average return in their first five years. Darker: a larger share of that group ends that way</p><span class="chip tag-example">Example data</span></figcaption>
+          <svg id="c-early" role="img" aria-labelledby="t-early s-early"></svg>
+        </figure>
+        <p class="summary" id="s-early" aria-live="polite"></p>
+      </section>
+
+      <section class="deeper-sub" data-chapter="RRIF minimums" aria-labelledby="h-rrif">
         <p class="sec-label">A Canadian lane: RRIF minimums</p>
         <h2 id="h-rrif">What RRIF minimum withdrawals do to each order</h2>
         <div class="prose">
           <p id="p-rrif"></p>
-          <p class="note" id="p-rrif-src"></p>
           <label class="check control"><input id="rrif" type="checkbox"><span>Apply the RRIF minimums</span></label>
         </div>
         <div class="readout" id="r-rrif" aria-live="polite">
@@ -158,7 +163,7 @@
         <p class="note">An illustration with stated assumptions, not the rules in full. The extra that leaves the RRIF is not tracked after it leaves: it might be spent or saved elsewhere, and tax, which this sketch leaves out, is where much of the real cost or benefit lies.</p>
       </section>
 
-      <section data-chapter="Questions" aria-labelledby="h-qs">
+      <section class="deeper-sub" data-chapter="Questions" aria-labelledby="h-qs">
         <p class="sec-label">Taking it further</p>
         <h2 id="h-qs">Questions worth asking</h2>
         <div class="prose">
@@ -172,9 +177,16 @@
             <li>How do taxes and fees change these numbers for me, and what if I live much longer than I expect?</li>
           </ul>
           <h3>What this leaves out</h3>
-          <p>Taxes, fees, pensions and government benefits; real market history (these ten years are invented); spending that changes with age; prices rising by anything other than the assumed amount; and every year after the tenth being different from the average. It is a picture of one mechanism, not a plan.</p>
+          <p>Taxes, fees, pensions and government benefits; real market history (these @@N_WORDS@@ years are invented); spending that changes with age; prices rising by anything other than the assumed amount; and every year after the tenth being different from the average. It is a picture of one mechanism, not a plan.</p>
         </div>
       </section>
+      </details>
+
+      <details class="sources" id="sources" data-preview="Where the method comes from, and what is made up">
+        <summary>Sources</summary>
+        <ul id="src-list"></ul>
+        <p class="note">The market years, Ruth and Sam are made up for this example; every figure on the page is worked out from them in your browser, and the share of all orders was worked out when the page was built, with the same engine.</p>
+      </details>
     </article>
   </main>
   <!--@@NEXT@@-->
@@ -186,6 +198,7 @@
 </div>
 <script type="application/json" id="story">/*@@STORY@@*/</script>
 <script type="application/json" id="facts">/*@@FACTS@@*/</script>
+<script type="application/json" id="dist">/*@@DIST@@*/</script>
 <script type="text/plain" id="worker-src">/*@@WORKER@@*/</script>
 <script>/*@@JS@@*/</script>
 </body>

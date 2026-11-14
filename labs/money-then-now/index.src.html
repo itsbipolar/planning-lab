@@ -6,7 +6,7 @@
 <!--@@YEAR@@-->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Money, then and now · Mohammed El Chayeb</title>
-<meta name="description" content="A century of Canadian prices and borrowing on one chart: every year's price change, the prime rate against it, and what an amount from any year is worth in today's dollars. Statistics Canada and Bank of Canada data. Education only, not advice.">
+<meta name="description" content="What an amount from any year in the last century costs in today's dollars, every year's price change as a stripe you can tap, the prime rate against prices, and this year in money: the Bank of Canada rate, mortgage rates, core inflation, the loonie and what the latest federal budget proposes. Statistics Canada and Bank of Canada data. Education only, not advice.">
 <meta name="robots" content="noindex, nofollow">
 <style>/*@@CSS@@*/</style>
 </head>
@@ -15,67 +15,106 @@
 <div class="page">
   <main>
     <section data-chapter="Then and now" class="opening">
-    <p class="kicker">Data</p>
+    <p class="kicker-row"><span class="kicker">Data</span><a class="ty-link" id="ty-link" href="#this-year">This year in money <span aria-hidden="true">↓</span></a></p>
     <h1 id="question">What did <span id="q-amount">{{example_amount}}</span> buy the year you were born?</h1>
 
-    <form id="form" class="ask" novalidate data-first-move>
-      <span class="field"><label for="amount">An amount</label>
-      <span class="dollar"><span aria-hidden="true">$</span><input id="amount" name="amount" type="number" inputmode="decimal" autocomplete="off" min="0.01" step="0.01" required></span></span>
-      <span class="field"><label for="year">In the year</label>
-      <input id="year" name="year" type="number" inputmode="numeric" autocomplete="off" required></span>
-      <button type="submit" class="btn-you">Show it</button>
-      <p class="note" id="example-note"></p>
-      <p class="error" id="error" role="alert" hidden></p>
-    </form>
-
-    <div class="readout answer" id="answer" aria-live="polite">
-      <p class="readout-k" id="answer-k"></p>
-      <p class="readout-v big" id="answer-v" data-flash></p>
-      <p class="readout-t" id="finding"></p>
-    </div>
-
-    <div class="readout" id="year-readout" aria-live="polite">
-      <p class="readout-k" id="rk-year"></p>
-      <div class="readout-row">
-        <div><p class="readout-k">Price change</p><p class="readout-v" id="rv-infl" data-flash></p></div>
-        <div><p class="readout-k">Prime rate, average</p><p class="readout-v" id="rv-prime" data-flash></p></div>
-        <div><p class="readout-k">Real rate</p><p class="readout-v" id="rv-real" data-flash></p></div>
+    <div id="form" class="ask" data-first-move>
+      <div class="ask-row">
+        <span class="field"><label for="amount">An amount</label>
+        <span class="dollar"><span aria-hidden="true">$</span><input id="amount" name="amount" type="number" inputmode="decimal" autocomplete="off" min="0.01" step="0.01"></span></span>
+        <span class="field"><label for="year">In the year</label>
+        <input id="year" name="year" type="number" inputmode="numeric" autocomplete="off" data-year-control></span>
       </div>
-      <p class="readout-t" id="rt-year"></p>
-      <p class="readout-fine">Real rate here = the year's average prime rate minus that year's price rise; a simple after-the-fact measure.</p>
+      <div class="ychips" id="ychips" role="group" aria-label="Or pick a year"></div>
+      <p class="error" id="error" role="alert" hidden></p>
+    </div>
+    <p class="assume" id="example-note" data-assumptions></p>
+
+    <div class="readout answer" id="answer" data-answer aria-live="polite">
+      <p class="readout-k" id="answer-k"></p>
+      <p class="readout-v big" id="answer-v" data-readout-v></p>
+      <p class="readout-t" id="finding" data-readout-t></p>
+      <details class="readout-how"><summary>How this is worked out</summary><p id="how"></p></details>
     </div>
 
-    <figure class="chart" aria-labelledby="chart-h">
-      <figcaption><h2 class="chart-title" id="chart-h"></h2><p class="chart-sub" id="chart-sub"></p></figcaption>
-      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Prices, prime rate and purchasing power</title><desc id="chart-desc"></desc></svg></div>
+    <figure class="stripes-fig" aria-labelledby="stripes-h">
+      <figcaption><p class="chart-title" id="stripes-h"></p><p class="chart-sub" id="stripes-sub"></p></figcaption>
+      <div class="stripes" id="stripes" role="slider" tabindex="0" aria-labelledby="stripes-h"></div>
+      <div class="stripes-axis" aria-hidden="true"><span id="ax-first"></span><span id="ax-last"></span></div>
+      <p class="stripe-read" id="stripe-read" aria-live="polite" aria-atomic="true"></p>
+      <p class="stripes-key" aria-hidden="true"><span class="sw sw-fall"></span>prices fell <span class="sw sw-flat"></span>about flat <span class="sw sw-rise"></span>prices rose</p>
+    </figure>
+
+    <div id="guess"></div>
+
+    <figure class="chart worth" id="worth-fig" aria-labelledby="chart-h">
+      <figcaption><p class="chart-title" id="chart-h"></p><p class="chart-sub" id="chart-sub"></p><span class="chip tag-example" id="tag-example">Example data</span></figcaption>
+      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">What the amount costs each year since</title><desc id="chart-desc"></desc></svg></div>
       <ul class="sr-only" id="chart-text"></ul>
     </figure>
     <p class="actions"><button type="button" id="save" class="btn-2">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
     </section>
 
-    <section class="readings" data-chapter="What the years say" aria-labelledby="readings-h">
-      <p class="sec-label">What the years say</p>
-      <h2 id="readings-h">What the years say</h2>
-      <ul id="readings"></ul>
-    </section>
-
-    <section class="later" data-chapter="The data" aria-labelledby="data-h">
-    <p class="sec-label" id="data-h">The data, year by year, and its sources</p>
-    <details class="fold">
-      <summary>Every year as a table</summary>
-      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-cap">
-        <table class="nums"><caption id="table-cap">Each year's price change, average prime rate and real rate (prime minus price change), in per cent</caption>
-          <thead><tr><th scope="col">Year</th><th scope="col">Price change</th><th scope="col">Prime rate, average</th><th scope="col">Real rate</th></tr></thead>
-          <tbody id="rows"></tbody>
-        </table>
-      </div>
+    <details class="deeper" id="deeper" data-chapter="Go deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub" aria-labelledby="rates-h">
+        <h3 id="rates-h">What about interest rates?</h3>
+        <div class="readout" id="year-readout" aria-live="polite">
+          <p class="readout-k" id="rk-year"></p>
+          <div class="readout-row">
+            <div><p class="readout-k">Price change</p><p class="readout-v" id="rv-infl" data-flash></p></div>
+            <div><p class="readout-k">Prime rate, average</p><p class="readout-v" id="rv-prime" data-flash></p></div>
+            <div><p class="readout-k">Real rate</p><p class="readout-v" id="rv-real" data-flash></p></div>
+          </div>
+          <p class="readout-t" id="rt-year"></p>
+          <p class="readout-fine">Real rate here = the year's average prime rate minus that year's price rise; a simple after-the-fact measure.</p>
+        </div>
+        <figure class="chart rates" aria-labelledby="rates-title">
+          <figcaption><p class="chart-title" id="rates-title"></p><p class="chart-sub" id="rates-sub"></p></figcaption>
+          <div class="chart-frame" id="rates-frame"><svg id="rates" role="img" aria-labelledby="rates-svg-title rates-desc"><title id="rates-svg-title">The prime rate against prices</title><desc id="rates-desc"></desc></svg></div>
+          <ul class="sr-only" id="rates-text"></ul>
+        </figure>
+      </section>
+      <section class="deeper-sub readings" aria-labelledby="readings-k">
+        <h3 id="readings-k">What the years say</h3>
+        <ul id="readings"></ul>
+      </section>
+      <section class="deeper-sub" aria-labelledby="table-k">
+        <h3 id="table-k">Every year as a table</h3>
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-cap">
+          <table class="nums"><caption id="table-cap">Each year's price change, average prime rate and real rate (prime minus price change), in per cent</caption>
+            <thead><tr><th scope="col">Year</th><th scope="col">Price change</th><th scope="col">Prime rate, average</th><th scope="col">Real rate</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
     </details>
 
-    <details class="fold">
+    <details class="this-year" id="this-year" data-chapter="This year">
+      <summary><span class="ty-k">This year in money</span><span class="ty-sub fold-p" id="ty-sub"></span></summary>
+      <section class="ty-budget" id="budget" aria-labelledby="h-budget">
+        <h2 id="h-budget"></h2>
+        <p class="ty-lede" id="budget-lede"></p>
+        <ol class="proposals" id="proposals"></ol>
+      </section>
+      <section class="ty-measures" aria-labelledby="h-measures">
+        <h2 id="h-measures"></h2>
+        <p class="ty-finding" id="ty-finding"></p>
+        <p class="ty-lede" id="measures-lede"></p>
+        <ul class="pairs" id="pairs"></ul>
+        <p class="note" id="ty-asof"></p>
+        <details class="ty-table">
+          <summary>The numbers, month by month</summary>
+          <div class="table-wrap" tabindex="0" role="region" aria-labelledby="ty-cap"><table class="nums"><caption id="ty-cap">Each measure at the end of every month so far (the last value in force that day)</caption><thead><tr id="ty-head"></tr></thead><tbody id="ty-rows"></tbody></table></div>
+        </details>
+        <p class="note" id="ty-attr"></p>
+      </section>
+    </details>
+
+    <details class="fold sources-fold" data-chapter="Sources" data-preview="Statistics Canada and Bank of Canada data, and how the page is made">
       <summary>Sources and how it's made</summary>
       <div id="sources" class="prose"></div>
     </details>
-    </section>
 
     <!--@@NEXT@@-->
 

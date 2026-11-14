@@ -1,7 +1,8 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
-  testDir: 'labs',
-  testMatch: '**/tests/*.spec.mjs',
+  testDir: '.',
+  testMatch: ['labs/**/tests/*.spec.mjs', 'shared/desk/tests/*.spec.mjs'],
+  testIgnore: ['labs/_archive/**'],
   fullyParallel: true,
   reporter: [['list']],
   use: { trace: 'off' },

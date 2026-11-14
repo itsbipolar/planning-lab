@@ -1,20 +1,24 @@
 // The retirement wave. The model (counts by place, gender, year and age; each year's population; the rule ages from the
-// confirmed facts) is embedded in #data, and the calculations come from model.mjs, inlined above this script. The birth
-// year, place and choices stay in this page: not stored, not put in the address, not sent anywhere. A birth year set in
-// Your year this visit (sessionStorage 'mo.year', read by the <head> script into <html data-year>) is the one it opens
-// on, but only when the data covers that age on the latest July 1; otherwise the labelled example shows. The only file this
-// page makes is an image the visitor asks to save.
+// confirmed facts) is embedded in #data, and the calculations come from model.mjs, inlined above this script. The age,
+// place and choices stay in this page: not stored, not put in the address, not sent anywhere. A birth year set elsewhere
+// on the site this visit (sessionStorage 'mo.year', read by the <head> script into <html data-year>) sets the age it opens
+// on, but only when the data covers that age on the latest July 1; otherwise it opens a year short of the OAS age and says
+// which ages the data covers. The only file this page makes is an image the visitor asks to save.
 (() => {
   'use strict';
   const D = JSON.parse(document.getElementById('data').textContent), M = D.model, STEPS = D.steps;
-  const EXAMPLE_BIRTH = 1950;
-  const [y0, y1] = M.years, [a0, a1] = M.ages, [bLo, bHi] = bornRange(M);
+  const [y0, y1] = M.years, [a0, a1] = M.ages;
   const NS = 'http://www.w3.org/2000/svg';
   const $ = (id) => document.getElementById(id);
-  const n = (v) => Math.round(v).toLocaleString('en-CA');
-  const state = { place: 'CA', gender: 'all', mode: 'count', born: EXAMPLE_BIRTH, example: true };
+  const n = num;
+  const state = { place: 'CA', gender: 'all', mode: 'count', age: defaultAge(M) };
   const carried = Number(document.documentElement.getAttribute('data-year'));
-  if (Number.isInteger(carried) && y1 - carried >= a0 && y1 - carried <= a1) { state.born = carried; state.example = false; }
+  let hint = `Ages ${a0} to ${a1}.`;
+  if (/^\d{4}$/.test(String(document.documentElement.getAttribute('data-year') || ''))) {
+    if (inAges(M, y1 - carried)) { state.age = y1 - carried; hint = `From your birth year, ${carried}.`; }
+    else hint = `This data covers ages ${a0} to ${a1}.`;
+  }
+  const born = () => y1 - state.age;
   let V = view(M, state.place, state.gender);
   const fmt = (v, mode = state.mode) => (mode === 'share' ? pct(v, 2) : n(v));
   function el(tag, attrs, parent, text) {
@@ -65,7 +69,7 @@
   // where the pointer is, read before the chart's own listeners (the crosshair reads across; this gives the row)
   let pointerY = null;
   for (const ev of ['pointermove', 'pointerdown']) $('frame').addEventListener(ev, (e) => { pointerY = e.clientY; }, true);
-  let unhair = null;
+  let unhair = null, drawOn = false;
   function drawHeat() {
     const svg = $('heat');
     if (unhair) unhair();
@@ -74,9 +78,20 @@
     // The grid runs the full width. Wide: the rule names sit inside the grid on a ground-coloured backing, wherever the
     // line is clear of the diagonal's readings. Narrow: a thin gutter on the right holds the rule ages, and the names are
     // in the key under the chart.
-    const left = narrow ? 26 : 34, right = narrow ? 28 : 3, top = 8, bottom = 30;
+    const left = narrow ? 26 : 34, right = narrow ? 28 : 3, bottom = 30;
+    // the one note on the chart, in a band above the grid (so it hides no square): one line when it fits, else two. The
+    // light scheme shades many people dark, the dark scheme bright, so each scheme has its own words (CSS shows one).
+    const NM = metrics(svg, 'heat-note'), notes = [['Darker = more people.', 'only-light'], ['Brighter = more people.', 'only-dark']], col = 'Each column is a year.';
+    const probe = el('text', { class: 'heat-note', x: 0, y: 0 }, svg, `${notes[1][0]} ${col}`), oneLine = probe.getBBox().width <= W - left - right; probe.remove();
+    const top = 6 + (oneLine ? 1 : 2) * NM.lh + 8;
+    for (const [t, c] of notes) {
+      const tx = el('text', { class: `heat-note ${c}`, x: left }, svg);
+      if (oneLine) { tx.setAttribute('y', (6 + NM.lh / 2 + NM.mid).toFixed(1)); tx.textContent = `${t} ${col}`; }
+      else [t, col].forEach((line, k) => el('tspan', { x: left, y: (6 + NM.lh * (k + 0.5) + NM.mid).toFixed(1) }, tx, line));
+    }
     const cols = y1 - y0 + 1, rows = a1 - a0 + 1, cw = (W - left - right) / cols;
-    const ch = narrow ? Math.min(9, Math.max(8, cw * 1.5)) : Math.min(15, Math.max(9, cw * 0.75));
+    // rows tall enough on a phone that a reading fits between two rule lines five ages apart
+    const ch = narrow ? Math.min(12, Math.max(11, cw * 2)) : Math.min(15, Math.max(9, cw * 0.75));
     const plotW = cols * cw, plotH = rows * ch, H = top + plotH + bottom, R = left + plotW;
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
     const X = (y) => left + (y - y0) * cw, Y = (a) => top + (a1 - a) * ch, Yc = (a) => Y(a) + ch / 2;
@@ -99,13 +114,14 @@
     }
 
     // the diagonal: one group of people, a year older every July 1
-    const d = diagonal(M, V, state.mode, state.born);
+    const d = diagonal(M, V, state.mode, born());
     if (d.cells.length) {
-      // A band through the diagonal's cells: from the first cell's bottom edge to the last cell's top edge.
-      const [fy, fa] = d.cells[0], [ly, la] = d.last;
+      // A band through the diagonal's cells: from the first cell's bottom edge to the last cell's top edge. Drawn on
+      // (half a second) only when the visitor has just changed the age; at once otherwise and under reduced motion.
+      const [fy, fa] = d.cells[0], [ly, la] = d.last, cls = drawOn ? ' drawn' : '';
       const pts = [[X(fy), Y(fa) + ch], [X(fy) + cw, Y(fa) + ch], [X(ly) + cw, Y(la)], [X(ly), Y(la)]].map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' ');
-      el('polygon', { class: 'diag-halo', points: pts }, svg);
-      el('polygon', { class: 'diag', points: pts }, svg);
+      el('polygon', { class: 'diag-halo' + cls, points: pts, pathLength: 1 }, svg);
+      el('polygon', { class: 'diag' + cls, points: pts, pathLength: 1 }, svg);
     }
     // readings where the diagonal crosses each rule age, and where it starts and ends in the data; crossings a year or
     // two apart share one tag, so their readings never sit on top of each other
@@ -128,6 +144,17 @@
       const k = narrow && g.length > 1 ? g.length : 1;
       return { g, cx, cy, want: cy, h: TM.h + (k - 1) * TM.lh + back };
     }), 3, top + 2, top + plotH - 2);
+    // On a phone a reading never sits across a dashed rule line: each is moved, in order, to the nearest place clear of
+    // every rule line and of the readings already placed (the leader then ties it to its dot).
+    if (narrow) {
+      const lines = M.rules.map((r) => Yc(r.age)), done = [];
+      const free = (y, h) => lines.every((ly) => Math.abs(ly - y) > h / 2 + 2) && done.every((o) => Math.abs(o.y - y) > (o.h + h) / 2 + 3) && y - h / 2 >= top + 2 && y + h / 2 <= top + plotH - 2;
+      for (const it of tags) {
+        let best = it.y;
+        for (let k = 0; k <= plotH; k++) { if (free(it.y - k, it.h)) { best = it.y - k; break; } if (free(it.y + k, it.h)) { best = it.y + k; break; } }
+        it.y = best; done.push(it);
+      }
+    }
     for (const it of tags) {
       const xs2 = it.g.map((m) => X(m.year) + cw / 2), xl = Math.min(...xs2) - 9, xr = Math.max(...xs2) + 9;
       // One line when it fits beside the dots; otherwise one reading per line, in the same backing.
@@ -166,7 +193,7 @@
       const rl = relax(M.rules.map((r) => ({ r, want: Yc(r.age), h: RM.h + back })), 3, top, top + plotH);
       const placed = [];
       for (const it of rl) {
-        const age = it.r.age, yc = state.born + age;
+        const age = it.r.age, yc = born() + age;
         // the diagonal's own cells near this line are kept clear too
         const zone = yc >= y0 && yc <= y1 ? [{ x: X(yc - 1), r: X(yc + 2), y: it.y - RM.h / 2, b: it.y + RM.h / 2 }] : [];
         const L = label(ruleLayer, 'rule-n', [[[String(age), 'age'], [`  ${it.r.label}`, 'what']]], left + 6, it.y, 'start', RM);
@@ -182,7 +209,7 @@
     }
     $('rule-key').hidden = !narrow;
 
-    $('heat-title').textContent = `Heatmap of ${state.mode === 'share' ? 'each age’s share of the population' : 'the number of people at each age'}, ${who(M, state.place, state.gender)}, ages ${a0} to ${a1}, July 1, ${y0} to ${y1}, with the rule ages as dashed lines and the diagonal for people born in ${state.born}. The numbers are in the table below the chart.`;
+    $('heat-title').textContent = `Heatmap of ${state.mode === 'share' ? 'each age’s share of the population' : 'the number of people at each age'}, ${who(M, state.place, state.gender)}, ages ${a0} to ${a1}, July 1, ${y0} to ${y1}, with the rule ages as dashed lines and an amber band following the people aged ${state.age} on July 1, ${y1} back through time. The numbers are in the table under Go deeper.`;
     svg.onpointermove = (e) => {
       const r = svg.getBoundingClientRect(), k = W / r.width, px = (e.clientX - r.left) * k, py = (e.clientY - r.top) * k;
       const y = y0 + Math.floor((px - left) / cw), a = a1 - Math.floor((py - top) / ch);
@@ -221,7 +248,8 @@
   }
 
   // ---------- everything for the current choices ----------
-  function render() {
+  const readout = deskReadout('#answer', { format: n });
+  function render(changed) {
     V = view(M, state.place, state.gender);
     const f = finding(M, V), W = who(M, state.place, state.gender);
     $('finding').textContent = f.lede;
@@ -232,45 +260,19 @@
     $('chart-h').textContent = state.mode === 'share'
       ? `The biggest single age: ${pct(top[2], 2)} of ${W} were ${top[1]} on July 1, ${top[0]}`
       : `The biggest single age: ${n(top[2])} ${W} were ${top[1]} on July 1, ${top[0]}`;
-    $('chart-sub').textContent = `Each square is one age (rows, ${a0} at the bottom to ${a1} at the top) on July 1 of one year (columns, ${y0} to ${y1}). `
-      + (state.mode === 'share' ? 'The stronger the shade, the bigger that age’s share of the whole population, all ages, that year. ' : 'The stronger the shade, the more people were that age. ')
-      + 'Dashed lines mark the rule ages; the amber outline is one group of people, a year older every July 1.';
-    const d = drawHeat();
-    // the readings as text
-    const b = state.born, ul = $('readings'); ul.textContent = '';
-    $('readings-h').textContent = `${state.example ? 'Example diagonal' : 'Your diagonal'}: born July 2, ${b - 1} to July 1, ${b}`;
-    for (const c of d.crossings) {
-      const li = html('li', null, c.when === 'in' ? '' : 'after');
-      const what = c.rule.text;
-      if (c.when === 'in') li.textContent = `${c.age} in ${c.year} (${what}): ${n(V.counts[c.year][c.age - a0])} people, ${pct(value(M, V, 'share', c.year, c.age), 2)} of the population.`;
-      else if (c.when === 'after') li.textContent = `${c.age} in ${c.year} (${what}): after the data ends.`;
-      else li.textContent = `${c.age} in ${c.year} (${what}): before the data starts.`;
-      ul.appendChild(li);
-    }
-    if (d.last && !d.crossings.some((c) => c.year === d.last[0])) ul.appendChild(html('li', `${d.last[1]} in ${d.last[0]}${d.last[0] === y1 ? ', the latest year' : ''}: ${n(V.counts[d.last[0]][d.last[1] - a0])} people, ${pct(value(M, V, 'share', d.last[0], d.last[1]), 2)} of the population.`));
-    $('born-note').textContent = state.example
-      ? `An example: born ${EXAMPLE_BIRTH}. Type your own year; it stays in this page.`
-      : 'The year stays in this page.';
-    bornReadout(d);
+    $('chart-sub').textContent = `Rows are ages, ${a0} at the bottom to ${a1} at the top; columns are July 1, ${y0} to ${y1}. `
+      + (state.mode === 'share' ? 'Each square is that age’s share of the whole population that year. ' : '')
+      + `Dashed lines mark the rule ages; the amber band follows the people aged ${state.age} in ${y1} back through time.`;
+    drawOn = changed === 'age' && deskActed();
+    drawHeat();
+    drawOn = false;
+    // the big answer: the people that age on the latest July 1
+    const A = ageAnswer(M, V, state.age);
+    readout.set({ n: A.count, label: A.label, line: A.line, animate: changed === 'age' });
+    $('answer-unit').textContent = A.unit;
+    $('answer-how').textContent = A.how;
     $('point').textContent = 'Point at a square to read it.';
     drawTable(W);
-  }
-
-  // the diagonal's key reading, under the birth year: how many of these people there were in the latest year they appear,
-  // and the rule age they reached most recently (or reach next, after the data ends)
-  function bornReadout(d) {
-    const b = state.born;
-    $('born-k').textContent = `Born July 2, ${b - 1} to July 1, ${b}`;
-    if (!d.last) { $('born-v').textContent = 'Not in the data'; $('born-t').textContent = `The chart covers ages ${a0} to ${a1} on July 1, ${y0} to ${y1}.`; return; }
-    const [ly, la] = d.last, count = V.counts[ly][la - a0], share = value(M, V, 'share', ly, la);
-    // the figure big, its unit beside it at text size
-    const bv = $('born-v'); bv.textContent = '';
-    bv.append(state.mode === 'share' ? pct(share, 2) : n(count), ' ', html('span', state.mode === 'share' ? 'of the population' : 'people', 'unit'));
-    const past = d.crossings.filter((c) => c.when === 'in').at(-1), next = d.crossings.find((c) => c.when === 'after');
-    let t = `They were ${la} on July 1, ${ly}${ly === y1 ? ', the latest year' : ''}: ${state.mode === 'share' ? `${n(count)} ${who(M, state.place, state.gender)}` : `${pct(share, 2)} of the population`}.`;
-    if (past) t += ` They reached ${past.age} (${past.rule.text}) in ${past.year}.`;
-    if (next) t += ` They reach ${next.age} (${next.rule.text}) in ${next.year}, after the data ends.`;
-    $('born-t').textContent = t;
   }
 
   function drawTable(W) {
@@ -298,16 +300,30 @@
     lab.append(inp, document.createTextNode(' ' + t)); $('genders').appendChild(lab);
   }
   document.querySelectorAll('input[name=mode]').forEach((r) => r.addEventListener('change', () => { state.mode = r.value; render(); }));
-  const born = $('born'); born.min = String(bLo); born.max = String(bHi); born.value = String(state.born);
-  $('controls').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const v = Number(born.value), err = $('error');
-    if (!born.value || !Number.isInteger(v) || v < bLo || v > bHi) {
-      err.textContent = `Type a birth year from ${bLo} to ${bHi}: the chart covers ages ${a0} to ${a1} on July 1, ${y0} to ${y1}.`;
-      err.hidden = false; born.setAttribute('aria-invalid', 'true'); return;
-    }
-    err.hidden = true; born.removeAttribute('aria-invalid'); state.born = v; state.example = false; render();
+  // "Find an age": a number field with a step either side (each a 48px target); a typed age counts once it is whole and
+  // in the data's range, and a value out of range says which ages the data covers.
+  const ageIn = $('age'), down = $('age-down'), up = $('age-up'), err = $('error');
+  ageIn.min = String(a0); ageIn.max = String(a1); ageIn.value = String(state.age); $('age-hint').textContent = hint;
+  const steps = () => { down.disabled = state.age <= a0; up.disabled = state.age >= a1; };
+  const ok = () => { err.hidden = true; ageIn.removeAttribute('aria-invalid'); };
+  function setAge(a) {
+    a = Math.min(a1, Math.max(a0, a)); ok();
+    ageIn.value = String(a);
+    if (a === state.age) return;
+    state.age = a; steps(); render('age');
+  }
+  down.addEventListener('click', () => setAge(state.age - 1));
+  up.addEventListener('click', () => setAge(state.age + 1));
+  ageIn.addEventListener('input', () => { const v = Number(ageIn.value); if (ageIn.value !== '' && inAges(M, v)) setAge(v); });
+  ageIn.addEventListener('change', () => {
+    const v = Number(ageIn.value);
+    if (ageIn.value !== '' && inAges(M, v)) { setAge(v); return; }
+    err.textContent = `This data covers ages ${a0} to ${a1}. Type a whole number in that range.`;
+    err.hidden = false; ageIn.setAttribute('aria-invalid', 'true');
   });
+  ageIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); ageIn.dispatchEvent(new Event('change')); } });
+  steps();
+  $('controls').addEventListener('submit', (e) => e.preventDefault());
 
   // ---------- sources ----------
   const src = M.source;
@@ -323,35 +339,35 @@
   }
   $('foot-src').textContent = `Data: Statistics Canada, Table 17-10-0005-01, released ${src.released}, read ${src.retrieved}; the rule ages from official federal sources, listed under Sources and notes.`;
 
-  // ---------- save the chart as an image, made in the browser ----------
-  $('save').addEventListener('click', () => {
+  // ---------- save the chart as an image, made in the browser: the share sheet where it takes files, else a download ----------
+  deskSaveButton($('save'), () => new Promise((resolve, reject) => {
     const svg = $('heat'), clone = svg.cloneNode(true), W = Number(svg.getAttribute('width')), H = Number(svg.getAttribute('height'));
     clone.setAttribute('xmlns', NS);
     const live = svg.querySelectorAll('*'), copy = clone.querySelectorAll('*');
     live.forEach((node, i) => {
       const cs = getComputedStyle(node), s = copy[i];
-      for (const p of ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity', 'font-size', 'font-weight']) s.setAttribute(p, cs.getPropertyValue(p));
-      if (node.nodeName === 'text') s.setAttribute('font-family', 'Libre Franklin, Helvetica, Arial, sans-serif');
+      for (const p of ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity', 'font-size', 'font-weight', 'display']) s.setAttribute(p, cs.getPropertyValue(p));
+      if (node.nodeName === 'text') s.setAttribute('font-family', 'Helvetica, Arial, sans-serif');
     });
-    const pad = 32, head = 74, foot = 56, img = new Image(), cs = getComputedStyle(document.documentElement), col = (k) => cs.getPropertyValue('--t-' + k).trim();
+    const pad = 32, head = 96, foot = 56, img = new Image(), cs = getComputedStyle(document.documentElement), col = (k) => cs.getPropertyValue('--t-' + k).trim();
+    img.onerror = reject;
     img.onload = () => {
       const cv = document.createElement('canvas'), k = 2, w = W + pad * 2, h = H + pad * 2 + head + foot;
       cv.width = w * k; cv.height = h * k;
       const g = cv.getContext('2d'); g.scale(k, k); g.fillStyle = col('ground'); g.fillRect(0, 0, w, h);
-      g.fillStyle = col('ink'); g.font = '600 19px Georgia, serif'; g.fillText($('question').textContent, pad, pad + 8, W);
-      g.fillStyle = col('ink2'); g.font = '14px Helvetica, Arial, sans-serif'; g.fillText($('finding').textContent, pad, pad + 30, W);
-      g.fillText($('chart-h').textContent, pad, pad + 48, W);
+      g.fillStyle = col('ink'); g.font = '600 22px Georgia, serif'; g.fillText($('question').textContent, pad, pad + 12, W);
+      g.fillStyle = col('ink2'); g.font = '16px Helvetica, Arial, sans-serif'; g.fillText($('finding').textContent, pad, pad + 38, W);
+      g.fillText(`${$('answer-k').textContent}: ${$('answer-v').textContent} ${$('answer-unit').textContent}. ${$('answer-t').textContent}`, pad, pad + 62, W);
       g.drawImage(img, pad, pad + head, W, H);
-      g.fillStyle = col('ink3'); g.font = '12px Helvetica, Arial, sans-serif';
+      g.fillStyle = col('ink3'); g.font = '14px Helvetica, Arial, sans-serif';
       g.fillText(src.attribution, pad, pad + head + H + 26, W);
-      g.fillText('The retirement wave. Education only, not advice. Mohammed El Chayeb.', pad, pad + head + H + 44, W);
-      cv.toBlob((blob) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `retirement-wave-${state.place}-${state.born}.png`; document.body.appendChild(a); a.click(); a.remove(); });
+      g.fillText('The retirement wave. Education only, not advice. Mohammed El Chayeb.', pad, pad + head + H + 46, W);
+      cv.toBlob((blob) => (blob ? resolve({ blob, name: `retirement-wave-${state.place}-age-${state.age}.png`, title: $('question').textContent }) : reject(new Error('no image'))), 'image/png');
     };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(clone));
-  });
+  }));
 
-  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 120); });
+  let rt, lastW = innerWidth;
+  window.addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(rt); rt = setTimeout(() => render(), 120); });
   render();
-  // the first fill is not a change: no underline on load
-  requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
 })();

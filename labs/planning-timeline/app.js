@@ -2,7 +2,10 @@
 // calculations come from model.mjs and the shared core (shared/desk/your-year-core.mjs), inlined above this script.
 // The birth year the visitor sets is kept for this visit only in sessionStorage 'mo.year' (a 4-digit year), so Money,
 // then and now and Retirement wave can open on it; <head> reads it into <html data-year> before this script runs. It is
-// never put in the address and never sent anywhere. The only file this page makes is an image the visitor asks to save.
+// never put in the address and never sent anywhere. The only file this page makes is the card the visitor asks to save.
+// Redesign v2 (Your year): one year control (stepper, input, chips; live, no submit button), one big answer (what $100
+// from that year costs now, from the shared core, as on the site's home lead), the box score in the tense for the
+// visitor's year, one life line chart; the RRIF curve and the CPP and OAS totals sit in the closed Go deeper.
 (function () {
   'use strict';
   var D = JSON.parse(document.getElementById('data').textContent);
@@ -29,23 +32,23 @@
   function clear(svg) { Array.prototype.slice.call(svg.childNodes).forEach(function (c) { if (c.nodeName !== 'title') svg.removeChild(c); }); }
 
   var LAST = M.rrif[M.rrif.length - 1].age;
-  // The one RRIF sentence used across the labs (redesign v2): the first factor applies the year you turn one more than
-  // the maturity age (the factor is set by the age on January 1), the last from the year you turn one more than its age.
-  function rrifRule() {
-    var first = M.rrif.filter(function (r) { return r.age >= R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
-    return 'At least ' + pct(first.factor * 100, 2) + ' must come out the year you turn ' + (first.age + 1) + ', rising to ' + pct(last.factor * 100, 0) + ' from the year you turn ' + (last.age + 1);
-  }
   var lo = R.tfsaAge, hi = LAST + 1;
   // the date the rules were last read at their sources, for the assumptions line
   var asOf = M.sources.map(function (s) { return s.as_of; }).sort().pop();
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var asOfText = MONTHS[Number(asOf.slice(5, 7)) - 1] + ' ' + asOf.slice(0, 4);
   var state = { birth: EXAMPLE_BIRTH, example: true, cpp: R.cppHi, oas: R.oasHi, income: EXAMPLE_INCOME, fund: EXAMPLE_FUND };
-  var YEAR_MIN = 1900;
+  // The control's bounds (the plan's stepper, as on the home lead): from YEAR_MIN to the youngest year whose TFSA opens
+  // by the last confirmed limit (that year minus the TFSA age), so every year offered has a sum to show. The chips are
+  // jump points, not rules.
+  var YEAR_MIN = 1930, CHIPS = [1960, 1970, 1980, 1990, 2000];
+  var YEAR_MAX = Math.max.apply(null, Object.keys(M.tfsa).map(Number)) - R.tfsaAge;
+  if (M.prices) YEAR_MIN = Math.max(YEAR_MIN, M.prices.first);
+  var valid = function (y) { return Number.isInteger(y) && y >= YEAR_MIN && y <= YEAR_MAX; };
   // the year carried from this visit (set on <html data-year> by the <head> script); anything else shows the example
   var carried = Number(document.documentElement.getAttribute('data-year'));
-  if (Number.isInteger(carried) && carried >= YEAR_MIN && carried <= thisYear) { state.birth = carried; state.example = false; }
-  function remember(y) { try { sessionStorage.setItem('mo.year', String(y)); } catch (e) { /* storage blocked: the year stays in this page */ } }
+  if (valid(carried)) { state.birth = carried; state.example = false; }
+  function remember(y) { try { sessionStorage.setItem('mo.year', String(y)); } catch (e) { /* storage blocked: the year stays in this page */ } if (window.deskYearChip) window.deskYearChip(); }
 
   // ---------- the timeline ----------
   // Every label and reading is drawn last, with a ground-coloured halo, so the "you are here" line breaks behind it and
@@ -55,8 +58,8 @@
   function drawTimeline(p) {
     var svg = $('tl'); clear(svg);
     var W = Math.max(320, $('tl-frame').clientWidth), narrow = W < 640;
-    // chart text at 17px (the one size rule: 16.5px or more), drawn at the frame's real width so nothing scales down
-    var fs = 17, small = 17, barH = 20;
+    // chart text at 17.5px (labels 17.5px or more; Mo: never smaller), drawn at the frame's real width so nothing scales down
+    var fs = 17.5, small = 17.5, barH = 20;
     var padL = 4, padR = narrow ? 14 : 24, top = 40;
     var tfsaH = 66, laneH = 94, rrifH = narrow ? 128 : 118, axisH = 58;
     var H = top + tfsaH + laneH * 2 + rrifH + axisH;
@@ -69,7 +72,7 @@
     var stdAt = (R.cppStd - R.cppLo) / (R.cppHi - R.cppLo);
     grad('g-cpp', [[0, d4], [stdAt, neutral], [1, d1]]);
     grad('g-oas', [[0, neutral], [1, d1]]);
-    var texts = [], dots = [];
+    var texts = [];
     function label(y, name, detail) { texts.push(function () {
       var t = el('text', halo({ x: padL, y: y, fill: ink, 'font-size': fs + 1, 'font-weight': 700 }), svg, name);
       if (detail) el('tspan', { fill: ink2, 'font-weight': 400 }, t, '  ' + detail);
@@ -84,16 +87,22 @@
     if (t.from < hi) el('rect', { x: x(Math.max(lo, t.from)), y: bar(y), width: x(hi) - x(Math.max(lo, t.from)), height: barH, fill: d3 }, svg);
     lanes.push(['TFSA', t.open ? 'Contribution room has built up since ' + t.startYear + ': ' + money(t.room) + ' in all by ' + t.roomTo + ', if you lived in Canada and were old enough.' : 'Contribution room starts in ' + t.startYear + '.']);
     y += tfsaH;
-    // CPP: the readings sit under the bar, never on it
-    label(y + 19, 'CPP', narrow ? 'start ' + R.cppLo + '–' + R.cppHi : 'start any month from ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + '–' + p.cpp.closes + ' for you)');
-    el('rect', { x: x(R.cppLo), y: bar(y), width: x(R.cppHi + 1) - x(R.cppLo), height: barH, fill: 'url(#g-cpp)' }, svg);
+    // CPP: the gradient's meaning is written on the chart, under the bar and never on it: start early, a smaller cheque;
+    // wait, a bigger one. The percentages sit in the lane's label.
     var cLo = (cppShareAt(R.cppLo) - 1) * 100, cHi = (cppShareAt(R.cppHi) - 1) * 100;
-    if (x(R.cppHi + 1) - x(R.cppLo) > 110) {
-      reading(x(R.cppLo), below(y), signed(cLo));
-      reading(x(R.cppHi + 1), below(y), signed(cHi), 'end');
-    } else reading(x(R.cppLo), below(y), signed(cLo) + ' to ' + signed(cHi));
+    label(y + 19, 'CPP', narrow ? signed(cLo) + ' at ' + R.cppLo + ' · ' + signed(cHi) + ' at ' + R.cppHi
+      : 'start any month from ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + '–' + p.cpp.closes + ' for you): ' + signed(cLo) + ' a month at ' + R.cppLo + ', ' + signed(cHi) + ' at ' + R.cppHi);
+    el('rect', { x: x(R.cppLo), y: bar(y), width: x(R.cppHi + 1) - x(R.cppLo), height: barH, fill: 'url(#g-cpp)' }, svg);
+    var gy = below(y);
+    texts.push(function () {
+      var a1 = narrow ? { x: padL, anchor: 'start' } : { x: x(R.cppLo) - 8, anchor: 'end' }, b1 = narrow ? { x: W - padR, anchor: 'end' } : { x: x(R.cppHi + 1) + 8, anchor: 'start' };
+      var l = backed(el('text', halo({ 'class': 'grad-l', x: a1.x, y: gy, fill: ink, 'font-size': fs, 'text-anchor': a1.anchor }), svg, 'Start early: smaller cheque'));
+      var r = backed(el('text', halo({ 'class': 'grad-r', x: b1.x, y: gy, fill: ink, 'font-size': fs, 'text-anchor': b1.anchor }), svg, 'Wait: bigger'));
+      // too tight on a narrow phone: the shorter pair
+      var lb = l.getBBox(), rb = r.getBBox();
+      if (lb.x + lb.width + 10 > rb.x) { l.textContent = 'Early: smaller'; l.previousSibling.setAttribute('width', l.getBBox().width + 6); }
+    });
     el('line', { x1: x(R.cppStd), x2: x(R.cppStd), y1: bar(y) - 2, y2: bar(y) + barH + 2, stroke: ink, 'stroke-width': 1.5, 'stroke-dasharray': '3 2' }, svg);
-    dots.push([x(state.cpp), bar(y) + barH / 2]);
     lanes.push(['CPP', 'Can start in any month from age ' + R.cppLo + ' to ' + R.cppHi + ' (' + p.cpp.opens + ' to ' + p.cpp.closes + ' for you): at ' + R.cppLo + ' a ' + pct(Math.abs(cLo)) + ' smaller cheque, for life; at ' + R.cppHi + ' ' + pct(cHi) + ' bigger.']);
     y += laneH;
     // OAS
@@ -105,7 +114,6 @@
       el('rect', { x: x(M.oasBoostAge), y: bar(y), width: x(hi) - x(M.oasBoostAge), height: barH, fill: d1, opacity: 0.35 }, svg);
       reading(x(M.oasBoostAge), below(y), '+' + pct(R.oasBoost) + ' from ' + M.oasBoostAge);
     }
-    dots.push([x(state.oas), bar(y) + barH / 2]);
     lanes.push(['OAS', 'Can start from ' + R.oasLo + ', or later up to ' + R.oasHi + ' for ' + signed(oHi) + ' a month; the pension rises by ' + pct(R.oasBoost) + ' from age ' + M.oasBoostAge + '.']);
     y += laneH;
     // RRSP, then RRIF minimums as a staircase (a savings account, so the same data colour as the TFSA)
@@ -120,7 +128,7 @@
     var first = M.rrif.filter(function (r) { return r.age >= R.rrsp; })[0], last = M.rrif[M.rrif.length - 1];
     reading(x(first.age + 1) - 4, base - band - 6, pct(first.factor * 100, 2) + ' turning ' + (first.age + 1), 'end');
     reading(x(hi), base - tall - 7, pct(last.factor * 100, 0) + ' from ' + (last.age + 1), 'end');
-    lanes.push(['RRSP and RRIF', 'An RRSP must wind up by the end of ' + p.rrsp.matures + ', the year you turn ' + R.rrsp + ' (most become a RRIF). ' + rrifRule() + '.']);
+    lanes.push(['RRSP and RRIF', 'An RRSP must wind up by the end of ' + p.rrsp.matures + ', the year you turn ' + R.rrsp + ' (most become a RRIF). ' + rrifRule(M)]);
     // the axis: ages, and the calendar years they fall in for this person
     var ay = H - axisH + 6;
     el('line', { x1: x(lo), x2: x(hi), y1: ay, y2: ay, stroke: rule }, svg);
@@ -138,15 +146,13 @@
       var yx = x(Math.min(hi, p.age));
       el('rect', { 'class': 'wash', x: x(lo), y: top + 20, width: yx - x(lo), height: H - axisH - top - 14, fill: ground, opacity: 0.62 }, svg);
       if (p.age < hi) {
-        el('line', { 'class': 'here', x1: yx, x2: yx, y1: 20, y2: H - axisH + 6, stroke: ink, 'stroke-width': 1.5 }, svg);
-        texts.push(function () { backed(el('text', halo({ x: yx, y: 16, fill: ink, 'font-size': fs + 1, 'font-weight': 700, 'text-anchor': yx > W * 0.8 ? 'end' : yx < W * 0.2 ? 'start' : 'middle' }), svg, (state.example ? 'Example, ' : 'You, ') + p.age)); });
+        el('line', { 'class': 'here', x1: yx, x2: yx, y1: 20, y2: H - axisH + 6, stroke: point, 'stroke-width': 2 }, svg);
+        texts.push(function () { backed(el('text', halo({ 'class': 'today', x: yx, y: 16, fill: ink, 'font-size': fs + 1, 'font-weight': 700, 'text-anchor': yx > W * 0.8 ? 'end' : yx < W * 0.2 ? 'start' : 'middle' }), svg, 'Today, age ' + p.age)); });
       }
     }
-    // the start ages chosen with the sliders: the one marked choice, in the highlight colour
-    dots.forEach(function (d) { el('circle', { cx: d[0], cy: d[1], r: 8, fill: point, stroke: ground, 'stroke-width': 2 }, svg); });
     texts.forEach(function (f) { f(); });
     $('tl-title').textContent = 'Planning timeline for someone born in ' + p.birthYear + ', aged ' + p.age + ' in ' + p.thisYear;
-    $('tl-take').textContent = 'Born in ' + p.birthYear + ': CPP can start in ' + p.cpp.opens + ', OAS in ' + p.oas.opens + ', and the RRSP winds up by the end of ' + p.rrsp.matures;
+    $('tl-take').textContent = 'Every rule on one line, by age, for someone born in ' + p.birthYear;
     $('tl-example').hidden = !state.example;
     var ul = $('tl-text'); ul.textContent = '';
     lanes.forEach(function (l) { var li = document.createElement('li'); li.textContent = l[0] + ': ' + l[1]; ul.appendChild(li); });
@@ -193,9 +199,9 @@
     var ink3 = col('ink3'), rule = col('rule');
     el('line', { x1: pl, x2: W - pr, y1: H - pb, y2: H - pb, stroke: rule }, svg);
     var step = Math.round((x1 - x0) / (W < 520 ? 4 : 6));
-    for (var a = Math.ceil(x0 / step) * step; a <= x1; a += step) el('text', { x: X(a), y: H - 8, fill: ink3, 'font-size': 17, 'text-anchor': 'middle' }, svg, String(a));
-    el('text', { x: pl, y: pt - 14, fill: ink3, 'font-size': 17 }, svg, Math.round(ymax) + ' years of pension');
-    el('text', { x: pl - 6, y: H - pb + 5, fill: ink3, 'font-size': 17, 'text-anchor': 'end' }, svg, '0');
+    for (var a = Math.ceil(x0 / step) * step; a <= x1; a += step) el('text', { x: X(a), y: H - 8, fill: ink3, 'font-size': 17.5, 'text-anchor': 'middle' }, svg, String(a));
+    el('text', { x: pl, y: pt - 14, fill: ink3, 'font-size': 17.5 }, svg, Math.round(ymax) + ' years of pension');
+    el('text', { x: pl - 6, y: H - pb + 5, fill: ink3, 'font-size': 17.5, 'text-anchor': 'end' }, svg, '0');
     function path(f, start, color, width) {
       var d = 'M' + X(start) + ' ' + Y(0); for (var v = start; v <= x1; v += 0.25) d += ' L' + X(v).toFixed(1) + ' ' + Y(f(v)).toFixed(1);
       el('path', { d: d, fill: 'none', stroke: color, 'stroke-width': width, 'stroke-linejoin': 'round' }, svg);
@@ -209,11 +215,11 @@
     ends.sort(function (p, q) { return p.y - q.y; });
     if (ends.length > 1 && ends[1].y - ends[0].y < 24) { var mid = (ends[0].y + ends[1].y) / 2; ends[0].y = mid - 12; ends[1].y = mid + 12; }
     var shift = Math.max(0, pt + 6 - ends[0].y); ends.forEach(function (e) { e.y += shift; });
-    ends.forEach(function (e) { el('text', halo({ x: W - pr + 8, y: e.y, fill: e.c, 'font-size': 17, 'font-weight': e.w }), svg, e.t); });
+    ends.forEach(function (e) { el('text', halo({ x: W - pr + 8, y: e.y, fill: e.c, 'font-size': 17.5, 'font-weight': e.w }), svg, e.t); });
     if (cross != null && cross < x1) {
       var cx = X(cross), cy = Y(fa(cross));
       el('circle', { cx: cx, cy: cy, r: 5, fill: col('ground'), stroke: col('ink'), 'stroke-width': 2 }, svg);
-      var ct = el('text', halo({ x: cx - 9, y: cy - 10, 'class': 'annot', fill: col('ink'), 'font-size': 17, 'font-weight': 600, 'text-anchor': 'end' }), svg, 'about ' + (Math.round(cross * 10) / 10));
+      var ct = el('text', halo({ x: cx - 9, y: cy - 10, 'class': 'annot', fill: col('ink'), 'font-size': 17.5, 'font-weight': 600, 'text-anchor': 'end' }), svg, 'about ' + (Math.round(cross * 10) / 10));
       if (ct.getBBox().x < pl) { ct.setAttribute('x', cx + 9); ct.setAttribute('y', cy + 24); ct.setAttribute('text-anchor', 'start'); } // below-right, under both lines
     }
     // the reading under the pointer: the age, and both totals at that age
@@ -285,106 +291,151 @@
   }
   function drawRrif(p) {
     var svg = $('rrif-chart'); clear(svg);
-    var rows = M.rrif.filter(function (r) { return r.age >= R.rrsp; }); // ages on January 1
+    // the factor for an age on January 1 applies in the year you turn one more: the chart runs by the year you turn
+    var rows = M.rrif.filter(function (r) { return r.age >= R.rrsp; });
     var first = rows[0], tenth = rows.filter(function (r) { return r.factor >= 0.1; })[0];
     var box = chartBox(svg, 230, 290), W = box[0], H = box[1], pl = 48, pr = 8, pt = 19, pb = 39;
-    var a0 = first.age, a1 = rows[rows.length - 1].age + 1, maxF = rows[rows.length - 1].factor;
+    var a0 = first.age + 1, a1 = rows[rows.length - 1].age + 2, maxF = rows[rows.length - 1].factor;
     var X = function (v) { return pl + (v - a0) / (a1 - a0) * (W - pl - pr); }, Y = function (f) { return H - pb - f / maxF * (H - pt - pb); };
     el('line', { x1: pl, x2: W - pr, y1: H - pb, y2: H - pb, stroke: col('rule') }, svg);
-    rows.forEach(function (r) { el('rect', { x: X(r.age), y: Y(r.factor), width: Math.max(1, X(r.age + 1) - X(r.age) - 1), height: H - pb - Y(r.factor), fill: col('d3') }, svg); });
+    rows.forEach(function (r) { el('rect', { x: X(r.age + 1), y: Y(r.factor), width: Math.max(1, X(r.age + 2) - X(r.age + 1) - 1), height: H - pb - Y(r.factor), fill: col('d3') }, svg); });
     // the share of the fund left if only the minimum comes out and it earns nothing (right-hand scale is 0 to 100%)
     var left = 1, d = 'M' + X(a0) + ' ' + (pt), ys = function (s) { return H - pb - s * (H - pt - pb); };
     d = 'M' + X(a0) + ' ' + ys(1);
-    rows.forEach(function (r) { left *= 1 - r.factor; d += ' L' + X(r.age + 1).toFixed(1) + ' ' + ys(left).toFixed(1); });
+    rows.forEach(function (r) { left *= 1 - r.factor; d += ' L' + X(r.age + 2).toFixed(1) + ' ' + ys(left).toFixed(1); });
     el('path', { d: d, fill: 'none', stroke: col('ink'), 'stroke-width': 2, 'stroke-dasharray': '5 3' }, svg);
     var step = Math.round((a1 - a0) / (W < 520 ? 4 : 8));
-    for (var a = Math.ceil(a0 / step) * step; a <= a1; a += step) el('text', { x: X(a), y: H - 8, fill: col('ink3'), 'font-size': 17, 'text-anchor': 'middle' }, svg, String(a));
-    el('text', { x: pl - 6, y: pt + 6, fill: col('ink3'), 'font-size': 17, 'text-anchor': 'end' }, svg, pct(maxF * 100));
-    el('text', { x: pl - 6, y: H - pb + 5, fill: col('ink3'), 'font-size': 17, 'text-anchor': 'end' }, svg, '0');
+    for (var a = Math.ceil(a0 / step) * step; a <= a1; a += step) el('text', { x: X(a), y: H - 8, fill: col('ink3'), 'font-size': 17.5, 'text-anchor': 'middle' }, svg, String(a));
+    el('text', { x: pl - 6, y: pt + 6, fill: col('ink3'), 'font-size': 17.5, 'text-anchor': 'end' }, svg, pct(maxF * 100));
+    el('text', { x: pl - 6, y: H - pb + 5, fill: col('ink3'), 'font-size': 17.5, 'text-anchor': 'end' }, svg, '0');
     var leftAt90 = 1; rows.forEach(function (r) { if (r.age < 90) leftAt90 *= 1 - r.factor; });
-    $('rrif-text').textContent = 'An RRSP must wind up by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + '; most become a RRIF. ' + rrifRule() + '. The chart’s ages are ages on January 1' + (tenth ? ', and more than a tenth of the fund must come out from ' + tenth.age : '') + '. If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' is left at 90, on January 1.';
+    $('rrif-text').textContent = 'An RRSP must wind up by the end of the year you turn ' + R.rrsp + (p ? ' (' + p.rrsp.matures + ' for you)' : '') + '; most become a RRIF. ' + rrifRule(M) + (tenth ? ' More than a tenth of the fund must come out from the year you turn ' + (tenth.age + 1) + '.' : '') + ' If only the minimum comes out and the fund earns nothing, about ' + pct(leftAt90 * 100) + ' of it is left after the year you turn 90.';
     var f = state.fund, at = p && p.age - 1 > R.rrsp ? M.rrif.filter(function (r) { return r.age === Math.min(p.age - 1, rows[rows.length - 1].age); })[0] : null;
     $('fund-k').textContent = 'Minimum, the year you turn ' + (first.age + 1);
     $('fund-big').textContent = money(f * first.factor);
-    $('fund-text').textContent = 'On ' + money(f) + ' on January 1, the minimum is ' + money(f * first.factor) + ' in the year you turn ' + (first.age + 1) + ': ' + pct(first.factor * 100, 2) + ', the factor for age ' + first.age + ' on January 1.';
+    $('fund-text').textContent = 'On ' + money(f) + ' at the start of the year you turn ' + (first.age + 1) + ', the minimum that year is ' + money(f * first.factor) + ' (' + pct(first.factor * 100, 2) + ').';
     var fine = $('fund-fine'); fine.hidden = !at;
     if (at) fine.textContent = 'In the year you turn ' + p.age + ', the minimum on the same fund would be ' + money(f * at.factor) + ' (' + pct(at.factor * 100, 2) + ').';
   }
 
-  // ---------- people your age ----------
-  function drawPeople(p) {
-    var box = $('people');
-    if (!M.pop) { box.hidden = true; return; }
-    box.hidden = false;
-    $('people-k').textContent = 'Canadians aged ' + p.age;
-    if (p.popCount) {
-      $('people-big').textContent = 'About ' + p.popCount.toLocaleString('en-CA');
-      $('people-text').textContent = 'About ' + p.popCount.toLocaleString('en-CA') + ' Canadians were ' + p.age + ' on July 1, ' + M.pop.year + ', by Statistics Canada’s estimate (see the sources).';
-    } else {
-      $('people-big').textContent = 'Not in this snapshot';
-      $('people-text').textContent = 'The Statistics Canada snapshot on this page counts ages ' + M.pop.a0 + ' to ' + M.pop.a1 + ' on July 1, ' + M.pop.year + '.';
+  // ---------- the big answer and the box score ----------
+  var answer = deskReadout('#answer', { format: function (n) { return dollars(n); } });
+  // acronyms are spelled out on first use (an <abbr> with its full name), once per page
+  var ABBR = { TFSA: 'Tax-Free Savings Account', CPP: 'Canada Pension Plan', OAS: 'Old Age Security', RRSP: 'Registered Retirement Savings Plan', RRIF: 'Registered Retirement Income Fund' };
+  function withAbbr(node, text, seen) {
+    var re = /\b(TFSA|CPP|OAS|RRSP|RRIF)\b/g, last = 0, m;
+    while ((m = re.exec(text))) {
+      if (seen[m[1]]) continue;
+      seen[m[1]] = true;
+      node.appendChild(document.createTextNode(text.slice(last, m.index)));
+      var ab = document.createElement('abbr'); ab.title = ABBR[m[1]]; ab.textContent = m[1]; node.appendChild(ab);
+      last = m.index + m[1].length;
     }
+    node.appendChild(document.createTextNode(text.slice(last)));
+  }
+  function drawBox(p) {
+    var box = $('box'), seen = {};
+    box.textContent = '';
+    boxScore(M, p).forEach(function (r) {
+      var row = document.createElement('div'); row.className = 'box-row'; row.setAttribute('data-row', r.key);
+      var dt = document.createElement('dt'); withAbbr(dt, r.label, seen);
+      var dv = document.createElement('dd'); dv.className = 'box-v'; withAbbr(dv, r.value, seen);
+      var dl = document.createElement('dd'); dl.className = 'box-t'; withAbbr(dl, r.line, seen);
+      row.appendChild(dt); row.appendChild(dv); row.appendChild(dl); box.appendChild(row);
+    });
+    $('box-h').textContent = (state.example ? 'Example: born ' : 'Born in ') + p.birthYear + ', in ' + p.thisYear;
+  }
+  function drawAnswer(p, animate) {
+    var Y = p.core;
+    $('base').textContent = dollars(BASE_AMOUNT);
+    answer.set({ n: Y.cpiNow, animate: animate, label: 'Prices since ' + p.birthYear, line: 'What ' + dollars(BASE_AMOUNT) + ' bought in ' + p.birthYear + ' cost this much in ' + Y.cpiLatestYear + '.' });
+    $('answer-how').textContent = 'Statistics Canada’s Consumer Price Index, all items: the average of the twelve monthly values for ' + Y.cpiLatestYear + ', divided by the average for ' + p.birthYear + ', times ' + dollars(BASE_AMOUNT) + ' (exactly ' + Y.cpiNowExact.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '). Rounded as on the home page: whole dollars to $999, then three significant figures. The same arithmetic as Money, then and now.';
   }
 
   // ---------- one render for a birth year ----------
-  function render() {
+  function render(animate) {
     var p = person(M, state.birth, thisYear);
-    $('finding').textContent = finding(M, p);
-    // prices since the birth year, from the shared core (the same number the site's home lead shows)
-    $('prices').textContent = p.core.text.cpi || '';
-    $('prices').hidden = !p.core.text.cpi;
-    // the one assumptions line, beside the control
-    $('example-note').textContent = (state.example ? 'Showing an example, born ' + EXAMPLE_BIRTH + '. Type your own year; it stays in this tab.' : 'Showing someone born in ' + state.birth + '. Your year stays in this tab.')
-      + ' Canadian rules as of ' + asOfText + ', applied to every year; amounts depend on your own record.';
-    drawTimeline(p); drawCpp(); drawOas(); drawRrif(p); drawPeople(p);
     state.p = p;
+    drawAnswer(p, animate);
+    drawBox(p);
+    // the one assumptions line, beside the control
+    // one short line (the qualifiers sit on each row, and "amounts depend on your own record" in Sources)
+    $('example-note').textContent = (state.example ? 'Example: born ' + EXAMPLE_BIRTH + '; a year you pick stays in this tab' : 'Showing someone born in ' + state.birth + '; your year stays in this tab')
+      + '; rules as of ' + asOfText + '.';
+    drawTimeline(p);
+    drawRrif(p);
+    // the fold's readouts are written now; its charts are drawn again when it opens (they need its width)
+    drawCpp(); drawOas();
+    syncControl();
   }
 
-  // ---------- controls ----------
-  var year = $('year'); year.min = String(YEAR_MIN); year.max = String(thisYear); year.value = String(state.birth);
-  $('form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var v = Number(year.value), err = $('error');
-    if (!year.value || !Number.isInteger(v)) { err.textContent = 'Type a four-digit birth year, like ' + EXAMPLE_BIRTH + '.'; err.hidden = false; return; }
-    if (v < Number(year.min) || v > thisYear) { err.textContent = 'Type a year from ' + year.min + ' to ' + thisYear + '.'; err.hidden = false; return; }
-    err.hidden = true; state.birth = v; state.example = false; remember(v); render();
+  // ---------- the year control: a stepper, the field and the chips; live, no submit button ----------
+  var year = $('year');
+  year.min = String(YEAR_MIN); year.max = String(YEAR_MAX); year.value = String(state.birth);
+  $('year-range').textContent = 'Any year from ' + YEAR_MIN + ' to ' + YEAR_MAX + '.';
+  var chips = $('chips');
+  CHIPS.filter(valid).forEach(function (c) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'yy-chip'; b.setAttribute('data-chip', c); b.textContent = String(c);
+    b.addEventListener('click', function () { move(c); });
+    chips.appendChild(b);
   });
-  function slider(id, loA, hiA, key) {
+  function syncControl() {
+    if (document.activeElement !== year) year.value = String(state.birth);
+    [].forEach.call(chips.children, function (c) { c.setAttribute('aria-pressed', String(Number(c.getAttribute('data-chip')) === state.birth)); });
+    [].forEach.call(document.querySelectorAll('[data-step]'), function (b) { b.disabled = Number(b.getAttribute('data-step')) < 0 ? state.birth <= YEAR_MIN : state.birth >= YEAR_MAX; });
+  }
+  function move(y) {
+    if (!valid(y)) return;
+    var same = y === state.birth && !state.example;
+    state.birth = y; state.example = false; remember(y);
+    if (!same) render(true); else syncControl();
+  }
+  year.addEventListener('input', function () { var v = Number(year.value); if (/^\d{4}$/.test(year.value) && valid(v)) move(v); });
+  year.addEventListener('change', function () {
+    var v = Math.round(Number(year.value));
+    if (!year.value || !isFinite(v)) { year.value = String(state.birth); return; }
+    v = Math.min(YEAR_MAX, Math.max(YEAR_MIN, v)); year.value = String(v); move(v);
+  });
+  [].forEach.call(document.querySelectorAll('[data-step]'), function (b) {
+    b.addEventListener('click', function () { var v = Math.min(YEAR_MAX, Math.max(YEAR_MIN, state.birth + Number(b.getAttribute('data-step')))); year.value = String(v); move(v); });
+  });
+
+  function slider(id, loA, hiA, key, draw) {
     var r = $(id); r.min = String(loA * 12); r.max = String(hiA * 12); r.step = '1'; r.value = String(state[key] * 12);
-    r.addEventListener('input', function () { state[key] = Number(r.value) / 12; render(); r.setAttribute('aria-valuetext', ageText(state[key])); });
+    r.addEventListener('input', function () { state[key] = Number(r.value) / 12; draw(); r.setAttribute('aria-valuetext', ageText(state[key])); });
     r.setAttribute('aria-valuetext', ageText(state[key]));
   }
-  slider('cpp-range', R.cppLo, R.cppHi, 'cpp');
-  slider('oas-range', R.oasLo, R.oasHi, 'oas');
+  slider('cpp-range', R.cppLo, R.cppHi, 'cpp', function () { drawCpp(); });
+  slider('oas-range', R.oasLo, R.oasHi, 'oas', function () { drawOas(); });
   var inc = $('income'); inc.value = String(EXAMPLE_INCOME); inc.addEventListener('input', function () { state.income = Math.max(0, Number(inc.value) || 0); drawOas(); });
   var fund = $('fund'); fund.value = String(EXAMPLE_FUND); fund.addEventListener('input', function () { state.fund = Math.max(0, Number(fund.value) || 0); drawRrif(state.p); });
+  var deeper = document.querySelector('details.deeper');
+  deeper.addEventListener('toggle', function () { if (deeper.open) { drawRrif(state.p); drawCpp(); drawOas(); } });
 
   // sources
   var src = $('sources');
   M.sources.forEach(function (s) { var li = document.createElement('li'), a = document.createElement('a'); a.href = s.source_url; a.textContent = s.title; li.appendChild(a); li.appendChild(document.createTextNode(', read ' + s.as_of + '.')); src.appendChild(li); });
   if (M.prices) { var lp = document.createElement('li'), ap = document.createElement('a'); ap.href = M.prices.source.source_url; ap.textContent = M.prices.source.title; lp.appendChild(ap); lp.appendChild(document.createTextNode('. Prices: the yearly average of the monthly index, ' + M.prices.first + ' to ' + M.prices.last + '. ' + (M.prices.source.attribution || ''))); src.appendChild(lp); }
   if (M.pop) { var li = document.createElement('li'), a = document.createElement('a'); a.href = M.pop.source_url; a.textContent = 'Statistics Canada, population estimates by single year of age'; li.appendChild(a); li.appendChild(document.createTextNode('. ' + M.pop.attribution)); src.appendChild(li); }
+  // the January-1 detail of the RRIF factors lives here (the page says "the year you turn" throughout)
+  (function () {
+    var first = M.rrif.filter(function (r) { return r.age >= R.rrsp; })[0];
+    $('rrif-convention').textContent = 'RRIF minimums: each year’s factor is set by your age on January 1, so the factor for age ' + first.age + ' (' + pct(first.factor * 100, 2) + ') applies in the year you turn ' + (first.age + 1) + '.';
+  })();
 
-  // save the timeline as an image, made in the browser
-  $('save').addEventListener('click', function () {
-    var svg = $('tl'), clone = svg.cloneNode(true), W = Number(svg.getAttribute('width')), H = Number(svg.getAttribute('height'));
-    clone.setAttribute('xmlns', NS);
-    clone.querySelectorAll('text').forEach(function (t) { t.setAttribute('font-family', 'Libre Franklin, Helvetica, Arial, sans-serif'); });
-    var pad = 32, foot = 56, img = new Image(), data = new XMLSerializer().serializeToString(clone);
-    img.onload = function () {
-      var c = document.createElement('canvas'), k = 2; c.width = (W + pad * 2) * k; c.height = (H + pad * 2 + foot) * k;
-      var g = c.getContext('2d'); g.scale(k, k); g.fillStyle = col('ground'); g.fillRect(0, 0, W + pad * 2, H + pad * 2 + foot);
-      g.fillStyle = col('ink'); g.font = '600 18px Georgia, serif'; g.fillText(document.getElementById('finding').textContent, pad, pad + 4, W);
-      g.drawImage(img, pad, pad + 16, W, H);
-      g.fillStyle = col('ink3'); g.font = '12px Helvetica, Arial, sans-serif';
-      g.fillText('Your year. Canadian rules from official sources, ' + 'as of ' + asOfText + '. Education only, not advice. Mohammed El Chayeb.', pad, H + pad * 2 + 24);
-      c.toBlob(function (b) { var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'planning-timeline-' + state.birth + '.png'; document.body.appendChild(a); a.click(); a.remove(); });
-    };
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);
+  // Save my card: a 1080x1350 picture drawn in this page (the shared deskCard), shared or downloaded; nothing is sent
+  deskSaveButton($('save'), function () {
+    var p = state.p, Y = p.core;
+    return deskCard({
+      question: 'What opens, and when, for your year?',
+      bigValue: dollars(BASE_AMOUNT) + ' → ' + Y.cpiNowText,
+      line: 'What ' + dollars(BASE_AMOUNT) + ' bought in ' + p.birthYear + ' cost about ' + Y.cpiNowText + ' in ' + Y.cpiLatestYear + '.',
+      labels: ['Born ' + p.birthYear, 'CPP ' + Y.y60 + '–' + Y.y70 + ', if you qualify', 'RRSP by ' + Y.y71],
+    }).then(function (blob) { return { blob: blob, name: 'your-year-' + p.birthYear + '.png', title: 'Your year' }; });
   });
 
-  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(render, 120); });
-  render();
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { render(false); }, 120); });
+  render(false);
   // the first fill is not a change: no underline on load
   requestAnimationFrame(function () { document.querySelectorAll('.flash').forEach(function (e) { e.classList.remove('flash'); }); });
 })();

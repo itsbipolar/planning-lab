@@ -20,3 +20,13 @@ in that fact's title) as dashed lines. Education only.
   place, gender and number/share controls, the heatmap with a legend of real values, rule labels that never overlap, a
   birth-year diagonal (example 1965) with readings where it crosses each rule age, the table, sources and notes, image save.
 - History only: no forecast. Later rule ages for a diagonal are named "after the data ends", without counts.
+- Redesign v2 step 6 (2026-11-14, the desk tool template): the question H1 and the finding, then "Find an age" (the one
+  control, [data-first-move]: a number field with a step either side, ages from the snapshot's first to last) and the big
+  readout ([data-answer]: the count at that age on the latest July 1, and when that group reaches the OAS age or how many
+  there were when it did), then the one assumptions line. It opens a year short of the OAS age; a birth year carried in
+  sessionStorage mo.year sets the age when the data covers it (else "This data covers ages ... to ..."); the page never
+  writes the key. The heatmap follows at full width with one note above the grid ("Darker = more people. Each column is a
+  year."; "Brighter" in the dark scheme) and the amber band for the chosen age, drawn on once after the visitor changes
+  it (instant under reduced motion). Place, gender and number or share are in "Change the view" (closed); the older
+  share, the table and the image save (share sheet, else download) are in "Go deeper" (closed). The "Your diagonal"
+  list and the birth-year field are gone. Tests: expectTemplate and expectReducedMotion at 390 and 1440.

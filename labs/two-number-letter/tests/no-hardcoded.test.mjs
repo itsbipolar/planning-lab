@@ -38,3 +38,14 @@ test('every fact the page reads exists and is confirmed', () => {
   assert.ok(ids.length >= 10);
   for (const id of new Set(ids)) assert.ok(facts.some((f) => f.id === id || f.series === id), `fact ${id} is missing or not confirmed`);
 });
+
+test('the tool\'s slider ranges and comparison ages are read from the rules, and its chart amount is an example', () => {
+  const app = readFileSync(here + 'app.js', 'utf8');
+  for (const want of ['lo: r.cpp.earliest, hi: r.cpp.latest, base: std', 'lo: r.oas.start, hi: r.oas.latest, base: r.oas.start'])
+    assert.ok(app.includes(want), `app.js reads ${want}`);
+  const story = JSON.parse(readFileSync(here + 'story.json', 'utf8'));
+  assert.equal(story.synthetic, true);
+  assert.ok(Number.isFinite(story.tool.monthly) && story.tool.monthly > 0);
+  assert.ok(!figures.includes(String(story.tool.monthly)), 'the example amount is not a fact figure');
+  assert.ok(['earliest', 'standard', 'latest'].includes(story.tool.startsAt.from));
+});

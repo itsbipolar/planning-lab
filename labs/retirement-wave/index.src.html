@@ -14,42 +14,34 @@
 <!--@@TOOLBAR@@-->
 <div class="page">
   <main>
-    <p class="kicker">Data</p>
-    <h1 id="question">{{question}}</h1>
-    <p class="lede" id="finding" aria-live="polite">{{lede}}</p>
-    <p class="more" id="lede">{{more}}</p>
-
-    <p class="note assume" id="assume">{{assume}}</p>
-    <form id="controls" class="controls" novalidate>
-      <div class="field place">
-        <label for="place">Place</label>
-        <select id="place"></select>
+    <div class="ask">
+      <div class="ask-head">
+        <p class="kicker">Data</p>
+        <h1 id="question">{{question}}</h1>
+        <p class="lede" id="finding">{{lede}}</p>
       </div>
-      <fieldset class="field seg">
-        <legend>People</legend>
-        <div class="opts" id="genders"></div>
-      </fieldset>
-      <fieldset class="field seg">
-        <legend>Each square shows</legend>
-        <div class="opts">
-          <label><input type="radio" name="mode" value="count" checked> Number of people</label>
-          <label><input type="radio" name="mode" value="share"> Share of the population</label>
+      <div class="find" data-first-move>
+        <label for="age">Find an age</label>
+        <div class="step-row">
+          <div class="step">
+            <button type="button" class="step-b" id="age-down" aria-label="One year younger" aria-controls="age"><span aria-hidden="true">−</span></button>
+            <input id="age" type="number" inputmode="numeric" autocomplete="off" value="{{age}}" data-year-control aria-describedby="age-hint">
+            <button type="button" class="step-b" id="age-up" aria-label="One year older" aria-controls="age"><span aria-hidden="true">+</span></button>
+          </div>
+          <p class="hint" id="age-hint">{{hint}}</p>
         </div>
-      </fieldset>
-      <div class="field born">
-        <label for="born">Your diagonal: born in</label>
-        <div class="row"><input id="born" type="number" inputmode="numeric" autocomplete="off"><button type="submit" class="btn-you">Draw it</button></div>
+        <p class="error" id="error" role="alert" hidden></p>
       </div>
-      <p class="error" id="error" role="alert" hidden></p>
-      <div class="readout" id="born-readout" aria-live="polite">
-        <p class="readout-k" id="born-k"></p>
-        <p class="readout-v big" id="born-v" data-flash></p>
-        <p class="readout-t" id="born-t"></p>
-        <p class="readout-fine" id="born-note"></p>
+      <div class="readout" id="answer" data-answer aria-live="polite">
+        <p class="readout-k" id="answer-k">{{label}}</p>
+        <p class="readout-v big"><span data-readout-v id="answer-v">{{count}}</span> <span class="unit" id="answer-unit">{{unit}}</span></p>
+        <p class="readout-t" data-readout-t id="answer-t">{{line}}</p>
+        <details class="readout-how"><summary>How this is worked out</summary><p id="answer-how">{{how}}</p></details>
       </div>
-    </form>
+      <p class="assume" id="assume" data-assumptions>{{assume}}</p>
+    </div>
 
-    <section class="heat-sec" data-chapter="The chart" aria-labelledby="chart-h">
+    <section class="heat-sec" aria-labelledby="chart-h">
       <figure class="chart">
         <figcaption>
           <p class="chart-title" id="chart-h"></p>
@@ -59,29 +51,53 @@
         <div class="frame" id="frame"><svg id="heat" role="img" aria-labelledby="heat-title"><title id="heat-title">Heatmap</title></svg></div>
         <ul class="rule-key" id="rule-key" aria-label="The rule ages on the dashed lines" hidden></ul>
         <p class="point" id="point" aria-live="polite"></p>
-        <p class="actions"><button type="button" id="save" class="btn-2">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
       </figure>
+      <details class="fold view" data-preview="Place, who is counted, and number or share">
+        <summary>Change the view</summary>
+        <form id="controls" class="controls" novalidate>
+          <div class="field place">
+            <label for="place">Place</label>
+            <select id="place"></select>
+          </div>
+          <fieldset class="field seg">
+            <legend>People</legend>
+            <div class="opts" id="genders"></div>
+          </fieldset>
+          <fieldset class="field seg">
+            <legend>Each square shows</legend>
+            <div class="opts">
+              <label><input type="radio" name="mode" value="count" checked> Number of people</label>
+              <label><input type="radio" name="mode" value="share"> Share of the population</label>
+            </div>
+          </fieldset>
+        </form>
+      </details>
     </section>
 
-    <section class="diagonal" data-chapter="Your diagonal" aria-labelledby="readings-h">
-      <p class="sec-label">Your diagonal</p>
-      <h2 class="readings-h" id="readings-h">Your diagonal</h2>
-      <ul class="readings" id="readings"></ul>
-    </section>
-
-    <details class="fold">
-      <summary>The numbers in the chart, as a table</summary>
-      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="grid-caption"><table class="nums"><caption id="grid-caption"></caption><thead><tr id="grid-head"></tr></thead><tbody id="grid-body"></tbody></table></div>
+    <details class="deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub">
+        <h3>The older share of the population</h3>
+        <p id="lede">{{more}}</p>
+      </section>
+      <section class="deeper-sub">
+        <h3>The numbers in the chart, as a table</h3>
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="grid-caption"><table class="nums"><caption id="grid-caption"></caption><thead><tr id="grid-head"></tr></thead><tbody id="grid-body"></tbody></table></div>
+      </section>
+      <section class="deeper-sub">
+        <h3>Save the chart as an image</h3>
+        <p class="actions"><button type="button" id="save" class="btn-2">Save the chart</button> <span class="note">Made in this page; nothing is sent.</span></p>
+      </section>
     </details>
 
-    <details class="fold sources">
+    <details class="fold sources" data-preview="Statistics Canada’s table, its citation and notes">
       <summary>Sources and notes</summary>
       <p id="attribution"></p>
       <p id="citation"></p>
       <ul id="notes"></ul>
       <p>The ages on the dashed lines come from the verified facts file:</p>
       <ul id="fact-sources"></ul>
-      <p class="note">History only: every number is a published estimate for a July 1 that has passed. The people within a few years of a rule age are counted as they are today, not forecast. Nothing here says what anyone should do.</p>
+      <p class="note">History only: every number is a published estimate for a July 1 that has passed. The people within a few years of a rule age are counted as they are today, not forecast. Nothing here tells anyone what to do.</p>
     </details>
 
     <!--@@NEXT@@-->

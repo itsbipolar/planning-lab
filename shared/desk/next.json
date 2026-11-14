@@ -1,5 +1,5 @@
 {
-  "_note": "The Up next chain (redesign v2, Navigation rules 5): each public tool's slug on the site (/tools/<slug>/), the lab that builds it, the short question its Up next card shows, and the tool that comes after it. films: each watch page's one Up next tool. The site's sync-labs check fails if a slug here has no dist.",
+  "_note": "The Up next chain (redesign v2, Navigation rules 5): each public tool's slug on the site (/tools/<slug>/), the lab that builds it, the short question its Up next card shows, and the tool that comes after it. films: each watch page's one Up next tool (hash: an optional section of it to open, such as money-then-now's #this-year, the only hash a tool reads). The site's sync-labs check fails if a slug here has no dist.",
   "tools": [
     { "slug": "your-year", "labSlug": "planning-timeline", "question": "What opens, and when, for your year?", "next": "when-to-start-cpp" },
     { "slug": "when-to-start-cpp", "labSlug": "two-number-letter", "question": "When does waiting for CPP pay off?", "next": "order-of-returns" },
@@ -13,6 +13,6 @@
     "double-tax-at-death": { "next": "tax-dates" },
     "money-history": { "next": "money-then-now" },
     "apollo-envelopes": { "next": "order-of-returns" },
-    "money-year": { "next": "money-then-now" }
+    "money-year": { "next": "money-then-now", "hash": "this-year" }
   }
 }

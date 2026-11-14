@@ -6,22 +6,60 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
 :focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
 :root[data-theme="light"] :focus-visible{outline-color:var(--t-point-deep)}
 
-.opening .kicker{margin:2rem 0 0}
 .opening h1{margin:.35rem 0 0}
 #q-amount{font-variant-numeric:lining-nums}
+/* The kicker and, on the same line, the way to This year in money (in the first screen) */
+.kicker-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 1rem;margin:1.25rem 0 0;max-width:none}
+.kicker-row .kicker{margin:0}
+.ty-link{display:inline-flex;align-items:center;gap:.35rem;min-height:44px;font-size:17.5px;font-weight:650;color:var(--t-ink)}
 
-.ask{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.6rem 1.25rem;margin:1.25rem 0 0}
+/* The control: $[amount] in [year], live; then the year chips */
+.ask{margin:1rem 0 0}
+.ask-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.6rem 1.25rem}
 .field{display:flex;flex-direction:column;gap:.3rem}
 .field label{font-weight:650}
 .dollar{display:inline-flex;align-items:center;gap:.35rem;font-weight:600}
-.ask .note{flex-basis:100%;margin:.1rem 0 0}
-input[type=number]{font:inherit;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600;width:8.5rem;min-height:48px;padding:.4rem .7rem;background:var(--t-raised);color:var(--t-ink);border:1.5px solid var(--t-ink3);border-radius:0}
-.error{flex-basis:100%;color:var(--t-d4);margin:0;font-weight:600}
+input[type=number]{font:inherit;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600;width:8.5rem;min-height:52px;padding:.4rem .7rem;background:var(--t-ground);color:var(--t-ink);border:1.5px solid var(--t-ink);border-bottom:4px solid var(--t-point);border-radius:0}
+.ychips{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0 0}
+.ychip{min-height:44px;min-width:4.4rem;padding:0 .7rem;border:1px solid var(--t-rule);border-radius:4px;background:transparent;color:var(--t-ink);font:600 1.1rem/1 var(--font-display);font-variant-numeric:tabular-nums lining-nums;cursor:pointer}
+.ychip:hover{border-color:var(--t-ink)}
+.ychip[aria-pressed="true"]{border-color:var(--t-ink);box-shadow:inset 0 -3px 0 var(--t-point)}
+.error{color:var(--t-d4);margin:.5rem 0 0;font-weight:600}
+.assume{margin:.6rem 0 0}
 
-/* The one big answer, then the chosen year's three readings */
+/* The one big answer */
 .readout.answer{margin:1.1rem 0 0}
 .readout.answer .readout-v{margin:.1rem 0 .2rem}
-#year-readout{margin:1.75rem 0 0}
+/* wide: the question and its control on the left, the answer top-right beside the headline; the stripes and the chart
+   run full width under both (the fourth row takes the answer's slack, so the left blocks keep their heights) */
+@media (min-width:960px){
+  .opening{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto 1fr;column-gap:clamp(2rem,4vw,4rem);align-items:start}
+  .opening>*{grid-column:1/-1;min-width:0}
+  .opening>h1{grid-column:1;grid-row:2}
+  .opening>.ask{grid-column:1;grid-row:3}
+  .opening>.assume{grid-column:1;grid-row:4}
+  .opening>.readout.answer{grid-column:2;grid-row:2/5;margin-top:1rem}
+}
+
+/* The stripes: every year a stripe; a slider you can tap, drag or move with the keys. The picked year lifts. */
+.stripes-fig{margin:2rem 0 0;border-top:2px solid var(--t-ink);padding-top:.6rem}
+.stripes-fig>figcaption{margin:0 0 .75rem}
+.stripes{display:flex;align-items:stretch;height:clamp(96px,10vw,150px);margin-top:12px;cursor:pointer;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.stripes:focus-visible{outline:2px solid var(--t-point-deep);outline-offset:4px}
+.stripe{flex:1 1 0;min-width:0}
+.stripe.hover{box-shadow:inset 0 0 0 1px var(--t-ink)}
+.stripe.you{position:relative;z-index:1;transform:translateY(-6px);outline:2px solid var(--t-ink);outline-offset:0}
+@media (prefers-reduced-motion:no-preference){.stripe{transition:transform .15s ease}}
+.stripes-axis{display:flex;justify-content:space-between;margin:.3rem 0 0;font-size:17.5px;font-variant-numeric:lining-nums;color:var(--t-ink2)}
+.stripe-read{margin:.5rem 0 0;font-family:var(--font-display);font-weight:600;font-size:1.35rem;line-height:1.3;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+.stripes-key{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem .5rem;margin:.5rem 0 0;font-size:17.5px;color:var(--t-ink2)}
+.stripes-key .sw{display:inline-block;width:1.2em;height:.9em;margin-left:.35rem}
+.stripes-key .sw:first-child{margin-left:0}
+.sw-fall{background:var(--t-stripe-0)}.sw-flat{background:var(--t-neutral)}.sw-rise{background:var(--t-stripe-4)}
+
+/* Go deeper: borrowing vs prices, the readings, the table */
+.deeper h3{margin:0 0 .5rem;font-family:var(--type-card-font);font-weight:var(--type-card-weight);font-size:var(--type-card-size);line-height:var(--type-card-line)}
+#year-readout{margin:1rem 0 0}
 #year-readout > .readout-k:first-child{margin-bottom:.4rem}
 .readout-row{display:grid;grid-template-columns:repeat(3,max-content);gap:.6rem 3rem}
 .readout-row > div{display:flex;flex-direction:column;justify-content:space-between}
@@ -30,59 +68,101 @@ input[type=number]{font:inherit;font-family:var(--font-display);font-variant-num
 #rv-infl{color:var(--t-d2)}
 .readout-v.v-pos{color:var(--t-d3)}.readout-v.v-neg{color:var(--t-d4)}
 
-/* The chart: drawn at the frame's own width, every label at 17px (app.js FS) */
+/* The charts: drawn at the frame's own width, every label at 17.5px (app.js FS) */
 figure.chart{margin:2.5rem 0 0}
 .chart-frame{width:100%;padding:.5rem 0 .25rem}
-#chart{display:block;width:100%;height:auto;overflow:visible}
-#chart text{font-family:var(--font-ui);font-size:17px;fill:var(--t-ink)}
-#chart .lane-t{font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-#chart .lbl,#chart .lbl-2,#chart .tick{paint-order:stroke;stroke:var(--t-ground);stroke-width:4px;stroke-linejoin:round}
-#chart .lbl-bg{fill:var(--t-ground)}
-#chart .key-t{fill:var(--t-ink2)}
-#chart .key-note{fill:var(--t-ink3)}
-#chart .key-fall{fill:var(--t-stripe-0)}
-#chart .key-flat{fill:var(--t-neutral)}
-#chart .key-rise{fill:var(--t-stripe-4)}
-#chart line.line-prices,#chart line.line-prime{stroke-width:3}
-#chart .lbl-2{fill:var(--t-ink2)}
-#chart .lbl-neg{fill:var(--t-d4)}
-#chart .b{font-weight:700}
-#chart .tick{fill:var(--t-ink3)}
-#chart .grid{stroke:var(--t-rule);stroke-width:1;shape-rendering:crispEdges}
-#chart .zero{stroke:var(--t-ink);stroke-width:1;shape-rendering:crispEdges}
-#chart .axis{stroke:var(--t-ink3);stroke-width:1}
-#chart .gap-pos{fill:var(--t-d3);fill-opacity:.42}
-#chart .gap-neg{fill:var(--t-d4);fill-opacity:.75}
-#chart .line-prices{fill:none;stroke:var(--t-d2);stroke-width:2}
-#chart .line-prime{fill:none;stroke:var(--t-ink);stroke-width:2}
-#chart .line-money{fill:none;stroke:var(--t-money);stroke-width:2.5}
-#chart .sel-halo{stroke:var(--t-ground);stroke-width:5}
-#chart .sel-line{stroke:var(--t-ink);stroke-width:2}
-#chart .leader{stroke:var(--t-ink3);stroke-width:1}
-#chart .dot-prime{fill:var(--t-ink);stroke:var(--t-ground);stroke-width:2}
-#chart .dot-prices{fill:var(--t-d2);stroke:var(--t-ground);stroke-width:2}
-#chart .dot-money{fill:var(--t-money);stroke:var(--t-ground);stroke-width:2}
-#chart .crosshair text{font-size:17px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart svg text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
+.chart svg .lane-t{font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.chart svg .lbl,.chart svg .lbl-2,.chart svg .tick{paint-order:stroke;stroke:var(--t-ground);stroke-width:4px;stroke-linejoin:round}
+.chart svg .lbl-bg{fill:var(--t-ground)}
+.chart svg .key-t{fill:var(--t-ink2)}
+.chart svg .key-note{fill:var(--t-ink3)}
+.chart svg .key-fall{fill:var(--t-stripe-0)}
+.chart svg .key-flat{fill:var(--t-neutral)}
+.chart svg .key-rise{fill:var(--t-stripe-4)}
+.chart svg line.line-prices,.chart svg line.line-prime{stroke-width:3}
+.chart svg .lbl-2{fill:var(--t-ink2)}
+.chart svg .lbl-neg{fill:var(--t-d4)}
+.chart svg .b{font-weight:700}
+.chart svg .tick{fill:var(--t-ink3)}
+.chart svg .grid{stroke:var(--t-rule);stroke-width:1;shape-rendering:crispEdges}
+.chart svg .zero{stroke:var(--t-ink);stroke-width:1;shape-rendering:crispEdges}
+.chart svg .axis{stroke:var(--t-ink3);stroke-width:1}
+.chart svg .gap-pos{fill:var(--t-d3);fill-opacity:.42}
+.chart svg .gap-neg{fill:var(--t-d4);fill-opacity:.75}
+.chart svg .line-prices{fill:none;stroke:var(--t-d2);stroke-width:2}
+.chart svg .line-prime{fill:none;stroke:var(--t-ink);stroke-width:2}
+.chart svg .line-money{fill:none;stroke:var(--t-money);stroke-width:2.5}
+.chart svg .sel-halo{stroke:var(--t-ground);stroke-width:5}
+.chart svg .sel-line{stroke:var(--t-ink);stroke-width:2}
+.chart svg .leader{stroke:var(--t-ink3);stroke-width:1}
+.chart svg .dot-prime{fill:var(--t-ink);stroke:var(--t-ground);stroke-width:2}
+.chart svg .dot-prices{fill:var(--t-d2);stroke:var(--t-ground);stroke-width:2}
+.chart svg .dot-money{fill:var(--t-money);stroke:var(--t-ground);stroke-width:2}
+.chart svg .crosshair text{font-size:17.5px}
 .actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:1rem 0 0}
 .actions .note{margin:0}
 
-.readings,.later{margin-top:4.5rem}
-.readings h2{max-width:30ch;margin:0 0 .8rem}
+.chart svg .annot{fill:var(--t-ink);paint-order:stroke;stroke:var(--t-ground);stroke-width:4px;stroke-linejoin:round}
+.chart svg .leader{stroke:var(--t-ink)}
+.chart.worth{margin-top:2.5rem}
+.tag-example[hidden]{display:none}
+
 .readings ul{list-style:none;margin:0;padding:0}
 .readings li{font-size:1.15rem;line-height:1.45;padding:.7rem 0;border-top:1px solid var(--t-rule)}
 .readings strong{font-weight:700;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
-.fold{margin-top:1rem;border-top:1px solid var(--t-rule);padding-top:1rem}
-.fold summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
-.prose{max-width:66ch;font-size:.95rem;color:var(--t-ink3)}
-.table-wrap{overflow-x:auto;max-width:42rem}
-.nums{border-collapse:collapse;width:100%;font-size:.95rem}
-.nums caption{text-align:left;color:var(--t-ink3);font-size:.95rem;padding:.25rem 0 .6rem}
+.table-wrap{overflow-x:auto;max-width:42rem;max-height:32rem;overflow-y:auto}
+.nums{border-collapse:collapse;width:100%;font-size:var(--type-small-size)}
+.nums caption{text-align:left;color:var(--t-ink3);font-size:var(--type-small-size);padding:.25rem 0 .6rem}
 .nums th,.nums td{padding:.3rem .6rem;text-align:right;border-bottom:1px solid var(--t-rule)}
 .nums thead th{font-weight:650;vertical-align:bottom}
 .nums th[scope=row],.nums thead th:first-child{text-align:left}
 .nums tr.sel{background:var(--t-raised);font-weight:700}
-.foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:3px double var(--t-ink);font-size:.95rem;color:var(--t-ink);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
+
+/* This year in money (#this-year): closed unless the address asks for it; the proposals first, then four measures */
+.this-year{margin-top:2.25rem;border-top:2px solid var(--t-ink);padding-top:.5rem;scroll-margin-top:1rem}
+.this-year>summary{display:block;min-height:44px;padding:.45rem 0 .2rem;cursor:pointer}
+/* the summary and its preview line take the shared fold style (desk-ui.mjs) */
+.this-year h2{margin:2rem 0 .5rem}
+.ty-lede{margin:0;font-size:1.1rem;line-height:1.5;color:var(--t-ink);max-width:62ch}
+.proposals{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:0 2rem}
+@media (min-width:900px){.proposals{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.proposals .card{padding:.9rem 0 1.1rem;border-top:1px solid var(--t-rule)}
+.proposals .when{margin:0;font-size:var(--type-small-size);font-weight:600;color:var(--t-ink2)}
+.proposals h3{margin:.3rem 0 .15rem;font-size:1.15rem;font-weight:700;line-height:1.3;color:var(--t-ink)}
+.proposals .value{margin:0;font-family:var(--font-display);font-weight:600;font-size:1.3rem;line-height:1.3;font-variant-numeric:tabular-nums lining-nums}
+.proposals .detail{margin:.3rem 0 0;font-size:var(--type-small-size);color:var(--t-ink2)}
+.proposals .stamp{display:inline-block;margin:.6rem 0 0;padding:.1rem .5rem;border:1px dashed var(--t-ink2);color:var(--t-ink);font-size:17.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pairs{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:1.5rem 2rem}
+@media (min-width:760px){.pairs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pair{border-top:1px solid var(--t-rule);padding-top:.75rem}
+.pair-k{margin:0;font-weight:700;font-size:1.1rem}
+.pair-v{margin:.15rem 0 0;font-family:var(--font-display);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.15;font-variant-numeric:tabular-nums lining-nums}
+.pair-v .arr{color:var(--t-ink2)}
+.pair-when{margin:.1rem 0 .4rem;font-size:var(--type-small-size);color:var(--t-ink2)}
+.spark{display:block;width:100%;height:64px}
+.spark-line{fill:none;stroke-width:2.5}
+.spark-line.dashed{stroke-dasharray:5 4;stroke-width:1.5}
+.spark-line.c-d1{stroke:var(--t-d1)}.spark-line.c-d2{stroke:var(--t-d2)}.spark-line.c-d3{stroke:var(--t-d3)}.spark-line.c-d4{stroke:var(--t-d4)}
+.pair-note{margin:.4rem 0 0;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+.pair-key,.pair-marks{margin:.35rem 0 0;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink)}
+.pair-marks{font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
+.spark-budget{stroke:var(--t-ink2);stroke-width:1;stroke-dasharray:3 3}
+.spark-mark{stroke:var(--t-ink);stroke-width:1.5}
+.ty-finding{margin:.25rem 0 .6rem;font-family:var(--font-display);font-weight:600;font-size:clamp(1.35rem,1vw + 1rem,1.75rem);line-height:1.3;max-width:40ch;text-wrap:balance}
+.ty-finding[hidden]{display:none}
+.ty-table{margin:1rem 0 0}
+.ty-table>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:650}
+#ty-attr{margin:1.5rem 0 0}
+
+details.deeper{margin-top:2.25rem}
+.fold{margin-top:1rem;border-top:1px solid var(--t-rule);padding-top:1rem}
+.sources-fold{margin-top:2.25rem;border-top:2px solid var(--t-ink);padding-top:.5rem}
+.fold summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
+.prose{max-width:66ch;font-size:var(--type-small-size);color:var(--t-ink3)}
+.foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:3px double var(--t-ink);font-size:var(--type-small-size);color:var(--t-ink);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
 .foot p{margin:0 0 .4rem}
 .foot > div{max-width:60rem}
 
-svg{font-size:17px}
+svg{font-size:17.5px}

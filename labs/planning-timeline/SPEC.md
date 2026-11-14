@@ -1,17 +1,22 @@
-# Your planning timeline (Phase 2 flagship, 2026-11-13)
+# Your year (public slug your-year; redesign v2, step 5, 2026-11-14)
 
-Merges Money milestones and The ages that matter. A birth year (an example, 1965, until the visitor types one) gives:
-- A headline sentence for that person (model.mjs `finding`).
-- A full-width timeline from the TFSA minimum age to the last RRIF factor age: TFSA room built up since the later of
-  age 18 and 2009 (sum of confirmed yearly limits), the CPP and OAS start windows with their monthly change at each end,
-  the OAS increase from 75, the RRSP maturity year and the RRIF minimum staircase; a "you are here" line, the past muted.
-- Three cards: when to start CPP and when to start OAS (sliders by month, the share of the standard amount, the age at
-  which totals cross, a totals chart in "years of the standard pension"; pure arithmetic, said so), the OAS recovery tax
-  on an example income for the latest confirmed threshold year, and the RRIF minimums with the share of a fund left at 90
-  if only minimums come out and it earns nothing, on an example fund.
-- People your age (Statistics Canada, ages 50 to 89 in the snapshot).
-- Save the timeline as an image (made in the browser). No request after load; inputs stay out of the URL. The year the
-  visitor sets is kept for this visit only in sessionStorage mo.year (Money, then and now and Retirement wave open on it).
-- The lead numbers (prices since the year, TFSA limits added up, the CPP window) come from shared/desk/your-year-core.mjs,
-  the module the site's home lead runs, so the two always match (tests/core.test.mjs).
-Rules come only from shared/facts.json (confirmed); tests check the arithmetic and that no rule value is typed in.
+The question: "What opens, and when, for your year?" A birth year (the labelled example, 1980, until the visitor picks
+one) gives, in page order (the desk tool template, shared/desk/desk-ui.mjs):
+- One control, `data-first-move`: a year stepper (−, the field marked `data-year-control`, +) and the chips 1960 · 1970 ·
+  1980 · 1990 · 2000. Live, no submit button. Bounds: 1930 to the last confirmed TFSA limit year minus the TFSA age.
+  The year is kept for this visit only in sessionStorage mo.year (the tool-bar chip offers change and forget).
+- The one assumptions line, `data-assumptions`, under the chips.
+- One big answer, `data-answer`: "$100 → $N", what $100 from that year cost in the latest complete price year
+  (shared/desk/your-year-core.mjs, the site's home lead's module), with "How this is worked out" closed.
+- The box score (model.mjs `boxScore`), in the tense for the visitor's year (ahead: "Can start A to B"; open: "Can start
+  any month until B"; passed: "Could start from A (that window has passed)"): TFSA limits added up to the last confirmed
+  year ("opens in Y" when 0), CPP "if you qualify", OAS "if you meet the residence rules" with the confirmed increase at
+  the later age, the RRSP wind-up "(most become a RRIF)" with the RRIF convention line, and Canadians of that age only
+  where the Statistics Canada snapshot covers it (50 to 89; absent otherwise). Acronyms spelled out once in <abbr>.
+- One life line chart by age, today marked, the CPP gradient labelled on the chart; then Save my card (a 1080x1350
+  PNG drawn in the page, shared or downloaded, nothing sent).
+- Go deeper (closed): the RRIF minimum curve with an example fund, CPP and OAS start ages in total (sliders, totals
+  charts, the OAS recovery on an example income; a link to When to start CPP). Then Sources (with the January-1 factor
+  detail), the Up next card and the notes.
+Rules come only from shared/facts.json (confirmed); tests check the arithmetic, the tenses (1950, 1962, 1980), the
+cohort range, the template budgets and that no rule value is typed in. No request after load; inputs stay out of the URL.

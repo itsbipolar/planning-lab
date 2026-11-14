@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { annual } from '../build.mjs';
-import { series } from '../../money-stripes/build.mjs';
+import { series } from '../series.mjs';
 import { yearsOf, worth, realRate, extremes, negSpans, counts } from '../model.mjs';
 
 const rd = (f) => readFileSync(new URL(`../../../shared/data/${f}`, import.meta.url), 'utf8');
@@ -26,7 +26,7 @@ test('the yearly series run without a gap and hold complete years only', () => {
   assert.ok(Object.keys(M.prime).map(Number).every((y) => y >= M.primeFirst && y <= M.last));
 });
 
-test('the price change agrees with money-stripes and with the average price levels', () => {
+test('the price change agrees with series() and with the average price levels', () => {
   const s = series(cpiText, rateText);
   assert.deepEqual(Object.fromEntries(s.cpi), M.infl);
   for (const y of Y.slice(1)) assert.ok(Math.abs((M.avg[y] / M.avg[y - 1] - 1) * 100 - M.infl[y]) < 1e-9);
@@ -102,4 +102,54 @@ test('the check can fail: a planted figure is caught', () => {
   assert.ok(has('var age = 65; // the OAS age', '65'));
   assert.ok(has('if (y === 2022) label()', 2022));
   assert.ok(!has('font-size:15px', '15'));
+});
+
+// This year in money (#this-year; money-year merged here): money-year's model, unchanged, with the budget's name read
+// from the confirmed facts' ids. Every proposal comes from confirmed facts, and no budget figure or Bank of Canada
+// reading is typed into the page code.
+import { thisYear } from '../build.mjs';
+import { CHIP_YEARS, steepest, EXAMPLE } from '../model.mjs';
+const snapText = rd('money-year-2026.json'), factsText = readFileSync(new URL('../../../shared/facts.json', import.meta.url), 'utf8');
+const T = thisYear(snapText, factsText);
+
+test('this year: four measures, the confirmed proposals, the budget named from its facts, the Bank attribution', () => {
+  assert.equal(T.panels.length, 4);
+  assert.deepEqual(T.panels.map((p) => p.id), ['policy', 'mortgage', 'inflation', 'loonie']);
+  assert.ok(T.proposals.length >= 1);
+  const all = JSON.parse(factsText).facts;
+  for (const p of T.proposals) for (const id of p.facts) assert.equal(all.find((f) => f.id === id)?.status, 'confirmed', id);
+  assert.match(T.budgetName, /^Budget \d{4}$/);
+  assert.ok(T.proposals.every((p) => p.facts.every((id) => id.startsWith(T.budgetName.replace(' ', '').toLowerCase() + '_'))));
+  assert.match(T.budgetUrl, /^https:\/\/([\w-]+\.)*canada\.ca\//);
+  assert.match(T.source.attribution, /Not affiliated with or endorsed by the Bank of Canada/);
+  // a proposal whose fact is not confirmed is left out
+  const less = JSON.stringify({ facts: all.map((f) => (f.id === 'budget2026_t1135_threshold' ? { ...f, status: 'unverified' } : f)) });
+  assert.ok(!thisYear(snapText, less).proposals.some((p) => p.id === 't1135'));
+  // the built page carries it
+  const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+  const D = JSON.parse(html.match(/<script type="application\/json" id="data">([\s\S]*?)<\/script>/)[1].replace(/\\u003c/g, '<'));
+  assert.deepEqual(D.now.proposals.map((p) => p.id), T.proposals.map((p) => p.id));
+  assert.ok(html.includes('id="this-year"'));
+});
+
+test('no budget figure and no Bank of Canada reading is written into the page code', () => {
+  const here = new URL('..', import.meta.url).pathname, snap = JSON.parse(snapText);
+  const budget = JSON.parse(factsText).facts.filter((f) => f.id.startsWith('budget') && f.status === 'confirmed').map((f) => String(f.value)).filter((v) => /\d{3,}/.test(v));
+  const rates = [...new Set(Object.values(snap.series).flatMap((s) => s.points.map((p) => String(p[1]))))].filter((v) => /\.\d/.test(v));
+  assert.ok(budget.length >= 5 && rates.length > 20);
+  // the stylesheet holds sizes, not figures (as money-year's test): it is checked for budget figures only
+  for (const f of ['app.js', 'model.mjs', 'index.src.html', 'style.css']) {
+    const t = readFileSync(here + f, 'utf8');
+    for (const v of f === 'style.css' ? budget : [...budget, ...rates]) assert.ok(!new RegExp(`(?<![\\w.])${v.replace(/\./g, '\\.')}(?![\\w.])`).test(t), `${f} contains ${v}`);
+    assert.ok(!/Budget \d{4}/.test(t), `${f} names a budget year`);
+  }
+});
+
+test('the year chips sit inside the data; the line chart’s annotation is the steepest later rise', () => {
+  for (const y of CHIP_YEARS) assert.ok(y >= M.first && y <= M.last, `${y}`);
+  assert.ok(CHIP_YEARS.includes(EXAMPLE.year));
+  const s = steepest(M, EXAMPLE.year);
+  assert.ok(s > EXAMPLE.year && s <= M.last);
+  for (let y = EXAMPLE.year + 1; y <= M.last; y++) assert.ok(M.infl[y] <= M.infl[s]);
+  assert.equal(steepest(M, M.last), null);
 });

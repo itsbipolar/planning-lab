@@ -51,7 +51,8 @@ if (!process.env.OUT) {
       { label: `Confirmed dates in ${Y}`, value: String(cal.events.length) },
       ...(cal.pending.length ? [{ label: 'Not confirmed yet', value: String(cal.pending.length) }] : []),
     ],
-    labels: cal.events.length ? [{ text: `First: ${cal.events[0].what}, ${monthDay(cal.events[0].date)}` }] : [],
+    // the year's next confirmed date from the build day (as the tool answers it), or its first once the year's are past
+    labels: cal.events.length ? [(() => { const today = new Date().toISOString().split('T')[0], nx = cal.events.find((e) => e.date >= today); return nx ? { text: `Next: ${nx.what}, ${monthDay(nx.date)}` } : { text: `First: ${cal.events[0].what}, ${monthDay(cal.events[0].date)}` }; })()] : [],
     source: 'Dates from official government pages (confirmed only)',
     asOf: `${Y}-12-31`,
   });

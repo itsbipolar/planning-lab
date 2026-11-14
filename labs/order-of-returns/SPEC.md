@@ -24,7 +24,7 @@ minimum withdrawals from the confirmed facts. It ends with questions for a quali
 | Rescue | `largestLastingWithdrawal` (binary search on the engine, whole dollars) for Sam's order. Small multiples: flex rule, cash buffer, and the solved withdrawal, each against Sam before. Then "Mix your own" |
 | RRIF lane | Off by default. Facts: `rrif_minimum_factors`, `rrsp_maturity_age` (confirmed; the build fails without them; source links and as-of dates shown). Assumptions stated on the page: all savings in a RRIF; age `startAge` at the start of year 1; RRIF from the end of the year they turn the maturity age; from the next year, the withdrawal is at least start-of-year balance x the factor for the age at the start of that year. The extra that leaves the RRIF is not tracked; tax is left out (said on the page) |
 | Labels | A 1-D label-avoidance helper (`spread` in `app.js`): colliding labels merge into blocks centred on their wishes, clamped to bounds. Used for line-end labels (a gutter; words wrap on narrow and small charts), year-10 readings, and histogram and heat-strip markers (with leaders) |
-| Save image | "Save this chart as an image": the "your order" chart is redrawn at 1200 px, its computed styles inlined, the page's fonts embedded, then drawn to a canvas and saved as PNG with the title, the synthetic line and a credit with the date. Made in the browser, no network |
+| Save my card | The dealt result as a 1080x1350 PNG (shared/desk deskCard, stamped "Example · Education, not advice"), shared with navigator.share or downloaded; the in-app browser notice. Made in the browser, no network |
 
 ## 3. Engine
 `simulate({ start, withdrawal, indexation, returns, flexRule, cashBuffer, minimumFactors })` in `engine.mjs`: one step a
@@ -44,17 +44,22 @@ minimums); counts sum to 10!, groups cover every order (each first-five set in 5
 and Sam's the worst; without withdrawals every order ends with the same balance; with minimums no order lasts longer or
 ends with more; no age or factor from the facts is written into the page code.
 
-## 4. Sections
-1. The question, the finding under it, and the lead chart: Ruth and Sam, the dealt years shaded, readings at year 10 and at the end.
-2. No withdrawals: shuffle Sam's years; every order ends with the same amount.
-3. Deal the ten years yourself (buttons, keyboard), with the save-as-image button.
-4. Every possible order: progress, histogram of how the orders end, Ruth/Sam/your order marked, your rank, a table.
-5. The first five years: the heat strip.
-6. Rescuing Sam: the solver headline, three small multiples, "Mix your own" (the old scene 5, fixed: the sentence says
-   when the year does not move and what changes instead, never repeats itself, and the labels never collide).
-7. The RRIF lane.
-8. Questions worth asking, and what this leaves out (taxes, fees, pensions and benefits, real history, and more).
-Footer: one education line, one AI line.
+## 4. Sections (redesign v2 step 4, 2026-11-14: deal first)
+1. The question, a one-line dek, then the deal ([data-first-move]): ten face-down cards (2x5 on a phone, 1x10 from
+   1200px), the amber **Deal my ten years** (then **Deal again**) and the text button **Deal one at a time**. Cards turn at
+   a 40ms stagger only after a press, instantly under reduced motion.
+2. The answer beside the cards ([data-answer], deskReadout): "This order lasts {n} years" (whole years paid in full,
+   capped at the horizon), and the tie-aware line "It lasts at least as long as {p}% of all {orders} orders" or "Like
+   {p}% of all {orders} orders, it lasts the full {horizon} years". The share reads `distribution.json`, written at build by
+   `enumerate.mjs distribution()` for story.json only (tested equal to the full engine for Ruth, Sam and 300 orders). Under
+   it: the strip of how all orders end (this order's bar amber), the in-memory tally (Deals · Longest · Shortest), the
+   guess after the first deal (deskGuess, skippable) and **Save my card** (deskCard 1080x1350, share then download).
+3. The one assumptions line, then the deal chart (Ruth and Sam faint, this order's path amber).
+4. Why? "The first five years decide most of it": the share that last by first-five-year average (the heat strip's top
+   row, from the distribution), Ruth, Sam and this order labelled.
+5. Go deeper (closed): No withdrawals; Rescuing Sam and Mix your own (no share of all orders here); Every possible order
+   (the worker's count, histogram, table, full heat strip); the RRIF lane; Questions and what this leaves out.
+6. Sources (closed), the Up next card, the foot. The method lines (the ranking rule, the solver) are on the making-of page.
 
 ## 5. Banned
 "safe withdrawal rate", any withdrawal *rate* framing, "you should", "recommend", named securities, funds or products,

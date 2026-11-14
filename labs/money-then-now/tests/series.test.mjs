@@ -1,9 +1,10 @@
+// Moved from labs/money-stripes/tests/data.test.mjs when that lab was archived (series() now lives in ../series.mjs).
 // The yearly series are computed from the dated snapshots. These checks catch arithmetic or data mistakes
 // (sanity ranges are wide on purpose: they guard against a bug, not against the economy).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { series } from '../build.mjs';
+import { series } from '../series.mjs';
 
 const rd = (f) => readFileSync(new URL(`../../../shared/data/${f}`, import.meta.url), 'utf8');
 const s = series(rd('cpi-monthly.json'), rd('prime-rate-weekly.json'));

@@ -7,7 +7,7 @@ Mo's words (2026-11-06, `mo-sample-portfolio/design/README.md`): picked B, first
 - **Type.** Instrument Serif (Mo's choice, V-108) for H1 and H2 only, never beside a numeral (headings with numbers use Archivo). Archivo for everything else, with tabular figures in tables and changing numbers. Body 18px (19px from 1100px), line height 1.55, reading column 66ch at most. Fonts are self-hosted through Fontsource.
 - **Amber** (#F0A93E) has one job: a `<mark>` fill under the ground colour, once per screen at most, never in a heading, the marked words at weight 600. On dark it may also be link text. Chart turn marks: amber on dark, point-deep on light.
 - **Layout.** Left-aligned, one text link in the hero, rows not cards, no rules except inside tables, meta as sentences, no arrows on links.
-- **Motion.** CSS only: a 150-200 ms page crossfade and one scroll moment on `/builds/money-stripes`, both inside `prefers-reduced-motion: no-preference`.
+- **Motion.** CSS only: a 150-200 ms page crossfade and one scroll moment on the stripes (now `/tools/money-then-now/`), both inside `prefers-reduced-motion: no-preference`.
 
 ## Exceptions on the record (plan/06 section 3)
 - T2: Instrument Serif is on the common-default font lists; allowed because Mo chose it (V-108).

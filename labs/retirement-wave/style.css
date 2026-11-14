@@ -5,14 +5,42 @@ html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
 :focus-visible{outline:2px solid var(--t-ink);outline-offset:3px}
 h1,h2{margin:0}
-.kicker{margin:2.5rem 0 0}
+.kicker{margin:1rem 0 0}
 h1{margin-top:.6rem}
-.lede{margin:1.1rem 0 0}
-.more{margin:.75rem 0 0;max-width:62ch}
+.lede{margin:.9rem 0 0}
 
-.controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem 1.75rem;margin:.75rem 0 0;padding:1rem 0;border-top:1px solid var(--t-rule);border-bottom:1px solid var(--t-rule)}
-.assume{margin:2rem 0 0}
-.controls .error,.controls .readout{flex-basis:100%;margin:0}
+/* Find an age: the one control and the big answer, then the assumptions line. Side by side from tablet width. */
+.ask{display:grid;gap:0 2.5rem;margin:0}
+.find{display:grid;gap:.35rem;align-content:start;margin:1rem 0 0;padding:.75rem 0 0;border-top:1px solid var(--t-rule)}
+.find>label{font-weight:700;font-size:1.05rem}
+.step{display:flex;align-items:stretch;width:fit-content}
+.step-b{display:inline-flex;align-items:center;justify-content:center;width:52px;min-height:56px;margin:0;padding:0;border:1.5px solid var(--t-ink);border-radius:0;background:transparent;color:var(--t-ink);font:600 1.6rem/1 var(--font-display);cursor:pointer}
+.step-b:hover:not(:disabled){background:var(--t-raised)}
+.step-b:disabled{color:var(--t-ink3);border-color:var(--t-ink3);cursor:default}
+.step input[type=number]{width:5.5rem;min-height:56px;margin:0 -1.5px;padding:.2rem .4rem;text-align:center;font:600 1.75rem/1 var(--font-display);font-variant-numeric:tabular-nums lining-nums;background:var(--t-ground);color:var(--t-ink);border:1.5px solid var(--t-ink);border-bottom:4px solid var(--t-point);border-radius:0;-moz-appearance:textfield;appearance:textfield}
+.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.step input:focus-visible{position:relative;z-index:1}
+.step-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem}
+.hint{flex:1 1 6.5rem;margin:0;font-size:17.5px;line-height:1.4;color:var(--t-ink2);max-width:22ch}
+.error{margin:0;color:var(--t-d4);font-weight:600;font-size:17.5px}
+.ask .readout{margin:.75rem 0 0}
+.readout-v .unit{font-family:var(--font-ui);font-weight:400;font-size:1.375rem;letter-spacing:0;white-space:nowrap}
+.ask .assume{margin:.75rem 0 0}
+@media (min-width:760px){
+  .ask{grid-template-columns:minmax(0,25rem) minmax(0,1fr);grid-template-areas:"head head" "find answer" "assume answer";align-items:start}
+  .ask-head{grid-area:head}
+  .ask .find{grid-area:find}
+  .ask .readout{grid-area:answer;margin:1.75rem 0 0}
+  .ask .assume{grid-area:assume;margin:1rem 0 0}
+}
+/* wide: the answer top-right beside the headline (its label level with the kicker); the last row takes the slack */
+@media (min-width:960px){
+  .ask{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;grid-template-areas:"head answer" "find answer" "assume answer";column-gap:clamp(2rem,4vw,4rem)}
+  .ask .readout{margin:1rem 0 0}
+}
+
+/* Change the view (closed, under the chart): place, gender and number or share. */
+.controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem 1.75rem;margin:.5rem 0 0;padding:.25rem 0 0}
 .field{display:grid;gap:.35rem;min-width:0;margin:0;padding:0;border:0}
 .field>label,.field legend{font-weight:650;font-size:17.5px;padding:0}
 .seg legend{margin-bottom:.35rem}
@@ -20,16 +48,10 @@ h1{margin-top:.6rem}
 .opts label{display:flex;align-items:center;gap:.45rem;min-height:44px;padding:.3rem .8rem .3rem .6rem;border:1px solid var(--t-rule);margin:0 -1px -1px 0;font-size:17.5px;cursor:pointer;background:var(--t-ground)}
 .opts label:has(input:checked){background:var(--t-raised);border-color:var(--t-ink);font-weight:650}
 input[type=radio]{width:1.05rem;height:1.05rem;margin:0;accent-color:var(--t-ink)}
-select,input[type=number]{font:inherit;font-size:17.5px;min-height:48px;padding:.4rem .6rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-ink3);border-radius:0;max-width:100%}
-select{width:100%}
-input[type=number]{width:7.5rem;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600}
-.born .row{display:flex;gap:.5rem;flex-wrap:wrap}
+select{font:inherit;font-size:17.5px;min-height:48px;padding:.4rem .6rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-ink3);border-radius:0;max-width:100%;width:100%}
 .field.place{flex:1 1 14rem;max-width:22rem}
-.error{color:var(--t-d4);font-weight:600}
-#born-readout{flex:0 0 100%;max-width:none;margin-top:.25rem}
-.readout-v .unit{font-family:var(--font-ui);font-weight:400;font-size:1.375rem;letter-spacing:0;white-space:nowrap}
 
-.heat-sec{margin-top:2.75rem}
+.heat-sec{margin-top:2.25rem}
 .heat-sec figure.chart{margin:0}
 .legend{margin:.75rem 0 .5rem;max-width:100%}
 .legend-t{font-size:17.5px;font-weight:650;color:var(--t-ink);margin:0 0 .3rem}
@@ -38,12 +60,18 @@ input[type=number]{width:7.5rem;font-family:var(--font-display);font-variant-num
 .frame{width:100%;padding:.25rem 0 0}
 #heat{width:100%;height:auto;touch-action:pan-y}
 .cell{shape-rendering:crispEdges}
+/* the one note on the chart, above the grid; each scheme names its own shade */
+.heat-note{fill:var(--t-ink);font-size:17.5px;font-weight:600}
+:root[data-theme="light"] .heat-note.only-dark,:root:not([data-theme="light"]) .heat-note.only-light{display:none}
+/* the amber band, drawn on once after the visitor changes the age (instant under reduced motion: the desk's rule) */
+@keyframes rw-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.diag.drawn,.diag-halo.drawn{stroke-dasharray:1 1;animation:rw-draw .5s ease-out both}
 /* Chart text is drawn at the container's own width (the viewBox is the drawn size), so these sizes are the rendered ones. */
-svg{font-size:17px}
-.lab{fill:var(--t-ink2);font-size:16.5px}
+svg{font-size:17.5px}
+.lab{fill:var(--t-ink2);font-size:17.5px}
 .rule{stroke:var(--t-ink);stroke-width:1.25;stroke-dasharray:5 3}
 .rule-halo{stroke:var(--t-ground);stroke-width:3.5;opacity:.8}
-.rule-n{fill:var(--t-ink);font-size:16.5px;font-weight:650}
+.rule-n{fill:var(--t-ink);font-size:17.5px;font-weight:650}
 .rule-n tspan.age{font-weight:700}
 .rule-n tspan.what{fill:var(--t-ink2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .leader{stroke:var(--t-ink3);stroke-width:1;fill:none}
@@ -53,7 +81,7 @@ svg{font-size:17px}
 .dot{fill:var(--t-point);stroke:var(--t-ground);stroke-width:2}
 :root[data-theme="light"] .dot{fill:var(--t-point-deep)}
 .tag-bg,.rule-n-bg{fill:var(--t-ground);opacity:.94}
-.tag{fill:var(--t-ink);font-size:16.5px;font-weight:600}
+.tag{fill:var(--t-ink);font-size:17.5px;font-weight:600}
 .tag tspan.v{font-weight:400;fill:var(--t-ink2)}
 .rule-key{list-style:none;margin:.6rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.2rem 1.1rem;font-size:17.5px;color:var(--t-ink)}
 .rule-key b{margin-right:.25rem}
@@ -61,17 +89,13 @@ svg{font-size:17px}
 .point{min-height:1.6em;margin:.6rem 0 0;font-size:17.5px;color:var(--t-ink);font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
 .actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:1.25rem 0 0}
 
-.diagonal{margin-top:3rem}
-.readings-h{margin:0 0 .75rem}
-.readings{list-style:none;margin:0;padding:0;display:grid;gap:.3rem;max-width:62ch}
-.readings li{padding-left:1.1rem;position:relative}
-.readings li::before{content:"";position:absolute;left:0;top:.62em;width:.5rem;height:.5rem;border-radius:999px;background:var(--t-ink)}
-.readings li.after::before{background:transparent;border:1.5px solid var(--t-ink3)}
-
 .fold{margin-top:2.5rem;border-top:1px solid var(--t-rule);padding-top:.75rem}
+.fold.view{margin-top:1.5rem}
+.deeper-sub h3{margin:0 0 .6rem;font-family:var(--font-ui);font-weight:700;font-size:1.15rem}
+.deeper-sub p{margin:0}
 .fold summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
 .table-wrap{overflow:auto;max-height:70vh;margin-top:.5rem}
-.nums{border-collapse:collapse;font-size:17px}
+.nums{border-collapse:collapse;font-size:17.5px}
 .nums caption{text-align:left;font-weight:650;padding:0 0 .5rem;caption-side:top}
 .nums th,.nums td{text-align:right;padding:.2rem .6rem;border-top:1px solid var(--t-rule);white-space:nowrap}
 .nums thead th{position:sticky;top:0;background:var(--t-ground);border-top:0;color:var(--t-ink2)}
@@ -82,3 +106,4 @@ svg{font-size:17px}
 .foot p{margin:0;max-width:75ch}
 .foot .desk-notes{color:var(--t-ink)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+details.deeper{margin-top:2rem}

@@ -10,23 +10,36 @@ h2{margin:0 0 .9rem}
 :focus-visible{outline:2px solid var(--t-ink);outline-offset:3px}
 section{margin-top:2.75rem}
 
-/* build your household */
-.picks{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem}
-.pick-row{display:flex;flex-wrap:wrap;gap:.5rem}
-.pick-row button{font:inherit;font-size:17.5px;font-weight:600;min-height:44px;padding:.4rem .9rem;background:transparent;color:var(--t-ink);border:1px solid var(--t-rule);border-radius:2px;cursor:pointer}
-.pick-row button[aria-pressed="true"]{background:var(--t-raised);border-color:var(--t-ink3);box-shadow:inset 0 -3px 0 var(--t-ink)}
-.sits{border:0;padding:0;margin:1.25rem 0 0;min-width:0}
+/* pick a household: the first move, one row of chips that scrolls sideways on a phone (never the page) */
+.pick{margin:1.5rem 0 0;min-width:0}
+.pick .label{margin:0 0 .5rem}
+.pick-row{display:flex;flex-wrap:nowrap;gap:.5rem;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:3px 3px 8px;margin:0 -3px;scroll-padding-inline:2.5rem}
+/* on a phone the row says it scrolls: its edges fade where more chips sit beyond them (classes set by app.js) */
+.pick-row.more-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 2.5rem),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 2.5rem),transparent)}
+.pick-row.more-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 2.5rem);mask-image:linear-gradient(to right,transparent,#000 2.5rem)}
+.pick-row.more-l.more-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent);mask-image:linear-gradient(to right,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent)}
+.pick-row button{flex:none;white-space:nowrap;font:inherit;font-size:17.5px;font-weight:600;min-height:44px;padding:.4rem .9rem;background:transparent;color:var(--t-ink);border:1px solid var(--t-rule);border-radius:4px;cursor:pointer}
+.pick-row button:hover{border-color:var(--t-ink)}
+.pick-row button[aria-pressed="true"]{border-color:var(--t-ink);box-shadow:inset 0 -3px 0 var(--t-point)}
+.sits{border:0;padding:0;margin:1rem 0 0;min-width:0}
 .sits legend{padding:0;margin:0 0 .6rem;color:var(--t-ink)}
-.assume{margin:0 0 .75rem}
+.pick+.assume{margin:.35rem 0 0}
 .sit-grid{display:grid;gap:0 1.5rem;grid-template-columns:minmax(0,1fr)}
 @media (min-width:700px){.sit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:1100px){.sit-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .sit{display:flex;align-items:center;gap:.65rem;min-height:44px;padding:.25rem 0;border-top:1px solid var(--t-rule);cursor:pointer}
 .sit input{width:1.15rem;height:1.15rem;margin:0;flex:none;accent-color:var(--t-ink)}
-.sit .n{margin-left:auto;white-space:nowrap;padding-left:.5rem;font-size:17px;color:var(--t-ink3)}
+.sit .n{margin-left:auto;white-space:nowrap;padding-left:.5rem;font-size:17.5px;color:var(--t-ink3)}
+.ye-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:1.25rem 0 0}
+.ye-row[hidden]{display:none}
+.ye-row select{font:inherit;font-weight:600;min-height:44px;padding:.3rem 2.2rem .3rem .75rem;color:var(--t-ink);background:var(--t-ground);border:1.5px solid var(--t-ink3);border-radius:2px;cursor:pointer}
+#ye-note{margin:.4rem 0 0}
+details.tune{margin-top:2rem}
+details.tune[open]{padding-bottom:.5rem}
 
 /* the pile-up strip, in the shared chart frame (figure.chart) */
 .pile figure.chart{margin:1rem 0 0}
+.pile figcaption .tag-example{margin-top:.5rem}
 .frame{width:100%;padding:.5rem 0;border-bottom:1px solid var(--t-rule)}
 #strip{display:block;width:100%;height:auto;overflow:visible}
 #strip text{font-family:var(--font-ui);fill:var(--t-ink2)}
@@ -45,18 +58,33 @@ section{margin-top:2.75rem}
 .sw{display:inline-block;width:12px;height:12px;flex:none}
 .sw.hatch{width:18px;height:10px;background:repeating-linear-gradient(135deg,var(--t-ink2) 0 1.5px,transparent 1.5px 5px);border:1px solid var(--t-ink3)}
 
-/* the answer for the household, under the quick picks */
-.readouts{display:grid;gap:0 2.5rem;margin:1.1rem 0 .25rem}
-@media (min-width:700px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.readouts .readout{margin:.5rem 0}
+/* the big answer, right under the chips */
+.result{margin:1.5rem 0 0}
+#answer{margin:0}
+#answer .readout-v{margin-bottom:.3rem}
+/* on a wide screen the answer and its action sit side by side, so the first screen holds the question, the chips, the
+   answer and the button with no empty half */
+@media (min-width:900px){.result{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 3rem;align-items:start}.result .save{margin-top:.35rem}}
+/* wide: the question on the left and the answer top-right beside it; the household chips in one row across both; then
+   the assumptions under the chips and the one action under the answer */
+@media (min-width:960px){
+  .td-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;grid-template-areas:"head answer" "pick pick" "assume save";column-gap:clamp(2rem,4vw,4rem);align-items:start}
+  .td-head{grid-area:head}.td-hero>.pick{grid-area:pick;min-width:0}.td-hero>.assume{grid-area:assume}
+  .td-hero>.result{display:contents}
+  .td-hero #answer{grid-area:answer;margin-top:1.75rem}
+  .td-hero .save{grid-area:save;margin-top:.6rem}
+}
 .hint{font-size:17.5px;color:var(--t-ink3);margin:.5rem 0 0}
 #strip{touch-action:pan-y}
-#strip .crosshair text{font-size:17px;fill:var(--t-ink)}
+#strip .crosshair text{font-size:17.5px;fill:var(--t-ink)}
 #strip .crosshair tspan{fill:var(--t-ink)}
 
-/* save */
-.save{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:1.5rem}
-.save .note{margin:0;max-width:60ch}
+/* save: the one amber action, its counts on the line below, one privacy line */
+.save{margin-top:1.25rem}
+.save .btn-you{min-height:52px;font-size:1.15rem}
+.save-count{margin:.6rem 0 0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+.lock{display:flex;align-items:flex-start;gap:.5rem;margin:.35rem 0 0;max-width:60ch}
+.lock-i{flex:none;width:1em;height:1em;margin-top:.25em;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}
 #ics:disabled{background:var(--t-raised);border-color:var(--t-rule);color:var(--t-ink3);cursor:default;text-decoration:none}
 
 /* the dates */
@@ -70,20 +98,21 @@ section{margin-top:2.75rem}
 .dates p{margin:.2rem 0 0;max-width:68ch}
 .dates .src{font-size:17.5px;color:var(--t-ink3)}
 .pending{max-width:62rem;margin-top:1.25rem;border-top:1px solid var(--t-rule);padding-top:.9rem}
-.pending h3{font-size:1rem;margin:0 0 .4rem}
+.pending h3{font-size:1.15rem;margin:0 0 .4rem}
+.deeper-sub .card-hed{margin:0 0 .75rem}
 .pending ul{margin:0;padding-left:1.1rem;color:var(--t-ink)}
 .pending li{margin:.3rem 0}
 .own p,.own ul{max-width:68ch}
 .own ul{padding-left:1.1rem;color:var(--t-ink)}
 .own li{margin:.3rem 0}
 
-.sources{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1rem}
+.sources{margin-top:1.5rem;border-top:1px solid var(--t-rule);padding-top:1rem}
 .sources summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
 .sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:17.5px;color:var(--t-ink3)}
 .sources p{max-width:72ch}
 .foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:17.5px;color:var(--t-ink3);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
 .foot p{margin:0}
 
-/* Chart labels render at 17px (the one size rule: 16.5px or more); app.js reads this size to place them, and draws the
-   strip at the frame's own width so nothing scales them down. */
-svg,#strip{font-size:17px}
+/* Chart labels render at 17.5px (Mo: small text and labels 17.5px or more); app.js reads this size to place them, and
+   draws the strip at the frame's own width so nothing scales them down. */
+svg,#strip{font-size:17.5px}

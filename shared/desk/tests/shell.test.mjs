@@ -29,6 +29,9 @@ test('Up next is one loop through all six tools; each question is short; films p
     assert.ok(readFileSync(`${root}labs/${t.labSlug}/dist/index.html`, 'utf8').includes(`href="/tools/${t.next}/"`), `${t.labSlug} dist links to ${t.next}`);
   }
   for (const [film, f] of Object.entries(NEXT.films)) assert.ok(slugs.includes(f.next), `${film} points at a tool`);
+  // the money-year reel goes to Money, then and now's This year in money (plan section 2); #this-year is the one hash allowed
+  assert.equal(NEXT.films['money-year'].hash, 'this-year');
+  for (const f of Object.values(NEXT.films)) if (f.hash) assert.equal(f.hash, 'this-year');
   assert.equal(toolFor('money-year'), null, 'money-year is not a public tool');
 });
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { simulate, average, rrifFactorsByYear, largestLastingWithdrawal } from '../engine.mjs';
-import { enumerateOrders, summarize, orderAt, rankOutcome, factorial } from '../enumerate.mjs';
+import { enumerateOrders, summarize, orderAt, rankOutcome, factorial, distribution, yearsLasted, atLeastAsLong, stripBar } from '../enumerate.mjs';
 
 const story = JSON.parse(readFileSync(new URL('../story.json', import.meta.url)));
 const golden = JSON.parse(readFileSync(new URL('../fixtures/golden.json', import.meta.url)));
@@ -189,6 +189,56 @@ test('with the RRIF minimums the enumeration still matches simulate, and no orde
   for (let i = 0; i < R.total; i++) {
     if (last(R.dep[i]) > last(ALL.dep[i])) assert.fail(`order ${i} lasts longer with the minimums`);
     if (!R.dep[i] && R.value[i] > ALL.value[i] + 1e-6) assert.fail(`order ${i} ends with more with the minimums`);
+  }
+});
+
+// ---------- the precomputed distribution the deal reads (redesign v2, step 4) ----------
+const DIST = distribution(ALL, story.cards);
+// straight from the full engine: how many of all 10! orders last no longer than `years` whole years
+const direct = (years) => { let n = 0; for (let i = 0; i < ALL.total; i++) if (yearsLasted(ALL.dep[i], ALL.horizon) <= years) n++; return n; };
+
+test('the distribution: sorted shortest to longest, counts sum to 10!, and the shipped distribution.json is the fresh one', () => {
+  const ys = DIST.lasted.map((o) => o.years);
+  assert.deepEqual(ys, ys.slice().sort((a, b) => a - b));
+  assert.equal(DIST.lasted.reduce((a, o) => a + o.count, 0), ALL.total);
+  assert.equal(DIST.lasted[DIST.lasted.length - 1].years, story.horizon);
+  assert.equal(DIST.lasted[DIST.lasted.length - 1].count, DIST.lasts);
+  const bars = DIST.strip.byYear.concat(DIST.strip.left.counts);
+  assert.equal(bars.reduce((a, b) => a + b, 0), ALL.total, 'the strip covers every order once');
+  assert.equal(DIST.groups.reduce((a, g) => a + g.n, 0), ALL.total);
+  const shipped = JSON.parse(readFileSync(new URL('../distribution.json', import.meta.url)));
+  const { _note, params, ...rest } = shipped;
+  assert.deepEqual(rest, JSON.parse(JSON.stringify(DIST)), 'distribution.json is stale: run node labs/order-of-returns/build.mjs');
+  assert.deepEqual(params, { start: story.start, withdrawal: story.withdrawal, indexation: story.indexation, cards: story.cards, horizon: story.horizon });
+});
+
+test("Ruth's and Sam's ranks from the distribution equal the full engine's, and so do 300 random orders'", () => {
+  const good = story.cards.slice().sort((a, b) => b - a), bad = story.cards.slice().sort((a, b) => a - b);
+  const r = rng(11), orders = [good, bad, ...Array.from({ length: 300 }, () => shuffle(story.cards, r))];
+  for (const o of orders) {
+    const res = run(o), y = yearsLasted(res.depletionYear || 0, story.horizon);
+    assert.equal(atLeastAsLong(DIST, y), direct(y), o.join());
+  }
+  // Ruth lasts the whole horizon: at least as long as every order; Sam ties only with the orders that run out when he does
+  const ruthY = yearsLasted(run(good).depletionYear || 0, story.horizon), samY = yearsLasted(run(bad).depletionYear || 0, story.horizon);
+  assert.equal(atLeastAsLong(DIST, ruthY), ALL.total);
+  assert.equal(atLeastAsLong(DIST, samY), DIST.lasted[0].count);
+  assert.equal(samY, DIST.lasted[0].years, "Sam's order is in the shortest group");
+  // the strip bar an order falls in is the bar summarize() counts it in
+  for (const o of orders.slice(0, 60)) {
+    const out = outcomeOf(run(o)), b = stripBar(DIST, out.dep, out.value), bars = DIST.strip.byYear.concat(DIST.strip.left.counts);
+    assert.ok(b >= 0 && b < bars.length && bars[b] > 0);
+  }
+});
+
+test('the page code types none of the story figures: they come from story.json, the engine and distribution.json', () => {
+  const here = new URL('..', import.meta.url).pathname;
+  const intF = new Intl.NumberFormat('en-CA');
+  const sam = run(story.cards.slice().sort((a, b) => a - b)).depletionYear;
+  const bad = [intF.format(ALL.total), String(ALL.total), intF.format(story.start), intF.format(story.withdrawal), `year ${sam}`, `${story.horizon} years`, `${sam - 1} years`];
+  for (const f of ['app.js', 'index.src.html']) {
+    const t = readFileSync(here + f, 'utf8');
+    for (const v of bad) assert.ok(!t.includes(v), `${f} contains ${v}`);
   }
 });
 

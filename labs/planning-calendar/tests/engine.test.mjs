@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rolling, finding, toICS, icsEscape, icsFold, factIndex, rulesFor, ms, iso } from '../engine.mjs';
+import { rolling, nextUp, toICS, icsEscape, icsFold, factIndex, rulesFor, ms, iso, longDate, MONTH_NAMES } from '../engine.mjs';
 
 const json = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const config = json('../calendar.json');
@@ -92,14 +92,49 @@ test('situations combine into one calendar without duplicates', () => {
   for (const s of config.situations) for (const r of s.rules) assert.ok(config.rules[r], `${s.id}: ${r}`);
 });
 
-test('the headline sentence', () => {
+test('the big answer: a countdown to the next confirmed date and one line of 14 words or fewer; pending never counts as next', () => {
   const ex = config.presets.find((p) => p.id === config.example);
-  const c = rolling(config, real, TODAY, ex.situations), s = finding(c, ex.noun);
-  assert.match(s, new RegExp(`^Next up: .+, .+, in ${c.events[0].days} days\\. ${c.events.length} dates in the next twelve months`));
-  assert.ok(s.length <= 140, `the answer is a dek of 140 characters or fewer: ${s.length}`);
-  assert.match(finding(rolling(config, real, TODAY, []), null), /^Tick at least one situation/);
-  assert.match(finding(rolling(config, real, c.events[0].date, ex.situations), null), /, today\./);
-  assert.match(finding(rolling(config, withStatus('rrif_minimum_payment_timing', 'pending'), TODAY, ['rrif']), null), /no confirmed date falls .+, 1 more not confirmed yet\.$/);
+  const c = rolling(config, real, TODAY, ex.situations), a = nextUp(c);
+  assert.equal(a.n, c.events[0].days); assert.equal(a.event, c.events[0]);
+  assert.ok(a.line.startsWith(`${longDate(c.events[0].date)} · ${c.events[0].what}`), a.line);
+  assert.equal(nextUp(rolling(config, real, c.events[0].date, ex.situations)).text, 'Today');
+  assert.equal(nextUp(rolling(config, real, day(ms(c.events[0].date) - DAY), ex.situations)).text, 'Tomorrow');
+  assert.equal(nextUp(rolling(config, real, TODAY, [])).text, 'None');
+  // a household whose only date is not confirmed: no next date, though one is pending
+  const r = rolling(config, withStatus('rrif_minimum_payment_timing', 'pending'), TODAY, ['rrif']);
+  assert.equal(r.pending.length, 1); assert.equal(nextUp(r).text, 'None');
+  // every household of the twelve situations, every corporation year-end, from two days in the year: 14 words or fewer
+  const words = (t) => t.trim().split(/\s+/).length;
+  for (const today of [TODAY, `${+TODAY.slice(0, 4) + 1}-02-20`]) for (let mask = 1; mask < 1 << ALL.length; mask++) {
+    const picked = ALL.filter((x, k) => mask & (1 << k));
+    for (const m of picked.includes('corporation') ? [1, 6, 12] : [12]) {
+      const x = nextUp(rolling(config, real, today, picked, { corpYearEnd: m }));
+      assert.ok(words(x.line) <= 14, `${picked.join('+')} ${m}: ${x.line}`);
+    }
+  }
+});
+
+test('a corporation\'s year-end month moves its year-end and its T2 return; everything else stays on December', () => {
+  const y = +TODAY.slice(0, 4), on = (c, rule) => c.events.filter((e) => e.rule === rule).map((e) => e.date);
+  const dec = rolling(config, real, TODAY, ALL);
+  assert.deepEqual(rolling(config, real, TODAY, ALL, { corpYearEnd: 12 }).events, dec.events, 'December is the default');
+  const k = +on(dec, 't2')[0].slice(5, 7); // the months from a December year-end to its T2 date, read off the default
+  const monthEnd = (yy, mm) => day(Date.UTC(yy, mm, 0));
+  for (let m = 1; m <= 12; m++) {
+    const c = rolling(config, real, TODAY, ALL, { corpYearEnd: m });
+    assert.equal(c.corpYearEnd, m);
+    const ye = on(c, 'corp_ye'), t2 = on(c, 't2');
+    assert.equal(ye.length, 1, `one year-end in twelve months (${m})`); assert.equal(t2.length, 1, `one T2 date in twelve months (${m})`);
+    assert.equal(+ye[0].slice(5, 7), m); assert.equal(monthEnd(+ye[0].slice(0, 4), m), ye[0], 'the last day of the month');
+    assert.equal(+t2[0].slice(5, 7), ((m + k - 1) % 12) + 1, `T2 ${k} months after a ${m} year-end`);
+    assert.equal(monthEnd(+t2[0].slice(0, 4), +t2[0].slice(5, 7)), t2[0]);
+    assert.match(c.events.find((e) => e.rule === 'corp_ye').text, new RegExp(`ends in ${MONTH_NAMES[m - 1]}`));
+    assert.match(c.events.find((e) => e.rule === 't2').text, new RegExp(`ended ${MONTH_NAMES[(m + 11) % 12]} \\d+, \\d{4}`));
+    for (const r of ['trust_ye', 'mature', 'gifts']) assert.deepEqual(on(c, r), [`${y}-12-31`], r);
+    assert.deepEqual(on(c, 't3'), on(dec, 't3'));
+  }
+  // a bad month falls back to December
+  assert.deepEqual(rolling(config, real, TODAY, ['corporation'], { corpYearEnd: 13 }).events, rolling(config, real, TODAY, ['corporation']).events);
 });
 
 test('the calendar file: valid iCalendar with all-day events, stable UIDs, escaped text, folded lines and CRLF', () => {

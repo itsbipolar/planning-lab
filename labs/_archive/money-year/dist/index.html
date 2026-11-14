@@ -137,6 +137,44 @@ details.deeper>summary{display:flex;align-items:center;min-height:44px;cursor:po
 .crosshair rect{fill:var(--t-raised);stroke:var(--t-rule)}
 .crosshair text{fill:var(--t-ink);font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
 
+/* ---- The desk tool template (steps 4 to 6; markup and APIs in the header comment). Generic names sit in :where() so a
+   lab's own rule still wins. Every size here is 17.5px or more (Mo: never smaller). ---- */
+/* 1. The big readout: "How this is worked out" is a closed fold under the one line. */
+.readout-how{margin:.5rem 0 0}
+.readout-how>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font:600 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
+.readout-how>:not(summary){margin:.35rem 0 .5rem;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+.readout[aria-busy="true"]{cursor:inherit}
+/* 2. Go deeper: the optional "In this section:" line and the sub-sections. */
+.deeper-in{margin:.5rem 0 1rem;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2)}
+:where(details.deeper) :where(.deeper-sub){margin-top:2rem}
+/* 3. The one assumptions line, beside the first control. */
+:where(.assume){margin:.6rem 0 0;font-size:var(--type-small-size);line-height:1.5;color:var(--t-ink2);max-width:52ch}
+/* 4. Save and share: the in-app browser notice sits right after its button. */
+.save-note{display:block;margin:.5rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-ink);font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink);max-width:40ch}
+/* 5. Guess, then reveal: a ruled panel; the slider is a 44px target, its value in serif figures. */
+.guess{margin:1.5rem 0;padding:1rem 1.25rem 1.25rem;border:1px solid var(--t-rule);border-top:2px solid var(--t-ink);background:var(--t-raised);max-width:46rem}
+.guess[hidden]{display:none}
+.guess-q{margin:.25rem 0 .5rem;font-family:var(--type-card-font);font-weight:var(--type-card-weight);font-size:var(--type-card-size);line-height:var(--type-card-line);text-wrap:balance}
+.guess-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.guess-row input[type=range]{flex:1 1 9rem;min-width:0;height:44px;margin:0;accent-color:var(--t-ink);cursor:pointer}
+.guess-v{min-width:5ch;font-family:var(--type-readout-font);font-weight:600;font-size:clamp(1.6rem,1.2vw + 1.1rem,2.2rem);line-height:1.1;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+.guess-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem}
+.guess-actions[hidden],.guess-out[hidden]{display:none}
+.guess-out{margin:.75rem 0 0;font-size:1.05rem;line-height:1.5;color:var(--t-ink)}
+/* 6. The tool-bar year chip ("Born {year} · change · forget"): text buttons with 44px targets, scoped to the tool bar
+   so a lab's own button{} rule cannot restyle them. On phones it takes its own line under the two links. */
+.desk-toolnav .desk-year{display:inline-flex;flex-wrap:wrap;align-items:center;gap:0 .45rem;margin:0;min-height:2.5rem;font-size:17.5px;line-height:1.35;color:var(--t-ink)}
+.desk-toolnav .desk-year[hidden]{display:none}
+.desk-toolnav .desk-year b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+.desk-toolnav .desk-year button{position:relative;box-sizing:content-box;width:auto;height:auto;min-width:0;min-height:0;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;color:var(--t-ink);font:inherit;font-weight:600;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 35%,transparent);text-underline-offset:.2em;cursor:pointer}
+.desk-toolnav .desk-year button::after{content:"";position:absolute;left:-.3rem;right:-.3rem;top:50%;height:44px;transform:translateY(-50%)}
+.desk-toolnav .desk-year button:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
+@media (max-width:560px){.desk-toolnav .desk-year{order:3;flex-basis:100%}}
+.desk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 7. Motion only after a user action, and instant under reduced motion: one rule for every tool. */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;transition-delay:0s!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
@@ -366,6 +404,232 @@ function deskCrosshair(svg, o) {
   function move(e) { show(toSvg(e)); } function hide() { g.style.display = 'none'; }
   svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide);
   return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
+}
+
+// ---- The desk tool template (redesign v2, steps 4 to 6): readout, Go deeper, example tag, save and share, Save my
+// card, guess then reveal, the year chip. APIs in the header comment of shared/desk/desk-ui.mjs. ----
+var DESK_SITE = {"origin":"https://mo-portfolio-site.moe-chayeb.workers.dev","wordmark":"Mohammed El Chayeb"};
+var IN_APP_NOTICE = "Open this page in Safari or Chrome to save the file.", CARD_STAMP = "Example \u00b7 Education, not advice", EXAMPLE_TAG = "Example data";
+function inAppBrowser(ua) {
+  ua = String(ua || '');
+  if (/Instagram/i.test(ua)) return 'Instagram';
+  if (/LinkedInApp|LinkedIn\//i.test(ua)) return 'LinkedIn';
+  if (/FBAN\/|FBAV\/|FB_IAB|FBIOS|FB4A|FBSV\/|\[FB/i.test(ua)) return 'Facebook';
+  return null;
+}
+function siteAddress(origin) {
+  return String(origin || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+}
+function wordCount(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+function deeperIntro(titles) {
+  var t = (titles || []).map(function (x) { return String(x || '').replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  return t.length >= 3 ? 'In this section: ' + t.join(' \u00b7 ') : '';
+}
+function wrapText(text, max, measure, maxLines) {
+  var words = String(text || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean), lines = [], cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var next = cur ? cur + ' ' + words[i] : words[i];
+    if (cur && measure(next) > max) { lines.push(cur); cur = words[i]; } else cur = next;
+  }
+  if (cur) lines.push(cur);
+  if (maxLines && lines.length > maxLines) {
+    var keep = lines.slice(0, maxLines), last = keep[maxLines - 1];
+    while (last.indexOf(' ') > 0 && measure(last + '\u2026') > max) last = last.slice(0, last.lastIndexOf(' '));
+    keep[maxLines - 1] = last + '\u2026';
+    return keep;
+  }
+  return lines;
+}
+function cardText(o, origin) {
+  o = o || {};
+  return {
+    head: String(o.head || ''),
+    question: String(o.question || ''),
+    bigValue: String(o.bigValue == null ? '' : o.bigValue),
+    line: String(o.line || ''),
+    labels: (o.labels || []).map(String).filter(Boolean).slice(0, 3),
+    stamp: CARD_STAMP,
+    address: siteAddress(origin),
+  };
+}
+
+// Has the visitor acted? A trusted pointer, key or input event in the last 1.5s (count-ups run only then).
+var deskActedAt = 0;
+['pointerdown', 'keydown', 'input', 'change'].forEach(function (t) { addEventListener(t, function (e) { if (e.isTrusted) deskActedAt = Date.now(); }, { capture: true, passive: true }); });
+function deskActed() { return deskActedAt > 0 && Date.now() - deskActedAt < 1500; }
+function deskStill() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+function deskEl(x) { return typeof x === 'string' ? document.querySelector(x) : x; }
+
+// 1. The big readout.
+function deskReadout(el, o) {
+  el = deskEl(el); o = o || {};
+  var v = el.querySelector('[data-readout-v]') || el.querySelector('.readout-v'), t = el.querySelector('[data-readout-t]') || el.querySelector('.readout-t'), k = el.querySelector('.readout-k');
+  if (!el.hasAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+  el.setAttribute('aria-atomic', 'true');
+  var cur = null, raf = 0, quiet = 0;
+  function busy() { el.setAttribute('aria-busy', 'true'); clearTimeout(quiet); quiet = setTimeout(function () { el.removeAttribute('aria-busy'); }, 250); }
+  function set(s) {
+    s = s || {}; busy(); cancelAnimationFrame(raf);
+    if (s.label != null && k) k.textContent = s.label;
+    if (s.line != null && t) t.textContent = s.line;
+    var fmt = s.format || o.format || String;
+    if (typeof s.n === 'number' && isFinite(s.n)) {
+      var from = cur, to = s.n; cur = to;
+      if (from == null || from === to || s.animate === false || !deskActed() || deskStill()) { v.textContent = fmt(to); return; }
+      var t0 = performance.now();
+      var step = function (now) {
+        var p = Math.min(1, (now - t0) / 300), e = 1 - Math.pow(1 - p, 3);
+        v.textContent = fmt(p < 1 ? from + (to - from) * e : to);
+        if (p < 1) raf = requestAnimationFrame(step); else busy();
+      };
+      raf = requestAnimationFrame(step);
+    } else { cur = null; v.textContent = s.text != null ? String(s.text) : ''; }
+  }
+  return { set: set, el: el };
+}
+
+// 2. Go deeper: the "In this section:" line when a fold has three or more sub-sections.
+function deskDeeper() {
+  [].forEach.call(document.querySelectorAll('details.deeper'), function (d) {
+    var subs = [].filter.call(d.children, function (c) { return c.matches('.deeper-sub, section'); });
+    var titles = subs.map(function (c) { var h = c.getAttribute('data-title') ? null : c.querySelector('h2, h3, h4, .card-hed, .sec-label'); return c.getAttribute('data-title') || (h ? h.textContent : ''); });
+    var line = deeperIntro(titles), p = d.querySelector(':scope > .deeper-in');
+    if (!line) { if (p && p.hasAttribute('data-auto')) p.remove(); return; }
+    if (p && !p.hasAttribute('data-auto')) return;
+    if (!p) { p = document.createElement('p'); p.className = 'deeper-in'; p.setAttribute('data-auto', ''); var s = d.querySelector(':scope > summary'); if (s) s.after(p); else d.prepend(p); }
+    p.textContent = line;
+  });
+}
+deskDeeper();
+
+// 3. The EXAMPLE DATA tag on a chart drawn at run time (once per chart).
+function deskExampleTag(fig) {
+  fig = deskEl(fig); if (!fig || fig.querySelector('.tag-example')) return;
+  var cap = fig.querySelector(':scope > figcaption'); if (!cap) { cap = document.createElement('figcaption'); fig.prepend(cap); }
+  var tag = document.createElement('span'); tag.className = 'chip tag-example'; tag.textContent = EXAMPLE_TAG; cap.appendChild(tag);
+}
+
+// 4. Save and share: the share sheet when it takes files, else a download link; the in-app browser notice.
+function deskInApp() { try { return inAppBrowser(navigator.userAgent); } catch (e) { return null; } }
+function deskSaveFile(o) {
+  var app = deskInApp(), notice = app ? IN_APP_NOTICE : null;
+  function done(via) { return { via: via, inApp: app, notice: notice }; }
+  function download() {
+    var url = URL.createObjectURL(o.blob), a = document.createElement('a');
+    a.href = url; a.download = o.name; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 20000);
+    return done('download');
+  }
+  var data = null;
+  try { data = { files: [new File([o.blob], o.name, { type: o.blob.type || 'application/octet-stream' })], title: o.title || o.name }; } catch (e) { data = null; }
+  var can = false;
+  try { can = !!(data && navigator.share && navigator.canShare && navigator.canShare(data)); } catch (e) { can = false; }
+  if (!can) return Promise.resolve(download());
+  return navigator.share(data).then(function () { return done('share'); }, function (e) { return e && e.name === 'AbortError' ? done('cancelled') : download(); });
+}
+function deskSaveButton(button, make) {
+  button = deskEl(button);
+  if (deskInApp() && !(button.nextElementSibling && button.nextElementSibling.classList.contains('save-note'))) {
+    var n = document.createElement('span'); n.className = 'save-note'; n.setAttribute('role', 'note'); n.textContent = IN_APP_NOTICE; button.after(n);
+  }
+  button.addEventListener('click', function () {
+    if (button.getAttribute('aria-busy') === 'true') return;
+    button.setAttribute('aria-busy', 'true');
+    Promise.resolve().then(make).then(deskSaveFile).catch(function () { return null; }).then(function () { button.removeAttribute('aria-busy'); });
+  });
+}
+
+// Save my card: a 1080x1350 PNG drawn in a canvas, in the page's current theme; nothing leaves the page.
+function deskCard(o) {
+  var W = 1080, H = 1350, P = 88, cs = getComputedStyle(document.documentElement);
+  var col = function (n, d) { return (cs.getPropertyValue('--t-' + n) || '').trim() || d; };
+  var C = { ground: col('ground', '#FCFDFD'), raised: col('raised', '#E8EEF3'), ink: col('ink', '#10161C'), ink2: col('ink2', '#36414C'), rule: col('rule', '#D3D8DD'), point: col('point', '#F2A93B') };
+  var serif = '"Source Serif 4 Variable", Georgia, serif', sans = '"Source Sans 3 Variable", system-ui, sans-serif';
+  var T = cardText({ head: DESK_SITE.wordmark, question: o.question, bigValue: o.bigValue, line: o.line, labels: o.labels }, DESK_SITE.origin);
+  var fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 72px ' + serif), document.fonts.load('400 50px ' + sans), document.fonts.load('700 40px ' + sans)]).catch(function () {}) : Promise.resolve();
+  return fonts.then(function () {
+    var c = document.createElement('canvas'); c.width = W; c.height = H;
+    var x = c.getContext('2d'), w = W - 2 * P, y = P;
+    var track = function (px) { if ('letterSpacing' in x) x.letterSpacing = px; };
+    var font = function (f) { x.font = f; track('0px'); };
+    var m = function (s) { return x.measureText(s).width; };
+    x.fillStyle = C.ground; x.fillRect(0, 0, W, H);
+    x.textBaseline = 'alphabetic'; x.fillStyle = C.ink;
+    // the wordmark over the site's double rule
+    font('600 44px ' + serif); y += 44; x.fillText(T.head, P, y);
+    y += 26; x.fillRect(P, y, w, 2); x.fillRect(P, y + 6, w, 2); y += 8;
+    // the question
+    font('600 72px ' + serif); y += 40;
+    wrapText(T.question, w, m, 4).forEach(function (l) { y += 80; x.fillText(l, P, y); });
+    // the big value, shrunk until it fits one line
+    var size = 230; font('600 ' + size + 'px ' + serif);
+    while (size > 96 && m(T.bigValue) > w) { size -= 6; font('600 ' + size + 'px ' + serif); }
+    y += Math.round(size * 0.95) + 40; x.fillText(T.bigValue, P, y);
+    // the one highlight: an amber rule under the figure, clear of its descenders
+    y += Math.round(size * 0.3); x.fillStyle = C.point; x.fillRect(P, y, Math.min(w, Math.max(160, m(T.bigValue))), 8); x.fillStyle = C.ink; y += 16;
+    // the one line
+    font('400 50px ' + sans);
+    wrapText(T.line, w, m, 3).forEach(function (l) { y += 66; x.fillText(l, P, y); });
+    // the labels as ruled chips
+    if (T.labels.length) {
+      y += 40; font('700 40px ' + sans); track('2px');
+      var cx = P, ch = 64;
+      T.labels.forEach(function (l) {
+        var s = l.toUpperCase(), lw = m(s) + 40;
+        if (cx > P && cx + lw > P + w) { cx = P; y += ch + 16; }
+        x.strokeStyle = C.rule; x.lineWidth = 2; x.strokeRect(cx + 1, y + 1, lw - 2, ch - 2);
+        x.fillStyle = C.ink2; x.fillText(s, cx + 20, y + 46); x.fillStyle = C.ink; cx += lw + 16;
+      });
+      y += ch;
+    }
+    // an optional small chart in the room that is left
+    var foot = H - P - 116;
+    if (typeof o.draw === 'function' && foot - y > 140) { try { o.draw(x, { x: P, y: y + 40, w: w, h: foot - y - 80 }, C); } catch (e) { /* the card still saves */ } }
+    // the foot: a 2px ink rule, the stamp and the site address
+    x.fillStyle = C.ink; x.fillRect(P, foot, w, 2);
+    font('700 40px ' + sans); x.fillText(T.stamp, P, foot + 56);
+    font('400 40px ' + sans); x.fillStyle = C.ink2; x.fillText(T.address, P, foot + 108);
+    return new Promise(function (res, rej) { c.toBlob(function (b) { if (b) res(b); else rej(new Error('the card could not be drawn')); }, 'image/png'); });
+  });
+}
+function deskSaveCard(o) {
+  return deskCard(o).then(function (blob) { return deskSaveFile({ blob: blob, name: o.name || 'my-card.png', title: o.question }); });
+}
+
+// 5. Guess, then reveal: skippable, and shown only when the tool calls show() after its first result.
+var deskGuessN = 0;
+function deskGuess(host, o) {
+  host = deskEl(host); o = o || {};
+  var id = 'desk-guess-' + (++deskGuessN), fmt = o.format || String, shown = false, done = false;
+  var mk = function (tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  host.textContent = ''; host.classList.add('guess'); host.setAttribute('data-guess', ''); host.hidden = true;
+  var k = mk('p', 'kicker', 'Guess first'), q = mk('p', 'guess-q', o.question || ''); q.id = id + '-q';
+  var row = mk('div', 'guess-row'), r = document.createElement('input'), out = mk('output', 'guess-v');
+  r.type = 'range'; r.id = id; r.min = o.min; r.max = o.max; r.step = o.step || 1; r.value = o.start != null ? o.start : o.min;
+  r.setAttribute('aria-labelledby', id + '-q'); out.setAttribute('for', id);
+  var paint = function () { out.textContent = fmt(Number(r.value)); r.setAttribute('aria-valuetext', out.textContent); };
+  r.addEventListener('input', paint); paint();
+  row.appendChild(out); row.appendChild(r);
+  var acts = mk('div', 'guess-actions'), go = mk('button', 'btn', 'Reveal'), skip = mk('button', 'btn-2', 'Skip');
+  go.type = 'button'; skip.type = 'button'; acts.appendChild(go); acts.appendChild(skip);
+  var said = mk('p', 'guess-out'); said.setAttribute('aria-live', 'polite'); said.hidden = true;
+  [k, q, row, acts, said].forEach(function (e) { host.appendChild(e); });
+  go.addEventListener('click', function () {
+    if (done) return; done = true;
+    var g = Number(r.value), a = typeof o.answer === 'function' ? o.answer() : o.answer;
+    said.textContent = o.reveal ? o.reveal(g, a) : 'Your guess: ' + fmt(g) + '. The answer: ' + fmt(a) + '.';
+    said.hidden = false; r.disabled = true; acts.hidden = true; said.setAttribute('tabindex', '-1'); said.focus();
+    if (o.onDone) o.onDone({ guess: g, answer: a, skipped: false });
+  });
+  skip.addEventListener('click', function () {
+    if (done) return; done = true; host.hidden = true;
+    var a = document.querySelector('[data-answer]'); if (a) { if (!a.hasAttribute('tabindex')) a.setAttribute('tabindex', '-1'); a.focus(); }
+    if (o.onDone) o.onDone({ skipped: true });
+  });
+  return { show: function () { if (shown || done) return; shown = true; host.hidden = false; }, el: host };
 }
 
 // Draws the Money Year from the embedded model: a headline that states the year's finding, then four charts across the

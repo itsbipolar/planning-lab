@@ -4,7 +4,8 @@
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
 h1,h2{margin:0}
-.kicker{margin:2.5rem 0 0}
+.kicker{margin:1.25rem 0 0}
+@media (max-width:640px){.kicker{margin-top:1.25rem}}
 h1{margin-top:.5rem}
 .lede{margin:1rem 0 0}
 h2{margin:.35rem 0 1rem}
@@ -12,23 +13,57 @@ h2{margin:.35rem 0 1rem}
 :focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
 :root[data-theme="light"] :focus-visible{outline-color:var(--t-point-deep)}
 
-.ask{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:1.75rem 0 0}
-.ask label{font-weight:650}
-.ask .note{flex-basis:100%;margin:.1rem 0 0}
-input[type=number]{font:inherit;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600;width:8.5rem;min-height:44px;padding:.4rem .7rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-rule);border-radius:2px}
-.error{flex-basis:100%;color:var(--t-d4);margin:0}
+/* The top: the question, then one control and one big answer (the reader's number is the biggest thing on the page);
+   on a wide screen the box score sits beside them. */
+.yy-top{display:grid;gap:0 4rem}
+.yy-ask{margin-top:1.4rem}
+@media (min-width:1000px){.yy-top{grid-template-columns:minmax(0,34rem) minmax(0,1fr);align-items:start}.yy-box{margin-top:1.25rem}}
+.yy-ask{display:grid;justify-items:start;gap:.6rem}
+.yy-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem}
+.yy-q{font-weight:650;font-size:1.25rem;color:var(--t-ink)}
+.yy-step{display:flex;align-items:center;gap:.5rem}
+.yy-btn{width:48px;height:48px;display:inline-grid;place-items:center;padding:0;border:1.5px solid var(--t-ink);border-radius:0;background:transparent;color:var(--t-ink);cursor:pointer}
+.yy-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square}
+.yy-btn:hover:not(:disabled){background:var(--t-raised)}
+.yy-btn:disabled{border-color:var(--t-rule);color:var(--t-ink3);cursor:default}
+/* the year itself, in the serif, with the amber "you" edge under it (as on the home lead) */
+.yy-input{width:6.2ch;height:56px;padding:0 .25rem;border:1.5px solid var(--t-ink);border-bottom:4px solid var(--t-point);border-radius:0;background:var(--t-ground);color:var(--t-ink);font:600 2rem/1 var(--font-display);font-variant-numeric:tabular-nums lining-nums;text-align:center;-moz-appearance:textfield;appearance:textfield}
+.yy-input::-webkit-outer-spin-button,.yy-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.yy-chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.yy-chip{min-height:44px;min-width:4.4rem;padding:0 .7rem;border:1px solid var(--t-rule);border-radius:4px;background:transparent;color:var(--t-ink);font:600 1.1rem/1 var(--font-display);font-variant-numeric:tabular-nums lining-nums;cursor:pointer}
+.yy-chip:hover{border-color:var(--t-ink)}
+.yy-chip[aria-pressed="true"]{border-color:var(--t-ink);box-shadow:inset 0 -3px 0 var(--t-point)}
+.yy-ask .assume{margin:.1rem 0 0}
+@media (max-width:560px){.yy-ask,.yy-chips{width:100%}.yy-chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.4rem}.yy-chip{min-width:0;padding:0 .2rem}}
 
-.tl{margin-top:2.5rem}
-.tl figure.chart{margin-top:1rem}
+.yy-answer{margin:1.1rem 0 0}
+.yy-big{display:flex;flex-wrap:wrap;align-items:center;column-gap:.25em;letter-spacing:-.02em}
+.yy-arrow{width:.8em;height:.5em;flex:none;fill:none;stroke:var(--t-ink3);stroke-width:2.5;stroke-linecap:square}
+.yy-big [data-readout-v]{box-shadow:inset 0 -.09em 0 var(--t-point)}
+
+/* The box score: one row per rule, a label, the value in serif figures, and one sentence in the tense for that year. */
+.yy-box{margin-top:1.25rem}
+.yy-box .sec-label{font-size:var(--type-label-size)}
+.box{margin:0;display:grid}
+.box-row{display:grid;grid-template-columns:minmax(0,1fr);gap:.1rem 1.5rem;padding:.8rem 0;border-top:1px solid var(--t-rule)}
+.box-row:first-child{border-top:0;padding-top:.35rem}
+.box-row dt{font-weight:700;font-size:1.05rem;line-height:1.35;color:var(--t-ink)}
+.box-v{margin:0;font-family:var(--font-display);font-weight:600;font-size:1.45rem;line-height:1.2;text-wrap:pretty;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+.box-t{margin:.15rem 0 0;font-size:1.05rem;line-height:1.45;color:var(--t-ink)}
+@media (min-width:640px){.box-row{grid-template-columns:minmax(0,13rem) minmax(0,1fr)}.box-row dt{grid-row:1/3;padding-top:.3rem}}
+abbr[title]{text-decoration:underline dotted;text-decoration-thickness:1px;text-underline-offset:.15em;cursor:help}
+
+.yy-life{margin-top:2.5rem}
 .tl-frame{width:100%;padding:.25rem 0 0}
 #tl{display:block;width:100%;height:auto;overflow:visible}
 svg text{font-family:var(--font-ui)}
-.tl-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:.9rem 0 0}
-.tl-actions .note{margin:0}
+.yy-save{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:1rem 0 0}
+.yy-save .note{margin:0}
 [hidden]{display:none !important}
 
-.choices{margin-top:3rem}
 .choice{display:grid;gap:.5rem 3.5rem;padding:1.75rem 0 2.25rem}
+.choice+.choice{border-top:1px solid var(--t-rule)}
+.yy-door{font-size:var(--type-small-size)}
 @media (min-width:1000px){.choice{grid-template-columns:minmax(0,25rem) minmax(0,1fr);align-items:start}.choice figure.chart{margin-top:4.6rem}}
 .choice .copy>p{margin:.5rem 0}
 .choice .card-hed{margin:.35rem 0 1rem}
@@ -43,7 +78,6 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--t-point)}
 .readout-t b{font-weight:700}
 .readout output{font:inherit}
 
-.people{margin-top:3rem;max-width:60rem}
 .sources{margin-top:3rem;border-top:2px solid var(--t-ink);padding-top:.75rem}
 .sources summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
 .sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:17.5px;color:var(--t-ink2)}
@@ -53,5 +87,6 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--t-point)}
 .key.key-bar{background:var(--t-d3)}
 .key.key-dash{border-top:2px dashed var(--t-ink);height:0;width:18px;margin-left:.2rem;vertical-align:middle}
 
-/* Chart text is drawn at the SVG's real width (scale 1), at 17px: the one size rule (16.5px or more). */
-svg{font-size:17px}
+/* Chart text is drawn at the SVG's real width (scale 1), at 17.5px (labels 17.5px or more; Mo: never smaller). */
+svg{font-size:17.5px}
+#fund,#income{font:inherit;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600;width:10rem;min-height:44px;padding:.4rem .7rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-rule);border-radius:2px}

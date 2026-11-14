@@ -102,3 +102,41 @@ export function niceStep(x) {
   const p = Math.pow(10, Math.floor(Math.log10(x))), m = x / p;
   return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
 }
+
+/** The sorted-outcome distribution the page ships with (redesign v2, step 4): written by build.mjs for the story in
+ *  story.json only, so the deal at the top of the page answers at once, before (and without) the full count in the
+ *  worker. Years lasted are whole years paid in full, capped at the horizon (an order that runs out in year d lasted
+ *  d - 1), so many orders tie; `lasted` is sorted from the shortest to the longest. `strip` holds the bars of how the
+ *  orders end (by run-out year, then by money left in bins of `left.step`), and `groups` the share that last for each
+ *  set of first five years (by its average). */
+export function distribution(res, cards) {
+  const s = summarize(res, cards), H = res.horizon, lasted = new Map();
+  for (let d = 1; d <= H; d++) if (s.byYear[d]) lasted.set(d - 1, s.byYear[d]);
+  if (s.lasts) lasted.set(H, s.lasts);
+  let y0 = H; for (let d = 1; d <= H; d++) if (s.byYear[d]) { y0 = d; break; }
+  // the strip's money-left bins are finer than the histogram's (about ten of them), so it reads as a strip of bars
+  let maxLeft = 0; for (let i = 0; i < res.total; i++) if (!res.dep[i] && res.value[i] > maxLeft) maxLeft = res.value[i];
+  const step = niceStep(maxLeft / 10), left = new Array(Math.max(1, Math.ceil(maxLeft / step + 1e-9))).fill(0);
+  for (let i = 0; i < res.total; i++) if (!res.dep[i]) left[Math.min(left.length - 1, Math.floor(res.value[i] / step))]++;
+  return {
+    total: s.total, horizon: H, lasts: s.lasts,
+    lasted: [...lasted.entries()].sort((a, b) => a[0] - b[0]).map(([years, count]) => ({ years, count })),
+    strip: { firstYear: y0, byYear: s.byYear.slice(y0), left: { step, counts: left } },
+    groups: s.groups.map((g) => ({ avg: g.avg, n: g.n, lasts: g.counts[0] })),
+  };
+}
+
+/** Whole years an outcome lasted: the depletion year minus one, or the horizon when the money lasts (dep 0). */
+export function yearsLasted(dep, horizon) { return dep ? dep - 1 : horizon; }
+
+/** How many orders last no longer than `years` (ties counted: "at least as long as" this many). */
+export function atLeastAsLong(dist, years) {
+  let n = 0; for (const o of dist.lasted) if (o.years <= years) n += o.count;
+  return n;
+}
+
+/** The strip bar an outcome falls in: by run-out year, or for an order that lasts, by money left. */
+export function stripBar(dist, dep, value) {
+  const st = dist.strip, nDep = st.byYear.length;
+  return dep ? Math.max(0, dep - st.firstYear) : nDep + Math.min(st.left.counts.length - 1, Math.floor(value / st.left.step));
+}
