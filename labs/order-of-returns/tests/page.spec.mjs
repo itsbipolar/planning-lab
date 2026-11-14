@@ -1,13 +1,16 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
+import { expectStorageClean, expectShell, expectTextSizes } from '../../../shared/desk/shell-test.mjs';
+import { toolFor } from '../../../shared/desk/desk-page.mjs';
 import { readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const file = fileURLToPath(new URL('../dist/index.html', import.meta.url));
 const url = 'file://' + file;
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
-const SYN = 'Synthetic sequence: not historical, not a forecast.';
+// the one assumptions line (redesign v2: said once, near the top); every chart carries an "Example data" tag instead of
+// repeating it
+const ASSUME = 'Made-up returns, not history or a forecast. No taxes, fees or benefits. Education, not advice.';
 const ready = (page) => page.waitForFunction(() => document.body.dataset.enumMs, null, { timeout: 30000 });
 const network = (u) => !/^(data|blob):/.test(u);
 
@@ -49,8 +52,9 @@ for (const width of [390, 1440]) {
       page.on('request', (r) => { if (network(r.url())) requests.push(r.url()); });
       await ready(page);
 
-      // the finding leads, computed from the engine
-      await expect(page.locator('h1')).toHaveText(/^Same ten years, same average return\. In one order the savings last all 25 years; in the other they run out in year 20\.$/);
+      // the question leads (the same as the site's and the Up next chain's), the finding from the engine right under it
+      await expect(page.locator('h1')).toHaveText(toolFor('order-of-returns').question);
+      await expect(page.locator('#deck')).toContainText(/Ruth’s savings last all 25 years; Sam’s run out in year 20\.$/);
       await expect(page.locator('#s-lead')).toContainText('Ruth still has');
 
       // no withdrawals: shuffling changes nothing
@@ -63,7 +67,8 @@ for (const width of [390, 1440]) {
 
       // every order: 10! orders, Ruth best, Sam worst
       await expect(page.locator('#run-text')).toContainText('All 3,628,800 orders worked out in this browser');
-      await expect(page.locator('#h-all')).toContainText('Ruth has the best; Sam has the worst.');
+      await expect(page.locator('#s-all')).toContainText('Ruth has the best order; Sam has the worst.');
+      expect((await page.locator('#h-all').textContent()).split(/\s+/).length).toBeLessThanOrEqual(12);
       await expect(page.locator('#s-rank')).toContainText('Deal all ten cards');
 
       // deal all ten by keyboard; the hand is sorted best first, so this is Ruth's order: the best of all
@@ -75,7 +80,7 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#s-early')).toContainText('Yours average');
 
       // the rescue: the solver headline, three small multiples, and scene 5's old bugs
-      await expect(page.locator('#h-rescue')).toHaveText(/^Sam’s money lasts all 25 years if his first-year withdrawal is \$[\d,]+ or less$/);
+      await expect(page.locator('#h-rescue')).toHaveText(/^Sam’s money lasts if his first withdrawal is \$[\d,]+ or less$/);
       await expect(page.locator('#levers figure')).toHaveCount(3);
       await page.locator('#flex').focus(); await page.keyboard.press('Space');
       const mix = await page.locator('#s-mix').innerText();
@@ -102,9 +107,13 @@ for (const width of [390, 1440]) {
       expect(dl.suggestedFilename()).toBe('order-of-returns-your-order.png');
       expect(statSync(await dl.path()).size).toBeGreaterThan(20000);
 
-      // honest labels, no overlaps, nothing stored or sent
-      for (const svg of await page.locator('figure svg').all()) await expect(svg.locator('xpath=following-sibling::figcaption')).toHaveText(SYN);
+      // honest labels: one assumptions line, every chart tagged as example data; no overlaps; every text at full size
+      await expect(page.locator('#assume')).toHaveText(ASSUME);
+      expect(await page.locator('body').innerText()).not.toContain('Synthetic sequence');
+      for (const svg of await page.locator('figure svg').all()) await expect(svg.locator('xpath=ancestor::figure[contains(@class,"chart")][1]//span[contains(@class,"tag-example")]')).toHaveText('Example data');
       expect(await overlaps(page)).toEqual([]);
+      await page.locator('details.table summary').click();
+      await expectTextSizes(page);
       await expect(page.locator('footer.foot p')).toHaveCount(3);
       expect(errors).toEqual([]);
       expect(requests).toEqual([]);
@@ -153,7 +162,6 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#rk-order')).toContainText('Sam’s order this time');
       await expect(page.locator('#sam-order')).not.toHaveText(order);
       await expect(page.locator('#rv-shuffle')).toHaveText(end);
-      await expect(page.locator('#r-shuffle .readout-fine')).toHaveText(SYN);
       // deal: nothing until a card is dealt, then where the order ends and its rank among every order
       await under(page, '.deal .row', '#s-deal');
       await expect(page.locator('#rv-deal')).toBeHidden();
@@ -193,12 +201,52 @@ for (const width of [390, 1440]) {
         await expect(svg.locator('.crosshair text')).toContainText(/End of year \d+Ruth: \$[\d,]+Sam: /);
       }
       await page.click('#random');
+      await page.locator('#c-deal').scrollIntoViewIfNeeded();
       const b = await page.locator('#c-deal').boundingBox();
       await page.mouse.move(b.x + b.width * 0.3, b.y + b.height * 0.5);
       await expect(page.locator('#c-deal .crosshair text')).toContainText('Your order: ');
       await expect(page.locator('#c-deal .crosshair')).toHaveCount(1); // the old one was removed before the redraw
       await page.mouse.move(0, 0);
       await expect(page.locator('#c-deal .crosshair')).toBeHidden();
+    });
+  });
+}
+
+for (const width of [390, 1440]) {
+  test.describe(`${width}px, the editorial system`, () => {
+    test.use({ viewport: { width, height: 900 } });
+
+    test('a one-word kicker, the question, one assumptions line, no section numbers, amber for one action only', async ({ page }) => {
+      await page.goto(url); await ready(page);
+      await expect(page.locator('.kicker')).toHaveCount(1);
+      await expect(page.locator('.kicker')).toHaveText('Game');
+      const q = toolFor('order-of-returns').question;
+      expect(q.split(/\s+/).length).toBeLessThanOrEqual(12);
+      expect(q.length).toBeLessThanOrEqual(60);
+      await expect(page.locator('h1.display')).toHaveText(q);
+      await expect(page.locator('.assume')).toHaveCount(1);
+      for (const t of await page.locator('.sec-label').allInnerTexts()) expect(t, 'no section number').not.toMatch(/^\s*\d/);
+      await expect(page.locator('.btn-you')).toHaveCount(1);
+      await expect(page.locator('#random')).toHaveClass(/btn-you/);
+      await expect(page.locator('.readout-v.big')).toHaveCount(1);
+      // every chart opens on a plain-words title in the shared frame
+      for (const f of await page.locator('figure.chart').all()) await expect(f.locator(':scope > figcaption .chart-title')).toHaveText(/\S/);
+      expect(await page.evaluate(() => [...document.querySelectorAll('body *')].filter((e) => getComputedStyle(e).fontVariantCaps !== 'normal').length)).toBe(0);
+    });
+
+    test('every text renders at 16.5px or more, chart text included: while counting, when drawn, and with every chart on', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expectTextSizes(page);
+      await ready(page);
+      await expectTextSizes(page);
+      for (let i = 0; i < 3; i++) await page.locator('#hand button').first().click(); // a partly dealt order labels its path's end
+      await expectTextSizes(page);
+      expect(await overlaps(page)).toEqual([]);
+      await page.click('#random'); await page.check('#rrif');
+      await expect(page.locator('#s-rrif')).toContainText('Across all', { timeout: 30000 });
+      await page.check('#flex'); await page.check('#buffer');
+      await expectTextSizes(page);
+      expect(await overlaps(page)).toEqual([]);
     });
   });
 }

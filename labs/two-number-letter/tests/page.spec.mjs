@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
+import { expectStorageClean, expectShell, expectTextSizes } from '../../../shared/desk/shell-test.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -18,6 +18,9 @@ const cross = (age) => {
   return (share * age - std) / (share - 1);
 };
 const story = JSON.parse(readFileSync(new URL('../story.json', import.meta.url), 'utf8'));
+// The page's question is the one its Up next card and the site use (shared/desk/next.json).
+const question = JSON.parse(readFileSync(new URL('../../../shared/desk/next.json', import.meta.url), 'utf8')).tools.find((t) => t.labSlug === 'two-number-letter').question;
+const later = (from, to) => `Starting CPP at ${to} instead of ${from} pays more in total for anyone who lives past about age ${Math.round(cross(to))}.`;
 
 // Every pair of text labels inside each chart: none may overlap, and none may leave the chart.
 async function labelClashes(page) {
@@ -54,15 +57,54 @@ for (const width of [390, 1440]) {
       await expectStorageClean(page);
     });
 
-    test('the example opens with its computed finding, and arrow keys rewrite the headline, letter and chart; nothing is stored or sent', async ({ page }) => {
+    test('the question, one kicker word, the answer under it and one assumptions line; no section numbers', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expect(page.locator('h1')).toHaveCount(1);
+      await expect(page.locator('h1')).toHaveText(question);
+      expect(question.length).toBeLessThanOrEqual(60);
+      expect(question.split(/\s+/).length).toBeLessThanOrEqual(12);
+      expect((await page.locator('main > .kicker').textContent()).trim()).toMatch(/^[A-Za-z]+$/);
+      await expect(page.locator('#finding')).toHaveText(later(std, latest));
+      await expect(page.locator('.assume')).toHaveCount(1);
+      await expect(page.locator('.assume')).toContainText('Education, not advice');
+      for (const t of await page.locator('.sec-label, .kicker').allInnerTexts()) expect(t).not.toMatch(/\d|No\./);
+      // the one big answer is the CPP crossing, in the serif with tabular lining figures
+      const big = page.locator('.readout-v.big');
+      await expect(big).toHaveCount(1);
+      await expect(big).toHaveAttribute('id', 'rd-cpp-v');
+      expect(await big.evaluate((e) => getComputedStyle(e).fontVariantNumeric)).toContain('tabular-nums');
+      // every chart is a framed figure with a plain-words title and the example tag
+      await expect(page.locator('figure.chart')).toHaveCount(2);
+      await expect(page.locator('figure.chart .tag-example')).toHaveCount(2);
+      await expect(page.locator('#cpp-h')).toHaveText(`Waiting to ${latest} catches up with ${std} at about age ${Math.round(cross(latest))}`);
+    });
+
+    test('every word on the page renders at 16.5px or more, chart words included, in each view', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await page.evaluate(() => document.fonts.ready);
+      await expectTextSizes(page);
+      await page.locator('[data-who="b"]').click();
+      await expectTextSizes(page);
+      // the reading under the pointer too
+      const svg = page.locator('#plot-cpp svg'); await svg.scrollIntoViewIfNeeded();
+      const b = await svg.boundingBox();
+      await page.mouse.move(b.x + b.width * 0.6, b.y + b.height / 2);
+      await expect(page.locator('#plot-cpp .crosshair')).toBeVisible();
+      await expectTextSizes(page);
+      await page.locator('.sources summary').click();
+      await expectTextSizes(page);
+    });
+
+    test('the example opens with its computed finding, and arrow keys rewrite the answer, letter and chart; nothing is stored or sent', async ({ page }) => {
       const requests = [], errors = [];
       page.on('pageerror', (e) => errors.push(e.message));
       await page.goto(url); await page.waitForLoadState('load');
       const start = page.url();
       page.on('request', (rq) => requests.push(rq.url()));
-      const h1 = page.locator('h1');
-      await expect(h1).toHaveText(`Waiting from ${std} to ${latest} pays off for CPP if you live past about ${Math.round(cross(latest))}.`);
-      await expect(h1).toHaveAttribute('aria-live', 'polite');
+      const h1 = page.locator('#finding');
+      await expect(page.locator('h1')).toHaveText(question);
+      await expect(h1).toHaveText(later(std, latest));
+      await expect(page.locator('#status')).toHaveAttribute('aria-live', 'polite');
       await expect(page.locator('[data-who="a"]')).toHaveAttribute('aria-pressed', 'true');
       const age = page.locator('[data-drag="a.cppAge"]');
       await expect(age).toHaveAttribute('role', 'slider');
@@ -73,24 +115,24 @@ for (const width of [390, 1440]) {
       expect(await age.evaluate((e) => getComputedStyle(e).outlineStyle)).not.toBe('none');
       await page.keyboard.press('ArrowLeft');
       await expect(age).toHaveAttribute('aria-valuenow', String(latest - 1));
-      await expect(h1).toHaveText(`Waiting from ${std} to ${latest - 1} pays off for CPP if you live past about ${Math.round(cross(latest - 1))}.`);
+      await expect(h1).toHaveText(later(std, latest - 1));
       await expect(page.locator('[data-out="a.cppCross"]')).toContainText(`start at ${latest - 1} catches up`);
       await expect(page.locator('#s-a-cppAge')).toHaveValue(String(latest - 1));
       expect(await page.locator('#plot-cpp path.ln-pick').getAttribute('d')).not.toBe(path);
       await expect(page.locator('#plot-cpp path.ln')).toHaveCount(3);
       await page.keyboard.press('Home');
-      await expect(h1).toHaveText(`Starting CPP at ${earliest} instead of ${std} pays more in total unless you live past about ${Math.round(cross(earliest))}.`);
+      await expect(h1).toHaveText(`Starting CPP at ${earliest} instead of ${std} pays more in total until about age ${Math.round(cross(earliest))}. After that, the start at ${std} is ahead.`);
       await expect(page.locator('[data-out="a.cppWhy"]')).toContainText(`less than at ${std}`);
       // Tom's number moves the charts and the headline to Tom
       const tom = page.locator('[data-drag="b.cppAge"]');
       await tom.focus(); await page.keyboard.press('End');
       await expect(page.locator('[data-who="b"]')).toHaveAttribute('aria-pressed', 'true');
-      await expect(page.locator('#cpp-h')).toContainText(story.people.b.name);
-      await expect(h1).toHaveText(`Waiting from ${std} to ${latest} pays off for CPP if you live past about ${Math.round(cross(latest))}.`);
+      await expect(page.locator('#cpp-sub')).toContainText(story.people.b.name);
+      await expect(h1).toHaveText(later(std, latest));
       // the plain slider and its buttons drive the same numbers
       await page.locator('#s-b-cppAge').fill(String(std));
       await expect(tom).toHaveText(String(std));
-      await expect(h1).toContainText(`would pay off for CPP`);
+      await expect(h1).toContainText(`would pay more in total for anyone who lives past`);
       await page.getByRole('button', { name: `More: ${story.people.b.name}'s CPP start age` }).click();
       await expect(tom).toHaveText(String(std + 1));
       await expect(page.locator('#status')).not.toBeEmpty();
@@ -150,7 +192,7 @@ for (const width of [390, 1440]) {
       await expect(page.locator('[data-out="a.recWhy"]')).toContainText('none of her OAS');
       await page.locator('[data-drag="b.other"]').focus(); await page.keyboard.press('End');
       await expect(page.locator('[data-out="b.recWhy"]')).toContainText('all of his OAS');
-      await expect(page.locator('#dek')).toContainText(`${thr.tax_year} recovery tax`);
+      await expect(page.locator('#rd-rec-t')).toContainText(`${thr.tax_year} recovery tax`);
     });
 
     test('dragging a number with the pointer changes it', async ({ page }) => {
@@ -162,7 +204,7 @@ for (const width of [390, 1440]) {
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
       await page.mouse.down(); await page.mouse.move(box.x + box.width / 2 + 24 * 3, box.y + box.height / 2, { steps: 6 }); await page.mouse.up();
       await expect(age).toHaveText(String(Math.min(latest, before + 3)));
-      await expect(page.locator('h1')).toContainText(`to ${Math.min(latest, before + 3)}`);
+      await expect(page.locator('#finding')).toContainText(`Starting CPP at ${Math.min(latest, before + 3)} instead of`);
     });
 
     test('chart labels never overlap or leave the chart', async ({ page }) => {

@@ -14,7 +14,7 @@ minimum withdrawals from the confirmed facts. It ends with questions for a quali
 | Item | Decision |
 |---|---|
 | Look | The shared Data desk look: `deskCSS()` from `shared/desk/desk.mjs` before `style.css`. Dark by default, light via `data-theme="light"` (a header button, nothing stored). Source Serif 4 headlines, Libre Franklin text and figures (tabular), IBM Plex Mono small labels only |
-| Layout | One scrolling page (it was six stepped scenes). Each section: a mono label, a serif headline that states the finding, then the chart at the full content width |
+| Layout | One scrolling page (it was six stepped scenes). Redesign v2 step 2 (2026-11-13): the H1 is the short question shared with the site (`Same {ten} years. Why does one retiree run out?`, the count filled from story.json at build and checked against shared/desk/next.json), the finding under it as the lede, one assumptions line, kicker GAME. Each section: an uppercase label on a 2px ink rule (no numbers), a serif headline that states the finding, then the chart in the shared frame (plain-words title, units line, an Example data tag) at the full content width. Chart text is drawn at real pixel size, 17px or more (`TXT` in app.js); labels thin or wrap rather than shrink |
 | Colour by data type | Ruth `--t-d1` (blue), Sam `--t-d4` (rose), your order `--t-d2` (amber), counts of orders `--t-d3` (teal), "before" `--t-ink3` (grey). In light mode the amber label text uses `--t-ink` (contrast) |
 | Numbers | Every number on the page is computed from `story.json`, the engine and the confirmed facts at load; none is typed in. The headline, section headlines and summaries are built from engine results |
 | Story numbers | `story.json`: $500,000, $25,000 in the first year rising 2% a year, 25 years, ten cards averaging 4%, every later year at that average. `startAge` 65 is illustrative and used only by the RRIF lane |
@@ -45,7 +45,7 @@ and Sam's the worst; without withdrawals every order ends with the same balance;
 ends with more; no age or factor from the facts is written into the page code.
 
 ## 4. Sections
-1. Headline (the finding) and the lead chart: Ruth and Sam, the dealt years shaded, readings at year 10 and at the end.
+1. The question, the finding under it, and the lead chart: Ruth and Sam, the dealt years shaded, readings at year 10 and at the end.
 2. No withdrawals: shuffle Sam's years; every order ends with the same amount.
 3. Deal the ten years yourself (buttons, keyboard), with the save-as-image button.
 4. Every possible order: progress, histogram of how the orders end, Ruth/Sam/your order marked, your rank, a table.
@@ -62,6 +62,6 @@ Footer: one education line, one AI line.
 
 ## 6. Done when
 Engine tests green; `tests/page.spec.mjs` green at 390 and 1440: a keyboard playthrough (finding, every order, rank,
-rescue sentences, RRIF lane, image download), no text overlapping in any chart, every chart captioned synthetic, no
+rescue sentences, RRIF lane, image download), no text overlapping in any chart, every text at 16.5px or more (SVG scale included), every chart tagged Example data and one assumptions line, no
 request after load, nothing stored, no horizontal scroll, axe clean in dark and light with every chart drawn, nothing
 animated under reduced motion.

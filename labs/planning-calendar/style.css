@@ -1,46 +1,38 @@
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
-.page{max-width:1280px;margin:0 auto;padding:0 16px}
-@media (min-width:700px){.page{padding:0 24px}}
-@media (min-width:1100px){.page{padding:0 40px}}
-.bar{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
-.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto;white-space:nowrap}
-.bar a{white-space:nowrap}
-@media (max-width:480px){.bar{column-gap:1rem}.bar a:not(.brand){font-size:17.5px}}
-a{color:inherit;text-underline-offset:4px}
-h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;margin:0;text-wrap:balance}
-h1{font-size:clamp(1.75rem,2.4vw + 1rem,3.1rem);line-height:1.12;max-width:38ch;margin-top:.5rem}
-h2{font-size:1.45rem;line-height:1.15;margin:0 0 .9rem}
-.kicker{font-family:var(--font-mono);font-weight:500;font-size:.95rem;color:var(--t-ink3);margin:2.5rem 0 0}
-.dek{max-width:68ch;color:var(--t-ink2);margin:1rem 0 0}
-.note{font-size:17.5px;color:var(--t-ink3)}
+/* type, links, labels, buttons, readouts and the chart frame come from the shared desk (desk-ui.mjs); only spacing here */
+h1{margin:.4rem 0 0}
+h2{margin:0 0 .9rem}
+.kicker{margin:2rem 0 0}
+.lede{margin:1rem 0 0}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 :focus-visible{outline:2px solid var(--t-ink);outline-offset:3px}
 section{margin-top:2.75rem}
 
 /* build your household */
 .picks{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem}
-.picks-l{font-family:var(--font-mono);font-size:.95rem;color:var(--t-ink3)}
 .pick-row{display:flex;flex-wrap:wrap;gap:.5rem}
 .pick-row button{font:inherit;font-size:17.5px;font-weight:600;min-height:44px;padding:.4rem .9rem;background:transparent;color:var(--t-ink);border:1px solid var(--t-rule);border-radius:2px;cursor:pointer}
 .pick-row button[aria-pressed="true"]{background:var(--t-raised);border-color:var(--t-ink3);box-shadow:inset 0 -3px 0 var(--t-ink)}
 .sits{border:0;padding:0;margin:1.25rem 0 0;min-width:0}
-.sits legend{padding:0;margin:0 0 .6rem;color:var(--t-ink2)}
+.sits legend{padding:0;margin:0 0 .6rem;color:var(--t-ink)}
+.assume{margin:0 0 .75rem}
 .sit-grid{display:grid;gap:0 1.5rem;grid-template-columns:minmax(0,1fr)}
 @media (min-width:700px){.sit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:1100px){.sit-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .sit{display:flex;align-items:center;gap:.65rem;min-height:44px;padding:.25rem 0;border-top:1px solid var(--t-rule);cursor:pointer}
 .sit input{width:1.15rem;height:1.15rem;margin:0;flex:none;accent-color:var(--t-ink)}
-.sit .n{margin-left:auto;white-space:nowrap;padding-left:.5rem;font-variant-numeric:tabular-nums;font-size:17px;color:var(--t-ink3)}
+.sit .n{margin-left:auto;white-space:nowrap;padding-left:.5rem;font-size:17px;color:var(--t-ink3)}
 
-/* the pile-up strip */
-.frame{width:100%;border-top:1px solid var(--t-rule);border-bottom:1px solid var(--t-rule);padding:.5rem 0}
+/* the pile-up strip, in the shared chart frame (figure.chart) */
+.pile figure.chart{margin:1rem 0 0}
+.frame{width:100%;padding:.5rem 0;border-bottom:1px solid var(--t-rule)}
 #strip{display:block;width:100%;height:auto;overflow:visible}
 #strip text{font-family:var(--font-ui);fill:var(--t-ink2)}
 #strip .read{fill:var(--t-ink);font-weight:600}
 #strip .yr{fill:var(--t-ink3)}
-#strip .lead{stroke:var(--t-ink3);stroke-width:1}
+#strip .lead{stroke:var(--t-ink);stroke-width:1}
 #strip .slot{fill:var(--t-neutral)}
 #strip .today{stroke:var(--t-point);stroke-width:2}
 :root[data-theme="light"] #strip .today{stroke:var(--t-point-deep)}
@@ -48,52 +40,50 @@ section{margin-top:2.75rem}
 .k-pay{fill:var(--t-d4);background:var(--t-d4)}
 .k-file{fill:var(--t-d1);background:var(--t-d1)}
 .k-cutoff{fill:var(--t-d3);background:var(--t-d3)}
-.legend{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;font-size:17.5px;color:var(--t-ink2);margin:.75rem 0 0}
+.legend{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;font-size:17.5px;color:var(--t-ink);margin:.75rem 0 0}
 .legend span{display:inline-flex;align-items:center;gap:.4rem}
 .sw{display:inline-block;width:12px;height:12px;flex:none}
-.sw.today{width:3px;height:14px;background:var(--t-point)}
-:root[data-theme="light"] .sw.today{background:var(--t-point-deep)}
 .sw.hatch{width:18px;height:10px;background:repeating-linear-gradient(135deg,var(--t-ink2) 0 1.5px,transparent 1.5px 5px);border:1px solid var(--t-ink3)}
 
 /* the answer for the household, under the quick picks */
 .readouts{display:grid;gap:0 2.5rem;margin:1.1rem 0 .25rem}
 @media (min-width:700px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .readouts .readout{margin:.5rem 0}
-.hint{font-size:17.5px;color:var(--t-ink2);margin:.5rem 0 0}
+.hint{font-size:17.5px;color:var(--t-ink3);margin:.5rem 0 0}
 #strip{touch-action:pan-y}
-#strip .crosshair text{font-size:14px;fill:var(--t-ink)}
+#strip .crosshair text{font-size:17px;fill:var(--t-ink)}
 #strip .crosshair tspan{fill:var(--t-ink)}
 
 /* save */
 .save{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:1.5rem}
 .save .note{margin:0;max-width:60ch}
-#ics{font:inherit;font-weight:650;min-height:44px;padding:.5rem 1.1rem;background:var(--t-point);color:#0e1318;border:0;border-radius:2px;cursor:pointer}
-#ics:disabled{background:var(--t-raised);color:var(--t-ink3);cursor:default}
+#ics:disabled{background:var(--t-raised);border-color:var(--t-rule);color:var(--t-ink3);cursor:default;text-decoration:none}
 
 /* the dates */
 .dates{list-style:none;padding:0;margin:0;max-width:62rem}
-.dates li{display:grid;grid-template-columns:minmax(0,1fr);gap:.15rem 1.5rem;padding:.85rem 0;border-top:1px solid var(--t-rule)}
+.dates li{max-width:none;display:grid;grid-template-columns:minmax(0,1fr);gap:.15rem 1.5rem;padding:.85rem 0;border-top:1px solid var(--t-rule)}
 @media (min-width:700px){.dates li{grid-template-columns:16rem minmax(0,1fr)}}
-.when{font-variant-numeric:tabular-nums;font-weight:600}
+.when{font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600}
 .when .in{display:block;font-weight:400;font-size:17.5px;color:var(--t-ink3)}
 .what{display:flex;align-items:baseline;gap:.5rem;font-weight:650}
 .what .sw{transform:translateY(1px)}
 .dates p{margin:.2rem 0 0;max-width:68ch}
-.dates .src{font-size:17.5px;color:var(--t-ink2)}
+.dates .src{font-size:17.5px;color:var(--t-ink3)}
 .pending{max-width:62rem;margin-top:1.25rem;border-top:1px solid var(--t-rule);padding-top:.9rem}
 .pending h3{font-size:1rem;margin:0 0 .4rem}
-.pending ul{margin:0;padding-left:1.1rem;color:var(--t-ink2)}
+.pending ul{margin:0;padding-left:1.1rem;color:var(--t-ink)}
 .pending li{margin:.3rem 0}
 .own p,.own ul{max-width:68ch}
-.own ul{padding-left:1.1rem;color:var(--t-ink2)}
+.own ul{padding-left:1.1rem;color:var(--t-ink)}
 .own li{margin:.3rem 0}
 
 .sources{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1rem}
 .sources summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
-.sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:17.5px;color:var(--t-ink2)}
+.sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:17.5px;color:var(--t-ink3)}
 .sources p{max-width:72ch}
-.foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:17.5px;color:var(--t-ink2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
+.foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:17.5px;color:var(--t-ink3);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
 .foot p{margin:0}
 
-/* Chart text keeps the size its label placement was tuned for; the page text around it is larger. */
-svg{font-size:17px}
+/* Chart labels render at 17px (the one size rule: 16.5px or more); app.js reads this size to place them, and draws the
+   strip at the frame's own width so nothing scales them down. */
+svg,#strip{font-size:17px}

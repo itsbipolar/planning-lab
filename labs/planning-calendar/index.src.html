@@ -2,9 +2,9 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
-<script>/* The site's light or dark choice, read only (this page stores nothing): light unless the reader chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The planning calendar · Mohammed El Chayeb</title>
+<title>Tax dates · Mohammed El Chayeb</title>
 <meta name="description" content="Canada's tax and savings dates for the next twelve months, for the kind of household you build, with each rule in plain words and its official source. Save them to your calendar. Education only, not advice.">
 <meta name="robots" content="noindex, nofollow">
 <style>/*@@CSS@@*/</style>
@@ -13,20 +13,21 @@
 <!--@@TOOLBAR@@-->
 <div class="page">
   <main>
-    <p class="kicker">Planning calendar · Canadian rules, a year ahead</p>
-    <h1 id="finding" aria-live="polite">The planning calendar</h1>
-    <p class="dek" id="dek"></p>
+    <p class="kicker">Tool</p>
+    <h1 id="q">What’s your next tax date?</h1>
+    <p class="lede" id="finding"></p>
 
     <section class="build" data-chapter="Household" aria-labelledby="build-h">
-      <p class="sec-label"><b>01</b>Household</p>
+      <p class="sec-label">Household</p>
       <h2 id="build-h">Build your household</h2>
+      <p class="note assume" id="assume"></p>
       <div class="picks" role="group" aria-labelledby="picks-l">
-        <span class="picks-l" id="picks-l">Quick picks (examples)</span>
+        <span class="label" id="picks-l">Quick picks (examples)</span>
         <div class="pick-row" id="picks"></div>
       </div>
       <div class="readouts" id="readouts">
-        <div class="readout" id="rd-next"><p class="readout-k">The next confirmed date</p><p class="readout-v" id="rd-next-v" data-flash></p><p class="readout-t" id="rd-next-t"></p></div>
-        <div class="readout" id="rd-count"><p class="readout-k">In the next twelve months</p><p class="readout-v" id="rd-count-v" data-flash></p><p class="readout-t" id="rd-count-t"></p><p class="readout-fine" id="rd-count-fine" hidden></p></div>
+        <div class="readout" id="rd-next" aria-live="polite"><p class="readout-k">Next confirmed date</p><p class="readout-v big" id="rd-next-v" data-flash></p><p class="readout-t" id="rd-next-t"></p></div>
+        <div class="readout" id="rd-count" aria-live="polite"><p class="readout-k">In the next twelve months</p><p class="readout-v" id="rd-count-v" data-flash></p><p class="readout-t" id="rd-count-t"></p><p class="readout-fine" id="rd-count-fine" hidden></p></div>
       </div>
       <fieldset class="sits">
         <legend>Tick every situation that applies; they combine into one calendar.</legend>
@@ -35,19 +36,22 @@
     </section>
 
     <section class="pile" data-chapter="The year" aria-labelledby="pile-h">
-      <p class="sec-label"><b>02</b>The year</p>
+      <p class="sec-label">The year</p>
       <h2 id="pile-h">Where the dates pile up, week by week</h2>
-      <div class="frame" id="frame"><svg id="strip" role="img" aria-labelledby="strip-t"><title id="strip-t">How many dates fall in each week</title></svg></div>
-      <p class="legend" id="legend"></p>
-      <p class="hint">Point at a week, or tap it, to read its dates.</p>
+      <figure class="chart" aria-labelledby="chart-title">
+        <figcaption><p class="chart-title" id="chart-title"></p><p class="chart-sub" id="chart-sub"></p></figcaption>
+        <div class="frame" id="frame"><svg id="strip" role="img" aria-labelledby="strip-t"><title id="strip-t">How many dates fall in each week</title></svg></div>
+        <p class="legend" id="legend"></p>
+        <p class="hint">Point at a week, or tap it, to read its dates.</p>
+      </figure>
       <div class="save" role="group" aria-label="Add to my calendar">
-        <button type="button" id="ics">Add to my calendar</button>
+        <button type="button" id="ics" class="btn-you">Add to my calendar</button>
         <p class="note" id="ics-note"></p>
       </div>
     </section>
 
     <section class="list" data-chapter="Each date" aria-labelledby="list-h">
-      <p class="sec-label"><b>03</b>Each date</p>
+      <p class="sec-label">Each date</p>
       <h2 id="list-h">Each date and the rule behind it</h2>
       <ol class="dates" id="dates"></ol>
       <div class="pending" id="pending"></div>

@@ -95,10 +95,11 @@ test('situations combine into one calendar without duplicates', () => {
 test('the headline sentence', () => {
   const ex = config.presets.find((p) => p.id === config.example);
   const c = rolling(config, real, TODAY, ex.situations), s = finding(c, ex.noun);
-  assert.match(s, new RegExp(`^For ${ex.noun}, the next confirmed date is .+, on .+, in ${c.events[0].days} days; ${c.events.length} dates fall in the next twelve months`));
+  assert.match(s, new RegExp(`^Next up: .+, .+, in ${c.events[0].days} days\\. ${c.events.length} dates in the next twelve months`));
+  assert.ok(s.length <= 140, `the answer is a dek of 140 characters or fewer: ${s.length}`);
   assert.match(finding(rolling(config, real, TODAY, []), null), /^Tick at least one situation/);
-  assert.match(finding(rolling(config, real, c.events[0].date, ex.situations), null), /, today;/);
-  assert.match(finding(rolling(config, withStatus('rrif_minimum_payment_timing', 'pending'), TODAY, ['rrif']), null), /no confirmed date falls .+ 1 more is not confirmed yet\.$/);
+  assert.match(finding(rolling(config, real, c.events[0].date, ex.situations), null), /, today\./);
+  assert.match(finding(rolling(config, withStatus('rrif_minimum_payment_timing', 'pending'), TODAY, ['rrif']), null), /no confirmed date falls .+, 1 more not confirmed yet\.$/);
 });
 
 test('the calendar file: valid iCalendar with all-day events, stable UIDs, escaped text, folded lines and CRLF', () => {

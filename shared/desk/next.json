@@ -6,7 +6,7 @@
     { "slug": "order-of-returns", "labSlug": "order-of-returns", "question": "Same ten years. Why does one retiree run out?", "next": "money-then-now" },
     { "slug": "money-then-now", "labSlug": "money-then-now", "question": "What did $100 buy the year you were born?", "next": "tax-dates" },
     { "slug": "tax-dates", "labSlug": "planning-calendar", "question": "What’s your next tax date?", "next": "retirement-wave" },
-    { "slug": "retirement-wave", "labSlug": "retirement-wave", "question": "How many Canadians are nearing retirement age?", "next": "your-year" }
+    { "slug": "retirement-wave", "labSlug": "retirement-wave", "question": "How many Canadians are about to turn {{oas_start_age}}?", "next": "your-year" }
   ],
   "films": {
     "franklin-gift": { "next": "money-then-now" },

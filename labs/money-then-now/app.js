@@ -5,8 +5,8 @@
 (function () {
   'use strict';
   var M = JSON.parse(document.getElementById('data').textContent);
-  var EXAMPLE_YEAR = 1990, EXAMPLE_AMOUNT = 100;
-  var CLAMP = 8;            // a stripe reaches full colour at this yearly price change (per cent), either way
+  var EXAMPLE_YEAR = EXAMPLE.year, EXAMPLE_AMOUNT = EXAMPLE.amount; // model.mjs
+  var FS = 17;              // chart label size in px (the shared floor is 16.5px)
   var TEN = 1e1;            // the decimal base, for ticks and rounding
   var NS = 'http://www.w3.org/2000/svg';
   var $ = function (id) { return document.getElementById(id); };
@@ -30,11 +30,31 @@
 
   // ---------- colour for a stripe, from the theme's tokens ----------
   function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue('--t-' + name).trim(); }
-  function hex(h) { return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16); }); }
-  function mix(a, b, t) { return 'rgb(' + a.map(function (v, i) { return Math.round(v + (b[i] - v) * t); }).join(',') + ')'; }
+  // The site's stripes ramp (shared/desk/tokens.json "stripes", via deskCSS): six stops from falls to rises, at the yearly
+  // price changes in --stripe-at, mixed in OKLab between the two stops around a year's change (as scripts/ramp.mjs does).
+  function hex(h) { return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16) / 255; }); }
+  function toLab(h) {
+    var c = hex(h).map(function (v) { return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    var l = Math.cbrt(0.4122214708 * c[0] + 0.5363325363 * c[1] + 0.0514459929 * c[2]), m = Math.cbrt(0.2119034982 * c[0] + 0.6806995451 * c[1] + 0.1073969566 * c[2]), s = Math.cbrt(0.0883024619 * c[0] + 0.2817188376 * c[1] + 0.6299787005 * c[2]);
+    return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
+  }
+  function fromLab(L) {
+    var l = Math.pow(L[0] + 0.3963377774 * L[1] + 0.2158037573 * L[2], 3), m = Math.pow(L[0] - 0.1055613458 * L[1] - 0.0638541728 * L[2], 3), s = Math.pow(L[0] - 0.0894841775 * L[1] - 1.291485548 * L[2], 3);
+    var rgb = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s];
+    return 'rgb(' + rgb.map(function (v) { v = Math.max(0, Math.min(1, v)); v = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055; return Math.round(v * 255); }).join(',') + ')';
+  }
+  function palette() {
+    var at = getComputedStyle(document.documentElement).getPropertyValue('--stripe-at').trim().split(/\s+/).map(Number);
+    return { at: at, stops: at.map(function (_, i) { return toLab(tok('stripe-' + i)); }) };
+  }
   function stripeColour(v, pal) {
-    var t = Math.min(1, Math.abs(v) / CLAMP);
-    return v >= 0 ? mix(pal.n, pal.up, t) : mix(pal.n, pal.down, t);
+    var at = pal.at, cs = pal.stops, i;
+    if (v <= at[0]) return fromLab(cs[0]);
+    for (i = 1; i < at.length; i++) if (v <= at[i]) {
+      var t = (v - at[i - 1]) / (at[i] - at[i - 1]);
+      return fromLab(cs[i - 1].map(function (x, k) { return x + (cs[i][k] - x) * t; }));
+    }
+    return fromLab(cs[cs.length - 1]);
   }
 
   // ---------- svg helpers ----------
@@ -92,13 +112,15 @@
     var svg = $('chart');
     if (dropCross) { dropCross(); dropCross = null; } // the crosshair goes before the chart is drawn again
     clear(svg);
-    var W = Math.max(300, Math.floor($('chart-frame').clientWidth)), narrow = W < 640, fs = narrow ? 12 : 13;
+    // Every label is drawn at the size it renders (the viewBox is the frame's own width, so nothing is scaled down): FS,
+    // at least the shared 16.5px floor; the lanes are laid out around it.
+    var W = Math.max(300, Math.floor($('chart-frame').clientWidth)), narrow = W < 640, fs = FS;
     var N = YEARS.length, step = W / N;
     var X = function (y) { return (y - M.first) * step; }, CX = function (y) { return X(y) + step / 2; };
     var sel = state.year, scx = CX(sel);
     var marks = el('g', {}, svg), backs = el('g', {}, svg), labels = el('g', {}, svg);
     var P = placer(labels, W, backs), lineGap = fs + 4;
-    var pal = { n: hex(tok('neutral')), up: hex(tok('d2')), down: hex(tok('d1')) };
+    var pal = palette();
 
     // A lane heading: the title in bold, the note after it on the same line when it fits, else on the next line; then the
     // lane's own key on the line below, wrapping between items (never inside one).
@@ -137,10 +159,10 @@
     // Lane 1: prices each year, one stripe per year
     var y0 = head(0, 'Prices each year', 'change in the year’s average price level', [
       { cls: 'key-fall', text: 'prices fell' }, { cls: 'key-flat', text: 'about flat' }, { cls: 'key-rise', text: 'prices rose' },
-      { text: 'full colour at ' + CLAMP + '% or more either way' }]);
-    var rows = narrow ? 3 : 2, rowH = fs + 7, bandTop = y0;
+      { text: 'deepest at ' + MINUS + Math.abs(pal.at[0]) + '% or below and +' + pal.at[pal.at.length - 1] + '% or more' }]);
+    var rows = narrow ? 3 : 2, rowH = Math.ceil(fs * 1.45) + 2, bandTop = y0; // a row is a label's box (about 1.4 × its size) and a gap
     var rowY = function (r) { return bandTop + (r + 1) * rowH - 5; };
-    var sTop = bandTop + rows * rowH + 4, sH = narrow ? 56 : 84;
+    var sTop = bandTop + rows * rowH + 4, sH = narrow ? 64 : 84;
     YEARS.forEach(function (y) {
       el('rect', { x: X(y).toFixed(2), y: sTop, width: (step + 0.4).toFixed(2), height: sH, fill: stripeColour(M.infl[y], pal), 'class': 'stripe', 'data-year': y }, marks);
     });
@@ -150,7 +172,7 @@
     var l2 = head(sTop + sH + (narrow ? 26 : 32), 'Borrowing vs prices', 'average prime rate and price change, % a year', [
       { cls: 'line-prices', line: true, text: 'price change' }, { cls: 'line-prime', line: true, text: 'prime rate' },
       { cls: 'gap-pos', text: 'prime above prices' }, { cls: 'gap-neg', text: 'prime below prices' }]);
-    var p2Top = l2 + 4, p2H = narrow ? 270 : 230, pad2 = fs + 12;
+    var p2Top = l2 + 4, p2H = narrow ? 320 : 260, pad2 = fs + 12;
     var vals = [];
     YEARS.forEach(function (y) { vals.push(M.infl[y]); if (M.prime[y] != null) vals.push(M.prime[y]); });
     var lo2 = Math.min.apply(null, vals), hi2 = Math.max.apply(null, vals);
@@ -179,7 +201,7 @@
 
     // Lane 3: what the amount is worth in each year's dollars (log scale)
     var l3 = head(p2Top + p2H + (narrow ? 30 : 34), 'What ' + typed(state.amount) + ' from ' + sel + ' is worth', 'in each year’s dollars, log scale');
-    var p3Top = l3 + 4, p3H = narrow ? 150 : 180, pad3 = fs + 12;
+    var p3Top = l3 + 4, p3H = narrow ? 190 : 200, pad3 = fs + 12;
     var w = {}; YEARS.forEach(function (y) { w[y] = worth(M, state.amount, sel, y); });
     var wv = YEARS.map(function (y) { return w[y]; }), lo3 = Math.min.apply(null, wv), hi3 = Math.max.apply(null, wv);
     var LL = Math.log(lo3), LH = Math.log(hi3);
@@ -298,6 +320,11 @@
     // Words for screen readers, and the image's name
     $('chart-title').textContent = 'Canadian prices, the prime rate and purchasing power, ' + M.first + ' to ' + M.last + ', with ' + sel + ' marked';
     $('chart-desc').textContent = 'Three lanes on one axis of years. A list of what the chart shows follows it.';
+    // the takeaway in plain words, each word read from the counts
+    var above = C.primeYears - C.below, often = function (n, of, a, b, c) { return n >= of * 0.9 ? a : n > of / 2 ? b : c; };
+    $('chart-h').textContent = 'Prices rose ' + often(C.rose, C.years, 'almost every year', 'in most years', 'in fewer than half the years')
+      + ', and prime ' + often(above, C.primeYears, 'nearly always ran', 'mostly ran', 'ran less than half the time') + ' above them';
+    $('chart-sub').textContent = 'Rates in % a year, ' + M.first + ' to ' + M.last + '; the amount in each year’s dollars. Point at or tap a year to read it.';
     var items = [
       'Prices each year: one stripe per year from ' + M.first + ' to ' + M.last + ', blue where prices fell and amber where they rose. Prices rose in ' + C.rose + ' of the ' + C.years + ' years and fell in ' + C.fell + '. Largest rise ' + EX.rise + ' (' + signed(M.infl[EX.rise]) + '), largest fall ' + EX.fall + ' (' + signed(M.infl[EX.fall]) + ')' + (EX.recent != null ? '; ' + EX.recent + ' (' + signed(M.infl[EX.recent]) + ') was the highest since ' + EX.since : '') + '. In ' + sel + ': ' + signed(M.infl[sel]) + '.',
       'Borrowing vs prices: the average prime rate from ' + M.primeFirst + ' against the yearly price change. Prime peaked at ' + pct(M.prime[pk]) + ' in ' + pk + '. Prime was below prices in ' + SPANS.map(function (s) { return span(s[0], s[1]); }).join(', ') + '. ' + (M.prime[sel] != null ? 'In ' + sel + ': prime ' + pct(M.prime[sel]) + ', prices ' + signed(M.infl[sel]) + ', real rate ' + signed(realRate(M, sel)) + '.' : 'No prime-rate data for ' + sel + '.'),
@@ -319,14 +346,16 @@
 
   // ---------- the headline and the readings ----------
   function finding() {
-    var h = $('finding'), y = state.year, a = state.amount;
-    h.textContent = '';
-    function add(text, hl) { if (hl) { var s = document.createElement('span'); s.className = 'hl'; s.textContent = text; h.appendChild(s); } else h.appendChild(document.createTextNode(text)); }
-    if (y === M.last) { add('In ' + y + ', the latest full year here, ' + typed(a) + ' was worth ' + typed(a) + '. Pick an earlier year to see the change.'); return; }
+    var y = state.year, a = state.amount;
+    $('answer-k').textContent = typed(a) + ' in ' + y + ', in ' + M.last + ' dollars';
+    if (y === M.last) {
+      $('answer-v').textContent = typed(a);
+      $('finding').textContent = 'In ' + y + ', the latest full year here, ' + typed(a) + ' was worth ' + typed(a) + '. Pick an earlier year to see the change.';
+      return;
+    }
     var v = worth(M, a, y, M.last);
-    add('What cost ' + typed(a) + ' in ' + y + ' cost ' + (v >= 1000 ? 'about ' : v >= 100 ? 'about ' : ''));
-    add(money(v), true);
-    add(' in ' + M.last + '.');
+    $('answer-v').textContent = 'about ' + money(v);
+    $('finding').textContent = 'What cost ' + typed(a) + ' in ' + y + ' cost about ' + money(v) + ' in ' + M.last + '.';
   }
   function readings() {
     var ul = $('readings'); ul.textContent = '';
@@ -391,15 +420,15 @@
     finding(); yearReadout(); readings(); draw();
     Array.prototype.forEach.call(document.querySelectorAll('#rows tr.sel'), function (tr) { tr.classList.remove('sel'); });
     var row = document.querySelector('#rows tr[data-year="' + state.year + '"]'); if (row) row.classList.add('sel');
-    $('example-note').textContent = state.example
-      ? 'An example: ' + typed(EXAMPLE_AMOUNT) + ' in ' + EXAMPLE_YEAR + '. Pick your own year and amount; they stay in this page.'
-      : 'Showing ' + typed(state.amount) + ' from ' + state.year + '. What you type stays in this page.';
+    // the one assumptions line, beside the control
+    $('example-note').textContent = (state.example ? 'An example: ' + typed(EXAMPLE_AMOUNT) + ' in ' + EXAMPLE_YEAR + '. ' : 'Showing ' + typed(state.amount) + ' from ' + state.year + '. ')
+      + 'By yearly average consumer prices; what you type stays here.';
+    $('q-amount').textContent = typed(state.amount);
   }
 
   // ---------- controls ----------
   var year = $('year'), amount = $('amount');
   year.min = String(M.first); year.max = String(M.last); year.value = String(EXAMPLE_YEAR); amount.value = String(EXAMPLE_AMOUNT);
-  $('kicker').textContent = 'Data story · Statistics Canada and Bank of Canada data to ' + M.last;
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var y = Number(year.value), a = Number(amount.value), err = $('error');

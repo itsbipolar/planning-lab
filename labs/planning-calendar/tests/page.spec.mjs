@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
+import { expectStorageClean, expectShell, expectTextSizes } from '../../../shared/desk/shell-test.mjs';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { rolling, finding } from '../engine.mjs';
@@ -44,8 +44,15 @@ for (const width of [390, 1440]) {
     test('opens on the example with the computed finding; ticking situations updates the strip and the list', async ({ page }) => {
       await open(page);
       const ex = expected(example.situations);
+      // the H1 is the short question; the computed finding is the lede under it; the example and the assumptions on one line
+      await expect(page.locator('h1')).toHaveText('What’s your next tax date?');
+      expect((await page.locator('h1').textContent()).split(/\s+/).length).toBeLessThanOrEqual(12);
+      await expect(page.locator('.kicker')).toHaveText('Tool');
       await expect(page.locator('#finding')).toHaveText(finding(ex, example.noun));
-      await expect(page.locator('#dek')).toContainText('An example to start');
+      await expect(page.locator('#assume')).toContainText('An example to start');
+      await expect(page.locator('#assume')).toContainText('Assumes');
+      await expect(page.locator('#ics')).toHaveText(`Add these ${ex.events.length} dates to my calendar`);
+      await expect(page.locator('#ics')).toHaveClass(/btn-you/);
       await expect(page.locator(`#picks button[data-preset=${example.id}]`)).toHaveAttribute('aria-pressed', 'true');
       await expect(page.locator('#strip rect[class^="k-"]')).toHaveCount(ex.events.length);
       await expect(page.locator('#dates > li')).toHaveCount(ex.events.length);
@@ -77,6 +84,8 @@ for (const width of [390, 1440]) {
       expect(ro.y - (picks.y + picks.height)).toBeLessThan(48);
       await expect(page.locator('#rd-count-v')).toHaveText(`${ex.events.length} date${ex.events.length === 1 ? '' : 's'}`);
       await expect(page.locator('#rd-next-t')).toContainText(ex.events[0].label);
+      await expect(page.locator('#rd-next-v')).toHaveText(`In ${ex.events[0].days} days`);
+      await expect(page.locator('#chart-title')).toContainText(`${ex.events.length} date`);
       const before = await page.locator('#rd-count-v').textContent();
       const other = config.presets.find((p) => expected(p.situations).events.length !== ex.events.length);
       await page.locator(`#picks button[data-preset=${other.id}]`).click();
@@ -88,6 +97,7 @@ for (const width of [390, 1440]) {
       await page.locator(`#picks button[data-preset=${example.id}]`).click();
       await expect(page.locator('section[data-chapter]')).toHaveCount(3);
       await expect(page.locator('.sec-label')).toHaveCount(3);
+      await expect(page.locator('.sec-label b')).toHaveCount(0); // no section numbers (redesign v2, step 2)
       await expect(page.locator('nav.rail')).toHaveCount(0); // the numbered rail is gone (redesign v2)
       // the week of the next date, read under the pointer
       const strip = page.locator('#strip'); await strip.scrollIntoViewIfNeeded();
@@ -143,6 +153,28 @@ for (const width of [390, 1440]) {
       expect(await textClashes(page), 'all').toEqual([]);
       await expect(page.locator('#strip text.read', { hasText: 'dates' }).first()).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+    });
+
+    test('every piece of text renders at 16.5px or more, chart labels and the week reading included', async ({ page }) => {
+      await open(page);
+      await expectTextSizes(page);
+      // the week reading under the pointer, kept inside the chart
+      const strip = page.locator('#strip'); await strip.scrollIntoViewIfNeeded();
+      const k = await page.locator('#strip rect[class^="k-"]').first().boundingBox();
+      await page.mouse.move(k.x + k.width / 2, k.y + k.height / 2);
+      await expect(page.locator('#strip .crosshair')).toBeVisible();
+      await expectTextSizes(page);
+      for (const x of [0.02, 0.5, 0.98]) {
+        const b = await strip.boundingBox();
+        await page.mouse.move(b.x + b.width * x, b.y + b.height * 0.6);
+        const r = await page.locator('#strip .crosshair rect').boundingBox();
+        expect(r.x, `reading box at ${x} starts inside the chart`).toBeGreaterThanOrEqual(b.x - 1);
+        expect(r.x + r.width, `reading box at ${x} ends inside the chart`).toBeLessThanOrEqual(b.x + b.width + 1);
+      }
+      // every situation at once, and the folds open
+      for (const s of config.situations) await page.locator(`#sits input[value=${s.id}]`).check();
+      for (const d of await page.locator('details summary').all()) await d.click();
+      await expectTextSizes(page);
     });
 
     for (const theme of ['dark', 'light']) {

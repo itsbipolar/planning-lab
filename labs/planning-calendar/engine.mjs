@@ -106,17 +106,18 @@ export function weeks(start, end, events) {
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-// The page's headline: the household's next confirmed date and how many fall in the twelve months.
+// The answer under the question: the household's next confirmed date and how many fall in the twelve months.
 export function finding(cal, noun) {
   const who = noun ?? 'this household';
   if (!cal.situations.length) return 'Tick at least one situation to build a household’s calendar.';
-  const p = cal.pending.length, more = p ? `, and ${plural(p, 'more is', 'more are')} not confirmed yet` : '';
+  const p = cal.pending.length, more = p ? `, ${p} more not confirmed yet` : '';
   if (!cal.events.length) return `For ${who}, no confirmed date falls in the next twelve months${more}.`;
   const first = cal.events[0], same = cal.events.filter((e) => e.date === first.date).length;
   const when = first.days === 0 ? 'today' : first.days === 1 ? 'tomorrow' : `in ${first.days} days`;
   const on = first.date.slice(0, 4) === cal.today.slice(0, 4) ? monthDay(first.date) : longDate(first.date);
   const what = same > 1 ? `${first.what} and ${plural(same - 1, 'other', 'others')}` : first.what;
-  return `For ${who}, the next confirmed date is ${what}, on ${on}, ${when}; ${plural(cal.events.length, 'date falls', 'dates fall')} in the next twelve months${more}.`;
+  // a dek (140 characters or fewer): the next date first, the count after it (the household is the chip picked above)
+  return `Next up: ${what}, ${on}, ${when}. ${plural(cal.events.length, 'date', 'dates')} in the next twelve months${more}.`;
 }
 
 // iCalendar (RFC 5545): text escaped, lines folded at 75 octets without splitting a character, CRLF line ends.

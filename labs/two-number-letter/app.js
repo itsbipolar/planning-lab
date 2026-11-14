@@ -73,7 +73,8 @@
   }
   const asOf = r.sources.map((s) => s.as_of).sort().pop();
   const month = new Date(`${asOf}T12:00:00`).toLocaleString('en-CA', { month: 'long', year: 'numeric' });
-  $('#kicker').lastElementChild.textContent = `Canadian rules as of ${month}`;
+  $('#letter-date').textContent = month;
+  $('#rules-asof').textContent = `rules as of ${month}`;
 
   // The plain sliders: the single-pointer alternative to dragging, and the same numbers.
   const controls = { a: {}, b: {} };
@@ -106,11 +107,12 @@
     said = setTimeout(() => { $('#status').textContent = statusText(w, key); }, 450);
   }
 
+  // The answer under the question: a crossing age, in plain words, for the start age the charts show.
   function headlineText(h) {
     const at = Math.round(h.at);
-    if (h.kind === 'later') return `Waiting from ${h.from} to ${h.to} pays off for CPP if you live past about ${at}.`;
-    if (h.kind === 'earlier') return `Starting CPP at ${h.from} instead of ${h.to} pays more in total unless you live past about ${at}.`;
-    return `Waiting from ${h.from} to ${h.to} would pay off for CPP if you live past about ${at}.`;
+    if (h.kind === 'later') return `Starting CPP at ${h.to} instead of ${h.from} pays more in total for anyone who lives past about age ${at}.`;
+    if (h.kind === 'earlier') return `Starting CPP at ${h.from} instead of ${h.to} pays more in total until about age ${at}. After that, the start at ${h.to} is ahead.`;
+    return `Starting CPP at ${h.to} instead of ${h.from} would pay more in total for anyone who lives past about age ${at}.`;
   }
 
   function cppCross(w, s) {
@@ -125,17 +127,6 @@
     if (s.recovery <= 0) return `That is below the threshold, so none of ${her} OAS would be recovered.`;
     if (s.recoveryCapped) return `That is ${money(s.overThreshold)} above the threshold, enough for the recovery tax to take back all of ${her} OAS, about ${money(s.recovery)} that year.`;
     return `That is ${money(s.overThreshold)} above the threshold, so about ${money(s.recovery)} of ${her} OAS would be recovered that year.`;
-  }
-
-  function dekText(w, s) {
-    const p = people[w], st = state[w], Her = p.possessive[0].toUpperCase() + p.possessive.slice(1);
-    const oas = s.oasCrossing === null
-      ? `${Her} OAS starts at ${r.oas.start}`
-      : `${Her} OAS from ${st.oasAge} catches up with a start at ${r.oas.start} past about ${Math.round(s.oasCrossing)}`;
-    const rec = s.recovery > 0
-      ? `at ${p.possessive} example net income of ${money(s.net)}, the ${r.recovery.year} recovery tax would take back about ${money(s.recovery)} of OAS a year`
-      : `${p.possessive} example net income of ${money(s.net)} is below the ${r.recovery.year} recovery threshold`;
-    return `Shown for ${p.name}, an invented example: CPP from ${st.cppAge}, OAS from ${st.oasAge}. ${oas}, and ${rec}.`;
   }
 
   function statusText(w, key) {
@@ -172,7 +163,6 @@
     $$('[data-out]').forEach((el) => { el.textContent = text[el.dataset.out]; });
     $$('[data-who]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.who === state.who)));
     $('#finding').textContent = headlineText(headline(r, state[state.who].cppAge));
-    $('#dek').textContent = dekText(state.who, out[state.who]);
     readouts(state.who, out[state.who]);
     charts();
   }
@@ -182,30 +172,38 @@
     const n = name(w), st = state[w];
     if (s.cppCrossing === null) {
       $('#rd-cpp-k').textContent = `CPP: ${n}'s standard start`;
-      $('#rd-cpp-v').textContent = 'No crossing';
-      $('#rd-cpp-t').textContent = `${n} starts at the standard age, ${std}: about ${money(s.cppMonthly)} a month, with nothing to compare.`;
+      age($('#rd-cpp-v'), null);
+      $('#rd-cpp-t').textContent = `${n} starts at the standard age, ${std}: about ${money(s.cppMonthly)} a month.`;
     } else {
-      $('#rd-cpp-k').textContent = `CPP: ${n}'s totals cross at about age`;
-      $('#rd-cpp-v').textContent = ageText(s.cppCrossing);
+      $('#rd-cpp-k').textContent = st.cppAge > std ? `CPP: ${n}'s wait catches up at` : `CPP: ${n}'s early start leads until`;
+      age($('#rd-cpp-v'), s.cppCrossing);
       $('#rd-cpp-t').textContent = st.cppAge > std
-        ? `${n}'s start at ${st.cppAge}, about ${money(s.cppMonthly)} a month, catches up with a start at ${std} at this age.`
-        : `${n}'s start at ${st.cppAge}, about ${money(s.cppMonthly)} a month, stays ahead of a start at ${std} until this age.`;
+        ? `${n}'s start at ${st.cppAge}, about ${money(s.cppMonthly)} a month, against one at ${std}.`
+        : `${n}'s start at ${st.cppAge}, about ${money(s.cppMonthly)} a month, against one at ${std}.`;
     }
     if (s.oasCrossing === null) {
       $('#rd-oas-k').textContent = `OAS: ${n}'s earliest start`;
-      $('#rd-oas-v').textContent = 'No crossing';
+      age($('#rd-oas-v'), null);
       $('#rd-oas-t').textContent = `${n} starts at ${r.oas.start}, the earliest age: about ${money(s.oasMonthly)} a month.`;
     } else {
-      $('#rd-oas-k').textContent = `OAS: ${n}'s totals cross at about age`;
-      $('#rd-oas-v').textContent = ageText(s.oasCrossing);
-      $('#rd-oas-t').textContent = `${n}'s start at ${st.oasAge}, about ${money(s.oasMonthly)} a month, catches up with a start at ${r.oas.start} at this age, counting the rise at ${r.oas.boostAge}.`;
+      $('#rd-oas-k').textContent = `OAS: ${n}'s wait catches up at`;
+      age($('#rd-oas-v'), s.oasCrossing);
+      $('#rd-oas-t').textContent = `${n}'s start at ${st.oasAge}, about ${money(s.oasMonthly)} a month, against one at ${r.oas.start}.`;
     }
-    $('#rd-rec-k').textContent = `OAS recovered from ${n}, on the ${r.recovery.year} threshold`;
+    $('#rd-rec-k').textContent = `OAS taken back from ${n}`;
     $('#rd-rec-v').textContent = `${money(Math.max(0, s.recovery))} a year`;
     const her = people[w].possessive;
     $('#rd-rec-t').textContent = s.recovery <= 0
-      ? `On ${her} example net income of about ${money(s.net)}, below the threshold: none of ${her} OAS is recovered.`
-      : `On ${her} example net income of about ${money(s.net)}, ${money(s.overThreshold)} above the threshold${s.recoveryCapped ? `: all of ${her} OAS is recovered` : ''}.`;
+      ? `The ${r.recovery.year} recovery tax: ${her} example net income of about ${money(s.net)} is below the threshold.`
+      : `The ${r.recovery.year} recovery tax: ${her} example net income of about ${money(s.net)} is ${money(s.overThreshold)} above the threshold${s.recoveryCapped ? `, so all of ${her} OAS goes back` : ''}.`;
+  }
+  // a crossing age as a big whole number of years, with the months set small beside it; or "No crossing"
+  function age(el, x) {
+    el.textContent = '';
+    if (x === null) { el.textContent = 'No crossing'; return; }
+    const [yrs, rest] = ageText(x).split(/ (?=and )/);
+    el.append(yrs);
+    if (rest) { const m = document.createElement('span'); m.className = 'readout-unit'; m.textContent = ' ' + rest; el.append(m); }
   }
 
   // ---------- the two charts ----------
@@ -224,6 +222,12 @@
     const w = state.who, st = state[w], n = name(w);
     const cppAmt = (s) => st.cppAt65 * cppFactor(r, s);
     const oasAmt = (s) => st.oasAt65 * oasFactor(r, s);
+    // each chart's title states its takeaway in plain words: the crossing it draws, to the nearest year
+    const title = (chosen, base, late, cross) => chosen > base ? `Waiting to ${chosen} catches up with ${base} at about age ${Math.round(cross(chosen))}`
+      : chosen < base ? `Starting at ${chosen} leads ${base} until about age ${Math.round(cross(chosen))}`
+        : `A start at ${late} would catch up with ${base} at about age ${Math.round(cross(late))}`;
+    $('#cpp-h').textContent = title(st.cppAge, std, r.cpp.latest, (a) => cppCrossing(r, a));
+    $('#oas-h').textContent = title(st.oasAge, r.oas.start, r.oas.latest, (a) => oasCrossing(r, a));
     panel($('#plot-cpp'), {
       what: 'CPP', name: n, base: std, late: r.cpp.latest, chosen: st.cppAge,
       total: (s, x) => cppTotal(s, cppAmt(s), x), cross: (s) => cppCrossing(r, s),
@@ -238,10 +242,15 @@
     if (holder.unhair) holder.unhair();
     holder.textContent = '';
     const from = r.cpp.earliest, to = story.chart.toAge;
+    // drawn at the container's own width (one SVG unit is one CSS pixel), so every word renders at the size the CSS
+    // gives it (17px, never under 16.5px); the right margin is as wide as the longest line label measured in that face
     const Wd = Math.max(280, Math.floor(holder.clientWidth || 320)), narrow = Wd < 520;
-    const H = narrow ? 268 : 336;
-    const pad = { l: 14, r: narrow ? 66 : 84, t: 22, b: 30 };
+    const H = narrow ? 300 : 360;
     const starts = [...new Set([o.base, o.late, o.chosen])].sort((x, y) => x - y);
+    const svg = el('svg', { viewBox: `0 0 ${Wd} ${H}`, width: Wd, height: H, role: 'img' }, holder);
+    const lineLabel = (s) => (s === o.chosen ? `${o.name} · ${s}` : `start ${s}`);
+    const labW = Math.max(...starts.map((s) => { const t = el('text', { class: 'lab lab-base', x: 0, y: 0 }, svg, lineLabel(s)); const w = t.getBBox().width; t.remove(); return w; }));
+    const pad = { l: 14, r: Math.ceil(labW) + 12, t: 28, b: 34 };
     const top = Math.max(...starts.map((s) => o.total(s, to)), 1);
     // the tightest round scale with two to four steps
     const step = [1e3, 2e3, 5e3, 1e4, 2e4, 25e3, 5e4, 1e5, 2e5, 25e4, 5e5, 1e6]
@@ -254,22 +263,24 @@
     const c2 = starts.length === 3 ? o.cross(o.chosen) : null;
     const summary = `${o.what} received by each age with ${o.name}'s example amounts: totals for starts at ${o.base} and ${o.late} cross at about age ${ageText(c1)}`
       + (c2 !== null ? `; ${o.name}'s start at ${o.chosen} crosses a start at ${o.base} at about age ${ageText(c2)}.` : `; ${o.name} starts at ${o.chosen}.`);
-    const svg = el('svg', { viewBox: `0 0 ${Wd} ${H}`, width: Wd, height: H, role: 'img', 'aria-label': summary }, holder);
+    svg.setAttribute('aria-label', summary);
     const placed = [];
     const keep = (t) => { placed.push(t.getBBox()); return t; };
 
     // grid and axes
     for (let v = 0; v <= maxY + 1e-6; v += step) {
-      el('line', { class: v === 0 ? 'axis-line' : 'grid', x1: pad.l, x2: Wd - pad.r, y1: Y(v), y2: Y(v) }, svg);
+      el('line', { class: v === 0 ? 'zero' : 'grid', x1: pad.l, x2: Wd - pad.r, y1: Y(v), y2: Y(v) }, svg);
       // the dollar scale sits just above each grid line, inside the plot; the zero is left out when a line starts under it
       if (v === 0 && starts[0] === from) continue;
-      keep(el('text', { class: 'tick', x: pad.l, y: Y(v) - 5 }, svg, shortMoney(v)));
+      keep(el('text', { class: 'tick', x: pad.l, y: Y(v) - 6 }, svg, shortMoney(v)));
     }
-    for (let a = Math.ceil(from / 5) * 5; a <= to; a += 5) {
+    // age ticks every five years, or every ten when five would crowd the words at this width
+    const every = (X(from + 5) - X(from)) < 34 ? 5 * 2 : 5;
+    for (let a = Math.ceil(from / every) * every; a <= to; a += every) {
       el('line', { class: 'axis-line', x1: X(a), x2: X(a), y1: H - pad.b, y2: H - pad.b + 4 }, svg);
-      keep(el('text', { class: 'tick', x: X(a), y: H - pad.b + 17, 'text-anchor': 'middle' }, svg, String(a)));
+      keep(el('text', { class: 'tick', x: X(a), y: H - pad.b + 21, 'text-anchor': 'middle' }, svg, String(a)));
     }
-    keep(el('text', { class: 'tick', x: Wd - pad.r + 14, y: H - pad.b + 17 }, svg, 'age'));
+    keep(el('text', { class: 'tick', x: Wd - pad.r + 14, y: H - pad.b + 21 }, svg, 'age'));
 
     // the lines: the standard (or earliest) start, the latest start, and the letter's start in amber, drawn last
     const cls = (s) => (s === o.chosen ? 'pick' : s === o.base ? 'base' : 'late');
@@ -283,7 +294,7 @@
         for (let k = 1; k <= 6; k++) pts.push([px + (nx - px) * k / 6, py + (ny - py) * k / 6]);
         px = nx; py = ny;
       }
-      el('path', { class: `ln ln-${cls(s)}`, d }, svg);
+      el('path', { class: `ln ln-${cls(s)} ${s === o.chosen ? 's-named' : 's-context'}`, d }, svg);
     }
     el('circle', { class: 'start-pick', cx: X(o.chosen), cy: Y(0), r: 5 }, svg);
     placed.push({ x: X(o.chosen) - 6, y: Y(0) - 6, width: 12, height: 12 });
@@ -301,8 +312,7 @@
     const over = ends.length ? ends[ends.length - 1].y - (H - pad.b - mid) : 0;
     if (over > 0) ends.forEach((e) => { e.y -= over; });
     for (const e of ends) {
-      const label = e.s === o.chosen ? `${o.name} · ${e.s}` : `start ${e.s}`;
-      keep(el('text', { class: `lab lab-${cls(e.s)}`, x: Wd - pad.r + 7, y: e.y }, svg, label));
+      keep(el('text', { class: `lab lab-${cls(e.s)}`, x: Wd - pad.r + 7, y: e.y }, svg, lineLabel(e.s)));
     }
 
     // the crossing points, with their ages written beside them
@@ -313,7 +323,7 @@
       const cx = X(c.at), cy = Y(o.total(o.base, c.at));
       el('circle', { class: c.pick ? 'dot dot-pick' : 'dot', cx, cy, r: 5 }, svg);
       placed.push({ x: cx - 6, y: cy - 6, width: 12, height: 12 });
-      const t = el('text', { class: 'reading' }, svg, narrow ? `cross ${ageShort(c.at)}` : `${c.pair[0]} and ${c.pair[1]} cross at ${ageShort(c.at)}`);
+      const t = el('text', { class: 'reading annot' }, svg, narrow ? `cross ${ageShort(c.at)}` : `${c.pair[0]} and ${c.pair[1]} cross at ${ageShort(c.at)}`);
       // above-left (clear of the lines, which climb to the right), then below-right, then further out; the first spot
       // that touches no line, no dot and no word wins, or else the one that touches least
       const tries = [[-8, -9, 'end'], [-14, -22, 'end'], [9, 20, 'start'], [14, 32, 'start'], [-9, 4, 'end'], [9, 4, 'start'],

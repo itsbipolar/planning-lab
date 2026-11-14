@@ -40,12 +40,15 @@
 
   const fill = {
     start: money(S.start), withdrawal: money(W0), indexation: pctF(S.indexation), avg: pct1(AVG), trim: pctF(S.flexTrim),
-    buffer: words(S.bufferYears), orders: intF.format(ORDERS), after: String(N + 1),
+    buffer: words(S.bufferYears), orders: intF.format(ORDERS), after: String(N + 1), nWords: words(N),
   };
   document.querySelectorAll('[data-v]').forEach((e) => { e.textContent = fill[e.dataset.v]; });
 
   // ---------- drawing helpers ----------
   const NS = 'http://www.w3.org/2000/svg';
+  // The one size rule (redesign v2): every piece of chart text is drawn at TXT px or more, at real pixel size (each chart
+  // is drawn at its container's width, viewBox = width), so nothing is scaled down on a phone.
+  const TXT = 17;
   const el = (name, attrs, parent, text) => {
     const e = document.createElementNS(NS, name);
     for (const k in attrs) if (attrs[k] !== undefined) e.setAttribute(k, attrs[k]);
@@ -55,15 +58,15 @@
   };
   const mctx = document.createElement('canvas').getContext('2d');
   // text is measured in the face the page really draws it in (the desk's tokens, read from the page's own CSS)
-  const face = (mono) => getComputedStyle(document.documentElement).getPropertyValue(mono ? '--font-mono' : '--font-ui').trim() || 'sans-serif';
-  const tw = (s, size, weight = 400, mono = false) => {
-    mctx.font = weight + ' ' + size + 'px ' + face(mono);
+  const face = () => getComputedStyle(document.documentElement).getPropertyValue('--font-ui').trim() || 'sans-serif';
+  const tw = (s, size, weight = 400) => {
+    mctx.font = weight + ' ' + size + 'px ' + face(false);
     return mctx.measureText(s).width;
   };
   // A line of text's real box at a size: the font's ascent above the baseline and descent below it (what the browser
   // gives an SVG text element), so stacked lines are spaced by the face's own metrics rather than by a guessed gap.
   const vm = (size, weight = 400) => {
-    mctx.font = weight + ' ' + size + 'px ' + face(false);
+    mctx.font = weight + ' ' + size + 'px ' + face();
     const m = mctx.measureText('Hg'), asc = m.fontBoundingBoxAscent, desc = m.fontBoundingBoxDescent;
     return asc > 0 ? { asc, desc, h: asc + desc } : { asc: size, desc: size / 2, h: size * 1.5 };
   };
@@ -102,10 +105,10 @@
   // A line chart of balances by year. series: [{ key, name, reading, pts, dep, upto, thin, dash }]
   function lineChart(svg, cfg) {
     const W = cfg.width || widthOf(svg), narrow = W < 600, tight = narrow || cfg.compact;
-    const fs = narrow ? 12 : 13, lfs = narrow ? 12 : 14;
+    const fs = TXT, lfs = narrow ? TXT : TXT + 1, rfs = TXT;
     // stacked label lines: the name (bold) then its reading, each in its real box, one pixel of air between boxes
-    const mN = vm(lfs, 700), mR = vm(lfs - 1), mF = vm(fs, 600), air = 1;
-    const H = cfg.height ? cfg.height(W) : narrow ? 320 : Math.round(Math.min(500, Math.max(360, W * 0.3)));
+    const mN = vm(lfs, 700), mR = vm(rfs), mF = vm(fs, 600), mT = vm(fs), air = 1;
+    const H = cfg.height ? cfg.height(W) : narrow ? 380 : Math.round(Math.min(520, Math.max(380, W * 0.3)));
     setup(svg, W, H);
     let max = cfg.yMax || 0; if (!cfg.yMax) for (const s of cfg.series) for (const v of s.pts) max = Math.max(max, v);
     const ys = yScale(max, narrow || cfg.compact ? 3 : 4);
@@ -114,26 +117,34 @@
     const labelled = cfg.series.filter((s) => s.name);
     const full = (s) => s.upto === undefined || s.upto >= HZ;
     // the labels go in a gutter on the right; on narrow and small charts their words wrap to keep the gutter slim
-    const gutMax = tight ? (narrow ? 76 : 96) : 400;
-    for (const s of labelled) { s.nameLines = wrap(s.name, gutMax, lfs, 700); s.readLines = s.reading ? wrap(s.reading, gutMax, lfs - 1, 400) : []; }
-    const gut = Math.ceil(Math.max(0, ...labelled.filter(full).flatMap((s) => s.nameLines.map((l) => tw(l, lfs, 700)).concat(s.readLines.map((l) => tw(l, lfs - 1)))))) + 22;
-    const T = cfg.band ? 34 : 14, B = 30 + (cfg.bottomPad || 0), R = gut;
-    const x = (t) => L + t / HZ * (W - L - R), y = (v) => T + (1 - v / ys.max) * (H - T - B);
-    const g0 = el('g', {}, svg);
+    const gutMax = tight ? (narrow ? 92 : 110) : 400;
+    for (const s of labelled) { s.nameLines = wrap(s.name, gutMax, lfs, 700); s.readLines = s.reading ? wrap(s.reading, gutMax, rfs, 400) : []; }
+    const gut = Math.ceil(Math.max(0, ...labelled.filter(full).flatMap((s) => s.nameLines.map((l) => tw(l, lfs, 700)).concat(s.readLines.map((l) => tw(l, rfs)))))) + 22;
+    const B = 34 + (cfg.bottomPad || 0), R = gut;
+    const x = (t) => L + t / HZ * (W - L - R);
+    // the band's two labels sit above the plot: on one row when the first fits inside the band, else on two rows
+    let T = 14, band = null;
     if (cfg.band) {
+      const a = narrow ? 'Dealt years' : 'The ' + words(N) + ' dealt years', b = narrow ? 'Then ' + pct1(AVG) + ' a year' : 'Then the ' + pct1(AVG) + ' average, every year';
+      const one = tw(a, fs) + 16 <= x(N) - x(0);
+      band = { a, b, ya: 2 + mT.asc, yb: one ? 2 + mT.asc : 2 + mT.h + 2 + mT.asc };
+      T = (one ? mT.h : mT.h * 2 + 2) + 10;
+    }
+    const y = (v) => T + (1 - v / ys.max) * (H - T - B);
+    const g0 = el('g', {}, svg);
+    if (band) {
       el('rect', { x: x(0), y: T, width: x(N) - x(0), height: y(0) - T, class: 'band' }, g0);
-      const a = narrow ? 'Dealt years' : 'The ten dealt years', b = narrow ? 'Then ' + pct1(AVG) + ' a year' : 'Then the ' + pct1(AVG) + ' average, every year';
-      el('text', { x: x(0) + 6, y: T - 10, class: 'mono ax', 'font-size': 11 }, g0, a);
-      el('text', { x: x(N) + 6, y: T - 10, class: 'mono ax', 'font-size': 11 }, g0, b);
+      el('text', { x: x(0) + 6, y: band.ya, class: 'ax', 'font-size': fs }, g0, band.a);
+      el('text', { x: x(N) + 6, y: band.yb, class: 'ax', 'font-size': fs }, g0, band.b);
     }
     for (const g of tickLabs) {
       el('line', { x1: L, x2: W - R, y1: y(g), y2: y(g), class: g === 0 ? 'zero' : 'grid' }, g0);
-      el('text', { x: L - 8, y: y(g) + 4, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, g0, kfmt(g));
+      el('text', { x: L - 8, y: y(g) + mT.asc / 2 - 2, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, g0, kfmt(g));
     }
     // year ticks: "Year 10" when there is room, bare numbers and a "years" note in the gutter when there is not
-    const roomy = x(5) - x(0) > tw('Year ' + HZ, fs) + 12;
-    for (let t = 0; t <= HZ; t += 5) el('text', { x: x(t), y: H - 9, 'text-anchor': t === 0 && roomy ? 'start' : 'middle', class: 'ax', 'font-size': fs }, g0, roomy ? (t === 0 ? 'Start' : 'Year ' + t) : String(t));
-    if (!roomy) el('text', { x: x(HZ) + 14, y: H - 9, class: 'ax', 'font-size': fs }, g0, 'years');
+    const tickY = H - 10, roomy = x(5) - x(0) > tw('Year ' + HZ, fs) + 12;
+    for (let t = 0; t <= HZ; t += 5) el('text', { x: x(t), y: tickY, 'text-anchor': t === 0 && roomy ? 'start' : 'middle', class: 'ax', 'font-size': fs }, g0, roomy ? (t === 0 ? 'Start' : 'Year ' + t) : String(t));
+    if (!roomy) el('text', { x: x(HZ) + 14, y: tickY, class: 'ax', 'font-size': fs }, g0, 'years');
     if (cfg.extra) cfg.extra(g0, { x, y, W, H, T, B, L, R, fs });
     const gl = el('g', {}, svg), gd = el('g', {}, svg), gt = el('g', {}, svg);
     for (const s of cfg.series) {
@@ -144,7 +155,8 @@
     }
     // readings at the end of the dealt years
     if (cfg.readAt) {
-      const rs = cfg.series.filter((s) => (s.upto === undefined || s.upto >= cfg.readAt) && !s.thin).map((s) => ({ s, v: s.pts[cfg.readAt], want: y(s.pts[cfg.readAt]), size: mF.h }));
+      // each reading sits just above and right of its dot, clear of the line that falls away after it
+      const rs = cfg.series.filter((s) => (s.upto === undefined || s.upto >= cfg.readAt) && !s.thin).map((s) => ({ s, v: s.pts[cfg.readAt], want: y(s.pts[cfg.readAt]) - mF.h / 2 - 3, size: mF.h }));
       spread(rs, T + 2, y(0) - 2, 2);
       for (const r of rs) {
         el('circle', { cx: x(cfg.readAt), cy: y(r.v), r: 3.5, class: 'f-' + r.s.key }, gd);
@@ -152,17 +164,23 @@
       }
     }
     // the series labels: in the gutter at the height of their line's end, spread so they never overlap, with a leader
-    // when they had to move; a path that stops early (a partly dealt order) is labelled at its end instead
+    // when they had to move; a path that stops early (a partly dealt order) is labelled at its end instead, its words
+    // wrapped to the room left before the gutter
     const blocks = labelled.map((s) => {
-      const upto = s.upto === undefined ? s.pts.length - 1 : s.upto, lines = s.nameLines.length + s.readLines.length;
+      const upto = s.upto === undefined ? s.pts.length - 1 : s.upto;
+      if (!full(s)) {
+        const room = Math.max(60, W - R - x(upto) - 14);
+        s.nameLines = wrap(s.name, room, lfs, 700); s.readLines = s.reading ? wrap(s.reading, room, rfs, 400) : [];
+      }
+      const lines = s.nameLines.length + s.readLines.length;
       const size = s.nameLines.length * mN.h + s.readLines.length * mR.h + (lines - 1) * air;
       return { s, upto, end: y(s.pts[upto]), size, want: y(s.pts[upto]) };
     });
     const gutter = blocks.filter((b) => full(b.s)), over = blocks.filter((b) => !full(b.s));
     over.forEach((b) => { b.want = b.end - b.size / 2 - 8; });
-    // the gutter's floor: above the year ticks' row (baseline H - 9) by their ascent and a little air, so the last label
-    // never sits on "Year 25" or the "years" note
-    spread(gutter, Math.max(4, T - 10), Math.min(H - B + 8, H - 9 - vm(fs).asc - 3), 6);
+    // the gutter's floor: above the year ticks' row by their ascent and a little air, so the last label never sits on
+    // "Year 25" or the "years" note; its ceiling: below the band's labels
+    spread(gutter, band ? T : Math.max(4, T - 10), Math.min(H - B + 8, tickY - mT.asc - 3), 6);
     spread(over, T, y(0) - 6, 4);
     for (const b of blocks) {
       const inGut = gutter.includes(b), ex = x(b.upto), tx = inGut ? W - R + 14 : ex + 8;
@@ -171,7 +189,7 @@
       // each line's box starts where the one above ends (plus the air); its baseline sits its ascent below that
       let ly = top;
       for (const l of b.s.nameLines) { el('text', { x: tx, y: ly + mN.asc, class: 'halo t-' + b.s.key, 'font-size': lfs, 'font-weight': 700 }, gt, l); ly += mN.h + air; }
-      for (const l of b.s.readLines) { el('text', { x: tx, y: ly + mR.asc, class: 'halo t-ink2', 'font-size': lfs - 1 }, gt, l); ly += mR.h + air; }
+      for (const l of b.s.readLines) { el('text', { x: tx, y: ly + mR.asc, class: 'halo t-ink2', 'font-size': rfs }, gt, l); ly += mR.h + air; }
     }
     return { x, y, T, series: cfg.series };
   }
@@ -206,14 +224,16 @@
   // ---------- the lead chart ----------
   const ruthS = (res = RUTH, extra = {}) => ({ key: 'ruth', name: 'Ruth', reading: short(res), pts: pts(res), dep: res.depletionYear, ...extra });
   const samS = (res = SAM, extra = {}) => ({ key: 'sam', name: 'Sam', reading: short(res), pts: pts(res), dep: res.depletionYear, ...extra });
-  const headline = RUTH.depletionYear === null && SAM.depletionYear
-    ? `Same ten years, same average return. In one order the savings last all ${HZ} years; in the other they run out in year ${SAM.depletionYear}.`
-    : `Same ten years, same average return: ${short(RUTH)} for Ruth, ${short(SAM)} for Sam.`;
-  $('headline').textContent = headline;
-  $('deck').textContent = `Ruth and Sam are made up. They retire with the same savings, take the same withdrawals and live through the same ${words(N)} market years. Only the order of the years differs. Further down, the page runs all ${intF.format(ORDERS)} possible orders of those years, lets you deal your own, and tries to rescue Sam.`;
-  $('t-lead').textContent = 'Savings at the end of each year, after that year’s withdrawal';
+  // the question (built into the page from story.json) and, under it, the finding, from the engine
+  $('headline').textContent = `Same ${words(N)} years. Why does one retiree run out?`;
+  const finding = RUTH.depletionYear === null && SAM.depletionYear
+    ? `Ruth’s savings last all ${HZ} years; Sam’s run out in year ${SAM.depletionYear}.`
+    : `Ruth’s savings: ${short(RUTH)}. Sam’s: ${short(SAM)}.`;
+  // a dek of 140 characters or fewer: who they are, what differs, the finding (the average return is in the prose below)
+  $('deck').textContent = `Ruth and Sam are made up. Same market years, different order. ${finding}`;
+  $('t-lead').textContent = RUTH.balances[N - 1] > SAM.balances[N - 1] ? `The gap opens in the first ${words(N)} years` : 'Ruth and Sam, year by year';
   const fate = (name, res) => res.depletionYear ? `${name}\u2019s money runs out in year ${res.depletionYear}` : `${name} still has ${money(res.endBalance)} after ${HZ} years`;
-  $('s-lead').textContent = `Both take out ${money(W0)} in the first year, ${pctF(S.indexation)} more each year after. After the ${words(N)} dealt years Ruth has ${money(RUTH.balances[N - 1])} and Sam ${money(SAM.balances[N - 1])}. ${fate('Ruth', RUTH)}; ${fate('Sam', SAM)}.`;
+  $('s-lead').textContent = `After the ${words(N)} dealt years Ruth has ${money(RUTH.balances[N - 1])} and Sam ${money(SAM.balances[N - 1])}. ${fate('Ruth', RUTH)}; ${fate('Sam', SAM)}.`;
   const drawLead = () => { const svg = $('c-lead'); dropCross(svg); addCross(svg, lineChart(svg, { series: [ruthS(), samS()], band: true, readAt: N })); };
 
   // ---------- the cards ----------
@@ -223,14 +243,14 @@
   let samOrder = BAD.slice();
   const ZERO_END = run(GOOD, 0).endBalance;
   $('h-shuffle').textContent = `With nothing taken out, every order ends with ${money(ZERO_END)}`;
-  $('t-shuffle').textContent = 'Savings with no withdrawals: Ruth’s order against Sam’s shuffled order';
+  $('t-shuffle').textContent = Math.round(run(BAD, 0).endBalance) === Math.round(ZERO_END) ? 'Shuffled or not, the two lines end at the same amount' : 'Ruth’s order and Sam’s shuffled order';
   let shuffles = 0;
   function drawShuffle() {
     const r = run(GOOD, 0), s = run(samOrder, 0);
     lineChart($('c-shuffle'), { series: [ruthS(r), samS(s, { reading: money(s.endBalance) + ' left' })], band: true, height: (W) => W < 600 ? 280 : 340 });
     // the readout under the button: Sam's ending, what it means, and the order he got this time
     const same = Math.round(s.endBalance) === Math.round(r.endBalance);
-    $('rk-shuffle').textContent = `Sam’s ending balance after ${HZ} years, nothing taken out`;
+    $('rk-shuffle').textContent = 'Sam’s ending, nothing taken out';
     $('rv-shuffle').textContent = money(s.endBalance);
     $('s-shuffle').textContent = same
       ? `Same ending as Ruth: with nothing taken out, the order of the years doesn’t matter.`
@@ -270,9 +290,9 @@
       $('rf-deal').textContent = '';
       return;
     }
-    $('rf-deal').textContent = `Ruth, best years first: ${short(RUTH)}. Sam, worst years first: ${short(SAM)}. Synthetic sequence: not historical, not a forecast.`;
+    $('rf-deal').textContent = `Ruth, best years first: ${short(RUTH)}. Sam, worst years first: ${short(SAM)}.`;
     if (!isFull()) {
-      $('rk-deal').textContent = `Your order so far: ${k} of ${N} years dealt`;
+      $('rk-deal').textContent = `Your order: ${k} of ${N} dealt`;
       v.textContent = money(r.balances[k - 1]) + ' after year ' + k;
       $('rt-deal').textContent = `Deal the other ${years(N - k)} to see where it ends and how it ranks among all ${intF.format(ORDERS)} orders.`;
       return;
@@ -344,13 +364,13 @@
 
   // The two charts of every order are drawn once the count is done; until then each keeps its height and says what it is
   // waiting for, so the page never shows an empty box.
-  const histH = (W) => W < 600 ? 330 : 420;
-  const heatGeom = (W, y0) => { const narrow = W < 600, T = 88, ch = narrow ? 26 : 32, B = 52; return { T, ch, B, H: T + ch * (HZ - y0 + 2) + B }; };
+  const histH = (W) => W < 600 ? 380 : 440;
+  const heatGeom = (W, y0) => { const narrow = W < 600, T = 112, ch = narrow ? 28 : 32, B = 64; return { T, ch, B, H: T + ch * (HZ - y0 + 2) + B }; };
   function waiting(svg, H) {
     const W = widthOf(svg), narrow = W < 600;
     setup(svg, W, H);
     el('rect', { x: 0, y: 0, width: W, height: H, class: 'band' }, svg);
-    el('text', { x: W / 2, y: H / 2 + 5, 'text-anchor': 'middle', class: 'ax val', 'font-size': narrow ? 14 : 16 }, svg, `Counting all ${intF.format(ORDERS)} orders…`);
+    el('text', { x: W / 2, y: H / 2 + 5, 'text-anchor': 'middle', class: 'ax val', 'font-size': narrow ? TXT : TXT + 1 }, svg, `Counting all ${intF.format(ORDERS)} orders…`);
   }
   function drawWaiting() {
     if (BASE) return;
@@ -358,89 +378,117 @@
     waiting($('c-early'), heatGeom(widthOf($('c-early')), SAM.depletionYear || HZ).H);
   }
 
+  // Keeps the labels that fit on one row: items [{ x0, x1, prio }] (higher prio first); a label is kept when it clears every
+  // label kept before it by `gap`. Returns the kept items.
+  function thin(items, gap) {
+    const kept = [];
+    for (const it of items.slice().sort((a, b) => b.prio - a.prio)) if (kept.every((k) => it.x1 + gap <= k.x0 || k.x1 + gap <= it.x0)) kept.push(it);
+    return kept;
+  }
+
   function histChart(sum) {
-    const svg = $('c-all'), W = widthOf(svg), narrow = W < 600, fs = narrow ? 11 : 13, lfs = narrow ? 13 : 14;
-    const H = histH(W), y0 = firstYear(sum), nDep = HZ - y0 + 1;
+    const svg = $('c-all'), W = widthOf(svg), narrow = W < 600, fs = TXT, lfs = TXT + 1, mt = vm(fs), mg = vm(fs, 600), ml = vm(lfs, 700);
+    const H0 = histH(W), y0 = firstYear(sum), nDep = HZ - y0 + 1;
     const buckets = [];
     for (let d = y0; d <= HZ; d++) buckets.push(sum.byYear[d]);
     for (const c of sum.left.counts) buckets.push(c);
-    setup(svg, W, H);
     const yMax = yScale(Math.max(...buckets) / sum.total, 4);
     const pl = (p) => Math.round(p * 100) + '%';
-    const L = Math.ceil(tw(pl(yMax.max), fs)) + 10, R = 4, T = 56, B = 50;
+    const L = Math.ceil(tw(pl(yMax.max), fs)) + 10, R = 4;
     const unit = (W - L - R) / (buckets.length + 0.8), bw = unit * 0.8;
     const bx = (i) => L + i * unit + (i >= nDep ? 0.8 * unit : 0) + (unit - bw) / 2;
+    // the two group names under the axis: on one row when they fit side by side, else on two
+    const gA = narrow ? 'Runs out in year' : 'The money runs out in year', gB = narrow ? 'Lasts: left at the end' : `Lasts all ${HZ} years: money left at the end`;
+    const wA = tw(gA, fs, 600), wB = tw(gB, fs, 600);
+    const mid1 = (bx(0) + bx(nDep - 1) + bw) / 2, mid2 = (bx(nDep) + bx(buckets.length - 1) + bw) / 2;
+    const cA = Math.max(L + wA / 2, mid1), cB = Math.min(W - R - wB / 2, mid2), oneRow = cA + wA / 2 + 16 <= cB - wB / 2;
+    const T = ml.h + 40, B = 12 + mt.h + 8 + mg.h * (oneRow ? 1 : 2) + 6;
+    const H = H0 + (oneRow ? 0 : mg.h);
+    setup(svg, W, H);
     const y = (p) => T + (1 - p / yMax.max) * (H - T - B);
     for (let p = 0; p <= yMax.max + 1e-9; p += yMax.step) {
       el('line', { x1: L, x2: W - R, y1: y(p), y2: y(p), class: p === 0 ? 'zero' : 'grid' }, svg);
-      el('text', { x: L - 8, y: y(p) + 4, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, svg, pl(p));
+      el('text', { x: L - 8, y: y(p) + mt.asc / 2 - 2, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, svg, pl(p));
     }
     const ms = marks().map((m) => ({ ...m, b: bucketOf(sum, m.o) }));
     const gb = el('g', {}, svg);
     buckets.forEach((c, i) => {
       const p = c / sum.total, top = y(p);
       el('rect', { x: bx(i), y: top, width: bw, height: Math.max(0, y(0) - top), class: 'bar' }, gb);
-      let t = p === 0 ? '0' : p < 0.001 ? '<0.1%' : (Math.round(p * 1000) / 10).toFixed(1) + '%';
-      if (narrow) t = p === 0 ? '0' : p < 0.01 ? '<1%' : Math.round(p * 100) + '%';
-      el('text', { x: bx(i) + bw / 2, y: top - 6, 'text-anchor': 'middle', class: 'ax val', 'font-size': fs }, gb, t);
     });
+    // each bar's share above it where there is room: the marked bars first, then the tallest; the rest are in the table
+    const valText = (p) => narrow ? (p === 0 ? '0' : p < 0.01 ? '<1%' : Math.round(p * 100) + '%') : (p === 0 ? '0' : p < 0.001 ? '<0.1%' : (Math.round(p * 1000) / 10).toFixed(1) + '%');
+    const markedBars = new Set(ms.map((m) => m.b));
+    const vals = buckets.map((c, i) => { const t = valText(c / sum.total), w = tw(t, fs), cx = bx(i) + bw / 2; return { i, t, x0: cx - w / 2, x1: cx + w / 2, prio: (markedBars.has(i) ? 2 : 0) + c / sum.total }; });
+    for (const v of thin(vals, 4)) el('text', { x: bx(v.i) + bw / 2, y: y(buckets[v.i] / sum.total) - 7, 'text-anchor': 'middle', class: 'ax val', 'font-size': fs }, gb, v.t);
     for (const m of ms) el('rect', { x: bx(m.b) - 2.5, y: y(buckets[m.b] / sum.total) - 2.5, width: bw + 5, height: y(0) - y(buckets[m.b] / sum.total) + 5, class: 'mark s-' + m.key }, gb);
-    // ticks: the years, then the money-left bin edges (thinned when they would collide)
-    for (let i = 0; i < nDep; i++) el('text', { x: bx(i) + bw / 2, y: y(0) + 17, 'text-anchor': 'middle', class: 'ax', 'font-size': fs }, svg, String(y0 + i));
+    // ticks under the axis: the years, then the money-left bin edges, thinned so none collide
+    const ty = y(0) + 6 + mt.asc, ticks = [];
+    const yearEvery = [1, 2, 5].find((k) => k * unit >= tw(String(HZ), fs) + 8) || 5;
+    for (let i = 0; i < nDep; i++) if ((y0 + i) % yearEvery === 0 || yearEvery === 1) { const t = String(y0 + i), cx = bx(i) + bw / 2, w = tw(t, fs); ticks.push({ t, cx, x0: cx - w / 2, x1: cx + w / 2, prio: 1 - i / 1000 }); }
     const edge = (k) => bx(nDep + k) - (unit - bw) / 2;
-    const nLeft = sum.left.counts.length, lw = tw(kfmt(sum.left.step * nLeft), fs) + 6, every = Math.max(1, Math.ceil(lw / unit));
-    for (let k = 0; k <= nLeft; k += every) el('text', { x: k === nLeft ? edge(k - 1) + unit : edge(k), y: y(0) + 17, 'text-anchor': 'middle', class: 'ax', 'font-size': fs }, svg, kfmt(sum.left.step * k));
-    const gA = narrow ? 'Runs out in year' : 'The money runs out in year', gB = narrow ? 'Lasts: left at the end' : `Lasts all ${HZ} years: money left at the end`;
-    const mid1 = (bx(0) + bx(nDep - 1) + bw) / 2, mid2 = (bx(nDep) + bx(buckets.length - 1) + bw) / 2;
-    el('text', { x: Math.max(L + tw(gA, fs, 600) / 2, mid1), y: H - 8, 'text-anchor': 'middle', class: 'ax grp', 'font-size': fs, 'font-weight': 600 }, svg, gA);
-    el('text', { x: Math.min(W - R - tw(gB, fs, 600) / 2, mid2), y: H - 8, 'text-anchor': 'middle', class: 'ax grp', 'font-size': fs, 'font-weight': 600 }, svg, gB);
+    const nLeft = sum.left.counts.length, lw = tw(kfmt(sum.left.step * nLeft), fs) + 8, every = Math.max(1, Math.ceil(lw / unit));
+    for (let k = 0; k <= nLeft; k += every) { const t = kfmt(sum.left.step * k), cx = k === nLeft ? edge(k - 1) + unit : edge(k), w = tw(t, fs); ticks.push({ t, cx, x0: cx - w / 2, x1: cx + w / 2, prio: 0.5 - k / 1000 }); }
+    for (const tk of thin(ticks.filter((tk) => tk.x0 >= 0 && tk.x1 <= W), 6)) el('text', { x: tk.cx, y: ty, 'text-anchor': 'middle', class: 'ax', 'font-size': fs }, svg, tk.t);
+    const gy = H - 8 - (oneRow ? 0 : mg.h);
+    el('text', { x: cA, y: gy, 'text-anchor': 'middle', class: 'ax grp', 'font-size': fs, 'font-weight': 600 }, svg, gA);
+    el('text', { x: cB, y: H - 8, 'text-anchor': 'middle', class: 'ax grp', 'font-size': fs, 'font-weight': 600 }, svg, gB);
     // markers along the top, spread so they never collide, with a leader down to their bar
     const items = ms.map((m) => ({ m, want: bx(m.b) + bw / 2, size: tw(m.name, lfs, 700) + 8 }));
     spread(items, L, W - R, 6);
+    const nameY = 2 + ml.asc, legTop = 2 + ml.h + 3;
     for (const it of items) {
-      const cx = bx(it.m.b) + bw / 2, top = y(buckets[it.m.b] / sum.total) - fs - 10;
-      el('text', { x: it.pos, y: 18, 'text-anchor': 'middle', class: 't-' + it.m.key, 'font-size': lfs, 'font-weight': 700 }, svg, it.m.name);
-      el('path', { d: `M${it.pos} 24L${it.pos} 30L${cx} ${Math.min(top, T - 4)}L${cx} ${top}`, class: 'leader s-' + it.m.key }, svg);
+      const cx = bx(it.m.b) + bw / 2, top = y(buckets[it.m.b] / sum.total) - mt.h - 18; // stops clear of the bar's share label
+      el('text', { x: it.pos, y: nameY, 'text-anchor': 'middle', class: 't-' + it.m.key, 'font-size': lfs, 'font-weight': 700 }, svg, it.m.name);
+      el('path', { d: `M${it.pos} ${legTop}L${it.pos} ${legTop + 6}L${cx} ${Math.min(top, T - 4)}L${cx} ${top}`, class: 'leader s-' + it.m.key }, svg);
     }
     // the table
     const tb = document.querySelector('#tab-all tbody'); tb.replaceChildren();
     buckets.forEach((c, i) => { const tr = document.createElement('tr'); [bucketLabel(sum, i), intF.format(c), share(c, sum.total)].forEach((t, j) => { const td = document.createElement(j ? 'td' : 'th'); if (!j) td.scope = 'row'; td.textContent = t; tr.appendChild(td); }); tb.appendChild(tr); });
   }
 
-  // the heat strip: columns are bins of the first five years' average; rows are how the orders end
+  // the heat strip: columns are bins of the first five years' average; rows are how the orders end. The bins are as fine
+  // as the width allows while each column still holds its share at full size.
   function heatChart(sum) {
-    const svg = $('c-early'), W = widthOf(svg), narrow = W < 600, fs = narrow ? 11 : 13, lfs = narrow ? 13 : 14;
+    const svg = $('c-early'), W = widthOf(svg), narrow = W < 600, fs = TXT, lfs = TXT + 1, mt = vm(fs), ml = vm(lfs, 700);
     const y0 = firstYear(sum), rows = [0]; for (let d = HZ; d >= y0; d--) rows.push(d);
-    const gs = sum.groups, lo = gs[0].avg, hi = gs[gs.length - 1].avg, bw = niceStep((hi - lo) / (narrow ? 9 : 18));
+    const rowLab = (d) => d === 0 ? (narrow ? 'Lasts' : `Lasts ${HZ} years`) : (narrow ? 'Year ' + d : 'Runs out, year ' + d);
+    const { T, ch, H } = heatGeom(W, y0), L = Math.ceil(Math.max(...rows.map((d) => tw(rowLab(d), fs)))) + 12, R = 4;
+    const gs = sum.groups, lo = gs[0].avg, hi = gs[gs.length - 1].avg, minCw = tw('100', fs) + 10;
+    const ncOf = (bw) => Math.floor(hi / bw + 1e-9) - Math.floor(lo / bw + 1e-9) + 1;
+    let bw = niceStep((hi - lo) / 18);
+    while (ncOf(bw) * minCw > W - L - R) bw = niceStep(bw * 1.01);
     const c0 = Math.floor(lo / bw + 1e-9), c1 = Math.floor(hi / bw + 1e-9), nc = c1 - c0 + 1;
     const cols = Array.from({ length: nc }, (_, i) => ({ lo: (c0 + i) * bw, n: 0, counts: new Array(HZ + 1).fill(0) }));
     const colOf = (avg) => Math.floor(avg / bw + 1e-9) - c0;
     for (const g of gs) { const c = cols[colOf(g.avg)]; c.n += g.n; g.counts.forEach((v, d) => { c.counts[d] += v; }); }
-    const rowLab = (d) => d === 0 ? (narrow ? 'Lasts' : `Lasts ${HZ} years`) : (narrow ? 'Year ' + d : 'Runs out, year ' + d);
-    const { T, ch, H } = heatGeom(W, y0), L = Math.ceil(Math.max(...rows.map((d) => tw(rowLab(d), fs)))) + 12, R = 4, cw = (W - L - R) / nc;
+    const cw = (W - L - R) / nc, pctSign = tw('100%', fs) + 8 <= cw;
     setup(svg, W, H);
     const cx = (i) => L + i * cw;
     const gc = el('g', {}, svg);
     // the share that last, printed above each column
-    el('text', { x: L - 8, y: T - 12, 'text-anchor': 'end', class: 'ax', 'font-size': fs, 'font-weight': 600 }, svg, narrow ? '% last' : 'Share that last');
+    const shareY = T - 12;
+    el('text', { x: L - 8, y: shareY, 'text-anchor': 'end', class: 'ax', 'font-size': fs, 'font-weight': 600 }, svg, narrow ? '% last' : 'Share that last');
     cols.forEach((c, i) => {
       if (!c.n) return;
       rows.forEach((d, r) => {
         const p = c.counts[d] / c.n;
         el('rect', { x: cx(i) + 1, y: T + r * ch + 1, width: cw - 2, height: ch - 2, class: p > 0 ? 'cell' : 'cell0', 'fill-opacity': p > 0 ? (0.14 + 0.86 * p).toFixed(3) : undefined }, gc);
       });
-      const p0 = c.counts[0] / c.n, t = Math.round(p0 * 100) + (cw > 34 ? '%' : '');
-      if (cw > 18) el('text', { x: cx(i) + cw / 2, y: T - 12, 'text-anchor': 'middle', class: 'ax val', 'font-size': narrow ? 10 : fs }, svg, p0 > 0 && p0 < 0.005 ? '<1' + (cw > 34 ? '%' : '') : t);
+      const p0 = c.counts[0] / c.n, t = Math.round(p0 * 100) + (pctSign ? '%' : '');
+      el('text', { x: cx(i) + cw / 2, y: shareY, 'text-anchor': 'middle', class: 'ax val', 'font-size': fs }, svg, p0 > 0 && p0 < 0.005 ? '<1' + (pctSign ? '%' : '') : t);
     });
-    rows.forEach((d, r) => el('text', { x: L - 8, y: T + r * ch + ch / 2 + 4, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, svg, rowLab(d)));
+    rows.forEach((d, r) => el('text', { x: L - 8, y: T + r * ch + ch / 2 + mt.asc / 2 - 2, 'text-anchor': 'end', class: 'ax', 'font-size': fs }, svg, rowLab(d)));
     // x ticks at whole-number averages, thinned to fit
-    const tickStep = niceStep(bw * Math.max(1, Math.ceil((tw('−10%', fs) + 10) / cw)));
+    const tickStep = niceStep(bw * Math.max(1, Math.ceil((tw('−10%', fs) + 12) / cw)));
+    const axisY = T + rows.length * ch;
     for (let v = Math.ceil(c0 * bw / tickStep - 1e-9) * tickStep; v <= (c1 + 1) * bw + 1e-9; v += tickStep) {
-      const px = L + (v / bw - c0) * cw;
-      el('line', { x1: px, x2: px, y1: T + rows.length * ch, y2: T + rows.length * ch + 5, class: 'zero' }, svg);
-      el('text', { x: px, y: T + rows.length * ch + 19, 'text-anchor': 'middle', class: 'ax', 'font-size': fs }, svg, minus(String(Math.round(v * 100))) + '%');
+      const px = L + (v / bw - c0) * cw, t = minus(String(Math.round(v * 100))) + '%', w = tw(t, fs);
+      el('line', { x1: px, x2: px, y1: axisY, y2: axisY + 5, class: 'zero' }, svg);
+      el('text', { x: Math.max(w / 2, Math.min(W - w / 2, px)), y: axisY + 6 + mt.asc, 'text-anchor': 'middle', class: 'ax', 'font-size': fs }, svg, t);
     }
-    el('text', { x: L + (W - L - R) / 2, y: H - 8, 'text-anchor': 'middle', class: 'ax grp', 'font-size': fs, 'font-weight': 600 }, svg, 'Average return of the first five years');
+    const gt = 'Average return of the first five years', gw = tw(gt, fs, 600);
+    el('text', { x: Math.max(gw / 2, Math.min(W - gw / 2, L + (W - L - R) / 2)), y: H - 8, 'text-anchor': 'middle', class: 'ax grp', 'font-size': fs, 'font-weight': 600 }, svg, gt);
     // the line left of which every order runs out
     let allOut = -1; for (let i = 0; i < nc; i++) { if (cols[i].n && cols[i].counts[0] > 0) break; allOut = i; }
     const items = marks().map((m) => ({ m, col: colOf(m.f5) }));
@@ -448,17 +496,19 @@
     const all = items.slice();
     if (allOut >= 0) { const t = narrow ? 'All run out' : 'Every order left of here runs out'; all.push({ rule: true, want: cx(allOut + 1), size: tw(t, fs, 600) + 8, t }); }
     spread(all, 0, W - R, 6);
+    // two rows above the strip: the rule's note on top, the names under it
+    const ruleY = 2 + mt.asc, nameY = 2 + mt.h + 4 + ml.asc, nameBottom = nameY + ml.h - ml.asc;
     for (const it of all) {
       if (it.rule) {
         const px = cx(allOut + 1);
-        el('line', { x1: px, x2: px, y1: 24, y2: T + rows.length * ch, class: 'rule' }, svg);
-        el('text', { x: it.pos, y: 18, 'text-anchor': 'middle', class: 'ax halo', 'font-size': fs, 'font-weight': 600 }, svg, it.t);
+        el('line', { x1: px, x2: px, y1: ruleY + 6, y2: axisY, class: 'rule' }, svg);
+        el('text', { x: it.pos, y: ruleY, 'text-anchor': 'middle', class: 'ax halo', 'font-size': fs, 'font-weight': 600 }, svg, it.t);
         continue;
       }
-      const ccx = cx(it.col) + cw / 2;
-      el('rect', { x: cx(it.col) - 1, y: T - 30, width: cw + 2, height: rows.length * ch + 31, class: 'mark s-' + it.m.key }, svg);
-      el('text', { x: it.pos, y: 42, 'text-anchor': 'middle', class: 't-' + it.m.key, 'font-size': lfs, 'font-weight': 700 }, svg, it.m.name);
-      el('path', { d: `M${it.pos} 47L${ccx} ${T - 30}`, class: 'leader s-' + it.m.key }, svg);
+      const ccx = cx(it.col) + cw / 2, mtop = shareY - mt.asc - 6;
+      el('rect', { x: cx(it.col) - 1, y: mtop, width: cw + 2, height: axisY - mtop + 1, class: 'mark s-' + it.m.key }, svg);
+      el('text', { x: it.pos, y: nameY, 'text-anchor': 'middle', class: 'halo t-' + it.m.key, 'font-size': lfs, 'font-weight': 700 }, svg, it.m.name);
+      el('path', { d: `M${it.pos} ${nameBottom + 2}L${ccx} ${mtop}`, class: 'leader s-' + it.m.key }, svg);
     }
   }
 
@@ -492,14 +542,16 @@
     const s = BASE, lastPct = share(s.lasts, s.total);
     let top = 1; for (let d = 1; d <= HZ; d++) if (s.byYear[d] > s.byYear[top]) top = d;
     const best = ranks.ruth && ranks.ruth.better === 0 && ranks.ruth.same === 1, worst = ranks.sam && ranks.sam.worse === 0 && ranks.sam.same === 1;
-    $('h-all').textContent = `Of all ${intF.format(s.total)} orders, ${s.lasts / s.total < 0.5 ? 'only ' : ''}${lastPct} last ${HZ} years.` + (best && worst ? ' Ruth has the best; Sam has the worst.' : '');
-    $('s-all').textContent = `${lastPct} of the orders last all ${HZ} years. The most common ending is running out in year ${top} (${share(s.byYear[top], s.total)} of orders). ` + (ranks.ruth ? rankText(ranks.ruth, 'Ruth’s order') + ' ' : '') + (ranks.sam ? rankText(ranks.sam, 'Sam’s order') : '');
+    // a section hed of 12 words or fewer; who has the best and the worst order goes in the line under the chart
+    $('h-all').textContent = `Of all ${intF.format(s.total)} orders, ${s.lasts / s.total < 0.5 ? 'only ' : ''}${lastPct} last ${HZ} years`;
+    $('t-all').textContent = `Running out in year ${top} is the most common ending`;
+    $('s-all').textContent = (best && worst ? 'Ruth has the best order; Sam has the worst. ' : '') + `${lastPct} of the orders last all ${HZ} years. The most common ending is running out in year ${top} (${share(s.byYear[top], s.total)} of orders). ` + (ranks.ruth ? rankText(ranks.ruth, 'Ruth’s order') + ' ' : '') + (ranks.sam ? rankText(ranks.sam, 'Sam’s order') : '');
   }
   function youChanged() {
     drawRrif();
     if (!BASE) return;
     drawAll();
-    if (!isFull()) { $('s-rank').textContent = 'Deal all ten cards above to see where your order lands among them.'; return; }
+    if (!isFull()) { $('s-rank').textContent = `Deal all ${words(N)} cards above to see where your order lands among them.`; return; }
     const o = outcome(youRes()), at = dealt.join();
     Runner.rank('base', o, (r) => { if (dealt.join() !== at) return; $('s-rank').textContent = rankText(r, 'Your order'); $('rt-deal').textContent = rankText(r, 'Your order'); });
   }
@@ -508,7 +560,7 @@
   Runner.start('base', ENUM, (p) => {
     $('run-bar').value = p; $('run-text').textContent = `Counting all ${intF.format(ORDERS)} orders: ${Math.floor(p * 10) * 10}%`;
   }, (d) => {
-    BASE = d.summary; $('run-bar').value = 1;
+    BASE = d.summary; $('run-bar').value = 1; $('run-bar').hidden = true; // done: the bar goes, the line stays
     $('run-text').textContent = `All ${intF.format(BASE.total)} orders worked out in this browser in ${(d.ms / 1000).toFixed(1)} seconds.`;
     document.body.dataset.enumMs = String(Math.round(d.ms));
     allText(); youChanged();
@@ -519,7 +571,7 @@
   // ---------- rescuing Sam ----------
   const SOLVE = largestLastingWithdrawal({ start: S.start, indexation: S.indexation, returns: returnsOf(BAD) });
   const SOLVED = run(BAD, SOLVE);
-  $('h-rescue').textContent = `Sam’s money lasts all ${HZ} years if his first-year withdrawal is ${money(SOLVE)} or less`;
+  $('h-rescue').textContent = `Sam’s money lasts if his first withdrawal is ${money(SOLVE)} or less`;
   $('p-solver').textContent = `That is ${money(W0 - SOLVE)} less than the ${money(W0)} in the story, about ${Math.round((1 - SOLVE / W0) * 100)}% less, rising ${pctF(S.indexation)} a year the same way. The amount comes from running Sam’s order through the engine with different first-year withdrawals until the largest one that pays every year in full is found.`;
   function compare(after, before) {
     const a = after.depletionYear, b = before.depletionYear, d = total(after) - total(before);
@@ -535,9 +587,10 @@
     { title: `Keep ${words(S.bufferYears)} years of withdrawals in cash`, res: run(BAD, W0, { buffer: true }) },
     { title: `Start at ${money(SOLVE)} instead of ${money(W0)}`, res: SOLVED },
   ];
+  $('t-levers').textContent = `${cap(words(LEVERS.length))} changes, one at a time, against Sam’s path before`;
   LEVERS.forEach((lv, i) => {
-    const f = document.createElement('figure'); f.className = 'fig small-multiple';
-    f.innerHTML = `<p class="fig-title" id="t-lv${i}"></p><svg id="c-lv${i}" role="img" aria-labelledby="t-lv${i} s-lv${i}"></svg><p class="reading" id="s-lv${i}"></p><figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>`;
+    const f = document.createElement('figure'); f.className = 'small-multiple';
+    f.innerHTML = `<figcaption id="t-lv${i}"></figcaption><svg id="c-lv${i}" role="img" aria-labelledby="t-lv${i} s-lv${i}"></svg><p class="reading" id="s-lv${i}"></p>`;
     $('levers').appendChild(f);
     $('t-lv' + i).textContent = lv.title;
     $('s-lv' + i).textContent = 'Sam’s money ' + compare(lv.res, SAM);
@@ -545,18 +598,18 @@
   const LV_MAX = Math.max(S.start, ...LEVERS.flatMap((lv) => lv.res.balances), ...SAM.balances);
   const before = (extra) => ({ key: 'before', name: 'Before', reading: short(SAM), pts: pts(SAM), dep: SAM.depletionYear, thin: true, ...extra });
   function drawLevers() {
-    LEVERS.forEach((lv, i) => lineChart($('c-lv' + i), { compact: true, yMax: LV_MAX, height: (W) => W < 600 ? 240 : 250,
+    LEVERS.forEach((lv, i) => lineChart($('c-lv' + i), { compact: true, yMax: LV_MAX, height: (W) => W < 600 ? 270 : 280,
       series: [before({ reading: undefined }), { key: 'sam', name: 'With it', reading: short(lv.res), pts: pts(lv.res), dep: lv.res.depletionYear }] }));
   }
   const w = $('w'), wout = $('wout'), flex = $('flex'), buffer = $('buffer');
   w.min = String(Math.round(W0 * 0.6 / 1000) * 1000); w.max = String(Math.round(W0 * 1.6 / 1000) * 1000); w.step = '100'; w.value = String(W0);
-  $('t-mix').textContent = 'Sam’s savings, before and with your changes';
   function drawMix() {
     const wv = Number(w.value), res = run(BAD, wv, { flex: flex.checked, buffer: buffer.checked });
     wout.textContent = money(wv); w.setAttribute('aria-valuetext', money(wv));
-    lineChart($('c-mix'), { series: [before(), { key: 'sam', name: 'With changes', reading: short(res), pts: pts(res), dep: res.depletionYear }], height: (W) => W < 600 ? 300 : 400 });
+    lineChart($('c-mix'), { series: [before(), { key: 'sam', name: 'With changes', reading: short(res), pts: pts(res), dep: res.depletionYear }], height: (W) => W < 600 ? 360 : 400 });
+    $('t-mix').textContent = 'With these changes, Sam’s money ' + (res.depletionYear ? 'runs out in year ' + res.depletionYear : `lasts all ${HZ} years`);
     $('rv-mix').textContent = res.depletionYear ? 'Runs out in year ' + res.depletionYear : `Lasts all ${HZ} years`;
-    $('rk-paid').textContent = `Paid out to him over the ${HZ} years`;
+    $('rk-paid').textContent = `Paid out over ${HZ} years`;
     $('rv-paid').textContent = money(total(res));
     $('s-mix').textContent = 'With these changes, Sam’s money ' + compare(res, SAM);
   }
@@ -585,12 +638,12 @@
   {
     const hit = ['ruth', 'sam'].filter((k) => FT[k].all > 0.5).map((k) => k === 'ruth' ? 'Ruth' : 'Sam');
     const miss = ['ruth', 'sam'].filter((k) => FT[k].all <= 0.5).map((k) => k === 'ruth' ? 'Ruth' : 'Sam');
-    $('h-rrif').textContent = hit.length === 1 ? `From the year they turn ${turns}, the RRIF minimum forces money out of ${hit[0]}’s savings but not ${miss[0]}’s` : `What the RRIF minimum does to Ruth’s and Sam’s savings from the year they turn ${turns}`;
+    $('h-rrif').textContent = hit.length === 1 ? `From age ${turns}, the RRIF minimum takes extra from ${hit[0]}, not ${miss[0]}` : `What the RRIF minimum does from age ${turns}`;
   }
   const rrifPanels = [{ key: 'ruth', name: 'Ruth', order: () => GOOD }, { key: 'sam', name: 'Sam', order: () => BAD }, { key: 'you', name: 'Your order', order: () => dealt }];
   rrifPanels.forEach((p) => {
-    const f = document.createElement('figure'); f.className = 'fig small-multiple';
-    f.innerHTML = `<p class="fig-title" id="t-rr-${p.key}"></p><svg id="c-rr-${p.key}" role="img" aria-labelledby="t-rr-${p.key} s-rr-${p.key}"></svg><p class="reading" id="s-rr-${p.key}"></p><figcaption class="syn">Synthetic sequence: not historical, not a forecast.</figcaption>`;
+    const f = document.createElement('figure'); f.className = 'small-multiple';
+    f.innerHTML = `<figcaption id="t-rr-${p.key}"></figcaption><svg id="c-rr-${p.key}" role="img" aria-labelledby="t-rr-${p.key} s-rr-${p.key}"></svg><p class="reading" id="s-rr-${p.key}"></p>`;
     $('rrif-panels').appendChild(f);
   });
   function rrifReading(name, order, r) {
@@ -600,23 +653,26 @@
       `The RRIF ${r.on.depletionYear ? 'runs out in year ' + r.on.depletionYear : 'ends with ' + money(r.on.endBalance)}, against ${r.off.depletionYear ? 'running out in year ' + r.off.depletionYear : money(r.off.endBalance)} without the minimum.`;
   }
   function rrifChart(svg, key, name, order, r, on, yMax, fMax) {
-    const W = widthOf(svg), narrow = W < 600, fs = narrow ? 11 : 12, top = narrow ? 250 : 270, bars = 64, gap = 28;
+    const W = widthOf(svg), narrow = W < 600, fs = TXT, top = narrow ? 290 : 300, bars = 64, gap = 30;
     const series = on
       ? [{ key, name: 'Without', reading: short(r.off), pts: pts(r.off), dep: r.off.depletionYear, thin: true, dash: true }, { key, name: 'With minimum', reading: short(r.on), pts: pts(r.on), dep: r.on.depletionYear }]
       : [{ key, name, reading: short(r.off), pts: pts(r.off), dep: r.off.depletionYear }];
     lineChart(svg, { compact: true, yMax, width: W, height: () => top + gap + bars, series, extra: (g, k) => {
       // shift the balance plot up: the bottom band holds the forced extra, one bar per year
       const by = k.y(0) + gap, bh = bars - 6, x = k.x, colW = (x(1) - x(0)) * 0.7;
-      el('text', { x: k.L, y: by - 6, class: 'mono ax halo', 'font-size': 11 }, g, on ? (narrow ? 'Taken out because of the minimum' : 'Taken out beyond the plan because of the minimum') : 'Minimums off');
+      // the year the minimums start, drawn first so the strip's label sits over it
+      const tx = x(RRIF_T0);
+      // the rule breaks at the strip's label row, so it never runs through the words
+      el('line', { x1: tx, x2: tx, y1: k.T, y2: by - 6 - fs - 2, class: 'rule' }, g);
+      el('line', { x1: tx, x2: tx, y1: by, y2: by + bh, class: 'rule' }, g);
+      el('text', { x: tx + 4, y: k.T + 14, class: 'ax halo', 'font-size': fs }, g, `Turns ${turns}`);
+      el('text', { x: k.L, y: by - 6, class: 'ax halo', 'font-size': fs }, g, on ? (narrow ? 'Taken out by the minimum' : 'Taken out beyond the plan because of the minimum') : 'Minimums off');
       el('line', { x1: k.L, x2: k.W - k.R, y1: by + bh, y2: by + bh, class: 'zero' }, g);
       if (on) r.on.forced.forEach((f, t) => {
         if (f <= 0.5) return;
         const h = f / fMax * (bh - 14);
         el('rect', { x: x(t + 0.5) - colW / 2, y: by + bh - h, width: colW, height: h, class: 'f-' + key + (downBefore(order, t) ? '' : ' light') }, g);
       });
-      const tx = x(RRIF_T0);
-      el('line', { x1: tx, x2: tx, y1: k.T, y2: by + bh, class: 'rule' }, g);
-      el('text', { x: tx + 4, y: k.T + 10, class: 'mono ax halo', 'font-size': 11 }, g, `Turns ${turns}`);
     }, bottomPad: bars + gap });
   }
   function drawRrif() {
@@ -627,13 +683,16 @@
     for (const p of list) {
       $('t-rr-' + p.key).textContent = p.name + (p.key === 'you' ? '' : p.key === 'ruth' ? ': best years first' : ': worst years first');
       const svg = $('c-rr-' + p.key);
-      if (!p.r) { svg.replaceChildren(); svg.removeAttribute('viewBox'); svg.setAttribute('height', 0); $('s-rr-' + p.key).textContent = 'Deal all ten cards above to add your order here.'; continue; }
+      // an empty panel takes no room: its title and the line asking for a full deal stand alone
+      svg.toggleAttribute('hidden', !p.r);
+      if (!p.r) { svg.replaceChildren(); svg.removeAttribute('viewBox'); svg.setAttribute('height', 0); $('s-rr-' + p.key).textContent = `Deal all ${words(N)} cards above to add your order here.`; continue; }
       rrifChart(svg, p.key, p.name, p.ord, p.r, on, yMax, fMax);
       $('s-rr-' + p.key).textContent = on ? rrifReading(p.name, p.ord, p.r) : `${p.name}: ${short(p.r.off)} without the minimum. Apply the minimums to compare.`;
     }
     // the readout under the switch: the share of all orders that run out, with the minimums and without
-    $('rk-rrif-on').textContent = `Orders that run out within ${HZ} years, with the minimums`;
-    $('rk-rrif-off').textContent = on ? 'Without them' : `Orders that run out within ${HZ} years, no minimums`;
+    $('t-rrif-panels').textContent = on ? 'Ruth, Sam and your order, with and without the RRIF minimums' : 'Ruth, Sam and your order, without the RRIF minimums';
+    $('rk-rrif-on').textContent = 'Orders that run out, with minimums';
+    $('rk-rrif-off').textContent = on ? 'Without them' : 'Orders that run out, no minimums';
     $('rv-rrif-off').textContent = BASE ? share(BASE.total - BASE.lasts, BASE.total) : 'Counting…';
     $('rc-rrif-on').hidden = !on;
     if (!on) { $('s-rrif').textContent = 'Apply the minimums to run every order again with them.'; return; }
@@ -670,8 +729,8 @@
       `<rect width="${OW}" height="${OH}" fill="${v('--t-ground')}"/>` +
       `<text x="${pad}" y="56" fill="${v('--t-ink')}" style="font-family:${esc(v('--font-display'))};font-size:30px;font-weight:600">${esc($('t-deal').textContent)}</text>` +
       `<g transform="translate(${pad} ${head})">${clone.innerHTML}</g>` +
-      `<text x="${pad}" y="${head + H + 32}" fill="${v('--t-ink2')}" style="font-family:${esc(v('--font-ui'))};font-size:16px">Synthetic sequence: not historical, not a forecast. No taxes, fees or benefits. Education only, not advice.</text>` +
-      `<text x="${pad}" y="${head + H + 58}" fill="${v('--t-ink3')}" style="font-family:${esc(v('--font-mono'))};font-size:14px">The Order of Returns, Mohammed El Chayeb. Saved ${date}.</text></svg>`;
+      `<text x="${pad}" y="${head + H + 32}" fill="${v('--t-ink2')}" style="font-family:${esc(v('--font-ui'))};font-size:17px">${esc($('assume').textContent)}</text>` +
+      `<text x="${pad}" y="${head + H + 58}" fill="${v('--t-ink2')}" style="font-family:${esc(v('--font-ui'))};font-size:17px">The Order of Returns, Mohammed El Chayeb. Saved ${date}.</text></svg>`;
     const img = new Image();
     img.onload = () => {
       const c = document.createElement('canvas'); c.width = OW * 2; c.height = OH * 2;

@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
-<script>/* The site's light or dark choice, read only (this page stores nothing): light unless the reader chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The retirement wave · Mohammed El Chayeb</title>
 <meta name="description" content="How many Canadians were each age, year by year, with the ages where CPP, OAS and RRSP rules change drawn across it. Statistics Canada data, by province and gender. Education only, not advice.">
@@ -13,10 +13,12 @@
 <!--@@TOOLBAR@@-->
 <div class="page">
   <main>
-    <p class="kicker" id="kicker">Data story</p>
-    <h1 id="finding" aria-live="polite">The retirement wave</h1>
-    <p class="lede" id="lede"></p>
+    <p class="kicker">Data</p>
+    <h1 id="question">{{question}}</h1>
+    <p class="lede" id="finding" aria-live="polite">{{lede}}</p>
+    <p class="more" id="lede">{{more}}</p>
 
+    <p class="note assume" id="assume">{{assume}}</p>
     <form id="controls" class="controls" novalidate>
       <div class="field place">
         <label for="place">Place</label>
@@ -35,30 +37,33 @@
       </fieldset>
       <div class="field born">
         <label for="born">Your diagonal: born in</label>
-        <div class="row"><input id="born" type="number" inputmode="numeric" autocomplete="off"><button type="submit">Draw it</button></div>
+        <div class="row"><input id="born" type="number" inputmode="numeric" autocomplete="off"><button type="submit" class="btn-you">Draw it</button></div>
       </div>
       <p class="error" id="error" role="alert" hidden></p>
-      <div class="readout" id="born-readout">
+      <div class="readout" id="born-readout" aria-live="polite">
         <p class="readout-k" id="born-k"></p>
-        <p class="readout-v" id="born-v" data-flash></p>
+        <p class="readout-v big" id="born-v" data-flash></p>
         <p class="readout-t" id="born-t"></p>
         <p class="readout-fine" id="born-note"></p>
       </div>
     </form>
 
-    <section class="chart" data-chapter="The chart" aria-labelledby="chart-h">
-      <p class="sec-label"><b>01</b>The chart</p>
-      <h2 id="chart-h"></h2>
-      <p class="note" id="chart-sub"></p>
-      <div class="legend" id="legend"></div>
-      <div class="frame" id="frame"><svg id="heat" role="img" aria-labelledby="heat-title"><title id="heat-title">Heatmap</title></svg></div>
-      <ul class="rule-key" id="rule-key" aria-label="The rule ages on the dashed lines" hidden></ul>
-      <p class="point" id="point" aria-live="polite"></p>
-      <p class="actions"><button type="button" id="save" class="ghost">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
+    <section class="heat-sec" data-chapter="The chart" aria-labelledby="chart-h">
+      <figure class="chart">
+        <figcaption>
+          <p class="chart-title" id="chart-h"></p>
+          <p class="chart-sub" id="chart-sub"></p>
+        </figcaption>
+        <div class="legend" id="legend"></div>
+        <div class="frame" id="frame"><svg id="heat" role="img" aria-labelledby="heat-title"><title id="heat-title">Heatmap</title></svg></div>
+        <ul class="rule-key" id="rule-key" aria-label="The rule ages on the dashed lines" hidden></ul>
+        <p class="point" id="point" aria-live="polite"></p>
+        <p class="actions"><button type="button" id="save" class="btn-2">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
+      </figure>
     </section>
 
     <section class="diagonal" data-chapter="Your diagonal" aria-labelledby="readings-h">
-      <p class="sec-label"><b>02</b>Your diagonal</p>
+      <p class="sec-label">Your diagonal</p>
       <h2 class="readings-h" id="readings-h">Your diagonal</h2>
       <ul class="readings" id="readings"></ul>
     </section>

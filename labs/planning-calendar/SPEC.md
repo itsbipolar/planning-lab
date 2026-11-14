@@ -12,9 +12,12 @@ the brief); it replaces the 2027 heatmap version (households x weeks and a GitHu
   that year's date "not confirmed yet" (listed, never guessed); a fact the file lacks leaves the date out. Situations
   combine with each rule once. Monday weeks for the strip; the headline sentence; the .ics file (RFC 5545: escaped text,
   75-octet folding, CRLF, all-day events, UIDs from rule and date). No fact value is written in code.
-- Page: the computed finding as the H1; build your household (quick picks and checkboxes); the pile-up strip (one column
+- Page (redesign v2 step 2, public name Tax dates): the question "What’s your next tax date?" as the H1 and the computed
+  finding as the lede under it; one assumptions line by the quick picks; build your household (quick picks and checkboxes);
+  the readouts (the countdown to the next confirmed date as the one big figure, then the count); the pile-up strip (one column
   per week, one block per date coloured by kind, the superficial-loss period hatched, readings on the busiest weeks and the
-  next date); Add to my calendar (a Blob download, pending dates left out and said so); each date with its rule in words
+  next date, in the shared chart frame with a plain-words title; every label at 17px, drawn at the frame's width);
+  Add these N dates to my calendar (the one amber button; a Blob download, pending dates left out and said so); each date with its rule in words
   and its source; not-confirmed dates; own-date rules; sources and assumptions; footer.
 - Limits stated on the page: December year-ends for corporations and trusts; when a year-end share sale counts (trade or
   settlement date) is not in the facts file; weekend and holiday moves are not applied.

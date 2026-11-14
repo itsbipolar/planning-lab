@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildModel, view, value, sumAges, finding, diagonal, bornRange, big, RULES } from '../model.mjs';
+import { buildModel, view, value, sumAges, finding, question, diagonal, bornRange, big, RULES } from '../model.mjs';
 
 const json = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const snap = json('../../../shared/data/population-by-age-places.json');
@@ -81,11 +81,20 @@ test('the headline is computed from the latest year and the confirmed ages, for 
     const V = view(M, p.id, g), f = finding(M, V);
     let now = 0, then = 0; for (let a = lo; a < oas; a++) { now += V.counts[y1][a - a0]; then += V.counts[y0][a - a0]; }
     assert.equal(f.now, now); assert.equal(f.then, then);
-    assert.ok(f.h1.startsWith(big(now) + ' ')); assert.ok(f.h1.includes(`${lo} to ${oas - 1} on July 1, ${y1}`));
-    assert.match(f.lede, new RegExp(`as many as in ${y0}`));
+    assert.ok(f.lede.startsWith(big(now) + ' ')); assert.ok(f.lede.includes(`${lo} to ${oas - 1} on July 1, ${y1}`));
+    assert.match(f.lede, new RegExp(`as many as in ${y0}\\.$`));
+    assert.ok(f.lede.length <= 140, `the answer under the question is a dek: ${f.lede}`);
+    assert.ok(f.more.includes(`People ${oas} to ${a1} were `));
   }
-  assert.match(finding(M, view(M, 'CA', 'all')).h1, /^\d+\.\d\d million Canadians were /);
-  assert.match(finding(M, view(M, 'QC', 'Women+')).h1, /people in Quebec \(Women\+\)/);
+  assert.match(finding(M, view(M, 'CA', 'all')).lede, /^\d+\.\d\d million Canadians were /);
+  assert.match(finding(M, view(M, 'QC', 'Women+')).lede, /people in Quebec \(Women\+\)/);
+});
+
+test('the question is short, computed from the OAS age, and asks rather than tells', () => {
+  const q = question(M), oas = Number(confirmed.get('oas_start_age').value);
+  assert.equal(q, `How many Canadians are about to turn ${oas}?`);
+  assert.ok(q.length <= 60 && q.split(/\s+/).length <= 12);
+  for (const s of [q, finding(M, view(M, 'CA', 'all')).lede, finding(M, view(M, 'CA', 'all')).more]) assert.doesNotMatch(s, /\bshould\b|best for you|recommend/i);
 });
 
 test('a missing headline fact stops the build; any other missing rule is left off the chart', () => {

@@ -1,5 +1,8 @@
 // Money, then and now: the arithmetic on the yearly series. Pure functions with no figure of their own;
 // build.mjs inlines this file into the page and the tests import it.
+// The example the page opens on (an illustration, labelled as one): an amount and a year it is shown from.
+export const EXAMPLE = { year: 1990, amount: 100 };
+
 export function yearsOf(M) { const out = []; for (let y = M.first; y <= M.last; y++) out.push(y); return out; }
 
 // An amount from one year expressed in another year's dollars, by the ratio of the yearly average price levels.

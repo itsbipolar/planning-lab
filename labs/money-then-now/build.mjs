@@ -7,7 +7,8 @@ import { dirname, join } from 'node:path';
 import { series } from '../money-stripes/build.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
-import { deskPage } from '../../shared/desk/desk-page.mjs';
+import { deskPage, toolFor, questionOf } from '../../shared/desk/desk-page.mjs';
+import { EXAMPLE } from './model.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -39,7 +40,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const M = annual(read(join(root, 'shared', 'data', 'cpi-monthly.json')), read(join(root, 'shared', 'data', 'prime-rate-weekly.json')));
   const css = [deskCSS(), deskUICSS(), read(join(here, 'style.css'))].join('\n');
   const js = deskUIJS() + '\n' + read(join(here, 'model.mjs')).replace(/^export /gm, '') + '\n' + read(join(here, 'app.js'));
-  const html = deskPage(read(join(here, 'index.src.html')), 'money-then-now').replace('/*@@CSS@@*/', () => css)
+  // The question's amount is the page's example amount (model.mjs), so no figure is typed into the page's words.
+  const src = read(join(here, 'index.src.html')).replace('{{example_amount}}', () => '$' + EXAMPLE.amount.toLocaleString('en-CA'));
+  // the question must be the one the site and the Up next chain use (shared/desk/next.json), so they never drift apart
+  const h1 = src.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1].replace(/<[^>]+>/g, '');
+  if (h1 !== questionOf(toolFor('money-then-now'))) throw new Error(`the H1 "${h1}" differs from next.json's question`);
+  const html = deskPage(src, 'money-then-now').replace('/*@@CSS@@*/', () => css)
     .replace('/*@@DATA@@*/', () => JSON.stringify(M).replace(/</g, '\\u003c')).replace('/*@@JS@@*/', () => js);
   mkdirSync(join(here, 'dist'), { recursive: true });
   writeFileSync(join(here, 'dist', 'index.html'), html);

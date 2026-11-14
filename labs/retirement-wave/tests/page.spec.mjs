@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
+import { expectStorageClean, expectShell, expectTextSizes } from '../../../shared/desk/shell-test.mjs';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 
 const url = 'file://' + fileURLToPath(new URL('../dist/index.html', import.meta.url));
+const facts = JSON.parse(readFileSync(new URL('../../../shared/facts.json', import.meta.url), 'utf8'));
+const oasAge = facts.facts.find((f) => f.id === 'oas_start_age' && f.status === 'confirmed').value;
 const snap = JSON.parse(readFileSync(new URL('../../../shared/data/population-by-age-places.json', import.meta.url), 'utf8'));
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const [y0, y1] = snap.years, [a0, a1] = snap.ages;
@@ -14,7 +16,7 @@ const born = async (page, y) => { await page.fill('#born', String(y)); await pag
 // Every label with its backing (the diagonal's reading tags and the rule names are each one group), plus the axis and
 // legend text: no two may touch. Adjacent crossings such as 70 and 71 must share a tag or sit apart, backings included.
 async function clashes(page) {
-  const boxes = await page.locator('#heat g.label, #heat text.lab, .legend text').evaluateAll((ts) => ts.filter((t) => t.textContent.trim()).map((t) => {
+  const boxes = await page.locator('#heat g.lbl, #heat text.lab, .legend text').evaluateAll((ts) => ts.filter((t) => t.textContent.trim()).map((t) => {
     const b = t.getBoundingClientRect(); return [b.x, b.y, b.width, b.height, t.textContent];
   }));
   const out = [];
@@ -84,6 +86,7 @@ for (const width of [390, 1440]) {
       expect(r.y - (f.y + f.height)).toBeGreaterThanOrEqual(-1);
       expect(r.y - (f.y + f.height)).toBeLessThan(48);
       await expect(page.locator('#born-v')).toHaveText(/^[\d,]+ people$/);
+      await expect(page.locator('#born-v')).toHaveClass(/\bbig\b/);
       const before = await page.locator('#born-v').textContent();
       await born(page, 1958);
       await expect(page.locator('#born-k')).toContainText('July 1, 1958');
@@ -92,9 +95,11 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#born-t')).toContainText(`July 1, ${y1}`);
       await page.check('input[name=mode][value=share]');
       await expect(page.locator('#born-v')).toContainText('% of the population');
-      // two chapters: signposts, but no rail
+      // two chapters: the chart in its frame, the diagonal under a section label; no numbers, no rail
       await expect(page.locator('section[data-chapter]')).toHaveCount(2);
-      await expect(page.locator('.sec-label')).toHaveCount(2);
+      await expect(page.locator('figure.chart .chart-title')).toHaveText(/\S/);
+      await expect(page.locator('.sec-label')).toHaveCount(1);
+      await expect(page.locator('.sec-label b')).toHaveCount(0);
       await expect(page.locator('.rail')).toHaveCount(0);
       const heat = page.locator('#heat'); await heat.scrollIntoViewIfNeeded();
       const b = await heat.boundingBox();
@@ -103,8 +108,44 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#heat .crosshair text')).toContainText('Age ');
       await expect(page.locator('#heat .crosshair text')).toContainText('people');
       await expect(page.locator('#point')).toContainText('July 1, ');
+      await expectTextSizes(page);
       await born(page, 1962);
       await expect(page.locator('#heat .crosshair')).toHaveCount(1);
+    });
+
+    test('opens on a short question with the answer under it; one assumptions line; one amber action', async ({ page }) => {
+      await page.goto(url);
+      const q = (await page.locator('h1').textContent()).trim();
+      expect(q).toBe(`How many Canadians are about to turn ${oasAge}?`);
+      expect(q.length).toBeLessThanOrEqual(60);
+      expect(q.split(/\s+/).length).toBeLessThanOrEqual(12);
+      await expect(page.locator('h1')).toHaveCount(1);
+      await expect(page.locator('.kicker')).toHaveText('Data');
+      expect(await page.locator('.kicker').evaluate((e) => getComputedStyle(e).textTransform)).toBe('uppercase');
+      await expect(page.locator('#finding')).toHaveClass(/\blede\b/);
+      await expect(page.locator('#finding')).toContainText(`times as many as in ${y0}`);
+      await expect(page.locator('.assume')).toHaveCount(1);
+      await expect(page.locator('.assume')).toContainText('counted, not forecast');
+      // amber only for the action that draws the reader's own diagonal
+      await expect(page.locator('.btn-you')).toHaveCount(1);
+      await expect(page.locator('.btn-you')).toHaveText('Draw it');
+      await expect(page.locator('#save')).toHaveClass(/\bbtn-2\b/);
+      expect(await page.locator('body').innerText()).not.toMatch(/\bNo\. \d/);
+    });
+
+    test('every piece of text renders at 16.5px or more, chart text included, in each state', async ({ page }) => {
+      await page.goto(url);
+      await expectTextSizes(page);
+      await page.check('input[name=mode][value=share]');
+      await born(page, 1946);
+      await expectTextSizes(page);
+      const heat = page.locator('#heat'); await heat.scrollIntoViewIfNeeded();
+      const b = await heat.boundingBox();
+      await page.mouse.move(b.x + b.width * 0.3, b.y + b.height * 0.6);
+      await expect(page.locator('#heat .crosshair')).toBeVisible();
+      await expectTextSizes(page);
+      for (const d of await page.locator('details summary').all()) await d.click();
+      await expectTextSizes(page);
     });
 
     test('no chart text overlaps, for several birth years in both modes', async ({ page }) => {

@@ -51,3 +51,36 @@ test('no age, rate or year from the facts file is written into the shell code', 
     assert.ok(!/(?<![\w.#-])(19|20)\d\d(?![\w.])/.test(t), `${f} contains a year`);
   }
 });
+
+test('no sans tabular counters: every rule that asks for tabular figures sets them in the serif (redesign v2, step 2)', async () => {
+  // the Source Sans 3 subset has no tnum, so a changing number in sans would jitter; Source Serif 4 has it
+  const { deskUICSS } = await import('../desk-ui.mjs');
+  const sheets = [['desk-ui.mjs', deskUICSS()], ...NEXT.tools.map((t) => [`${t.labSlug}/style.css`, readFileSync(`${root}labs/${t.labSlug}/style.css`, 'utf8')])];
+  for (const [name, raw] of sheets) {
+    const css = raw.replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      if (!/tabular-nums/.test(m[2])) continue;
+      assert.match(m[2], /var\(--font-display\)|var\(--type-readout-font\)/, `${name}: "${m[1].trim()}" has tabular figures in the sans`);
+    }
+    assert.doesNotMatch(css, /font-variant-caps/, `${name} uses font-variant-caps`);
+  }
+});
+
+test('the tools\' own words: heds of 12 words or fewer and no advice words in the source copy', () => {
+  // the rendered H1 must equal next.json (each build checks it); here the source of every public tool: h1, h2, the lede
+  // and dek, the readout labels and the assumptions line carry no "should", "best for you" or "recommend", and a typed
+  // hed or section hed stays within 12 words
+  const ADVICE = /\b(should|recommend\w*)\b|\bbest for you\b/i;
+  const plain = (s) => s.replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+  for (const t of NEXT.tools) {
+    const src = readFileSync(`${root}labs/${t.labSlug}/index.src.html`, 'utf8').replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, '');
+    const parts = [
+      ...[...src.matchAll(/<(h1|h2)\b[^>]*>([\s\S]*?)<\/\1>/gi)].map((m) => ({ hed: true, text: plain(m[2]) })),
+      ...[...src.matchAll(/<(\w+)\b[^>]*class="[^"]*\b(lede|dek|readout-k|readout-t|assume)\b[^"]*"[^>]*>([\s\S]*?)<\/\1>/gi)].map((m) => ({ hed: false, text: plain(m[3]) })),
+    ];
+    for (const p of parts) {
+      assert.doesNotMatch(p.text, ADVICE, `${t.labSlug}: advice words in "${p.text}"`);
+      if (p.hed) assert.ok(p.text.split(/\s+/).filter(Boolean).length <= 12, `${t.labSlug}: the hed "${p.text}" is over 12 words`);
+    }
+  }
+});

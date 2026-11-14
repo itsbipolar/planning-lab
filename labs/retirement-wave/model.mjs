@@ -79,19 +79,19 @@ export function who(M, place, gender) {
 export const big = (n) => (n >= 1e6 ? `${(n / 1e6).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} million` : Math.round(n).toLocaleString('en-CA'));
 export const pct = (x, dp) => `${(x * 100).toLocaleString('en-CA', { minimumFractionDigits: dp, maximumFractionDigits: dp })}%`;
 
-// The headline: the people between the earliest CPP age and the OAS age on the latest July 1 (counted, not projected),
-// and how the share at or past the OAS age has moved since the first year.
+// The page's question (the H1, written at build): how many people are about to reach the OAS age.
+export const question = (M) => `How many Canadians are about to turn ${M.oasLo}?`;
+
+// The answer under it: the people between the earliest CPP age and the OAS age on the latest July 1 (counted, not
+// projected) against the first year, then how the share at or past the OAS age has moved since the first year.
 export function finding(M, V) {
-  const [y0, y1] = M.years, [, a1] = M.ages, lo = M.cppLo, hi = M.oasLo - 1, gap = M.oasLo - M.cppLo;
+  const [y0, y1] = M.years, [, a1] = M.ages, lo = M.cppLo, hi = M.oasLo - 1;
   const now = sumAges(M, V, y1, lo, hi), then = sumAges(M, V, y0, lo, hi);
   const oldNow = sumAges(M, V, y1, M.oasLo, a1) / V.totals[y1], oldThen = sumAges(M, V, y0, M.oasLo, a1) / V.totals[y0];
-  const words = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
-  const span = `${words[gap] ?? gap} year${gap === 1 ? '' : 's'}`;
-  const W = who(M, V.place, V.gender);
-  const h1 = `${big(now)} ${W} were ${lo} to ${hi} on July 1, ${y1}: all within ${span} of ${M.oasLo}, the age OAS can start.`;
-  const ratio = now / then;
-  const lede = `That is ${ratio.toLocaleString('en-CA', { maximumFractionDigits: 1 })} times as many as in ${y0}. People ${M.oasLo} to ${a1} were ${pct(oldNow, 1)} of the whole population in ${y1}, against ${pct(oldThen, 1)} in ${y0}.`;
-  return { h1, lede, now, then, ratio, oldNow, oldThen, lo, hi };
+  const W = who(M, V.place, V.gender), ratio = now / then;
+  const lede = `${big(now)} ${W} were ${lo} to ${hi} on July 1, ${y1}: ${ratio.toLocaleString('en-CA', { maximumFractionDigits: 1 })} times as many as in ${y0}.`;
+  const more = `OAS can start at ${M.oasLo}. People ${M.oasLo} to ${a1} were ${pct(oldNow, 1)} of the whole population in ${y1}, against ${pct(oldThen, 1)} in ${y0}.`;
+  return { lede, more, now, then, ratio, oldNow, oldThen, lo, hi };
 }
 
 // A birth year's diagonal. The people aged a on July 1 of year b + a were born between July 2 of b - 1 and July 1 of b.

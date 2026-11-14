@@ -1,19 +1,13 @@
+/* Your year (planning-timeline): only what this tool adds to the shared desk system (desk-ui.mjs). Type roles, the
+   kicker, buttons, readouts, chart frames and the container come from the shared layer. */
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
 body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
-.page{max-width:1280px;margin:0 auto;padding:0 20px}
-@media (min-width:1100px){.page{padding:0 40px}}
-.bar{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;align-items:baseline;padding:1.3rem 0 1.1rem;border-bottom:1px solid var(--t-rule)}
-.brand{font-family:var(--font-display);font-weight:600;font-size:1.3rem;text-decoration:none;color:inherit;margin-right:auto;white-space:nowrap}
-.bar a{white-space:nowrap}
-@media (max-width:480px){.bar a:not(.brand){font-size:17.5px}}
-a{color:inherit;text-underline-offset:4px}
-h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.015em;margin:0;text-wrap:balance}
-h1{font-size:clamp(2rem,2.6vw + 1rem,3.4rem);line-height:1.08;max-width:28ch;margin-top:.5rem}
-h2{font-size:1.55rem;line-height:1.15;margin:.35rem 0 1rem}
-.kicker{font-family:var(--font-mono);font-size:.95rem;color:var(--t-ink3);margin:2.5rem 0 0}
-.kicker span{white-space:nowrap}
-.note{font-size:17.5px;color:var(--t-ink3)}
+h1,h2{margin:0}
+.kicker{margin:2.5rem 0 0}
+h1{margin-top:.5rem}
+.lede{margin:1rem 0 0}
+h2{margin:.35rem 0 1rem}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 :focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
 :root[data-theme="light"] :focus-visible{outline-color:var(--t-point-deep)}
@@ -21,53 +15,43 @@ h2{font-size:1.55rem;line-height:1.15;margin:.35rem 0 1rem}
 .ask{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:1.75rem 0 0}
 .ask label{font-weight:650}
 .ask .note{flex-basis:100%;margin:.1rem 0 0}
-input[type=number]{font:inherit;font-variant-numeric:tabular-nums;width:8.5rem;min-height:44px;padding:.4rem .7rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-rule);border-radius:2px}
-button{font:inherit;font-weight:650;min-height:44px;padding:.5rem 1.1rem;background:var(--t-point);color:#0e1318;border:0;border-radius:2px;cursor:pointer}
-button.ghost{background:transparent;color:var(--t-ink);border:1px solid var(--t-rule)}
+input[type=number]{font:inherit;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600;width:8.5rem;min-height:44px;padding:.4rem .7rem;background:var(--t-raised);color:var(--t-ink);border:1px solid var(--t-rule);border-radius:2px}
 .error{flex-basis:100%;color:var(--t-d4);margin:0}
 
-.tl{margin-top:2rem}
-.tl-frame{width:100%;border-top:1px solid var(--t-rule);border-bottom:1px solid var(--t-rule);padding:.5rem 0}
+.tl{margin-top:2.5rem}
+.tl figure.chart{margin-top:1rem}
+.tl-frame{width:100%;padding:.25rem 0 0}
 #tl{display:block;width:100%;height:auto;overflow:visible}
-#tl text{font-family:var(--font-ui)}
-#tl .mono{font-family:var(--font-mono)}
+svg text{font-family:var(--font-ui)}
 .tl-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin:.9rem 0 0}
+.tl-actions .note{margin:0}
+[hidden]{display:none !important}
 
 .choices{margin-top:3rem}
-.choice{display:grid;gap:.5rem 3.5rem;border-top:1px solid var(--t-rule);padding:1.75rem 0 2.25rem}
-@media (min-width:1000px){.choice{grid-template-columns:minmax(0,25rem) minmax(0,1fr);align-items:start}.choice .fig{padding-top:1.5rem}}
-.choice .copy>p,.choice .fig>p{margin:.5rem 0;max-width:62ch}
-.choice .sec-label{margin:0 0 .5rem}
+.choice{display:grid;gap:.5rem 3.5rem;padding:1.75rem 0 2.25rem}
+@media (min-width:1000px){.choice{grid-template-columns:minmax(0,25rem) minmax(0,1fr);align-items:start}.choice figure.chart{margin-top:4.6rem}}
+.choice .copy>p{margin:.5rem 0}
+.choice .card-hed{margin:.35rem 0 1rem}
 .fig{min-width:0}
 .slider{display:grid;gap:.35rem;font-weight:600}
-.slider output{font-variant-numeric:tabular-nums}
+.slider output{font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;font-weight:600}
 input[type=range]{width:100%;min-height:44px;accent-color:var(--t-point)}
-.mini{display:block;max-width:100%;height:auto;margin:.75rem 0 .25rem;overflow:visible}
-.mini text{font-family:var(--font-ui)}
-.mini .mono,#tl .mono{font-family:var(--font-mono)}
+.mini{display:block;max-width:100%;height:auto;margin:.5rem 0 .25rem;overflow:visible;touch-action:pan-y}
 .recovery{border-top:1px solid var(--t-rule);margin-top:1rem;padding-top:.9rem}
 .recovery label,#rrif label{display:block;font-weight:600;margin:.6rem 0 .35rem}
 .hint{font-weight:400;color:var(--t-ink3)}
-.readout-t b{font-weight:700;font-variant-numeric:tabular-nums}
+.readout-t b{font-weight:700}
 .readout output{font:inherit}
-.tl .sec-label{margin-top:0}
-.tl h2{margin-bottom:.75rem}
 
-.people{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1.25rem;max-width:60rem}
-.sources{margin-top:3rem;border-top:1px solid var(--t-rule);padding-top:1rem}
-.sources summary{cursor:pointer;font-weight:650}
+.people{margin-top:3rem;max-width:60rem}
+.sources{margin-top:3rem;border-top:2px solid var(--t-ink);padding-top:.75rem}
+.sources summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
 .sources ul{padding-left:1.1rem;display:grid;gap:.35rem;font-size:17.5px;color:var(--t-ink2)}
 .foot{margin-top:4rem;padding:1.25rem 0 3rem;border-top:1px solid var(--t-rule);font-size:17.5px;color:var(--t-ink2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
 .foot p{margin:0}
-.legend{font-size:17px;line-height:1.7;color:var(--t-ink2);display:block}
 .key{display:inline-block;width:14px;height:10px;margin:0 .35rem 0 0;vertical-align:middle;line-height:0}
 .key.key-bar{background:var(--t-d3)}
-.key.key-dash{border-top:2px dashed var(--t-ink);height:0;width:18px;margin-left:.6rem;vertical-align:middle}
-h1{max-width:32ch}
+.key.key-dash{border-top:2px dashed var(--t-ink);height:0;width:18px;margin-left:.2rem;vertical-align:middle}
 
-/* Chart text keeps the size its label placement was tuned for; the page text around it is larger. */
+/* Chart text is drawn at the SVG's real width (scale 1), at 17px: the one size rule (16.5px or more). */
 svg{font-size:17px}
-
-/* the reading box that follows the pointer on the totals charts */
-.mini{touch-action:pan-y}
-.mini .crosshair text{font-size:14px}

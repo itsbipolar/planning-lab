@@ -44,7 +44,7 @@
   // Lines of text in one group with one ground-coloured backing behind them: [[tspan text, class], ...] per line, spaced
   // and centred on cy by the class's metrics m.
   function label(parent, cls, lines, x, cy, anchor, m) {
-    const g = el('g', { class: `label ${cls}-g` }, parent), bg = el('rect', { class: `${cls}-bg`, rx: 2 }, g);
+    const g = el('g', { class: `lbl ${cls}-g` }, parent), bg = el('rect', { class: `${cls}-bg`, rx: 2 }, g);
     const t = el('text', { class: cls, 'text-anchor': anchor }, g);
     lines.forEach((parts, k) => {
       parts.forEach(([text, c], j) => {
@@ -85,8 +85,8 @@
     for (const a of niceTicks(a0, a1, narrow ? 4 : 8).ticks) el('text', { class: 'lab', x: left - 6, y: Yc(a) + 4, 'text-anchor': 'end' }, svg, String(a));
     const yt = niceTicks(y0, y1, narrow ? 4 : 11).ticks, ly = top + plotH + 19, xs = [];
     for (const y of yt) { el('line', { class: 'leader', x1: X(y) + cw / 2, x2: X(y) + cw / 2, y1: top + plotH, y2: top + plotH + 4 }, svg); el('text', { class: 'lab', x: X(y) + cw / 2, y: ly, 'text-anchor': 'middle' }, svg, String(y)); xs.push(X(y) + cw / 2); }
-    if (xs[0] - X(y0) > 44) el('text', { class: 'lab', x: X(y0), y: ly, 'text-anchor': 'start' }, svg, String(y0));
-    if (R - xs.at(-1) > 44) el('text', { class: 'lab', x: R, y: ly, 'text-anchor': 'end' }, svg, String(y1));
+    if (xs[0] - X(y0) > 58) el('text', { class: 'lab', x: X(y0), y: ly, 'text-anchor': 'start' }, svg, String(y0));
+    if (R - xs.at(-1) > 58) el('text', { class: 'lab', x: R, y: ly, 'text-anchor': 'end' }, svg, String(y1));
 
     // the rule ages: dashed lines across the whole grid
     for (const r of M.rules) {
@@ -155,7 +155,7 @@
       for (const it of rl) {
         const x = R + 6;
         if (Math.abs(it.y - it.want) > 1) el('path', { class: 'leader', d: `M${R},${Yc(it.r.age)} L${x - 2},${it.y}` }, ruleLayer);
-        const g = el('g', { class: 'label' }, ruleLayer);
+        const g = el('g', { class: 'lbl' }, ruleLayer);
         el('text', { class: 'rule-n', x, y: it.y + RM.mid }, g, String(it.r.age));
       }
     } else {
@@ -220,8 +220,8 @@
   function render() {
     V = view(M, state.place, state.gender);
     const f = finding(M, V), W = who(M, state.place, state.gender);
-    $('finding').textContent = f.h1;
-    $('lede').textContent = f.lede;
+    $('finding').textContent = f.lede;
+    $('lede').textContent = f.more;
     // the chart's headline: the biggest single age in this view
     let top = [y0, a0, -1];
     for (let y = y0; y <= y1; y++) for (let a = a0; a <= a1; a++) { const v = value(M, V, state.mode, y, a); if (v > top[2]) top = [y, a, v]; }
@@ -256,10 +256,12 @@
   // and the rule age they reached most recently (or reach next, after the data ends)
   function bornReadout(d) {
     const b = state.born;
-    $('born-k').textContent = `People born July 2, ${b - 1} to July 1, ${b}`;
+    $('born-k').textContent = `Born July 2, ${b - 1} to July 1, ${b}`;
     if (!d.last) { $('born-v').textContent = 'Not in the data'; $('born-t').textContent = `The chart covers ages ${a0} to ${a1} on July 1, ${y0} to ${y1}.`; return; }
     const [ly, la] = d.last, count = V.counts[ly][la - a0], share = value(M, V, 'share', ly, la);
-    $('born-v').textContent = state.mode === 'share' ? `${pct(share, 2)} of the population` : `${n(count)} people`;
+    // the figure big, its unit beside it at text size
+    const bv = $('born-v'); bv.textContent = '';
+    bv.append(state.mode === 'share' ? pct(share, 2) : n(count), ' ', html('span', state.mode === 'share' ? 'of the population' : 'people', 'unit'));
     const past = d.crossings.filter((c) => c.when === 'in').at(-1), next = d.crossings.find((c) => c.when === 'after');
     let t = `They were ${la} on July 1, ${ly}${ly === y1 ? ', the latest year' : ''}: ${state.mode === 'share' ? `${n(count)} ${who(M, state.place, state.gender)}` : `${pct(share, 2)} of the population`}.`;
     if (past) t += ` They reached ${past.age} (${past.rule.text}) in ${past.year}.`;
@@ -316,7 +318,6 @@
     const li = document.createElement('li'); li.append(link(f.source_url, f.title), `, read ${f.as_of}.`); $('fact-sources').appendChild(li);
   }
   $('foot-src').textContent = `Data: Statistics Canada, Table 17-10-0005-01, released ${src.released}, read ${src.retrieved}; the rule ages from official federal sources, listed under Sources and notes.`;
-  $('kicker').textContent = `Data story · Statistics Canada, ${y0} to ${y1}`;
 
   // ---------- save the chart as an image, made in the browser ----------
   $('save').addEventListener('click', () => {
@@ -328,13 +329,14 @@
       for (const p of ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity', 'font-size', 'font-weight']) s.setAttribute(p, cs.getPropertyValue(p));
       if (node.nodeName === 'text') s.setAttribute('font-family', 'Libre Franklin, Helvetica, Arial, sans-serif');
     });
-    const pad = 32, head = 56, foot = 56, img = new Image(), cs = getComputedStyle(document.documentElement), col = (k) => cs.getPropertyValue('--t-' + k).trim();
+    const pad = 32, head = 74, foot = 56, img = new Image(), cs = getComputedStyle(document.documentElement), col = (k) => cs.getPropertyValue('--t-' + k).trim();
     img.onload = () => {
       const cv = document.createElement('canvas'), k = 2, w = W + pad * 2, h = H + pad * 2 + head + foot;
       cv.width = w * k; cv.height = h * k;
       const g = cv.getContext('2d'); g.scale(k, k); g.fillStyle = col('ground'); g.fillRect(0, 0, w, h);
-      g.fillStyle = col('ink'); g.font = '600 19px Georgia, serif'; g.fillText($('finding').textContent, pad, pad + 8, W);
-      g.fillStyle = col('ink2'); g.font = '14px Helvetica, Arial, sans-serif'; g.fillText($('chart-h').textContent, pad, pad + 34, W);
+      g.fillStyle = col('ink'); g.font = '600 19px Georgia, serif'; g.fillText($('question').textContent, pad, pad + 8, W);
+      g.fillStyle = col('ink2'); g.font = '14px Helvetica, Arial, sans-serif'; g.fillText($('finding').textContent, pad, pad + 30, W);
+      g.fillText($('chart-h').textContent, pad, pad + 48, W);
       g.drawImage(img, pad, pad + head, W, H);
       g.fillStyle = col('ink3'); g.font = '12px Helvetica, Arial, sans-serif';
       g.fillText(src.attribution, pad, pad + head + H + 26, W);

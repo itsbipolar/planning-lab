@@ -30,11 +30,9 @@
   }
   const cal = (picked) => rolling(C, FF, TODAY, picked);
 
-  // Fixed for the page: every situation at once (for the sources), each situation alone (the count beside its box) and
-  // every quick pick (the range in the subheading).
+  // Fixed for the page: every situation at once (for the sources) and each situation alone (the count beside its box).
   const ALL = cal(C.situations.map((x) => x.id));
   const alone = Object.fromEntries(C.situations.map((x) => { const c = cal([x.id]); return [x.id, [c.events.length, c.pending.length]]; }));
-  const picks = C.presets.map((p) => ({ p, n: cal(p.situations).events.length })).sort((a, b) => a.n - b.n);
 
   // ---------- build your household ----------
   for (const p of C.presets) {
@@ -64,8 +62,12 @@
     if (unhair) unhair();
     clear(svg);
     const W = Math.max(280, $('frame').clientWidth), narrow = W < 640, wk = c.weeks, n = wk.length;
-    const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 11 : 16, fs = narrow ? 12 : 13;
-    const tall = Math.max(4, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1), H = base + fs * 3 + 16;
+    // the SVG is drawn at the frame's own width (viewBox = width), so a label's font size is the size it renders at
+    const colW = W / n, gap = colW > 12 ? 2 : 1, barW = Math.max(2, colW - gap), u = narrow ? 11 : 16;
+    const fs = parseFloat(getComputedStyle(svg).fontSize); // the chart's label size, from style.css (#strip)
+    const tall = Math.max(4, ...wk.map((w) => w.events.length)), rowH = fs + 6, top = rowH * 2 + 8, base = top + tall * (u + 1);
+    // the axis: the month row, then the year row a full text line under it (a label's box is about 1.4 times its size)
+    const lineH = Math.ceil(fs * 1.45), ay = base + fs + 16, yy = ay + lineH, H = yy + Math.ceil(fs / 2);
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
     const mon0 = ms(wk[0].monday), X = (d) => ((ms(d) - mon0) / 864e5 / 7) * colW;
     const defs = s('defs', {}, svg), pat = s('pattern', { id: 'hatch', width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
@@ -91,7 +93,7 @@
     s('line', { class: 'today', x1: xt, x2: xt, y1: top - 4, y2: base + fs + 12 }, svg);
 
     // the axis: today's date, then each month's first day, with the year under the first label of each year
-    const labels = [], ay = base + fs + 16, yy = ay + fs + 3;
+    const labels = [];
     const put = (x, y, text, cls, alt) => {
       const t = s('text', { x, y, 'font-size': fs, class: cls || '' }, svg, text);
       let b = box(t);
@@ -109,8 +111,8 @@
       const first = iso(Date.UTC(y0, m0 - 1 + k, 1));
       if (first > c.end) break;
       const name = new Date(ms(first)).toLocaleDateString('en-CA', { month: 'short', timeZone: 'UTC' });
-      const t = put(X(first) + 2, ay, name, '', name.slice(0, 1));
-      if (t && first.slice(5, 7) === '01') put(X(first) + 2, yy, first.slice(0, 4), 'yr');
+      put(X(first) + 2, ay, name, '', name.slice(0, 1));
+      if (first.slice(5, 7) === '01') put(X(first) + 2, yy, first.slice(0, 4), 'yr');
     }
 
     // readings on the chart: the busiest weeks, then the next date, each written just above its own pile when there is
@@ -149,7 +151,28 @@
       if (es.length > shown.length) lines.push(`and ${plural(es.length - shown.length, 'more', 'more')}, listed below`);
       return { x: k * colW + colW / 2, y: base - es.length * (u + 1), lines };
     } });
+    // keep the reading box inside the chart: on a phone a box beside a middle week would run off the left edge
+    const fit = () => {
+      const g = svg.querySelector('.crosshair'), r = g && g.querySelector('rect'), t = g && g.querySelector('text');
+      if (!r || g.style.display === 'none') return;
+      const bx = +r.getAttribute('x'), bw = +r.getAttribute('width'), nx = Math.max(0, Math.min(W - bw, bx));
+      if (nx === bx) return;
+      r.setAttribute('x', nx);
+      t.setAttribute('transform', t.getAttribute('transform').replace(/translate\(([-\d.e]+)/, (m, x) => `translate(${+x + nx - bx}`));
+    };
+    svg.addEventListener('pointermove', fit); svg.addEventListener('pointerdown', fit);
+    const unbox = unhair;
+    unhair = () => { svg.removeEventListener('pointermove', fit); svg.removeEventListener('pointerdown', fit); unbox(); };
     const most = wk.reduce((a, w) => (w.events.length > a.events.length ? w : a), wk[0]);
+    // the takeaway, in plain words: the month that holds the most dates (the earliest, on a tie)
+    const months = new Map();
+    for (const e of c.events) months.set(e.date.slice(0, 7), (months.get(e.date.slice(0, 7)) || 0) + 1);
+    const [topMonth, most1] = [...months].reduce((a, m) => (m[1] > a[1] ? m : a), ['', 0]);
+    const monthName = (ym) => new Date(ms(ym + '-01')).toLocaleDateString('en-CA', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    $('chart-title').textContent = !c.events.length ? 'No confirmed date falls in these twelve months.'
+      : most1 > 1 ? `${monthName(topMonth)} holds the most: ${most1} of the ${plural(c.events.length, 'date', 'dates')}.`
+      : `${plural(c.events.length, 'date', 'dates')}, no two in the same month.`;
+    $('chart-sub').textContent = `One block per date, one column per week, from ${longDate(c.today)} to ${longDate(c.end)}.`;
     $('strip-t').textContent = c.events.length
       ? `${plural(c.events.length, 'date', 'dates')} in the next twelve months, week by week; the busiest week, of ${short(most.from)}, has ${most.events.length}. Every date is listed below.`
       : 'No confirmed date falls in the next twelve months for this household.';
@@ -158,7 +181,6 @@
   function legend(c) {
     const p = $('legend'); p.textContent = '';
     for (const k of KINDS) { const sp = h('span', {}, p); h('i', { class: `sw k-${k}`, 'aria-hidden': 'true' }, sp); sp.append(C.kinds[k]); }
-    const t = h('span', {}, p); h('i', { class: 'sw today', 'aria-hidden': 'true' }, t); t.append('Today: the twelve months start here');
     if (c.windows.length) { const w = h('span', {}, p); h('i', { class: 'sw hatch', 'aria-hidden': 'true' }, w); w.append('The superficial-loss period around a sale on the year’s last day'); }
   }
 
@@ -214,12 +236,12 @@
       return;
     }
     const e = c.events[0], same = c.events.filter((x) => x.date === e.date).length;
-    $('rd-next-v').textContent = longDate(e.date);
-    $('rd-next-t').textContent = `${e.label}, ${e.days === 0 ? 'today' : e.days === 1 ? 'tomorrow' : `in ${e.days} days`}${same > 1 ? `, with ${plural(same - 1, 'other date', 'other dates')} the same day` : ''}.`;
+    $('rd-next-v').textContent = e.days === 0 ? 'Today' : e.days === 1 ? 'Tomorrow' : `In ${plural(e.days, 'day', 'days')}`;
+    $('rd-next-t').textContent = `${longDate(e.date)} · ${e.label}${same > 1 ? ` · and ${plural(same - 1, 'other', 'others')} that day` : ''}`;
     $('rd-count-v').textContent = plural(c.events.length, 'date', 'dates');
     const parts = KINDS.map((k) => [k, c.events.filter((x) => x.kind === k).length]).filter(([, m]) => m)
       .map(([k, m]) => (KIND_WORDS[k] ? `${m} ${KIND_WORDS[k][m === 1 ? 0 : 1]}` : `${m}: ${C.kinds[k]}`));
-    $('rd-count-t').textContent = `${parts.join(', ')}, from ${longDate(c.today)} to ${longDate(c.end)}.`;
+    $('rd-count-t').textContent = `${parts.join(', ')}, through ${longDate(c.end)}.`;
   }
 
   function render() {
@@ -227,15 +249,14 @@
     current = c;
     readouts(c);
     $('finding').textContent = finding(c, p ? p.noun : null);
-    const lo = picks[0], hi = picks[picks.length - 1];
-    $('dek').textContent = `The twelve months from ${longDate(c.today)} to ${longDate(c.end)}, as this page’s date sets them. ` +
-      (p && p.id === example.id && !state.touched ? `An example to start: ${p.noun}; tick the situations that fit any household. ` : '') +
-      `Among the quick picks, the confirmed dates in these months run from ${lo.n} (${lo.p.noun}) to ${hi.n} (${hi.p.noun}).`;
+    $('assume').textContent = (p && p.id === example.id && !state.touched ? `An example to start: ${p.noun}. ` : '') +
+      'Assumes a December year-end for a corporation or trust, and no weekend or holiday moves.';
     document.querySelectorAll('#picks button').forEach((b) => b.setAttribute('aria-pressed', String(!!p && b.dataset.preset === p.id)));
     document.querySelectorAll('#sits input').forEach((i) => { i.checked = state.picked.includes(i.value); });
     drawStrip(c); legend(c); list(c);
     const np = c.pending.length;
     $('ics').disabled = !c.events.length;
+    $('ics').textContent = c.events.length ? `Add ${c.events.length === 1 ? 'this date' : `these ${c.events.length} dates`} to my calendar` : 'Add to my calendar';
     $('ics-note').textContent = c.events.length
       ? `A file of ${plural(c.events.length, 'all-day date', 'all-day dates')} for any calendar app, each with its rule, its source and “${EDU}” Made in this page; nothing is sent.${np ? ` ${plural(np, 'date', 'dates')} not confirmed yet ${np === 1 ? 'is' : 'are'} left out.` : ''}`
       : 'Nothing to save yet: no confirmed date falls in these twelve months.';
@@ -253,5 +274,7 @@
   render();
   // the first fill is not a change: no underline on load
   requestAnimationFrame(() => document.querySelectorAll('.flash').forEach((e) => e.classList.remove('flash')));
+  // the first drawing may measure labels before the inlined fonts are ready: place them again once they are
+  if (document.fonts) document.fonts.ready.then(() => current && drawStrip(current));
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => current && drawStrip(current), 150); });
 })();

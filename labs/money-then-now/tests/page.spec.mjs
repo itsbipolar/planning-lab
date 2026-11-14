@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
+import { expectStorageClean, expectShell, expectTextSizes } from '../../../shared/desk/shell-test.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -44,15 +44,19 @@ for (const width of [390, 1440]) {
       const start = page.url();
       await expect(page.locator('#example-note')).toContainText('example');
       await expect(page.locator('#finding')).toContainText(/^What cost \$100 in 1990 cost about \$[\d,]+ in \d{4}\.$/);
-      await expect(page.locator('#kicker')).toHaveText(`Data story · Statistics Canada and Bank of Canada data to ${M.last}`);
+      await expect(page.locator('.opening .kicker')).toHaveText('Data');
+      await expect(page.locator('h1')).toHaveText('What did $100 buy the year you were born?');
+      await expect(page.locator('#answer-k')).toHaveText(`$100 in 1990, in ${M.last} dollars`);
+      await expect(page.locator('#answer-v')).toHaveText(/^about \$[\d,]+$/);
       await expect(page.locator('#chart .stripe')).toHaveCount(M.last - M.first + 1);
       await expect(page.locator('#chart .sel-line').first()).toHaveAttribute('data-year', '1990');
 
       await choose(page, 1950, 250);
       const expected = 250 * (M.avg[M.last] / M.avg[1950]);
-      const shown = Number((await page.locator('#finding .hl').textContent()).replace(/[$,]/g, ''));
+      const shown = Number((await page.locator('#answer-v').textContent()).replace(/[^\d.]/g, ''));
       expect(Math.abs(shown - expected) / expected).toBeLessThan(0.01);
       await expect(page.locator('#finding')).toContainText('What cost $250 in 1950');
+      await expect(page.locator('#q-amount')).toHaveText('$250'); // the question follows the amount typed
       await expect(page.locator('#chart .sel-line').first()).toHaveAttribute('data-year', '1950');
       await expect(page.locator('#chart')).toContainText('$250 in 1950');
       await expect(page.locator('#example-note')).not.toContainText('example');
@@ -102,13 +106,18 @@ for (const width of [390, 1440]) {
       expect(dl.suggestedFilename()).toBe('money-then-now-1990.png');
     });
 
-    test('the year readout sits under the form and changes with the year; no rail; the crosshair', async ({ page }) => {
+    test('the answer sits under the form, the year readout under it, and they change with the year; no rail; the crosshair', async ({ page }) => {
       await page.goto(url);
-      const f = await page.locator('#form').boundingBox(), r = await page.locator('#year-readout').boundingBox();
-      expect(r.y).toBeGreaterThanOrEqual(f.y + f.height - 1);
-      expect(r.y - (f.y + f.height)).toBeLessThan(64);
-      expect(Math.abs(r.x - f.x)).toBeLessThan(24);
+      const f = await page.locator('#form').boundingBox(), a = await page.locator('#answer').boundingBox(), r = await page.locator('#year-readout').boundingBox();
+      expect(a.y).toBeGreaterThanOrEqual(f.y + f.height - 1);
+      expect(a.y - (f.y + f.height)).toBeLessThan(64);
+      expect(Math.abs(a.x - f.x)).toBeLessThan(24);
+      expect(r.y).toBeGreaterThanOrEqual(a.y + a.height - 1);
+      expect(r.y - (a.y + a.height)).toBeLessThan(64);
       await expect(page.locator('#rk-year')).toHaveText('The example year, 1990');
+      // the big answer is the largest figure on the page's first screen
+      const big = await page.evaluate(() => ['#answer-v', '#rv-infl'].map((s) => parseFloat(getComputedStyle(document.querySelector(s)).fontSize)));
+      expect(big[0]).toBeGreaterThan(big[1]);
       const infl = await page.locator('#rv-infl').innerText(), prime = await page.locator('#rv-prime').innerText();
       expect(prime).toMatch(/%$/);
       await choose(page, 1950, 250);
@@ -140,6 +149,38 @@ for (const width of [390, 1440]) {
       await expect(svg.locator('.crosshair')).toHaveCount(1); // the old one was removed before the redraw
       await page.mouse.move(b.x + b.width * 0.5, b.y + b.height * 0.5);
       await expect(svg.locator('.crosshair text')).toContainText('$250 from 1950: ');
+    });
+
+    test('opens on a short question, with the control and the big answer in the first 700px', async ({ page }) => {
+      await page.goto(url);
+      const q = (await page.locator('h1').innerText()).trim();
+      expect(q.length).toBeLessThanOrEqual(60);
+      expect(q.split(/\s+/).length).toBeLessThanOrEqual(12);
+      expect(q.endsWith('?')).toBe(true);
+      await expect(page.locator('[data-first-move]')).toHaveCount(1);
+      const top = await page.evaluate(() => ({ form: document.querySelector('[data-first-move]').getBoundingClientRect().top + scrollY, big: document.querySelector('.readout-v.big').getBoundingClientRect().bottom + scrollY }));
+      expect(top.form).toBeLessThanOrEqual(700);
+      if (width === 390) expect(top.big).toBeLessThanOrEqual(700);
+      await expect(page.locator('.sec-label b')).toHaveCount(0); // no section numbers
+      await expect(page.locator('figure.chart .chart-title')).toHaveText(/^Prices rose /);
+      await expect(page.locator('#example-note')).toContainText('consumer prices'); // the one assumptions line
+    });
+
+    test('every piece of text renders at 16.5px or more, chart labels included, in both schemes', async ({ page }) => {
+      await page.goto(url);
+      await expectTextSizes(page);
+      await choose(page, M.first, 1234567);
+      await expectTextSizes(page);
+      await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+      await choose(page, M.last, 250);
+      await expectTextSizes(page);
+      for (const d of await page.locator('details summary').all()) await d.click();
+      await expectTextSizes(page);
+      const svg = page.locator('#chart'); await svg.scrollIntoViewIfNeeded();
+      const b = await svg.boundingBox();
+      await page.mouse.move(b.x + b.width * 0.6, b.y + b.height * 0.5);
+      await expect(svg.locator('.crosshair')).toBeVisible();
+      await expectTextSizes(page);
     });
 
     for (const theme of ['dark', 'light']) {

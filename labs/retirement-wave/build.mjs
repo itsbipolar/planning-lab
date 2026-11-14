@@ -4,18 +4,29 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { buildModel } from './model.mjs';
+import { buildModel, question, finding, view } from './model.mjs';
 import { scaleCSS, STEPS } from './scale.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
-import { deskPage } from '../../shared/desk/desk-page.mjs';
+import { deskPage, toolFor, questionOf } from '../../shared/desk/desk-page.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
 const model = buildModel(JSON.parse(read(join(root, 'shared', 'facts.json'))), JSON.parse(read(join(root, 'shared', 'data', 'population-by-age-places.json'))));
 const css = [deskCSS(), deskUICSS(), read(join(here, 'style.css')), scaleCSS()].join('\n');
 const js = deskUIJS() + '\n' + read(join(here, 'model.mjs')).replace(/^export /gm, '') + '\n' + read(join(here, 'app.js'));
-const html = deskPage(read(join(here, 'index.src.html')), 'retirement-wave').replace('/*@@CSS@@*/', () => css)
+// The words the page opens on, computed from the model (Canada, all genders) and written in at build, so the first paint
+// already reads right; the script rewrites the answer when the place or gender changes.
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const f = finding(model, view(model, 'CA', 'all'));
+const words = {
+  question: question(model), lede: f.lede, more: f.more,
+  assume: `Statistics Canada's estimates for July 1 of each year, ${model.years.join(' to ')}, ages ${model.ages.join(' to ')}: counted, not forecast. Education, not advice.`,
+};
+const src = read(join(here, 'index.src.html')).replace(/\{\{(\w+)\}\}/g, (m, k) => { if (!(k in words)) throw new Error(`index.src.html: no value for ${m}`); return esc(words[k]); });
+// the question must be the one the site and the Up next chain use (shared/desk/next.json), so they never drift apart
+if (question(model) !== questionOf(toolFor('retirement-wave'))) throw new Error(`the question "${question(model)}" differs from next.json's`);
+const html = deskPage(src, 'retirement-wave').replace('/*@@CSS@@*/', () => css)
   .replace('/*@@DATA@@*/', () => JSON.stringify({ model, steps: STEPS }).replace(/</g, '\\u003c')).replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);

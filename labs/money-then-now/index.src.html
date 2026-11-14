@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
-<script>/* The site's light or dark choice, read only (this page stores nothing): light unless the reader chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Money, then and now · Mohammed El Chayeb</title>
 <meta name="description" content="A century of Canadian prices and borrowing on one chart: every year's price change, the prime rate against it, and what an amount from any year is worth in today's dollars. Statistics Canada and Bank of Canada data. Education only, not advice.">
@@ -14,18 +14,24 @@
 <div class="page">
   <main>
     <section data-chapter="Then and now" class="opening">
-    <p class="kicker" id="kicker">Data story · Statistics Canada and Bank of Canada data</p>
-    <h1 id="finding" aria-live="polite">Money, then and now</h1>
+    <p class="kicker">Data</p>
+    <h1 id="question">What did <span id="q-amount">{{example_amount}}</span> buy the year you were born?</h1>
 
-    <form id="form" class="ask" novalidate>
-      <span class="field"><label for="year">Pick a year</label>
-      <input id="year" name="year" type="number" inputmode="numeric" autocomplete="off" required></span>
+    <form id="form" class="ask" novalidate data-first-move>
       <span class="field"><label for="amount">An amount</label>
       <span class="dollar"><span aria-hidden="true">$</span><input id="amount" name="amount" type="number" inputmode="decimal" autocomplete="off" min="0.01" step="0.01" required></span></span>
-      <button type="submit">Show it</button>
+      <span class="field"><label for="year">In the year</label>
+      <input id="year" name="year" type="number" inputmode="numeric" autocomplete="off" required></span>
+      <button type="submit" class="btn-you">Show it</button>
       <p class="note" id="example-note"></p>
       <p class="error" id="error" role="alert" hidden></p>
     </form>
+
+    <div class="readout answer" id="answer" aria-live="polite">
+      <p class="readout-k" id="answer-k"></p>
+      <p class="readout-v big" id="answer-v" data-flash></p>
+      <p class="readout-t" id="finding"></p>
+    </div>
 
     <div class="readout" id="year-readout" aria-live="polite">
       <p class="readout-k" id="rk-year"></p>
@@ -38,23 +44,22 @@
       <p class="readout-fine">Real rate here = the year's average prime rate minus that year's price rise; a simple after-the-fact measure.</p>
     </div>
 
-    <section class="chart" aria-labelledby="chart-h">
-      <h2 id="chart-h" class="sr-only">Prices, borrowing and what an amount is worth, year by year</h2>
+    <figure class="chart" aria-labelledby="chart-h">
+      <figcaption><h2 class="chart-title" id="chart-h"></h2><p class="chart-sub" id="chart-sub"></p></figcaption>
       <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Prices, prime rate and purchasing power</title><desc id="chart-desc"></desc></svg></div>
       <ul class="sr-only" id="chart-text"></ul>
-      <p class="note">Point at the chart, or tap it, to read any year.</p>
-      <p class="actions"><button type="button" id="save" class="ghost">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
-    </section>
+    </figure>
+    <p class="actions"><button type="button" id="save" class="btn-2">Save the chart as an image</button> <span class="note">Made in this page; nothing is sent.</span></p>
     </section>
 
     <section class="readings" data-chapter="What the years say" aria-labelledby="readings-h">
-      <p class="sec-label"><b>02</b>What the years say</p>
+      <p class="sec-label">What the years say</p>
       <h2 id="readings-h">What the years say</h2>
       <ul id="readings"></ul>
     </section>
 
     <section class="later" data-chapter="The data" aria-labelledby="data-h">
-    <p class="sec-label" id="data-h"><b>03</b>The data, year by year, and its sources</p>
+    <p class="sec-label" id="data-h">The data, year by year, and its sources</p>
     <details class="fold">
       <summary>Every year as a table</summary>
       <div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-cap">

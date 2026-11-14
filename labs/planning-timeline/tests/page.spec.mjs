@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { expectStorageClean, expectShell } from '../../../shared/desk/shell-test.mjs';
+import { expectStorageClean, expectShell, expectTextSizes } from '../../../shared/desk/shell-test.mjs';
 import { fileURLToPath } from 'node:url';
 
 const url = 'file://' + fileURLToPath(new URL('../dist/index.html', import.meta.url));
@@ -79,6 +79,70 @@ for (const width of [390, 1440]) {
       // a redraw leaves one crosshair, not two
       await page.locator('#cpp-range').focus(); await page.keyboard.press('End');
       await expect(page.locator('#cpp-chart .crosshair')).toHaveCount(1);
+    });
+
+    test('words: the question as the H1, the finding under it, one-word kicker, no section numbers, one amber action', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      const h1 = (await page.locator('h1').textContent()).trim();
+      expect(h1).toBe('What opens, and when, for your year?');
+      expect(h1.length).toBeLessThanOrEqual(60);
+      expect(h1.split(/\s+/).length).toBeLessThanOrEqual(12);
+      expect(h1).not.toMatch(/\d/);
+      await expect(page.locator('h1')).toHaveCount(1);
+      await expect(page.locator('h1 + #finding')).toContainText('At ');
+      await expect(page.locator('.kicker')).toHaveText('Tool');
+      expect(await page.locator('.sec-label').evaluateAll((ls) => ls.filter((l) => /\d/.test(l.textContent)).length)).toBe(0);
+      await expect(page.locator('.btn-you')).toHaveCount(1);
+      await expect(page.locator('.legend')).toHaveCount(0);
+      // every chart is framed, with a plain-words title
+      for (const f of await page.locator('figure.chart').all()) await expect(f.locator('.chart-title')).not.toBeEmpty();
+      await expect(page.locator('figure.chart')).toHaveCount(4);
+      // the one assumptions line sits beside the first control
+      await expect(page.locator('#example-note')).toContainText('rules as of');
+      const c = await page.locator('#year').boundingBox(), n = await page.locator('#example-note').boundingBox();
+      expect(n.y - (c.y + c.height)).toBeLessThan(120);
+      const body = await page.locator('main').innerText();
+      expect(body).not.toMatch(/\b(should|recommend)\b|best for you/i);
+    });
+
+    test('every rendered text is 16.5px or more, chart labels included, in each state', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      await expectTextSizes(page);
+      for (const y of ['1950', '1990', '2008']) { await page.fill('#year', y); await page.click('button[type=submit]'); await expectTextSizes(page); }
+      for (const d of await page.locator('details summary').all()) await d.click();
+      await expectTextSizes(page);
+      for (const r of ['#cpp-range', '#oas-range']) { await page.locator(r).focus(); await page.keyboard.press('Home'); }
+      await expectTextSizes(page);
+      // the crosshair reading too, and its box stays inside the chart
+      for (const id of ['#cpp-chart', '#oas-chart']) {
+        const svg = page.locator(id); await svg.scrollIntoViewIfNeeded();
+        const b = await svg.boundingBox();
+        for (const f of [0.2, 0.45, 0.6]) {
+          await page.mouse.move(b.x + b.width * f, b.y + b.height / 2);
+          await expect(page.locator(`${id} .crosshair`)).toBeVisible();
+          await expectTextSizes(page);
+          const r = await page.locator(`${id} .crosshair rect`).boundingBox();
+          expect(r.x, 'the reading box starts inside the chart').toBeGreaterThanOrEqual(b.x - 1);
+          expect(r.x + r.width, 'the reading box ends inside the chart').toBeLessThanOrEqual(b.x + b.width + 1);
+        }
+      }
+    });
+
+    test('labels on the totals and RRIF charts do not overlap', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      const clashes = (id) => page.locator(`${id} > text`).evaluateAll((ts) => {
+        const b = ts.filter((t) => t.textContent.trim()).map((t) => { const r = t.getBBox(); return [r.x, r.y, r.width, r.height, t.textContent]; }), out = [];
+        for (let i = 0; i < b.length; i++) for (let j = i + 1; j < b.length; j++) {
+          const [p, q] = [b[i], b[j]];
+          if (p[0] < q[0] + q[2] - 1 && q[0] < p[0] + p[2] - 1 && p[1] < q[1] + q[3] - 1 && q[1] < p[1] + p[3] - 1) out.push(`${p[4]} / ${q[4]}`);
+        }
+        return out;
+      });
+      for (const [range, id] of [['#cpp-range', '#cpp-chart'], ['#oas-range', '#oas-chart']]) {
+        await page.locator(range).focus();
+        for (const key of ['End', 'Home', 'ArrowRight', 'PageUp', 'PageUp']) { await page.keyboard.press(key); expect(await clashes(id), `${id} after ${key}`).toEqual([]); }
+      }
+      expect(await clashes('#rrif-chart')).toEqual([]);
     });
 
     test('labels on the timeline do not overlap', async ({ page }) => {
