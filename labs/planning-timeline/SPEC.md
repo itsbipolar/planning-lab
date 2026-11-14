@@ -10,5 +10,8 @@ Merges Money milestones and The ages that matter. A birth year (an example, 1965
   on an example income for the latest confirmed threshold year, and the RRIF minimums with the share of a fund left at 90
   if only minimums come out and it earns nothing, on an example fund.
 - People your age (Statistics Canada, ages 50 to 89 in the snapshot).
-- Save the timeline as an image (made in the browser). No request after load; nothing stored; inputs stay out of the URL.
+- Save the timeline as an image (made in the browser). No request after load; inputs stay out of the URL. The year the
+  visitor sets is kept for this visit only in sessionStorage mo.year (Money, then and now and Retirement wave open on it).
+- The lead numbers (prices since the year, TFSA limits added up, the CPP window) come from shared/desk/your-year-core.mjs,
+  the module the site's home lead runs, so the two always match (tests/core.test.mjs).
 Rules come only from shared/facts.json (confirmed); tests check the arithmetic and that no rule value is typed in.

@@ -5,7 +5,8 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { factIndex } from './engine.mjs';
+import { factIndex, rolling, monthDay } from './engine.mjs';
+import { writePoster } from '../../shared/desk/poster.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 import { deskPage } from '../../shared/desk/desk-page.mjs';
@@ -33,4 +34,27 @@ const out = process.env.OUT ?? join(here, 'dist', 'index.html');
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, html);
 const confirmed = facts.filter((f) => f.status === 'confirmed').length;
+// the poster (dist/poster.json): the example household's confirmed dates across this calendar year, month by month
+if (!process.env.OUT) {
+  const Y = new Date().getFullYear(), ex = config.presets.find((p) => p.id === config.example) ?? config.presets[0];
+  const cal = rolling(data.config, factsFile, `${Y}-01-01`, ex.situations);
+  const months = Array.from({ length: 12 }, () => 0);
+  for (const e of cal.events) months[Number(e.date.slice(5, 7)) - 1]++;
+  const p = writePoster(join(here, 'dist'), 'planning-calendar', {
+    kind: 'dates',
+    example: `Example household: ${ex.label.toLowerCase()}`,
+    year: Y,
+    x: { label: 'Month', min: 1, max: 12 },
+    months,
+    dates: cal.events.map((e) => ({ date: e.date, what: e.what, kind: e.kind })),
+    readings: [
+      { label: `Confirmed dates in ${Y}`, value: String(cal.events.length) },
+      ...(cal.pending.length ? [{ label: 'Not confirmed yet', value: String(cal.pending.length) }] : []),
+    ],
+    labels: cal.events.length ? [{ text: `First: ${cal.events[0].what}, ${monthDay(cal.events[0].date)}` }] : [],
+    source: 'Dates from official government pages (confirmed only)',
+    asOf: `${Y}-12-31`,
+  });
+  console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
+}
 console.log(`built ${out.replace(root + '/', '')} (${(html.length / 1024).toFixed(0)} KiB): ${Object.keys(config.rules).length} rules, ${config.situations.length} situations, ${facts.length} facts (${confirmed} confirmed, ${facts.length - confirmed} not yet)`);

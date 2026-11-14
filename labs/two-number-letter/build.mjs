@@ -4,7 +4,8 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { rules } from './calc.mjs';
+import { rules, headline, cppFactor } from './calc.mjs';
+import { writePoster, r as rnd } from '../../shared/desk/poster.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 import { deskPage } from '../../shared/desk/desk-page.mjs';
@@ -22,4 +23,31 @@ const html = deskPage(read(join(here, 'index.src.html')), 'two-number-letter').r
   .replace('/*@@STORY@@*/', () => story).replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);
+// the poster (dist/poster.json): total CPP paid by each age for a start at the standard age and at the latest age, in
+// years of the standard pension (so no amount is assumed), and the age where the later start catches up
+{
+  const h = headline(r, r.cpp.standard), early = h.from, late = h.to, cross = Math.round(h.at), s = cppFactor(r, late);
+  const x1 = Math.ceil((h.at + (late - early)) / 5) * 5, total = (start, share, x) => share * Math.max(0, x - start);
+  const lines = [early, late].map((start) => {
+    const share = cppFactor(r, start), pts = [];
+    for (let x = early; x <= x1; x++) pts.push([x, rnd(total(start, share, x), 2)]);
+    return { label: `Start at ${start}`, start, points: pts };
+  });
+  const p = writePoster(join(here, 'dist'), 'two-number-letter', {
+    kind: 'lines',
+    example: 'Totals before tax, in years of the pension at ' + early + '; no investment return',
+    x: { label: 'Age', min: early, max: x1 },
+    y: { label: `Years of the pension at ${early}`, min: 0, max: rnd(total(late, s, x1), 2) },
+    lines,
+    cross: { age: rnd(h.at, 1), total: rnd(total(late, s, h.at), 2) },
+    readings: [
+      { label: `Waiting from ${early} to ${late} has paid more in total by about`, value: `age ${cross}` },
+      { label: `Each cheque, starting at ${late}`, value: `+${rnd((s - 1) * 100, 0)}%` },
+    ],
+    labels: [{ text: 'They cross here', at: rnd(h.at, 1) }],
+    source: 'CPP rules from canada.ca (confirmed facts)',
+    asOf: r.sources.map((x) => x.as_of).sort().pop(),
+  });
+  console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
+}
 console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): ${r.sources.length} sources, threshold year ${r.recovery.year}`);

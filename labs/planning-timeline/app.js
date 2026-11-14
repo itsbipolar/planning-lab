@@ -1,6 +1,8 @@
 // Your year (planning timeline). The model (rules, limits, factors and the population snapshot) is embedded in #data and the
-// calculations come from model.mjs, inlined above this script. The birth year stays in this page: it is not stored,
-// not put in the address and not sent anywhere. The only file this page makes is an image the visitor asks to save.
+// calculations come from model.mjs and the shared core (shared/desk/your-year-core.mjs), inlined above this script.
+// The birth year the visitor sets is kept for this visit only in sessionStorage 'mo.year' (a 4-digit year), so Money,
+// then and now and Retirement wave can open on it; <head> reads it into <html data-year> before this script runs. It is
+// never put in the address and never sent anywhere. The only file this page makes is an image the visitor asks to save.
 (function () {
   'use strict';
   var D = JSON.parse(document.getElementById('data').textContent);
@@ -39,6 +41,11 @@
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var asOfText = MONTHS[Number(asOf.slice(5, 7)) - 1] + ' ' + asOf.slice(0, 4);
   var state = { birth: EXAMPLE_BIRTH, example: true, cpp: R.cppHi, oas: R.oasHi, income: EXAMPLE_INCOME, fund: EXAMPLE_FUND };
+  var YEAR_MIN = 1900;
+  // the year carried from this visit (set on <html data-year> by the <head> script); anything else shows the example
+  var carried = Number(document.documentElement.getAttribute('data-year'));
+  if (Number.isInteger(carried) && carried >= YEAR_MIN && carried <= thisYear) { state.birth = carried; state.example = false; }
+  function remember(y) { try { sessionStorage.setItem('mo.year', String(y)); } catch (e) { /* storage blocked: the year stays in this page */ } }
 
   // ---------- the timeline ----------
   // Every label and reading is drawn last, with a ground-coloured halo, so the "you are here" line breaks behind it and
@@ -323,21 +330,24 @@
   function render() {
     var p = person(M, state.birth, thisYear);
     $('finding').textContent = finding(M, p);
+    // prices since the birth year, from the shared core (the same number the site's home lead shows)
+    $('prices').textContent = p.core.text.cpi || '';
+    $('prices').hidden = !p.core.text.cpi;
     // the one assumptions line, beside the control
-    $('example-note').textContent = (state.example ? 'Showing an example, born ' + EXAMPLE_BIRTH + '. Type your own year; it stays in this page.' : 'Showing someone born in ' + state.birth + '. The year stays in this page.')
+    $('example-note').textContent = (state.example ? 'Showing an example, born ' + EXAMPLE_BIRTH + '. Type your own year; it stays in this tab.' : 'Showing someone born in ' + state.birth + '. Your year stays in this tab.')
       + ' Canadian rules as of ' + asOfText + ', applied to every year; amounts depend on your own record.';
     drawTimeline(p); drawCpp(); drawOas(); drawRrif(p); drawPeople(p);
     state.p = p;
   }
 
   // ---------- controls ----------
-  var year = $('year'); year.min = '1900'; year.max = String(thisYear); year.value = String(EXAMPLE_BIRTH);
+  var year = $('year'); year.min = String(YEAR_MIN); year.max = String(thisYear); year.value = String(state.birth);
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var v = Number(year.value), err = $('error');
     if (!year.value || !Number.isInteger(v)) { err.textContent = 'Type a four-digit birth year, like ' + EXAMPLE_BIRTH + '.'; err.hidden = false; return; }
     if (v < Number(year.min) || v > thisYear) { err.textContent = 'Type a year from ' + year.min + ' to ' + thisYear + '.'; err.hidden = false; return; }
-    err.hidden = true; state.birth = v; state.example = false; render();
+    err.hidden = true; state.birth = v; state.example = false; remember(v); render();
   });
   function slider(id, loA, hiA, key) {
     var r = $(id); r.min = String(loA * 12); r.max = String(hiA * 12); r.step = '1'; r.value = String(state[key] * 12);
@@ -352,6 +362,7 @@
   // sources
   var src = $('sources');
   M.sources.forEach(function (s) { var li = document.createElement('li'), a = document.createElement('a'); a.href = s.source_url; a.textContent = s.title; li.appendChild(a); li.appendChild(document.createTextNode(', read ' + s.as_of + '.')); src.appendChild(li); });
+  if (M.prices) { var lp = document.createElement('li'), ap = document.createElement('a'); ap.href = M.prices.source.source_url; ap.textContent = M.prices.source.title; lp.appendChild(ap); lp.appendChild(document.createTextNode('. Prices: the yearly average of the monthly index, ' + M.prices.first + ' to ' + M.prices.last + '. ' + (M.prices.source.attribution || ''))); src.appendChild(lp); }
   if (M.pop) { var li = document.createElement('li'), a = document.createElement('a'); a.href = M.pop.source_url; a.textContent = 'Statistics Canada, population estimates by single year of age'; li.appendChild(a); li.appendChild(document.createTextNode('. ' + M.pop.attribution)); src.appendChild(li); }
 
   // save the timeline as an image, made in the browser

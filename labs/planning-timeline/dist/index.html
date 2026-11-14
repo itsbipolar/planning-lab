@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<script>/* mo.year: the birth year set in Your year, kept for this visit only */(function(){try{var y=sessionStorage.getItem('mo.year');if(y&&/^\d{4}$/.test(y))document.documentElement.setAttribute('data-year',y)}catch(e){}})()</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your year · Mohammed El Chayeb</title>
 <meta name="description" content="Type a birth year and see where you stand on Canada's TFSA, CPP, OAS and RRSP rules: what is open, what is closed, and what each start age is worth.">
@@ -223,6 +224,7 @@ svg{font-size:17px}
     <p class="kicker">Tool</p>
     <h1 class="display">What opens, and when, for your year?</h1>
     <p class="lede" id="finding" aria-live="polite"></p>
+    <p class="lede prices" id="prices" aria-live="polite"></p>
 
     <form id="form" class="ask" novalidate>
       <label for="year">Born in</label>
@@ -345,7 +347,7 @@ svg{font-size:17px}
     </footer>
   </main>
 </div>
-<script type="application/json" id="data">{"model":{"r":{"tfsaAge":18,"tfsaYear":2009,"cppLo":60,"cppStd":65,"cppHi":70,"cppRed":0.6,"cppInc":0.7,"oasLo":65,"oasHi":70,"oasInc":0.6,"oasBoost":10,"oasRecovery":15,"rrsp":71},"oasBoostAge":75,"tfsa":{"2009":5000,"2010":5000,"2011":5000,"2012":5000,"2013":5500,"2014":5500,"2015":10000,"2016":5500,"2017":5500,"2018":5500,"2019":6000,"2020":6000,"2021":6000,"2022":6000,"2023":6500,"2024":7000,"2025":7000,"2026":7000},"thresholds":{"2024":90997,"2025":93454,"2026":95323},"rrif":[{"age":71,"factor":0.0528},{"age":72,"factor":0.054},{"age":73,"factor":0.0553},{"age":74,"factor":0.0567},{"age":75,"factor":0.0582},{"age":76,"factor":0.0598},{"age":77,"factor":0.0617},{"age":78,"factor":0.0636},{"age":79,"factor":0.0658},{"age":80,"factor":0.0682},{"age":81,"factor":0.0708},{"age":82,"factor":0.0738},{"age":83,"factor":0.0771},{"age":84,"factor":0.0808},{"age":85,"factor":0.0851},{"age":86,"factor":0.0899},{"age":87,"factor":0.0955},{"age":88,"factor":0.1021},{"age":89,"factor":0.1099},{"age":90,"factor":0.1192},{"age":91,"factor":0.1306},{"age":92,"factor":0.1449},{"age":93,"factor":0.1634},{"age":94,"factor":0.1879},{"age":95,"factor":0.2}],"pop":{"year":2026,"a0":50,"a1":89,"counts":[498954,496292,482466,478116,483096,498666,492845,484579,477872,478737,501491,532978,544438,547462,532225,533742,522839,506188,497288,481074,462003,449576,425014,399717,377104,361626,346870,331654,321983,309601,256056,229100,211998,193211,170565,154960,136264,120228,105317,90141],"attribution":"Adapted from Statistics Canada, Population estimates on July 1, by age and gender, Table 17-10-0005-01, 1971 to 2026. This does not constitute an endorsement by Statistics Canada of this product.","source_url":"https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000501"},"sources":[{"id":"tfsa_minimum_age","title":"Minimum age for a TFSA dollar limit to apply (Income Tax Act 207.01(1), unused TFSA contribution room)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","as_of":"2026-11-10","authority":"statute"},{"id":"tfsa_first_year","title":"First calendar year a TFSA dollar limit applies (Income Tax Act 207.01(1), TFSA dollar limit)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","as_of":"2026-11-09","authority":"statute"},{"id":"cpp_earliest_start_age","title":"Earliest age to start the CPP retirement pension","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_standard_start_age","title":"Standard age to start the CPP retirement pension","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_latest_start_age","title":"Latest age to start the CPP retirement pension (no benefit to wait after it)","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_early_start_reduction","title":"CPP retirement pension reduction for each month started before 65","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"cpp_late_start_increase","title":"CPP retirement pension increase for each month started after 65","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"oas_start_age","title":"Age at which OAS pension eligibility starts (Old Age Security Act 3(1))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html","as_of":"2026-11-10","authority":"statute"},{"id":"oas_deferral_max_age","title":"Age after whose month the OAS deferral increase stops (Old Age Security Act 7.1(4)(b))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-10","authority":"statute"},{"id":"oas_deferral_increase","title":"OAS pension increase for each month of voluntary deferral (Old Age Security Act 7.1)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-09","authority":"statute"},{"id":"oas_age75_increase","title":"OAS pension increase at age 75","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/payments.html","as_of":"2026-11-13","authority":"official_publication"},{"id":"oas_recovery_rate","title":"OAS recovery tax rate on net income above the threshold","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","as_of":"2026-11-13","authority":"official_publication"},{"id":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","as_of":"2026-11-10","authority":"statute"},{"id":"rrif_minimum_factors","title":"RRIF minimum withdrawal factors by age (Income Tax Regulations 7308(4))","source_url":"https://laws-lois.justice.gc.ca/eng/regulations/C.R.C.,_c._945/section-7308.html","as_of":"2026-11-09","authority":"statute"},{"id":"tfsa_annual_limit.2025","title":"TFSA dollar limit","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"oas_recovery_threshold.2024","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"tfsa_annual_limit.2009","title":"TFSA dollar limit","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","as_of":"2026-11-13","authority":"official_publication"}]}}</script>
+<script type="application/json" id="data">{"model":{"core":{"tfsaAge":18,"tfsaYear":2009,"tfsa":{"2009":5000,"2010":5000,"2011":5000,"2012":5000,"2013":5500,"2014":5500,"2015":10000,"2016":5500,"2017":5500,"2018":5500,"2019":6000,"2020":6000,"2021":6000,"2022":6000,"2023":6500,"2024":7000,"2025":7000,"2026":7000},"cppLo":60,"cppStd":65,"cppHi":70,"cppRed":0.6,"cppInc":0.7,"oasLo":65,"oasHi":70,"oasInc":0.6,"oasBoost":10,"oasBoostAge":75,"rrsp":71},"prices":{"first":1915,"last":2025,"avg":{"1915":6.133333333333334,"1916":6.683333333333334,"1917":7.883333333333334,"1918":8.916666666666666,"1919":9.766666666666666,"1920":11.358333333333333,"1921":9.983333333333336,"1922":9.200000000000001,"1923":9.200000000000001,"1924":9.024999999999999,"1925":9.133333333333333,"1926":9.200000000000001,"1927":9.066666666666665,"1928":9.133333333333335,"1929":9.225,"1930":9.133333333333335,"1931":8.233333333333334,"1932":7.458333333333332,"1933":7.133333333333333,"1934":7.216666666666669,"1935":7.250000000000001,"1936":7.3999999999999995,"1937":7.666666666666667,"1938":7.708333333333332,"1939":7.6499999999999995,"1940":7.974999999999999,"1941":8.450000000000001,"1942":8.841666666666667,"1943":9.033333333333335,"1944":9.091666666666665,"1945":9.150000000000002,"1946":9.433333333333334,"1947":10.283333333333333,"1948":11.75,"1949":12.158333333333331,"1950":12.483333333333334,"1951":13.800000000000002,"1952":14.158333333333331,"1953":14.016666666666666,"1954":14.108333333333333,"1955":14.133333333333331,"1956":14.324999999999998,"1957":14.799999999999999,"1958":15.15,"1959":15.333333333333334,"1960":15.541666666666664,"1961":15.699999999999998,"1962":15.866666666666667,"1963":16.125,"1964":16.433333333333334,"1965":16.816666666666666,"1966":17.458333333333332,"1967":18.083333333333336,"1968":18.816666666666666,"1969":19.675,"1970":20.333333333333336,"1971":20.88333333333333,"1972":21.925,"1973":23.566666666666663,"1974":26.158333333333335,"1975":28.950000000000003,"1976":31.133333333333336,"1977":33.61666666666666,"1978":36.63333333333333,"1979":39.983333333333334,"1980":44.03333333333333,"1981":49.525,"1982":54.85833333333334,"1983":58.07500000000001,"1984":60.574999999999996,"1985":62.975,"1986":65.61666666666666,"1987":68.47500000000001,"1988":71.23333333333333,"1989":74.78333333333333,"1990":78.35833333333333,"1991":82.76666666666667,"1992":84.00000000000001,"1993":85.56666666666666,"1994":85.70833333333333,"1995":87.55000000000001,"1996":88.925,"1997":90.36666666666667,"1998":91.26666666666667,"1999":92.85000000000001,"2000":95.375,"2001":97.78333333333335,"2002":99.99166666666667,"2003":102.75,"2004":104.65833333333335,"2005":106.97500000000001,"2006":109.11666666666667,"2007":111.45,"2008":114.09166666666665,"2009":114.43333333333334,"2010":116.46666666666668,"2011":119.85833333333333,"2012":121.67500000000001,"2013":122.81666666666666,"2014":125.15833333333336,"2015":126.56666666666666,"2016":128.37499999999997,"2017":130.42499999999998,"2018":133.38333333333335,"2019":135.98333333333335,"2020":136.95833333333334,"2021":141.60833333333335,"2022":151.24166666666665,"2023":157.10833333333332,"2024":160.85,"2025":164.18333333333334},"source":{"title":"Consumer Price Index, monthly, Canada, all-items (2002=100)","source_url":"https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401","attribution":"Adapted from Statistics Canada, Consumer Price Index, monthly, Table 18-10-0004-01. This does not constitute an endorsement by Statistics Canada of this product.","retrieved":"2026-11-10"}},"r":{"tfsaAge":18,"tfsaYear":2009,"cppLo":60,"cppStd":65,"cppHi":70,"cppRed":0.6,"cppInc":0.7,"oasLo":65,"oasHi":70,"oasInc":0.6,"oasBoost":10,"oasRecovery":15,"rrsp":71},"oasBoostAge":75,"tfsa":{"2009":5000,"2010":5000,"2011":5000,"2012":5000,"2013":5500,"2014":5500,"2015":10000,"2016":5500,"2017":5500,"2018":5500,"2019":6000,"2020":6000,"2021":6000,"2022":6000,"2023":6500,"2024":7000,"2025":7000,"2026":7000},"thresholds":{"2024":90997,"2025":93454,"2026":95323},"rrif":[{"age":71,"factor":0.0528},{"age":72,"factor":0.054},{"age":73,"factor":0.0553},{"age":74,"factor":0.0567},{"age":75,"factor":0.0582},{"age":76,"factor":0.0598},{"age":77,"factor":0.0617},{"age":78,"factor":0.0636},{"age":79,"factor":0.0658},{"age":80,"factor":0.0682},{"age":81,"factor":0.0708},{"age":82,"factor":0.0738},{"age":83,"factor":0.0771},{"age":84,"factor":0.0808},{"age":85,"factor":0.0851},{"age":86,"factor":0.0899},{"age":87,"factor":0.0955},{"age":88,"factor":0.1021},{"age":89,"factor":0.1099},{"age":90,"factor":0.1192},{"age":91,"factor":0.1306},{"age":92,"factor":0.1449},{"age":93,"factor":0.1634},{"age":94,"factor":0.1879},{"age":95,"factor":0.2}],"pop":{"year":2026,"a0":50,"a1":89,"counts":[498954,496292,482466,478116,483096,498666,492845,484579,477872,478737,501491,532978,544438,547462,532225,533742,522839,506188,497288,481074,462003,449576,425014,399717,377104,361626,346870,331654,321983,309601,256056,229100,211998,193211,170565,154960,136264,120228,105317,90141],"attribution":"Adapted from Statistics Canada, Population estimates on July 1, by age and gender, Table 17-10-0005-01, 1971 to 2026. This does not constitute an endorsement by Statistics Canada of this product.","source_url":"https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000501"},"sources":[{"id":"tfsa_minimum_age","title":"Minimum age for a TFSA dollar limit to apply (Income Tax Act 207.01(1), unused TFSA contribution room)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","as_of":"2026-11-10","authority":"statute"},{"id":"tfsa_first_year","title":"First calendar year a TFSA dollar limit applies (Income Tax Act 207.01(1), TFSA dollar limit)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","as_of":"2026-11-09","authority":"statute"},{"id":"cpp_earliest_start_age","title":"Earliest age to start the CPP retirement pension","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_standard_start_age","title":"Standard age to start the CPP retirement pension","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_latest_start_age","title":"Latest age to start the CPP retirement pension (no benefit to wait after it)","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-10","authority":"official_publication"},{"id":"cpp_early_start_reduction","title":"CPP retirement pension reduction for each month started before 65","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"cpp_late_start_increase","title":"CPP retirement pension increase for each month started after 65","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"oas_start_age","title":"Age at which OAS pension eligibility starts (Old Age Security Act 3(1))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html","as_of":"2026-11-10","authority":"statute"},{"id":"oas_deferral_max_age","title":"Age after whose month the OAS deferral increase stops (Old Age Security Act 7.1(4)(b))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-10","authority":"statute"},{"id":"oas_deferral_increase","title":"OAS pension increase for each month of voluntary deferral (Old Age Security Act 7.1)","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","as_of":"2026-11-09","authority":"statute"},{"id":"oas_age75_increase","title":"OAS pension increase at age 75","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/payments.html","as_of":"2026-11-13","authority":"official_publication"},{"id":"oas_recovery_rate","title":"OAS recovery tax rate on net income above the threshold","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","as_of":"2026-11-13","authority":"official_publication"},{"id":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","as_of":"2026-11-10","authority":"statute"},{"id":"rrif_minimum_factors","title":"RRIF minimum withdrawal factors by age (Income Tax Regulations 7308(4))","source_url":"https://laws-lois.justice.gc.ca/eng/regulations/C.R.C.,_c._945/section-7308.html","as_of":"2026-11-09","authority":"statute"},{"id":"tfsa_annual_limit.2025","title":"TFSA dollar limit","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"oas_recovery_threshold.2024","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","as_of":"2026-11-09","authority":"official_publication"},{"id":"tfsa_annual_limit.2009","title":"TFSA dollar limit","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","as_of":"2026-11-13","authority":"official_publication"}]}}</script>
 <script>
 (function () {
   'use strict';
@@ -390,14 +392,150 @@ function deskCrosshair(svg, o) {
   return function () { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerdown', move); svg.removeEventListener('pointerleave', hide); if (g.parentNode) g.parentNode.removeChild(g); };
 }
 
+// Your year, the core (redesign v2, step 3): every number the site's "Born in" lead and the Your year tool show for a
+// birth year, from the confirmed facts and the Statistics Canada price snapshot. Pure: no DOM, no I/O, no node import,
+// so the site can copy it (sync-labs) and run it at build and in the browser, and planning-timeline inlines it.
+// No age, limit, rate or year from the rules is written here: a missing fact throws instead of drawing a guess.
+//
+//   yourYearRules(factsFile)                -> the rules (confirmed facts only)
+//   annualPrices(cpiFile)                   -> { first, last, avg: { year: average index } } (complete years only)
+//   yourYear(rules, prices, birthYear, thisYear) -> everything for one birth year (see the end of this file)
+//   dollars(v)                              -> "$382", "$1,890": the rounding Money, then and now uses
+
+const CORE_NEED = ['tfsa_minimum_age', 'tfsa_first_year', 'cpp_earliest_start_age', 'cpp_standard_start_age', 'cpp_latest_start_age',
+  'cpp_early_start_reduction', 'cpp_late_start_increase', 'oas_start_age', 'oas_deferral_max_age', 'oas_deferral_increase',
+  'oas_age75_increase', 'rrsp_maturity_age'];
+
+/** The amount the price line starts from (an illustration, the same one Money, then and now opens on). */
+const BASE_AMOUNT = 100;
+/** The labelled example the home lead and the posters open on (an illustration, never the visitor's year). */
+const EXAMPLE_BIRTH_YEAR = 1980;
+
+const CORE_TEN = 1e1;
+
+/** The rules, from the confirmed facts only. Throws if one the lead needs is not confirmed. */
+function yourYearRules(factsFile) {
+  const F = new Map((factsFile.facts || factsFile).filter((f) => f.status === 'confirmed').map((f) => [f.id, f]));
+  for (const id of CORE_NEED) if (!F.has(id)) throw new Error(`${id} is not confirmed`);
+  const n = (id) => Number(F.get(id).value);
+  // TFSA dollar limits by year, as far as they are confirmed
+  const tfsa = {};
+  for (const [id, f] of F) { const m = id.match(/^tfsa_annual_limit\.(\d{4})$/); if (m) tfsa[m[1]] = Number(f.value); }
+  // the age of the OAS increase is in that fact's own title ("... at age NN"): read it there so it is not typed here
+  const boost = String(F.get('oas_age75_increase').title).match(/\bage (\d+)\b/);
+  if (!boost) throw new Error('the age of the OAS increase is not in its fact title');
+  return {
+    tfsaAge: n('tfsa_minimum_age'), tfsaYear: n('tfsa_first_year'), tfsa,
+    cppLo: n('cpp_earliest_start_age'), cppStd: n('cpp_standard_start_age'), cppHi: n('cpp_latest_start_age'),
+    cppRed: n('cpp_early_start_reduction'), cppInc: n('cpp_late_start_increase'),
+    oasLo: n('oas_start_age'), oasHi: n('oas_deferral_max_age'), oasInc: n('oas_deferral_increase'),
+    oasBoost: n('oas_age75_increase'), oasBoostAge: Number(boost[1]),
+    rrsp: n('rrsp_maturity_age'),
+  };
+}
+
+/** Yearly average price levels from the monthly CPI snapshot: the mean of a year's twelve monthly values, complete years
+ *  only, from the first year whose year before is also complete (the years Money, then and now offers) to the last. */
+function annualPrices(cpiFile) {
+  const months = {};
+  for (const [ym, v] of cpiFile.months) (months[Number(ym.slice(0, 4))] ||= []).push(v);
+  const avg = {};
+  for (const [y, v] of Object.entries(months)) if (v.length === 12) avg[y] = v.reduce((a, b) => a + b, 0) / v.length;
+  const years = Object.keys(avg).map(Number).filter((y) => avg[y - 1] !== undefined).sort((a, b) => a - b);
+  if (!years.length) throw new Error('the price snapshot has no complete years');
+  years.forEach((y, i) => { if (i && y !== years[i - 1] + 1) throw new Error(`price years jump from ${years[i - 1]} to ${y}`); });
+  const out = {};
+  for (const y of years) out[y] = avg[y];
+  return {
+    first: years[0], last: years.at(-1), avg: out,
+    source: { title: cpiFile.title, source_url: cpiFile.source_url, attribution: cpiFile.attribution, retrieved: cpiFile.retrieved },
+  };
+}
+
+/** A dollar amount, rounded as Money, then and now rounds it: cents under $100, whole dollars to $999, then three
+ *  significant figures. */
+function dollars(v) {
+  if (v < 100) return '$' + v.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (v < 1000) return '$' + Math.round(v).toLocaleString('en-CA');
+  const k = Math.pow(CORE_TEN, Math.floor(Math.log(v) / Math.LN10) - 2);
+  return '$' + (Math.round(v / k) * k).toLocaleString('en-CA', { maximumFractionDigits: 0 });
+}
+/** The number dollars() shows, as a number. */
+function rounded(v) {
+  if (v < 100) return Math.round(v * 100) / 100;
+  if (v < 1000) return Math.round(v);
+  const k = Math.pow(CORE_TEN, Math.floor(Math.log(v) / Math.LN10) - 2);
+  return Math.round(v / k) * k;
+}
+const wholeDollars = (v) => '$' + Math.round(v).toLocaleString('en-CA');
+
+/** Where a window of ages stands for someone this age: 'ahead', 'open' (now inside it) or 'past'. */
+const tense = (age, lo, hi) => (age < lo ? 'ahead' : age > hi ? 'past' : 'open');
+
+/**
+ * Everything for one birth year, `thisYear` being the visitor's calendar year (or the build year at build time):
+ * {
+ *   birthYear, thisYear, age,
+ *   cpiNow          what BASE_AMOUNT from the birth year costs in cpiLatestYear, rounded as dollars() rounds it (null
+ *                   when the birth year is outside the price data); cpiNowText the same as text ("$382");
+ *                   cpiNowExact unrounded; cpiLatestYear the latest complete price year; cpiFrom the birth year
+ *   tfsaSum         the confirmed TFSA limits added up from tfsaStart to tfsaSumTo (0 if it has not opened);
+ *   tfsaStart       the later of the year they turn the minimum age and the year the TFSA began; tfsaOpen;
+ *   tfsaSumTo       the last year added (thisYear or the latest confirmed limit, whichever is earlier); tfsaMissing
+ *                   years in that span with no confirmed limit; y18 the year they turn the TFSA minimum age
+ *   y60, y65, y70   CPP: earliest, standard and latest start years; cppTense 'ahead' | 'open' | 'past'
+ *   oasFrom, oasTo  OAS: first and latest start years; oasBoostYear the year of the increase; oasTense
+ *   y71             the year the RRSP must wind up by the end of; rrspTense 'ahead' | 'past'
+ *   text            { cpi, tfsa, cpp }: the lead's lines in plain words, in the tense for that year
+ * }
+ */
+function yourYear(R, P, birthYear, thisYear) {
+  const age = thisYear - birthYear;
+  // prices
+  const covered = !!P && birthYear >= P.first && birthYear <= P.last;
+  const cpiNowExact = covered ? BASE_AMOUNT * (P.avg[P.last] / P.avg[birthYear]) : null;
+  const cpiNow = covered ? rounded(cpiNowExact) : null, cpiNowText = covered ? dollars(cpiNowExact) : null;
+  // TFSA: room starts in the later of the year you turn the minimum age and the year the TFSA began
+  const y18 = birthYear + R.tfsaAge, tfsaStart = Math.max(y18, R.tfsaYear);
+  const known = Object.keys(R.tfsa).map(Number), lastKnown = Math.max(...known), tfsaSumTo = Math.min(thisYear, lastKnown);
+  let tfsaSum = 0; const tfsaMissing = [];
+  for (let y = tfsaStart; y <= tfsaSumTo; y++) { if (y in R.tfsa) tfsaSum += R.tfsa[y]; else tfsaMissing.push(y); }
+  const tfsaOpen = tfsaStart <= thisYear;
+  // CPP, OAS, RRSP windows as calendar years
+  const y60 = birthYear + R.cppLo, y65 = birthYear + R.cppStd, y70 = birthYear + R.cppHi;
+  const cppTense = tense(age, R.cppLo, R.cppHi);
+  const oasFrom = birthYear + R.oasLo, oasTo = birthYear + R.oasHi, oasBoostYear = birthYear + R.oasBoostAge;
+  const oasTense = tense(age, R.oasLo, R.oasHi);
+  const y71 = birthYear + R.rrsp, rrspTense = age > R.rrsp ? 'past' : 'ahead';
+  const text = {
+    cpi: covered ? `What ${wholeDollars(BASE_AMOUNT)} bought in ${birthYear} cost about ${cpiNowText} in ${P.last}.` : null,
+    tfsa: tfsaSum > 0 ? `TFSA limits added up: ${wholeDollars(tfsaSum)}` : `TFSA opens in ${tfsaStart}`,
+    cpp: cppTense === 'ahead' ? `CPP can start ${y60} to ${y70}, if you qualify`
+      : cppTense === 'open' ? `CPP can start any month until ${y70}, if you qualify`
+        : `CPP could start from ${y60} (that window has passed)`,
+  };
+  return {
+    birthYear, thisYear, age,
+    cpiFrom: birthYear, cpiLatestYear: P ? P.last : null, cpiNow, cpiNowText, cpiNowExact,
+    tfsaSum, tfsaStart, tfsaOpen, tfsaSumTo, tfsaMissing, y18,
+    y60, y65, y70, cppTense,
+    oasFrom, oasTo, oasBoostYear, oasTense,
+    y71, rrspTense,
+    text,
+  };
+}
+
 // Your planning timeline: everything the page shows for a birth year, computed from the confirmed facts and the dated
-// Statistics Canada snapshot. No age, rate, limit or year from the rules is written here; a missing fact stops the build.
+// Statistics Canada snapshots. No age, rate, limit or year from the rules is written here; a missing fact stops the build.
+// The numbers the site's home lead also shows (prices since the birth year, TFSA limits added up, the CPP window) come
+// from the shared core, shared/desk/your-year-core.mjs, so the home page and this tool can never differ.
+
 
 const NEED = ['tfsa_minimum_age', 'tfsa_first_year', 'cpp_earliest_start_age', 'cpp_standard_start_age', 'cpp_latest_start_age',
   'cpp_early_start_reduction', 'cpp_late_start_increase', 'oas_start_age', 'oas_deferral_max_age', 'oas_deferral_increase',
   'oas_age75_increase', 'oas_recovery_rate', 'rrsp_maturity_age', 'rrif_minimum_factors'];
 
-function buildModel(factsFile, pop) {
+function buildModel(factsFile, pop, cpi) {
   const F = new Map(factsFile.facts.filter((f) => f.status === 'confirmed').map((f) => [f.id, f]));
   for (const id of NEED) if (!F.has(id)) throw new Error(`${id} is not confirmed`);
   const n = (id) => Number(F.get(id).value);
@@ -409,7 +547,9 @@ function buildModel(factsFile, pop) {
   const used = [...NEED, ...[...F.keys()].filter((id) => /^tfsa_annual_limit\.\d{4}$/.test(id) || /^oas_recovery_threshold\.\d{4}$/.test(id))];
   const sources = used.map((id) => { const f = F.get(id); return { id, title: f.title, source_url: f.source_url, as_of: f.as_of, authority: f.authority }; })
     .filter((s, i, a) => a.findIndex((x) => x.source_url === s.source_url && x.title === s.title) === i);
+  const core = yourYearRules(factsFile), prices = cpi ? annualPrices(cpi) : null;
   return {
+    core, prices,
     r: {
       tfsaAge: n('tfsa_minimum_age'), tfsaYear: n('tfsa_first_year'),
       cppLo: n('cpp_earliest_start_age'), cppStd: n('cpp_standard_start_age'), cppHi: n('cpp_latest_start_age'),
@@ -448,25 +588,18 @@ function rrifLeft(M, from, to) {
 }
 
 function person(M, birthYear, thisYear) {
-  const R = M.r, age = thisYear - birthYear;
+  const R = M.r, Y = yourYear(M.core, M.prices, birthYear, thisYear), age = Y.age;
   const lanes = [];
-  // TFSA: room starts in the later of the year you turn the minimum age and the year the TFSA began.
-  const tStart = Math.max(birthYear + R.tfsaAge, R.tfsaYear);
-  const known = Object.keys(M.tfsa).map(Number);
-  const lastKnown = Math.max(...known);
-  let room = 0; for (let y = tStart; y <= Math.min(thisYear, lastKnown); y++) room += M.tfsa[y] ?? 0;
-  const missing = []; for (let y = tStart; y <= Math.min(thisYear, lastKnown); y++) if (!(y in M.tfsa)) missing.push(y);
-  lanes.push({ key: 'tfsa', from: tStart - birthYear, to: null, startYear: tStart, room, roomTo: Math.min(thisYear, lastKnown), missing, open: tStart <= thisYear });
+  lanes.push({ key: 'tfsa', from: Y.tfsaStart - birthYear, to: null, startYear: Y.tfsaStart, room: Y.tfsaSum, roomTo: Y.tfsaSumTo, missing: Y.tfsaMissing, open: Y.tfsaOpen });
   lanes.push({ key: 'cpp', from: R.cppLo, to: R.cppHi, std: R.cppStd });
   lanes.push({ key: 'oas', from: R.oasLo, to: R.oasHi, std: R.oasLo, boost: M.oasBoostAge });
   lanes.push({ key: 'rrsp', from: null, to: R.rrsp, rrifFrom: R.rrsp + 1 });
-  const where = (lo, hi) => (age < lo ? 'ahead' : age > hi ? 'past' : 'open');
   const popCount = M.pop && age >= M.pop.a0 && age <= M.pop.a1 ? M.pop.counts[age - M.pop.a0] : null;
   return {
-    age, birthYear, thisYear, lanes, popCount,
-    cpp: { state: where(R.cppLo, R.cppHi), opens: birthYear + R.cppLo, closes: birthYear + R.cppHi },
-    oas: { state: where(R.oasLo, R.oasHi), opens: birthYear + R.oasLo, closes: birthYear + R.oasHi, boostYear: birthYear + M.oasBoostAge },
-    rrsp: { matures: birthYear + R.rrsp, state: age > R.rrsp ? 'past' : 'ahead' },
+    age, birthYear, thisYear, lanes, popCount, core: Y,
+    cpp: { state: Y.cppTense, opens: Y.y60, closes: Y.y70 },
+    oas: { state: Y.oasTense, opens: Y.oasFrom, closes: Y.oasTo, boostYear: Y.oasBoostYear },
+    rrsp: { matures: Y.y71, state: Y.rrspTense },
   };
 }
 
@@ -488,8 +621,10 @@ function finding(M, p) {
 }
 
 // Your year (planning timeline). The model (rules, limits, factors and the population snapshot) is embedded in #data and the
-// calculations come from model.mjs, inlined above this script. The birth year stays in this page: it is not stored,
-// not put in the address and not sent anywhere. The only file this page makes is an image the visitor asks to save.
+// calculations come from model.mjs and the shared core (shared/desk/your-year-core.mjs), inlined above this script.
+// The birth year the visitor sets is kept for this visit only in sessionStorage 'mo.year' (a 4-digit year), so Money,
+// then and now and Retirement wave can open on it; <head> reads it into <html data-year> before this script runs. It is
+// never put in the address and never sent anywhere. The only file this page makes is an image the visitor asks to save.
 (function () {
   'use strict';
   var D = JSON.parse(document.getElementById('data').textContent);
@@ -528,6 +663,11 @@ function finding(M, p) {
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var asOfText = MONTHS[Number(asOf.slice(5, 7)) - 1] + ' ' + asOf.slice(0, 4);
   var state = { birth: EXAMPLE_BIRTH, example: true, cpp: R.cppHi, oas: R.oasHi, income: EXAMPLE_INCOME, fund: EXAMPLE_FUND };
+  var YEAR_MIN = 1900;
+  // the year carried from this visit (set on <html data-year> by the <head> script); anything else shows the example
+  var carried = Number(document.documentElement.getAttribute('data-year'));
+  if (Number.isInteger(carried) && carried >= YEAR_MIN && carried <= thisYear) { state.birth = carried; state.example = false; }
+  function remember(y) { try { sessionStorage.setItem('mo.year', String(y)); } catch (e) { /* storage blocked: the year stays in this page */ } }
 
   // ---------- the timeline ----------
   // Every label and reading is drawn last, with a ground-coloured halo, so the "you are here" line breaks behind it and
@@ -812,21 +952,24 @@ function finding(M, p) {
   function render() {
     var p = person(M, state.birth, thisYear);
     $('finding').textContent = finding(M, p);
+    // prices since the birth year, from the shared core (the same number the site's home lead shows)
+    $('prices').textContent = p.core.text.cpi || '';
+    $('prices').hidden = !p.core.text.cpi;
     // the one assumptions line, beside the control
-    $('example-note').textContent = (state.example ? 'Showing an example, born ' + EXAMPLE_BIRTH + '. Type your own year; it stays in this page.' : 'Showing someone born in ' + state.birth + '. The year stays in this page.')
+    $('example-note').textContent = (state.example ? 'Showing an example, born ' + EXAMPLE_BIRTH + '. Type your own year; it stays in this tab.' : 'Showing someone born in ' + state.birth + '. Your year stays in this tab.')
       + ' Canadian rules as of ' + asOfText + ', applied to every year; amounts depend on your own record.';
     drawTimeline(p); drawCpp(); drawOas(); drawRrif(p); drawPeople(p);
     state.p = p;
   }
 
   // ---------- controls ----------
-  var year = $('year'); year.min = '1900'; year.max = String(thisYear); year.value = String(EXAMPLE_BIRTH);
+  var year = $('year'); year.min = String(YEAR_MIN); year.max = String(thisYear); year.value = String(state.birth);
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var v = Number(year.value), err = $('error');
     if (!year.value || !Number.isInteger(v)) { err.textContent = 'Type a four-digit birth year, like ' + EXAMPLE_BIRTH + '.'; err.hidden = false; return; }
     if (v < Number(year.min) || v > thisYear) { err.textContent = 'Type a year from ' + year.min + ' to ' + thisYear + '.'; err.hidden = false; return; }
-    err.hidden = true; state.birth = v; state.example = false; render();
+    err.hidden = true; state.birth = v; state.example = false; remember(v); render();
   });
   function slider(id, loA, hiA, key) {
     var r = $(id); r.min = String(loA * 12); r.max = String(hiA * 12); r.step = '1'; r.value = String(state[key] * 12);
@@ -841,6 +984,7 @@ function finding(M, p) {
   // sources
   var src = $('sources');
   M.sources.forEach(function (s) { var li = document.createElement('li'), a = document.createElement('a'); a.href = s.source_url; a.textContent = s.title; li.appendChild(a); li.appendChild(document.createTextNode(', read ' + s.as_of + '.')); src.appendChild(li); });
+  if (M.prices) { var lp = document.createElement('li'), ap = document.createElement('a'); ap.href = M.prices.source.source_url; ap.textContent = M.prices.source.title; lp.appendChild(ap); lp.appendChild(document.createTextNode('. Prices: the yearly average of the monthly index, ' + M.prices.first + ' to ' + M.prices.last + '. ' + (M.prices.source.attribution || ''))); src.appendChild(lp); }
   if (M.pop) { var li = document.createElement('li'), a = document.createElement('a'); a.href = M.pop.source_url; a.textContent = 'Statistics Canada, population estimates by single year of age'; li.appendChild(a); li.appendChild(document.createTextNode('. ' + M.pop.attribution)); src.appendChild(li); }
 
   // save the timeline as an image, made in the browser

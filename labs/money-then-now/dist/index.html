@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<script>/* mo.year: the birth year set in Your year, kept for this visit only */(function(){try{var y=sessionStorage.getItem('mo.year');if(y&&/^\d{4}$/.test(y))document.documentElement.setAttribute('data-year',y)}catch(e){}})()</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Money, then and now · Mohammed El Chayeb</title>
 <meta name="description" content="A century of Canadian prices and borrowing on one chart: every year's price change, the prime rate against it, and what an amount from any year is worth in today's dollars. Statistics Canada and Bank of Canada data. Education only, not advice.">
@@ -418,7 +419,8 @@ function counts(M) {
 
 // Money, then and now. The yearly series are embedded in #data (computed at build time from the dated Statistics Canada
 // and Bank of Canada snapshots) and the arithmetic comes from model.mjs, inlined above this script. The year and amount
-// typed here stay in this page: not stored, not put in the address, not sent anywhere. The only file this page makes is
+// typed here stay in this page: not stored, not put in the address, not sent anywhere. A birth year set in Your year
+// this visit (sessionStorage 'mo.year', read by the <head> script into <html data-year>) is the year it opens on. The only file this page makes is
 // an image the visitor asks to save.
 (function () {
   'use strict';
@@ -430,6 +432,8 @@ function counts(M) {
   var $ = function (id) { return document.getElementById(id); };
   var YEARS = yearsOf(M), EX = extremes(M), SPANS = negSpans(M), C = counts(M);
   var state = { year: EXAMPLE_YEAR, amount: EXAMPLE_AMOUNT, example: true };
+  var carried = Number(document.documentElement.getAttribute('data-year'));
+  if (Number.isInteger(carried) && carried >= M.first && carried <= M.last) { state.year = carried; state.example = false; }
 
   // ---------- words and numbers ----------
   var MINUS = '−', DASH = '–';
@@ -846,7 +850,7 @@ function counts(M) {
 
   // ---------- controls ----------
   var year = $('year'), amount = $('amount');
-  year.min = String(M.first); year.max = String(M.last); year.value = String(EXAMPLE_YEAR); amount.value = String(EXAMPLE_AMOUNT);
+  year.min = String(M.first); year.max = String(M.last); year.value = String(state.year); amount.value = String(EXAMPLE_AMOUNT);
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var y = Number(year.value), a = Number(amount.value), err = $('error');

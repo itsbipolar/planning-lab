@@ -1,6 +1,8 @@
 // The retirement wave. The model (counts by place, gender, year and age; each year's population; the rule ages from the
 // confirmed facts) is embedded in #data, and the calculations come from model.mjs, inlined above this script. The birth
-// year, place and choices stay in this page: not stored, not put in the address, not sent anywhere. The only file this
+// year, place and choices stay in this page: not stored, not put in the address, not sent anywhere. A birth year set in
+// Your year this visit (sessionStorage 'mo.year', read by the <head> script into <html data-year>) is the one it opens
+// on, but only when the data covers that age on the latest July 1; otherwise the labelled example shows. The only file this
 // page makes is an image the visitor asks to save.
 (() => {
   'use strict';
@@ -11,6 +13,8 @@
   const $ = (id) => document.getElementById(id);
   const n = (v) => Math.round(v).toLocaleString('en-CA');
   const state = { place: 'CA', gender: 'all', mode: 'count', born: EXAMPLE_BIRTH, example: true };
+  const carried = Number(document.documentElement.getAttribute('data-year'));
+  if (Number.isInteger(carried) && y1 - carried >= a0 && y1 - carried <= a1) { state.born = carried; state.example = false; }
   let V = view(M, state.place, state.gender);
   const fmt = (v, mode = state.mode) => (mode === 'share' ? pct(v, 2) : n(v));
   function el(tag, attrs, parent, text) {
@@ -294,7 +298,7 @@
     lab.append(inp, document.createTextNode(' ' + t)); $('genders').appendChild(lab);
   }
   document.querySelectorAll('input[name=mode]').forEach((r) => r.addEventListener('change', () => { state.mode = r.value; render(); }));
-  const born = $('born'); born.min = String(bLo); born.max = String(bHi); born.value = String(EXAMPLE_BIRTH);
+  const born = $('born'); born.min = String(bLo); born.max = String(bHi); born.value = String(state.born);
   $('controls').addEventListener('submit', (e) => {
     e.preventDefault();
     const v = Number(born.value), err = $('error');

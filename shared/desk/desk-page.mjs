@@ -89,6 +89,14 @@ function headTags(html, tool) {
   ].join('\n');
 }
 
+// The birth-year carry (redesign v2; Mo approved it): Your year writes the year the visitor sets to sessionStorage
+// 'mo.year' (a 4-digit year, this tab and this visit only; never sent, never in the address). Your year, Money then and
+// now and Retirement wave carry <!--@@YEAR@@--> in <head>: this script reads the key before the page's own script runs
+// and puts it on <html data-year>, so the first draw already uses it and the example never flashes. Storage may be
+// blocked: every read and write is in try/catch, and with no key the labelled example shows.
+export const YEAR_KEY = 'mo.year';
+export const YEAR_HEAD = `<script>/* mo.year: the birth year set in Your year, kept for this visit only */(function(){try{var y=sessionStorage.getItem('${YEAR_KEY}');if(y&&/^\\d{4}$/.test(y))document.documentElement.setAttribute('data-year',y)}catch(e){}})()</script>`;
+
 const once = (html, marker, what) => {
   const n = html.split(marker).length - 1;
   if (n !== 1) throw new Error(`${what}: expected one ${marker}, found ${n}`);
@@ -100,7 +108,9 @@ export function deskPage(html, labSlug) {
   if (!tool) throw new Error(`${labSlug} is not a public tool in shared/desk/next.json`);
   for (const m of ['<!--@@TOOLBAR@@-->', '<!--@@NEXT@@-->', '<!--@@NOTES@@-->', '</head>']) once(html, m, labSlug);
   if (/data-next/.test(html)) throw new Error(`${labSlug}: data-next is reserved for the one Up next card`);
+  if (html.split('<!--@@YEAR@@-->').length > 2) throw new Error(`${labSlug}: expected at most one <!--@@YEAR@@-->`);
   const out = html
+    .replace('<!--@@YEAR@@-->', () => YEAR_HEAD)
     .replace('</head>', () => headTags(html, tool) + '\n</head>')
     .replace('<!--@@TOOLBAR@@-->', () => toolBar(tool))
     .replace('<!--@@NEXT@@-->', () => upNext(tool))

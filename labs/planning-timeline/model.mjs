@@ -1,11 +1,14 @@
 // Your planning timeline: everything the page shows for a birth year, computed from the confirmed facts and the dated
-// Statistics Canada snapshot. No age, rate, limit or year from the rules is written here; a missing fact stops the build.
+// Statistics Canada snapshots. No age, rate, limit or year from the rules is written here; a missing fact stops the build.
+// The numbers the site's home lead also shows (prices since the birth year, TFSA limits added up, the CPP window) come
+// from the shared core, shared/desk/your-year-core.mjs, so the home page and this tool can never differ.
+import { yourYearRules, annualPrices, yourYear } from '../../shared/desk/your-year-core.mjs';
 
 const NEED = ['tfsa_minimum_age', 'tfsa_first_year', 'cpp_earliest_start_age', 'cpp_standard_start_age', 'cpp_latest_start_age',
   'cpp_early_start_reduction', 'cpp_late_start_increase', 'oas_start_age', 'oas_deferral_max_age', 'oas_deferral_increase',
   'oas_age75_increase', 'oas_recovery_rate', 'rrsp_maturity_age', 'rrif_minimum_factors'];
 
-export function buildModel(factsFile, pop) {
+export function buildModel(factsFile, pop, cpi) {
   const F = new Map(factsFile.facts.filter((f) => f.status === 'confirmed').map((f) => [f.id, f]));
   for (const id of NEED) if (!F.has(id)) throw new Error(`${id} is not confirmed`);
   const n = (id) => Number(F.get(id).value);
@@ -17,7 +20,9 @@ export function buildModel(factsFile, pop) {
   const used = [...NEED, ...[...F.keys()].filter((id) => /^tfsa_annual_limit\.\d{4}$/.test(id) || /^oas_recovery_threshold\.\d{4}$/.test(id))];
   const sources = used.map((id) => { const f = F.get(id); return { id, title: f.title, source_url: f.source_url, as_of: f.as_of, authority: f.authority }; })
     .filter((s, i, a) => a.findIndex((x) => x.source_url === s.source_url && x.title === s.title) === i);
+  const core = yourYearRules(factsFile), prices = cpi ? annualPrices(cpi) : null;
   return {
+    core, prices,
     r: {
       tfsaAge: n('tfsa_minimum_age'), tfsaYear: n('tfsa_first_year'),
       cppLo: n('cpp_earliest_start_age'), cppStd: n('cpp_standard_start_age'), cppHi: n('cpp_latest_start_age'),
@@ -56,25 +61,18 @@ export function rrifLeft(M, from, to) {
 }
 
 export function person(M, birthYear, thisYear) {
-  const R = M.r, age = thisYear - birthYear;
+  const R = M.r, Y = yourYear(M.core, M.prices, birthYear, thisYear), age = Y.age;
   const lanes = [];
-  // TFSA: room starts in the later of the year you turn the minimum age and the year the TFSA began.
-  const tStart = Math.max(birthYear + R.tfsaAge, R.tfsaYear);
-  const known = Object.keys(M.tfsa).map(Number);
-  const lastKnown = Math.max(...known);
-  let room = 0; for (let y = tStart; y <= Math.min(thisYear, lastKnown); y++) room += M.tfsa[y] ?? 0;
-  const missing = []; for (let y = tStart; y <= Math.min(thisYear, lastKnown); y++) if (!(y in M.tfsa)) missing.push(y);
-  lanes.push({ key: 'tfsa', from: tStart - birthYear, to: null, startYear: tStart, room, roomTo: Math.min(thisYear, lastKnown), missing, open: tStart <= thisYear });
+  lanes.push({ key: 'tfsa', from: Y.tfsaStart - birthYear, to: null, startYear: Y.tfsaStart, room: Y.tfsaSum, roomTo: Y.tfsaSumTo, missing: Y.tfsaMissing, open: Y.tfsaOpen });
   lanes.push({ key: 'cpp', from: R.cppLo, to: R.cppHi, std: R.cppStd });
   lanes.push({ key: 'oas', from: R.oasLo, to: R.oasHi, std: R.oasLo, boost: M.oasBoostAge });
   lanes.push({ key: 'rrsp', from: null, to: R.rrsp, rrifFrom: R.rrsp + 1 });
-  const where = (lo, hi) => (age < lo ? 'ahead' : age > hi ? 'past' : 'open');
   const popCount = M.pop && age >= M.pop.a0 && age <= M.pop.a1 ? M.pop.counts[age - M.pop.a0] : null;
   return {
-    age, birthYear, thisYear, lanes, popCount,
-    cpp: { state: where(R.cppLo, R.cppHi), opens: birthYear + R.cppLo, closes: birthYear + R.cppHi },
-    oas: { state: where(R.oasLo, R.oasHi), opens: birthYear + R.oasLo, closes: birthYear + R.oasHi, boostYear: birthYear + M.oasBoostAge },
-    rrsp: { matures: birthYear + R.rrsp, state: age > R.rrsp ? 'past' : 'ahead' },
+    age, birthYear, thisYear, lanes, popCount, core: Y,
+    cpp: { state: Y.cppTense, opens: Y.y60, closes: Y.y70 },
+    oas: { state: Y.oasTense, opens: Y.oasFrom, closes: Y.oasTo, boostYear: Y.oasBoostYear },
+    rrsp: { matures: Y.y71, state: Y.rrspTense },
   };
 }
 

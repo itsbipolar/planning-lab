@@ -8,7 +8,9 @@ import { series } from '../money-stripes/build.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 import { deskPage, toolFor, questionOf } from '../../shared/desk/desk-page.mjs';
-import { EXAMPLE } from './model.mjs';
+import { EXAMPLE, worth, counts } from './model.mjs';
+import { writePoster, r as rnd } from '../../shared/desk/poster.mjs';
+import { dollars } from '../../shared/desk/your-year-core.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -49,5 +51,28 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     .replace('/*@@DATA@@*/', () => JSON.stringify(M).replace(/</g, '\\u003c')).replace('/*@@JS@@*/', () => js);
   mkdirSync(join(here, 'dist'), { recursive: true });
   writeFileSync(join(here, 'dist', 'index.html'), html);
+  // the poster (dist/poster.json): what the example amount from the example year is worth each year since (the hero line),
+  // and every year's price change for the stripes
+  {
+    const { amount, year } = EXAMPLE, C = counts(M), line = [];
+    for (let y = year; y <= M.last; y++) line.push([y, rnd(worth(M, amount, year, y), 2)]);
+    const now = worth(M, amount, year, M.last);
+    const p = writePoster(join(here, 'dist'), 'money-then-now', {
+      kind: 'line',
+      example: `Example: $${amount} in ${year}`,
+      x: { label: 'Year', min: year, max: M.last },
+      y: { label: `What $${amount} from ${year} costs`, min: 0, max: rnd(Math.max(...line.map((d) => d[1])), 2) },
+      line,
+      stripes: { from: M.first, to: M.last, change: Array.from({ length: M.last - M.first + 1 }, (_, i) => rnd(M.infl[M.first + i], 1)) },
+      readings: [
+        { label: `$${amount} in ${year}, in ${M.last} dollars`, value: dollars(now), text: `What cost $${amount} in ${year} cost about ${dollars(now)} in ${M.last}.` },
+        { label: `Years prices rose, ${M.first} to ${M.last}`, value: `${C.rose} of ${C.years}` },
+      ],
+      labels: [{ text: `$${amount} in ${year}`, at: year }, { text: `${dollars(now)} in ${M.last}`, at: M.last }],
+      source: M.meta.cpi.attribution,
+      asOf: String(M.last),
+    });
+    console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
+  }
   console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): price years ${M.first}-${M.last}, prime from ${M.primeFirst}`);
 }

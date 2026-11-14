@@ -7,6 +7,9 @@ import { dirname, join } from 'node:path';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 import { deskPage, toolFor, questionOf } from '../../shared/desk/desk-page.mjs';
+import { writePoster } from '../../shared/desk/poster.mjs';
+import { simulate, average } from './engine.mjs';
+import { enumerateOrders, summarize, factorial } from './enumerate.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -43,4 +46,34 @@ const html = deskPage(src, 'order-of-returns')
   .replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);
+// the poster (dist/poster.json): the money left each year for the same cards in two orders (good years first, bad years
+// first), and, over every order of the cards, the share that lasts the whole horizon (the page's own rounding)
+{
+  const N = story.cards.length, AVG = average(story.cards), tail = Array.from({ length: story.horizon - N }, () => AVG);
+  const run = (cards) => simulate({ start: story.start, withdrawal: story.withdrawal, indexation: story.indexation, returns: [...cards, ...tail] });
+  const good = run(story.cards.slice().sort((a, b) => b - a)), bad = run(story.cards.slice().sort((a, b) => a - b));
+  const k = (v) => Math.round(v / 1000) * 1000;
+  const s = summarize(enumerateOrders({ start: story.start, withdrawal: story.withdrawal, indexation: story.indexation, cards: story.cards, tail }), story.cards);
+  const share = (s.lasts / s.total) * 100, shareText = (Math.round(share * 10) / 10).toFixed(share >= 10 ? 0 : 1);
+  const p = writePoster(join(here, 'dist'), 'order-of-returns', {
+    kind: 'lines',
+    example: 'Synthetic example: not historical, not a forecast',
+    x: { label: 'Year', min: 0, max: story.horizon },
+    y: { label: 'Money left', min: 0, max: k(Math.max(...good.balances, story.start)) },
+    lines: [
+      { label: 'Good years first', points: [[0, story.start], ...good.balances.map((b, i) => [i + 1, k(b)])], runsOut: good.depletionYear },
+      { label: 'Bad years first', points: [[0, story.start], ...bad.balances.map((b, i) => [i + 1, k(b)])], runsOut: bad.depletionYear },
+    ],
+    // how many orders run out in each year (index = year; 0 = lasts the whole horizon)
+    outcomes: { lasts: s.lasts, total: s.total, byYear: s.byYear },
+    readings: [
+      { label: `Of the ${factorial(N).toLocaleString('en-CA')} orders, lasting ${story.horizon} years`, value: `${shareText}%` },
+      ...(bad.depletionYear ? [{ label: 'Bad years first runs out in', value: `year ${bad.depletionYear}` }] : []),
+    ],
+    labels: [{ text: 'Same ten years, same average' }, { text: 'Only the order differs' }],
+    source: story._note,
+    asOf: 'story.json',
+  });
+  console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
+}
 console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB)`);

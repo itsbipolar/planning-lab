@@ -4,11 +4,12 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { buildModel, question, finding, view } from './model.mjs';
+import { buildModel, question, finding, view, range, level, big } from './model.mjs';
 import { scaleCSS, STEPS } from './scale.mjs';
 import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 import { deskPage, toolFor, questionOf } from '../../shared/desk/desk-page.mjs';
+import { writePoster } from '../../shared/desk/poster.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -30,4 +31,27 @@ const html = deskPage(src, 'retirement-wave').replace('/*@@CSS@@*/', () => css)
   .replace('/*@@DATA@@*/', () => JSON.stringify({ model, steps: STEPS }).replace(/</g, '\\u003c')).replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);
+// the poster (dist/poster.json): the heatmap in ten shades (one string per age, one digit per year, 0 = fewest), the rule
+// ages drawn across it, and the answer's two readings
+{
+  const V = view(model, 'CA', 'all'), [lo, hi] = range(model, V, 'count'), [y0, y1] = model.years, [a0, a1] = model.ages, SHADES = 10;
+  const rows = [];
+  for (let a = a0; a <= a1; a++) { let s = ''; for (let y = y0; y <= y1; y++) s += level(V.counts[y][a - a0], lo, hi, SHADES); rows.push(s); }
+  const p = writePoster(join(here, 'dist'), 'retirement-wave', {
+    kind: 'heat',
+    example: `Canada, all genders, July 1, ${y0} to ${y1}`,
+    x: { label: 'Year', min: y0, max: y1 },
+    y: { label: 'Age', min: a0, max: a1 },
+    shades: SHADES, rows,
+    rules: model.rules.filter((r) => r.age === model.cppLo || r.age === model.oasLo).map((r) => ({ age: r.age, label: r.label })),
+    readings: [
+      { label: `Aged ${f.lo} to ${f.hi}, July 1, ${y1}`, value: big(f.now), text: f.lede },
+      { label: `Times as many as in ${y0}`, value: f.ratio.toLocaleString('en-CA', { maximumFractionDigits: 1 }) + '×' },
+    ],
+    labels: [{ text: 'Darker = more people' }, { text: 'Each column is a year' }],
+    source: model.source.attribution,
+    asOf: String(y1),
+  });
+  console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
+}
 console.log(`built dist/index.html (${(Buffer.byteLength(html) / 1024).toFixed(0)} KiB): ${model.places.length} places, ${model.years.join(' to ')}, ages ${model.ages.join(' to ')}, ${model.rules.length} rule ages (${model.rules.map((r) => r.age).join(', ')}), data released ${model.source.released}`);

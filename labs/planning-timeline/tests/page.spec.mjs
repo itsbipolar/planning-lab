@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { expectStorageClean, expectShell, expectTextSizes } from '../../../shared/desk/shell-test.mjs';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
+import { yourYearRules, annualPrices, yourYear } from '../../../shared/desk/your-year-core.mjs';
+
+const shared = (p) => JSON.parse(readFileSync(new URL(`../../../shared/${p}`, import.meta.url), 'utf8'));
+const CORE = { R: yourYearRules(shared('facts.json')), P: annualPrices(shared('data/cpi-monthly.json')) };
 
 const url = 'file://' + fileURLToPath(new URL('../dist/index.html', import.meta.url));
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -35,6 +40,19 @@ for (const width of [390, 1440]) {
       expect(requests).toEqual([]);
       await expectStorageClean(page);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+    });
+
+    test('the page shows the shared core’s numbers (the home lead’s) for 1960, 1980 and 2000', async ({ page }) => {
+      await page.goto(url); await page.waitForLoadState('load');
+      const thisYear = await page.evaluate(() => new Date().getFullYear());
+      for (const b of [1960, 1980, 2000]) {
+        const Y = yourYear(CORE.R, CORE.P, b, thisYear);
+        await page.fill('#year', String(b)); await page.click('button[type=submit]');
+        await expect(page.locator('#prices')).toHaveText(Y.text.cpi);
+        await expect(page.locator('#tl-take')).toContainText(`CPP can start in ${Y.y60}`);
+        if (Y.tfsaSum > 0) await expect(page.locator('#tl-text')).toContainText('$' + Y.tfsaSum.toLocaleString('en-CA') + ' in all by ' + Y.tfsaSumTo);
+        await expect(page.locator('#tl-text')).toContainText(`(${Y.y60} to ${Y.y70} for you)`);
+      }
     });
 
     test('each result is a readout right under its control, and it changes with the control', async ({ page }) => {

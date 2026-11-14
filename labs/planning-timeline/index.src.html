@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<!--@@YEAR@@-->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your year · Mohammed El Chayeb</title>
 <meta name="description" content="Type a birth year and see where you stand on Canada's TFSA, CPP, OAS and RRSP rules: what is open, what is closed, and what each start age is worth.">
@@ -16,6 +17,7 @@
     <p class="kicker">Tool</p>
     <h1 class="display">What opens, and when, for your year?</h1>
     <p class="lede" id="finding" aria-live="polite"></p>
+    <p class="lede prices" id="prices" aria-live="polite"></p>
 
     <form id="form" class="ask" novalidate>
       <label for="year">Born in</label>

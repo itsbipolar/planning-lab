@@ -1,6 +1,7 @@
 // Money, then and now. The yearly series are embedded in #data (computed at build time from the dated Statistics Canada
 // and Bank of Canada snapshots) and the arithmetic comes from model.mjs, inlined above this script. The year and amount
-// typed here stay in this page: not stored, not put in the address, not sent anywhere. The only file this page makes is
+// typed here stay in this page: not stored, not put in the address, not sent anywhere. A birth year set in Your year
+// this visit (sessionStorage 'mo.year', read by the <head> script into <html data-year>) is the year it opens on. The only file this page makes is
 // an image the visitor asks to save.
 (function () {
   'use strict';
@@ -12,6 +13,8 @@
   var $ = function (id) { return document.getElementById(id); };
   var YEARS = yearsOf(M), EX = extremes(M), SPANS = negSpans(M), C = counts(M);
   var state = { year: EXAMPLE_YEAR, amount: EXAMPLE_AMOUNT, example: true };
+  var carried = Number(document.documentElement.getAttribute('data-year'));
+  if (Number.isInteger(carried) && carried >= M.first && carried <= M.last) { state.year = carried; state.example = false; }
 
   // ---------- words and numbers ----------
   var MINUS = '−', DASH = '–';
@@ -428,7 +431,7 @@
 
   // ---------- controls ----------
   var year = $('year'), amount = $('amount');
-  year.min = String(M.first); year.max = String(M.last); year.value = String(EXAMPLE_YEAR); amount.value = String(EXAMPLE_AMOUNT);
+  year.min = String(M.first); year.max = String(M.last); year.value = String(state.year); amount.value = String(EXAMPLE_AMOUNT);
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var y = Number(year.value), a = Number(amount.value), err = $('error');
