@@ -1,16 +1,17 @@
 {
-  "_note": "The Up next chain (redesign v2, Navigation rules 5): each public tool's slug on the site (/tools/<slug>/), the lab that builds it, the short question its Up next card shows, and the tool that comes after it. films: each watch page's one Up next tool (hash: an optional section of it to open, such as money-then-now's #this-year, the only hash a tool reads). The site's sync-labs check fails if a slug here has no dist.",
+  "_note": "The Up next chain (redesign v2, Navigation rules 5): each public tool's slug on the site (/tools/<slug>/), the lab that builds it, the short question its Up next card shows, and the tool that comes after it. films: each watch page's one Up next tool (hash: an optional section of it to open, such as money-then-now's #this-year, the only hash a tool reads). The site's sync-labs check fails if a slug here has no dist. listed: a tool with \"listed\": false is built and live at its address but unlisted (until Mo's firm compliance OKs it): it is nobody's Up next, the site links to it nowhere and it carries noindex. A missing listed means true. A door (a tool's next or a film's next) to an unlisted tool follows that tool's own next, so flipping the one flag is the only edit. The resolved target is written as to (desk-page.mjs resolvedNext); the site reads only to.",
   "tools": [
     { "slug": "your-year", "labSlug": "planning-timeline", "question": "What opens, and when, for your year?", "next": "when-to-start-cpp" },
     { "slug": "when-to-start-cpp", "labSlug": "two-number-letter", "question": "When does waiting for CPP pay off?", "next": "order-of-returns" },
     { "slug": "order-of-returns", "labSlug": "order-of-returns", "question": "Same ten years. Why does one retiree run out?", "next": "money-then-now" },
-    { "slug": "money-then-now", "labSlug": "money-then-now", "question": "What did $100 buy the year you were born?", "next": "tax-dates" },
+    { "slug": "money-then-now", "labSlug": "money-then-now", "question": "What did $100 buy the year you were born?", "next": "estate-freeze" },
+    { "slug": "estate-freeze", "labSlug": "estate-freeze", "question": "How much tax does an estate freeze push past death?", "next": "tax-dates", "listed": false },
     { "slug": "tax-dates", "labSlug": "planning-calendar", "question": "What’s your next tax date?", "next": "retirement-wave" },
     { "slug": "retirement-wave", "labSlug": "retirement-wave", "question": "How many Canadians are about to turn {{oas_start_age}}?", "next": "your-year" }
   ],
   "films": {
     "franklin-gift": { "next": "money-then-now" },
-    "double-tax-at-death": { "next": "tax-dates" },
+    "double-tax-at-death": { "next": "estate-freeze" },
     "money-history": { "next": "money-then-now" },
     "apollo-envelopes": { "next": "order-of-returns" },
     "money-year": { "next": "money-then-now", "hash": "this-year" }

@@ -27,8 +27,31 @@ export function questionOf(tool) {
   });
 }
 
-/** next.json with every question filled in (the site copies this one: npm run sync-labs). */
-export const resolvedNext = () => ({ ...NEXT, tools: NEXT.tools.map((t) => ({ ...t, question: questionOf(t) })) });
+/** Is a tool listed? A tool with "listed": false is built and live but unlisted: nobody's Up next, linked from nowhere,
+ *  noindex. A missing listed means true. */
+export const isListed = (t) => !!t && t.listed !== false;
+
+/** The listed tool a door to slug really opens: slug itself when it is listed, else that tool's own next, followed until
+ *  a listed tool is reached. data defaults to next.json (a test may pass a copy). Throws on an unknown slug or a loop. */
+export function effectiveNext(slug, data = NEXT) {
+  const seen = new Set();
+  for (let at = slug; ; ) {
+    if (seen.has(at)) throw new Error(`next.json: the doors from ${slug} loop (${[...seen].join(' -> ')}) without reaching a listed tool`);
+    seen.add(at);
+    const t = data.tools.find((x) => x.slug === at);
+    if (!t) throw new Error(`next.json: ${at} is not a tool`);
+    if (isListed(t)) return t;
+    at = t.next;
+  }
+}
+
+/** next.json with every question filled in, plus listed and to (the listed tool each door opens) on every tool and film:
+ *  the one resolver; the site copies this (npm run sync-labs) and reads only to. */
+export const resolvedNext = (data = NEXT) => ({
+  ...data,
+  tools: data.tools.map((t) => ({ ...t, question: questionOf(t), listed: isListed(t), to: effectiveNext(t.next, data).slug })),
+  films: Object.fromEntries(Object.entries(data.films).map(([k, f]) => [k, { ...f, to: effectiveNext(f.next, data).slug }])),
+});
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -78,8 +101,7 @@ export function toolBar(tool, { year = false } = {}) {
 }
 
 export function upNext(tool) {
-  const next = NEXT.tools.find((t) => t.slug === tool.next);
-  if (!next) throw new Error(`next.json: ${tool.slug} points to ${tool.next}, which is not a tool`);
+  const next = effectiveNext(tool.next);
   return `<a class="desk-next" data-next href="/tools/${esc(next.slug)}/"><span class="desk-next-k">Up next</span><span class="desk-next-q">${esc(questionOf(next))}</span><span class="desk-next-go" aria-hidden="true">→</span></a>`;
 }
 
@@ -92,6 +114,8 @@ function headTags(html, tool) {
   const m = html.match(/<meta name="description" content="([^"]*)">/);
   if (!m) throw new Error(`${tool.labSlug}: index.src.html needs a <meta name="description">`);
   return [
+    // an unlisted tool (next.json "listed": false) asks search engines to leave it out until it is listed
+    ...(isListed(tool) ? [] : ['<meta name="robots" content="noindex">']),
     `<link rel="canonical" href="${esc(url)}">`,
     '<meta property="og:type" content="website">',
     `<meta property="og:url" content="${esc(url)}">`,

@@ -561,7 +561,7 @@ function cardText(o, origin) {
     bigValue: String(o.bigValue == null ? '' : o.bigValue),
     line: String(o.line || ''),
     labels: (o.labels || []).map(String).filter(Boolean).slice(0, 3),
-    stamp: CARD_STAMP,
+    stamp: o.stamp ? String(o.stamp) : CARD_STAMP, // a tool may give its own stamp (Estate freeze: its hypothetical-illustration line)
     address: siteAddress(origin),
   };
 }
@@ -664,7 +664,7 @@ function deskCard(o) {
   var col = function (n, d) { return (cs.getPropertyValue('--t-' + n) || '').trim() || d; };
   var C = { ground: col('ground', '#FCFDFD'), raised: col('raised', '#E8EEF3'), ink: col('ink', '#10161C'), ink2: col('ink2', '#36414C'), rule: col('rule', '#D3D8DD'), point: col('point', '#F2A93B') };
   var serif = '"Source Serif 4 Variable", Georgia, serif', sans = '"Source Sans 3 Variable", system-ui, sans-serif';
-  var T = cardText({ head: DESK_SITE.wordmark, question: o.question, bigValue: o.bigValue, line: o.line, labels: o.labels }, DESK_SITE.origin);
+  var T = cardText({ head: DESK_SITE.wordmark, question: o.question, bigValue: o.bigValue, line: o.line, labels: o.labels, stamp: o.stamp }, DESK_SITE.origin);
   var fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 72px ' + serif), document.fonts.load('400 50px ' + sans), document.fonts.load('700 40px ' + sans)]).catch(function () {}) : Promise.resolve();
   return fonts.then(function () {
     var c = document.createElement('canvas'); c.width = W; c.height = H;

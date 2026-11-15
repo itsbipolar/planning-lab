@@ -1,0 +1,20 @@
+{
+  "_note": "A sanity check of the engine against a published one-page illustration's example (the source is not named). The inputs are example assumptions, not facts; the expected figures are the illustration's, checked against the confirmed facts in shared/facts.json by tests/model.test.mjs. Ontario top rates; one owner; the trust set up at the freeze.",
+  "inputs": { "value": 7500000, "cost": 2500000, "growth": 0.04, "freezeAge": 70, "income": 100000, "eligibleShare": 0.5, "incomeGrowth": 0.02 },
+  "expect": {
+    "deathAge": 87,
+    "deemedAge": 91,
+    "gainNo": [12110000, 10000],
+    "gainWith": [3200000, 10000],
+    "trust": [8910000, 10000],
+    "taxNo": [3240000, 10000],
+    "taxWith": [860000, 10000],
+    "pushed": [2380000, 10000],
+    "eatNo": [220000, 5000],
+    "eatWith": [0, 0],
+    "difference": [2600000, 10000],
+    "firstRedemption": [90000, 1000],
+    "cgRatePercent": [26.76, 0.01]
+  },
+  "display": { "pushed": "$2.38M", "gainNo": "$12.11M", "gainWith": "$3.20M", "taxNo": "$3.24M", "taxWith": "$0.86M", "eatNo": "$0.22M", "payableNo": "$3.46M" }
+}

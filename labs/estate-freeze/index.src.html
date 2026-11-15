@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estate freeze · Mohammed El Chayeb</title>
+<meta name="description" content="A made-up retiree freezes a portfolio in a company. See how much gain is taxed at death, and how much moves to a trust to be taxed later. Education, not advice.">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<!--@@TOOLBAR@@-->
+<div class="page">
+  <main>
+    <section class="play" data-chapter="The freeze">
+      <p class="kicker">Tool</p>
+      <h1 id="question">{{question}}</h1>
+      <p class="lede" id="lede">{{lede}}</p>
+
+      <div class="move" data-first-move>
+        <label class="label" for="value" id="value-label">Portfolio value</label>
+        <div class="slide" id="slide">
+          <output class="bubble" id="value-out" for="value" aria-hidden="true">{{value}}</output>
+          <input type="range" id="value" name="value" aria-labelledby="value-label">
+          <div class="slide-ticks" aria-hidden="true"><span id="tick-lo"></span><span id="tick-mid"></span><span id="tick-hi"></span></div>
+        </div>
+        <p class="clamp-note" id="clamp" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="readout answer" id="answer" data-answer aria-live="polite">
+        <p class="readout-k" id="answer-k">Income tax pushed past death</p>
+        <p class="readout-v big" id="answer-v" data-readout-v>{{pushed}}</p>
+        <p class="readout-t" id="answer-t" data-readout-t>Deferred, not removed: the trust’s shares are taxed when sold or deemed sold.</p>
+        <p class="readout-sub" id="answer-sub"></p>
+        <p class="readout-sub readout-extra" id="answer-extra" hidden></p>
+        <details class="readout-how" id="how-fold"><summary>How this is worked out</summary><div id="how"></div></details>
+      </div>
+
+      <p class="assume" id="assume" data-assumptions><strong class="stamp">Hypothetical illustration · Education, not advice.</strong> <span id="assume-text"></span></p>
+    </section>
+
+    <figure class="chart freeze-chart" id="freeze-chart" aria-labelledby="chart-title">
+      <figcaption>
+        <p class="chart-title" id="chart-title"></p>
+        <p class="chart-sub" id="chart-sub">Gain not yet taxed, by age, $ millions</p>
+        <p class="chart-tags"><span class="chip tag-example">Example data</span><span class="chip tag-stamp">Hypothetical illustration · Education, not advice</span></p>
+      </figcaption>
+      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Gain not yet taxed, by age</title><desc id="chart-desc"></desc></svg></div>
+    </figure>
+
+    <section class="change" aria-labelledby="change-h">
+      <h2 class="sec-label" id="change-h">Change the example</h2>
+      <div class="steppers" id="steppers"></div>
+      <p class="hint wide-only" id="death-hint" hidden></p>
+      <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
+    </section>
+
+    <section class="books" aria-label="At death, and later">
+      <div class="ledger-wrap">
+        <table class="ledger" id="ledger">
+          <caption class="desk-sr">What is owed at death without and with the freeze, and what the trust holds to be taxed later</caption>
+          <thead><tr><th scope="col" id="ledger-h"></th><th scope="col">No freeze</th><th scope="col">With<span class="lg-wide"> the</span> freeze</th></tr></thead>
+          <tbody id="ledger-now"></tbody>
+          <tbody class="later" id="ledger-later"></tbody>
+        </table>
+      </div>
+      <div class="caveats callout">
+        <h2 class="caveats-h">This example assumes</h2>
+        <ul id="caveats"></ul>
+        <p class="caveats-close">How any of this applies to a real family is a question for a tax professional and a lawyer.</p>
+      </div>
+    </section>
+
+    <details class="deeper" id="deeper" data-chapter="Go deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub" aria-labelledby="moves-h">
+        <h3 id="moves-h">The moves, in plain words</h3>
+        <ol class="flow" id="flow"></ol>
+      </section>
+      <section class="deeper-sub" aria-labelledby="redeem-h">
+        <h3 id="redeem-h">Redemptions, year by year</h3>
+        <div class="chart-frame" id="bars-frame"><svg id="bars" data-chart role="img" aria-labelledby="bars-title"><title id="bars-title">Preferred shares bought back each year</title></svg></div>
+        <p id="cash-line"></p>
+        <p id="mechanism"></p>
+      </section>
+      <section class="deeper-sub" aria-labelledby="more-h">
+        <h3 id="more-h">More assumptions</h3>
+        <div class="steppers steppers-more" id="steppers-more"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="years-h">
+        <h3 id="years-h">Year by year</h3>
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="years-cap">
+          <table class="nums" id="years"><caption id="years-cap">The numbers behind the chart, at the end of each year</caption>
+            <thead><tr><th scope="col">Age</th><th scope="col">Portfolio</th><th scope="col">Redeemed that year</th><th scope="col">Preferred left</th><th scope="col">Trust’s shares</th><th scope="col">Gain taxed at death, no freeze</th><th scope="col">With the freeze</th></tr></thead>
+            <tbody id="years-rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </details>
+
+    <p class="save-row">
+      <button type="button" class="btn-you" id="print">Save as one page</button>
+      <button type="button" class="btn-2" id="card">Save my card</button>
+      <span class="note">Made in this browser; nothing is sent.</span>
+    </p>
+
+    <details class="fold sources-fold" data-chapter="Sources" data-preview="The tax rules and figures used, each linked to its official page">
+      <summary>Sources and how it’s made</summary>
+      <div id="sources" class="prose"></div>
+    </details>
+
+    <!--@@NEXT@@-->
+
+    <footer class="foot">
+      <div>
+        <!--@@NOTES@@-->
+        <p class="note" id="foot-version"></p>
+      </div>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/tools/">All tools</a></p>
+    </footer>
+  </main>
+</div>
+<section class="sheet" id="sheet" aria-hidden="true"></section>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>

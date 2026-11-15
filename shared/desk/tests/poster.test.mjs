@@ -9,7 +9,7 @@ import { yourYearRules, annualPrices, yourYear, EXAMPLE_BIRTH_YEAR } from '../yo
 
 const root = new URL('../../../', import.meta.url).pathname;
 const json = (p) => JSON.parse(readFileSync(root + p, 'utf8'));
-const KINDS = ['lanes', 'lines', 'line', 'dates', 'heat'];
+const KINDS = ['lanes', 'lines', 'line', 'dates', 'heat', 'band'];
 
 test('every public tool writes a small poster.json with its question, one or two readings and at most two labels', () => {
   for (const t of NEXT.tools) {

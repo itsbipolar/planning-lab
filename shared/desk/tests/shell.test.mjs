@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { SITE, NEXT, deskPage, toolFor } from '../desk-page.mjs';
+import { SITE, NEXT, deskPage, toolFor, isListed, effectiveNext } from '../desk-page.mjs';
 
 const here = new URL('..', import.meta.url).pathname, root = new URL('../../../', import.meta.url).pathname;
 
@@ -16,17 +16,19 @@ test('the site nav is the four task labels, root-relative, and the origin is abs
   assert.equal(SITE.aiNote, 'Made with AI assistance; every figure is checked at its source.');
 });
 
-test('Up next is one loop through all six tools; each question is short; films point at tools', () => {
-  const slugs = NEXT.tools.map((t) => t.slug);
+test('Up next is one loop through the six listed tools; an unlisted tool is built but nobody\'s next; films point at tools', () => {
+  const slugs = NEXT.tools.map((t) => t.slug), listed = NEXT.tools.filter(isListed).map((t) => t.slug);
   assert.equal(new Set(slugs).size, slugs.length);
   let at = 'your-year'; const seen = [];
-  for (let i = 0; i < slugs.length; i++) { seen.push(at); at = NEXT.tools.find((t) => t.slug === at).next; }
-  assert.equal(at, 'your-year'); assert.deepEqual([...seen].sort(), [...slugs].sort());
+  for (let i = 0; i < listed.length; i++) { seen.push(at); at = effectiveNext(NEXT.tools.find((t) => t.slug === at).next).slug; }
+  assert.equal(at, 'your-year'); assert.deepEqual([...seen].sort(), [...listed].sort());
   assert.deepEqual(seen, ['your-year', 'when-to-start-cpp', 'order-of-returns', 'money-then-now', 'tax-dates', 'retirement-wave']);
   for (const t of NEXT.tools) {
     assert.ok(t.question.split(/\s+/).length <= 12, `${t.slug}: question of 12 words or fewer`);
+    assert.ok(t.listed === undefined || typeof t.listed === 'boolean', `${t.slug}: listed is a boolean when present`);
     assert.ok(existsSync(`${root}labs/${t.labSlug}/build.mjs`), `${t.labSlug} is a lab`);
-    assert.ok(readFileSync(`${root}labs/${t.labSlug}/dist/index.html`, 'utf8').includes(`href="/tools/${t.next}/"`), `${t.labSlug} dist links to ${t.next}`);
+    const to = effectiveNext(t.next).slug;
+    assert.ok(readFileSync(`${root}labs/${t.labSlug}/dist/index.html`, 'utf8').includes(`href="/tools/${to}/"`), `${t.labSlug} dist links to ${to}`);
   }
   for (const [film, f] of Object.entries(NEXT.films)) assert.ok(slugs.includes(f.next), `${film} points at a tool`);
   // the money-year reel goes to Money, then and now's This year in money (plan section 2); #this-year is the one hash allowed

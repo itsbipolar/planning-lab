@@ -1,10 +1,10 @@
 // Playwright checks for the tool shell (desk-page.mjs), shared by every public tool's tests/page.spec.mjs.
 import { expect } from '@playwright/test';
-import { SITE, NEXT, toolFor, questionOf } from './desk-page.mjs';
+import { SITE, toolFor, questionOf, effectiveNext } from './desk-page.mjs';
 
 /** The tool bar, the one Up next card, the notes, the head tags, no rail and nothing sticky. */
 export async function expectShell(page, labSlug) {
-  const tool = toolFor(labSlug), next = NEXT.tools.find((t) => t.slug === tool.next);
+  const tool = toolFor(labSlug), next = effectiveNext(tool.next); // an unlisted tool is never anyone's next
   const width = page.viewportSize().width;
 
   // the tool bar: the wordmark home, the site's four nav items (each fully on screen), All tools and How I made this

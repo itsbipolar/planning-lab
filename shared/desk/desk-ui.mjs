@@ -61,10 +61,11 @@
 //    deskSaveButton(button, make) wires a button: make() returns { blob, name, title } (or a promise of it); in an
 //      in-app browser it shows <span class="save-note" role="note">Open this page in Safari or Chrome to save the
 //      file.</span> right after the button.
-//    deskCard({ question, bigValue, line, labels, draw }) -> Promise<Blob>: "Save my card", a 1080x1350 PNG drawn in a
+//    deskCard({ question, bigValue, line, labels, draw, stamp? }) -> Promise<Blob>: "Save my card", a 1080x1350 PNG drawn in a
 //      canvas in the page's current theme: the question (serif), the big value (serif, shrunk to fit), the one line, up
 //      to three labels as chips, an optional draw(ctx, { x, y, w, h }, colours) for a small chart, and the foot stamped
-//      CARD_STAMP ("Example · Education, not advice") with the site address (site-nav.json origin, no https).
+//      CARD_STAMP ("Example · Education, not advice"), or the tool's own stamp, with the site address (site-nav.json
+//      origin, no https).
 //    deskSaveCard(o) = deskCard(o) then deskSaveFile({ blob, name: o.name || 'my-card.png', title: o.question }).
 //
 // 5. Guess, then reveal (always skippable, shown only after the first result):
@@ -379,7 +380,7 @@ export function cardText(o, origin) {
     bigValue: String(o.bigValue == null ? '' : o.bigValue),
     line: String(o.line || ''),
     labels: (o.labels || []).map(String).filter(Boolean).slice(0, 3),
-    stamp: CARD_STAMP,
+    stamp: o.stamp ? String(o.stamp) : CARD_STAMP, // a tool may give its own stamp (Estate freeze: its hypothetical-illustration line)
     address: siteAddress(origin),
   };
 }
@@ -501,7 +502,7 @@ function deskCard(o) {
   var col = function (n, d) { return (cs.getPropertyValue('--t-' + n) || '').trim() || d; };
   var C = { ground: col('ground', '#FCFDFD'), raised: col('raised', '#E8EEF3'), ink: col('ink', '#10161C'), ink2: col('ink2', '#36414C'), rule: col('rule', '#D3D8DD'), point: col('point', '#F2A93B') };
   var serif = '"Source Serif 4 Variable", Georgia, serif', sans = '"Source Sans 3 Variable", system-ui, sans-serif';
-  var T = cardText({ head: DESK_SITE.wordmark, question: o.question, bigValue: o.bigValue, line: o.line, labels: o.labels }, DESK_SITE.origin);
+  var T = cardText({ head: DESK_SITE.wordmark, question: o.question, bigValue: o.bigValue, line: o.line, labels: o.labels, stamp: o.stamp }, DESK_SITE.origin);
   var fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 72px ' + serif), document.fonts.load('400 50px ' + sans), document.fonts.load('700 40px ' + sans)]).catch(function () {}) : Promise.resolve();
   return fonts.then(function () {
     var c = document.createElement('canvas'); c.width = W; c.height = H;

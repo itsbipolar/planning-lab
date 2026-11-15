@@ -52,6 +52,10 @@ test('a saved card is stamped "Example · Education, not advice" with the site a
   assert.equal(t.address, host);
   assert.deepEqual(t.labels, ['a', 'b', 'c'], 'at most three labels, blanks dropped');
   assert.equal(cardText({}, SITE.origin).bigValue, '');
+  // a tool may stamp its card with its own line (Estate freeze); without one, every other tool keeps CARD_STAMP
+  assert.equal(cardText({ stamp: 'Hypothetical illustration · Education, not advice' }, SITE.origin).stamp, 'Hypothetical illustration · Education, not advice');
+  assert.equal(cardText({ stamp: '' }, SITE.origin).stamp, CARD_STAMP);
+  assert.ok(deskUIJS().includes('stamp: o.stamp'), 'deskCard passes the tool\'s stamp to the card text');
   // the page draws exactly these strings: the stamp, the origin and the wordmark are in the page script
   const js = deskUIJS();
   const lit = (v) => JSON.stringify(v).replace(/[^\x00-\x7f]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
