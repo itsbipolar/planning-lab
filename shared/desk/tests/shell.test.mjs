@@ -16,13 +16,13 @@ test('the site nav is the four task labels, root-relative, and the origin is abs
   assert.equal(SITE.aiNote, 'Made with AI assistance; every figure is checked at its source.');
 });
 
-test('Up next is one loop through the six listed tools; an unlisted tool is built but nobody\'s next; films point at tools', () => {
+test('Up next is one loop through the listed tools; an unlisted tool is built but nobody\'s next; films point at tools', () => {
   const slugs = NEXT.tools.map((t) => t.slug), listed = NEXT.tools.filter(isListed).map((t) => t.slug);
   assert.equal(new Set(slugs).size, slugs.length);
   let at = 'your-year'; const seen = [];
   for (let i = 0; i < listed.length; i++) { seen.push(at); at = effectiveNext(NEXT.tools.find((t) => t.slug === at).next).slug; }
   assert.equal(at, 'your-year'); assert.deepEqual([...seen].sort(), [...listed].sort());
-  assert.deepEqual(seen, ['your-year', 'when-to-start-cpp', 'order-of-returns', 'money-then-now', 'tax-dates', 'retirement-wave']);
+  assert.deepEqual(seen, ['your-year', 'when-to-start-cpp', 'order-of-returns', 'money-then-now', 'estate-freeze', 'tax-dates', 'retirement-wave']);
   for (const t of NEXT.tools) {
     assert.ok(t.question.split(/\s+/).length <= 12, `${t.slug}: question of 12 words or fewer`);
     assert.ok(t.listed === undefined || typeof t.listed === 'boolean', `${t.slug}: listed is a boolean when present`);

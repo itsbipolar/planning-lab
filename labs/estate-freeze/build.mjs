@@ -56,7 +56,7 @@ writeFileSync(join(here, 'dist', 'index.html'), html);
     y: { label: 'Gain not yet taxed, $ millions', min: 0, max: rnd(S.gainNo / 1e6, 1) },
     band: S.rows.map((r) => [r.age, rnd(r.gainWith / 1e6, 1), rnd(r.gainNo / 1e6, 1)]),
     deathAge: S.inp.deathAge, deemedAge: S.deemedAge, trustAtDeath: rnd(S.trust / 1e6, 1),
-    readings: [{ label: 'gain taxed at death', value: `${fmtM1(S.gainNo)} → ${fmtM1(S.gainWith)}`, text: `Income tax pushed past death: ${fmtBig(S.deferred)}, deferred, not removed.` }],
+    readings: [{ label: 'Gain taxed at death, without and with a freeze', value: `${fmtM1(S.gainNo)} → ${fmtM1(S.gainWith)}`, text: `Income tax pushed past death: ${fmtBig(S.deferred)}, deferred, not removed.` }],
     labels: [{ text: `Trust’s ${ordinal(R.trustYears)} anniversary`, at: S.deemedAge }],
     source: `Income Tax Act, CRA and Ontario rates (${R.rateYear}); Statistics Canada life table`,
     asOf,

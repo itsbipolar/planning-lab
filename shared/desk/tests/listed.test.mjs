@@ -8,18 +8,25 @@ import { NEXT, effectiveNext, resolvedNext, isListed, toolFor } from '../desk-pa
 
 const root = new URL('../../../', import.meta.url).pathname;
 const flipped = () => ({ ...NEXT, tools: NEXT.tools.map((t) => (t.slug === 'estate-freeze' ? { ...t, listed: true } : t)) });
+// Listed since 2026-11-15 (Mo: "Assume you are the only compliance checked and that the firm approved it, then list the freeze"); the unlisted case is kept as a test on a copy.
+const unlisted = () => ({ ...NEXT, tools: NEXT.tools.map((t) => (t.slug === 'estate-freeze' ? { ...t, listed: false } : t)) });
 
 test('while estate-freeze is unlisted, its doors lead past it to its own next', () => {
-  const ef = NEXT.tools.find((t) => t.slug === 'estate-freeze');
+  const d = unlisted();
+  const ef = d.tools.find((t) => t.slug === 'estate-freeze');
   assert.equal(isListed(ef), false);
-  assert.equal(effectiveNext('estate-freeze').slug, 'tax-dates');
-  assert.equal(effectiveNext(NEXT.tools.find((t) => t.slug === 'money-then-now').next).slug, 'tax-dates');
-  assert.equal(effectiveNext(NEXT.films['double-tax-at-death'].next).slug, 'tax-dates');
-  const r = resolvedNext();
+  assert.equal(effectiveNext('estate-freeze', d).slug, 'tax-dates');
+  assert.equal(effectiveNext(d.tools.find((t) => t.slug === 'money-then-now').next, d).slug, 'tax-dates');
+  assert.equal(effectiveNext(d.films['double-tax-at-death'].next, d).slug, 'tax-dates');
+  const r = resolvedNext(d);
   assert.equal(r.tools.find((t) => t.slug === 'money-then-now').to, 'tax-dates');
   assert.equal(r.films['double-tax-at-death'].to, 'tax-dates');
   assert.equal(r.tools.find((t) => t.slug === 'estate-freeze').listed, false);
   assert.equal(r.tools.find((t) => t.slug === 'estate-freeze').to, 'tax-dates', 'it keeps its own Up next');
+});
+
+test('estate-freeze is listed (Mo, 2026-11-15)', () => {
+  assert.equal(isListed(NEXT.tools.find((t) => t.slug === 'estate-freeze')), true);
 });
 
 test('flipping the one flag makes it the next of Money, then and now and of the double-tax film', () => {

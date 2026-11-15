@@ -38,12 +38,12 @@ for (const width of [390, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
 
-    test('the tool shell, unlisted: tool bar, one Up next past it, noindex; nothing stored; no request after load', async ({ page }) => {
+    test('the tool shell, listed: tool bar, one Up next, no unlisted noindex; nothing stored; no request after load', async ({ page }) => {
       const requests = [];
       await page.goto(url); await page.waitForLoadState('load');
       page.on('request', (r) => requests.push(r.url()));
       await expectShell(page, 'estate-freeze');
-      await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
+      await expect(page.locator('meta[name="robots"]')).toHaveCount(0); // listed since 2026-11-15
       await expect(page.locator('a[data-next]')).toHaveAttribute('href', '/tools/tax-dates/');
       await page.locator('#value').focus();
       await page.keyboard.press('ArrowRight');
