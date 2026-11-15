@@ -1634,7 +1634,7 @@
       "tax_year": null,
       "value": "15.63",
       "unit": "years",
-      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1310011401",
+      "source_url": "https://www150.statcan.gc.ca/n1/tbl/csv/13100114-eng.zip",
       "authority": "official_publication",
       "as_of": "2026-11-15",
       "status": "confirmed"
@@ -1648,7 +1648,7 @@
       "tax_year": null,
       "value": "18.02",
       "unit": "years",
-      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1310011401",
+      "source_url": "https://www150.statcan.gc.ca/n1/tbl/csv/13100114-eng.zip",
       "authority": "official_publication",
       "as_of": "2026-11-15",
       "status": "confirmed"

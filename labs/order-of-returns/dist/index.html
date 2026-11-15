@@ -927,7 +927,7 @@ function deskCard(o) {
     font('600 72px ' + serif); y += 40;
     wrapText(T.question, w, m, 4).forEach(function (l) { y += 80; x.fillText(l, P, y); });
     // the big value, shrunk until it fits one line
-    var size = 230; font('600 ' + size + 'px ' + serif);
+    var size = o.bigMax || 230; font('600 ' + size + 'px ' + serif);
     while (size > 96 && m(T.bigValue) > w) { size -= 6; font('600 ' + size + 'px ' + serif); }
     y += Math.round(size * 0.95) + 40; x.fillText(T.bigValue, P, y);
     // the one highlight: an amber rule under the figure, clear of its descenders

@@ -4,13 +4,14 @@ import { expectStorageClean, expectShell, expectTextSizes, expectTemplate, expec
 import { toolFor, questionOf } from '../../../shared/desk/desk-page.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { EXAMPLE, freezeRules, defaultDeathAge, freeze, fmtBig, fmtM2, fmtM1 } from '../model.mjs';
+import { EXAMPLE, freezeRules, defaultDeathAge, freeze, fmtBig, fmtM2, fmtM1, fmtScale } from '../model.mjs';
 
 const file = fileURLToPath(new URL('../dist/index.html', import.meta.url));
 const url = 'file://' + file;
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const R = freezeRules(JSON.parse(readFileSync(new URL('../../../shared/facts.json', import.meta.url), 'utf8')).facts);
 const S = freeze(R, { ...EXAMPLE, deathAge: defaultDeathAge(R, EXAMPLE.freezeAge) });
+const D = freeze(R, { ...EXAMPLE, freezeAge: EXAMPLE.freezeAge - 10, deathAge: defaultDeathAge(R, EXAMPLE.freezeAge) }); // the anniversary first
 const BANNED = /\bshould\b|recommend|best for you|right for you|\bsaved\b|\bsavings?\b|tax-free|eliminat|avoids? tax|\byour (portfolio|estate)\b|prepared for/i;
 
 async function step(page, name, dir, times = 1) {
@@ -75,19 +76,28 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#answer-sub')).toHaveText('Owed at death: $0.86M with the freeze, $3.24M without.');
       await expect(page.locator('#assume')).toContainText('Hypothetical illustration · Education, not advice.');
       await expect(page.locator('#assume')).toContainText(`${R.rateYear} top rates`);
-      await expect(page.locator('#chart-title')).toHaveText('At 87: $3.2M taxed at death, not $12.1M. The trust’s $8.9M is taxed later.');
+      await expect(page.locator('#chart-title')).toHaveText('Taxed at 87: $3.2M, not $12.1M');
       await expect(page.locator('#freeze-chart .tag-example')).toBeVisible();
-      await expect(page.locator('#freeze-chart')).toContainText('Hypothetical illustration · Education, not advice');
+      // the stamp is said once, by the first control; the chart carries the Example data tag
+      await expect(page.locator('#freeze-chart')).not.toContainText('Hypothetical illustration');
+      await expect(page.locator('#freeze-chart .chart-hint')).toHaveText('Touch or hover the chart to read any age.');
       await expect(page.locator('#chart')).toContainText('Death at 87 (example)');
-      await expect(page.locator('#chart')).toContainText('Trust’s 21st year, age 91');
+      await expect(page.locator('#chart')).toContainText(/Trust’s 21st\s*(anniversary, age 91|anniversary, 91)/);
+      await expect(page.locator('#chart')).toContainText('if not frozen');
+      for (const t of ['$0', '$5M', '$10M']) await expect(page.locator('#chart .ylab', { hasText: new RegExp('^\\' + t + '$') })).toHaveCount(1);
       await expect(page.locator('#chart')).toContainText('Each redemption');
       for (const v of ['$12.1M', '$8.9M', '$3.2M']) await expect(page.locator('#chart')).toContainText(v);
       const ledger = await page.locator('#ledger').innerText();
-      for (const v of ['$12.11M', '$3.20M', '$3.24M', '$0.86M', '$0.22M', '$3.46M', '$8.91M', '$2.38M', 'not payable (assumed)', 'age 91', '26.76%']) expect(ledger).toContain(v);
-      await expect(page.locator('#caveats li')).toHaveCount(6);
+      for (const v of ['$12.11M', '$3.20M', '$3.24M', '$0.86M', '$0.22M', '$3.46M', '$8.91M', '$2.38M', 'not payable (assumed)', 'age 91', '26.76%', 'Due at death']) expect(ledger).toContain(v);
+      expect(ledger).toMatch(/in the trust/i);
+      await expect(page.locator('#ledger tr[hidden]')).toHaveCount(1); // the row for tax in the trust's life shows only when its anniversary comes first
+      await expect(page.locator('#caveats li')).toHaveCount(7);
+      for (const t of ['section 85 election', 'surviving spouse', 'not submitted for probate', 'company’s own unrealized gain']) await expect(page.locator('#caveats')).toContainText(t);
       await expect(page.locator('#caveats a')).toHaveAttribute('href', '/watch/double-tax-at-death/');
       await expect(page.locator('#reset')).toBeHidden();
-      if (width >= 560) await expect(page.locator('#death-hint')).toContainText('Statistics Canada');
+      await expect(page.locator('#death-hint')).toBeVisible();
+      await expect(page.locator('#death-hint')).toContainText('Statistics Canada');
+      await expect(page.locator('#cost-hint')).toBeVisible();
       // How this is worked out: every rate wrapped in its fact
       await page.locator('#answer .readout-how summary').click();
       for (const id of ['refundable_investment_income_rate', 'part_iv_tax_rate', 'dividend_refund_rate', 'capital_gains_inclusion_rate', 'ontario_estate_admin_tax_rate']) await expect(page.locator(`#how [data-fact~="${id}"]`).first()).toBeVisible();
@@ -106,12 +116,17 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#reset')).toBeVisible();
       await page.keyboard.press('Home');
       await expect(page.locator('#value-out')).toHaveText('$1M');
-      await expect(page.locator('#clamp')).toHaveText('Tax cost lowered to $1M');
+      await expect(page.locator('#clamp')).toHaveText('Tax cost lowered to $1M while the portfolio is below $2.5M.');
       await expect(page.locator('#st-cost')).toHaveText('$1M');
-      await expect(page.locator('#answer-extra')).toHaveText('No gain at the freeze: all later growth goes to the trust.');
+      await expect(page.locator('#answer-extra')).toContainText('No gain at the freeze: all later growth goes to the trust.');
+      await expect(page.locator('#answer-extra')).toContainText('kept income is not counted');
+      await expect(page.locator('#answer-sub')).toContainText('nothing with the freeze');
       await expect(page.locator('button[aria-label^="Increase tax cost,"]')).toBeDisabled();
       await page.keyboard.press('End');
       await expect(page.locator('#value-out')).toHaveText('$25M');
+      // back above the chosen cost, the cost comes back and the note goes
+      await expect(page.locator('#st-cost')).toHaveText('$2.5M');
+      await expect(page.locator('#clamp')).toHaveText('');
       // steppers: named, 48px, disabled at a bound
       const up = page.locator('button[aria-label="Increase growth, now 4.0%"]');
       await expect(up).toHaveCount(1);
@@ -126,9 +141,17 @@ for (const width of [390, 1440]) {
       await expect(page.locator('#reset')).toBeHidden();
       // the trust's 21st year before death
       await step(page, 'age at the freeze', -1, 10);
-      await expect(page.locator('#answer-k')).toHaveText('Income tax moved to the trust');
-      await expect(page.locator('#answer-t')).toHaveText('Here the trust’s 21st year, age 81, comes before death.');
-      await expect(page.locator('#chart-title')).toHaveText('The trust’s 21st year, at 81, comes before death at 87.');
+      await expect(page.locator('#answer-k')).toHaveText('Income tax pushed past death');
+      await expect(page.locator('#answer-v')).toHaveText(fmtBig(D.deferred));
+      await expect(page.locator('#answer-t')).toHaveText(`The trust’s 21st anniversary, age 81, comes first: ${fmtScale(1, D.taxTrustEarly)(D.taxTrustEarly)} is taxed then.`);
+      const f1 = fmtScale(1, D.gainNo, D.gainWith);
+      await expect(page.locator('#chart-title')).toHaveText(`Taxed at 87: ${f1(D.gainWith)}, not ${f1(D.gainNo)}`);
+      // the ledger splits the trust: its growth since 81 (deferred) and the gain taxed at 81, in life
+      const led = await page.locator('#ledger').innerText();
+      for (const v of [fmtM2(D.trustHeld), fmtM2(D.deferred), fmtM2(D.taxTrustEarly), 'before death', 'growth since age 81']) expect(led).toContain(v);
+      await expect(page.locator('#chart')).toContainText(fmtM1(D.trustHeld));
+      await expect(page.locator('#chart')).not.toContainText(fmtM1(D.trust));
+      await expect(page.locator('#how')).toContainText('taxed then, before death');
       // death follows the freeze age, never before it
       await step(page, 'age at the freeze', 1, 40);
       await expect(page.locator('#st-freezeAge')).toHaveText('85');
@@ -165,10 +188,13 @@ for (const width of [390, 1440]) {
     test('Go deeper: the moves, the redemptions, more assumptions, year by year; the sources', async ({ page }) => {
       await page.goto(url);
       await expect(page.locator('#deeper')).not.toHaveAttribute('open', '');
-      await expect(page.locator('#deeper .deeper-in')).toHaveText('The moves, in plain words · Redemptions, year by year · More assumptions · Year by year');
+      await expect(page.locator('#deeper .deeper-in')).toHaveText('The moves, in plain words · Redemptions, year by year · More assumptions · The numbers behind the chart');
       await openDeeper(page);
       await expect(page.locator('#flow li')).toHaveCount(4);
+      await expect(page.locator('#flow li').first()).toContainText('section 85 election');
+      await expect(page.locator('#mechanism')).toContainText('paid-up capital');
       await expect(page.locator('#bars')).toContainText('Year 1: about $90,000');
+      await expect(page.locator('#bars')).toContainText(/Year 17: about \$\d{3},000/);
       await expect(page.locator('#cash-line')).toContainText('In year one the company earns $100,000');
       await expect(page.locator('#years-rows tr')).toHaveCount(S.n + 1);
       await expect(page.locator('#years-rows tr.death')).toContainText(fmtM2(S.gainNo));
@@ -178,6 +204,7 @@ for (const width of [390, 1440]) {
       await page.locator('.sources-fold summary').click();
       for (const f of R.used) await expect(page.locator(`#sources a[href="${f.source_url}"]`).first()).toBeAttached();
       await expect(page.locator('#sources')).toContainText('Statistics Canada table 13-10-0114-01');
+      for (const sec of ['70(5)', '70(6)', '74.4', '84(3)', '85']) await expect(page.locator('#sources')).toContainText('Income Tax Act ' + sec);
       await expect(page.locator('#sources')).toContainText(/Version [0-9a-f]{8} · rates as of/);
       await expectTextSizes(page);
     });
@@ -193,7 +220,8 @@ for (const width of [390, 1440]) {
       expect(card.stamp).toBe('Hypothetical illustration · Education, not advice');
       expect(card.bigValue).toBe('$2.38M');
       expect(card.line).toContain('deferred, not removed');
-      expect(card.labels).toEqual([`Taxed at death: ${fmtM1(S.gainNo)} → ${fmtM1(S.gainWith)}`, 'Trust’s 21st year: age 91']);
+      expect(card.line).toContain('made-up retiree, 70, with $7.5M');
+      expect(card.labels).toEqual([]);
     });
 
     test('every piece of text renders at 17.5px or more, chart labels included, in both schemes', async ({ page }) => {

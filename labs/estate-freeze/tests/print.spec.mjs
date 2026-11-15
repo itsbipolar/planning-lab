@@ -31,12 +31,18 @@ test('Save as one page builds the sheet and calls print; in print only the sheet
   await expect(sheet.locator('.sh-top')).toContainText('Printed');
   await expect(sheet.locator('.sh-title')).toHaveText('How much tax does an estate freeze push past death?');
   await expect(sheet.locator('.sh-inputs')).toContainText('A made-up retiree, 70: portfolio $7.5M, tax cost $2.5M');
-  await expect(sheet.locator('.sh-ledger')).toContainText('Its income tax at today’s rate, deferred');
+  await expect(sheet.locator('.sh-answer')).toContainText('$2.38M of income tax pushed past death: deferred, not removed.');
+  await expect(sheet.locator('.sh-ledger')).toContainText('Its income tax at today’s rate, deferred past death');
   await expect(sheet.locator('svg text', { hasText: 'Death at 87 (example)' })).toBeVisible();
-  for (const v of ['$12.11M', '$3.20M', '$3.24M', '$0.86M', '$8.91M', '$2.38M', 'not payable (assumed)', 'Taxed later']) await expect(sheet.locator('.sh-ledger')).toContainText(v);
-  await expect(sheet.locator('.sh-caveats li')).toHaveCount(6);
+  // all three end readings on paper, the no-freeze one included
+  for (const v of ['$12.1M', '$8.9M', '$3.2M']) await expect(sheet.locator('svg .rd-v', { hasText: v })).toHaveCount(1);
+  for (const v of ['$12.11M', '$3.20M', '$3.24M', '$0.86M', '$8.91M', '$2.38M', 'not payable (assumed)']) await expect(sheet.locator('.sh-ledger')).toContainText(v);
+  await expect(sheet.locator('.sh-ledger')).toContainText(/in the trust/i);
+  await expect(sheet.locator('.sh-caveats li')).toHaveCount(7);
+  await expect(sheet.locator('.sh-close')).toContainText('a tax professional and a lawyer');
+  await expect(sheet.locator('.sh-foot')).toContainText('/tools/estate-freeze/');
   await expect(sheet.locator('.sh-foot')).toContainText(/Version [0-9a-f]{8}/);
-  await expect(sheet.locator('.sh-foot')).toContainText('Made with an interactive tool by Mohammed El Chayeb');
+  await expect(sheet.locator('.sh-foot')).toContainText('Mohammed El Chayeb · ');
   await expect(sheet.locator('.sh-foot')).toContainText('Education only, not advice.');
   expect(await sheet.innerHTML()).not.toMatch(/https?:\/\/[^\s"<]*[?#]/); // no address carrying inputs
   expect(await textSizeOffenders(page)).toEqual([]);
@@ -60,7 +66,7 @@ for (const state of ['example', 'longest']) {
       await step(page, 'age at death', 1, 20);
       await page.locator('#deeper > summary').click();
       await step(page, 'investment income', 1, 50);
-      await expect(page.locator('#answer-k')).toHaveText('Income tax moved to the trust');
+      await expect(page.locator('#answer-t')).toContainText('anniversary');
     }
     await page.click('#print');
     for (const format of ['Letter', 'A4']) {

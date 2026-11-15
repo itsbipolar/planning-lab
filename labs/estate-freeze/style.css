@@ -20,7 +20,7 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
 .slide input[type=range]::-webkit-slider-runnable-track{height:6px;background:linear-gradient(to right,var(--t-ink) var(--fill,30%),var(--t-rule) var(--fill,30%));border-radius:3px}
 .slide input[type=range]::-moz-range-track{height:6px;background:var(--t-rule);border-radius:3px}
 .slide input[type=range]::-moz-range-progress{height:6px;background:var(--t-ink);border-radius:3px}
-.slide input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink);box-shadow:inset 0 -4px 0 var(--t-point)}
+.slide input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink)}
 .slide input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink)}
 .slide-ticks{position:relative;height:1.6rem;font-size:17.5px;color:var(--t-ink2);font-variant-numeric:lining-nums}
 .slide-ticks span{position:absolute;top:0;white-space:nowrap}
@@ -31,7 +31,7 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
 .clamp-note:empty{margin:0}
 
 .readout.answer{margin:1.1rem 0 0}
-.readout.answer .readout-v{margin:.1rem 0 .2rem}
+.readout.answer .readout-v{display:table;margin:.1rem 0 .35rem;padding-bottom:.05em;border-bottom:4px solid var(--t-point)}
 .readout-sub{margin:.4rem 0 0;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink)}
 .readout-sub b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
 .readout-extra[hidden]{display:none}
@@ -56,12 +56,15 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
   .play>.lede{grid-row:3}
   .play>.move{grid-row:4}
   .play>.readout.answer{grid-column:8/13;grid-row:2/4;margin-top:.6rem}
-  .play>.assume{grid-column:8/13;grid-row:4/6;margin-top:.9rem}
+  .play>.assume{grid-column:8/13;grid-row:4/6;margin-top:0;align-self:start}
+  .play>.move{margin-top:.75rem}
+  figure.chart{margin-top:1.5rem}
 }
 
 /* ---- The chart: drawn at the frame's own width (1 unit = 1px), every label 17.5px or more ---- */
-figure.chart{margin:2.25rem 0 0}
-.chart-tags{margin:.35rem 0 0;color:var(--t-ink2);font-size:17.5px;line-height:1.35}
+figure.chart{margin:2rem 0 0}
+.chart-hint{margin:.35rem 0 0;font-size:17.5px;line-height:1.35;color:var(--t-ink2)}
+.chart-tags{margin:0 0 0 .5rem;color:var(--t-ink2);font-size:17.5px;line-height:1.35;white-space:nowrap}
 .chart-tags .chip{display:inline;margin:0 .5rem 0 0;padding:0;border:0;background:none;color:var(--t-ink2)}
 .chart-tags .tag-stamp{font-family:var(--font-ui);font-weight:600;letter-spacing:0;text-transform:none}
 .chart-frame{width:100%;padding:.25rem 0 0}
@@ -86,6 +89,8 @@ figure.chart{margin:2.25rem 0 0}
 .chart svg .deemed-line{stroke:var(--c-trust);stroke-width:1.5;stroke-dasharray:6 4}
 .chart svg .restart{fill:none;stroke:var(--c-trust);stroke-width:1.5;stroke-dasharray:5 4}
 .chart svg .crosshair text{font-size:17.5px}
+.chart svg .leader{stroke:var(--t-ink2);stroke-width:1.5;stroke-dasharray:1.5 3.5;stroke-linecap:round}
+.chart svg .leader-dot{fill:var(--t-ink2)}
 
 /* ---- Change the example: four steppers (2x2 on phones, one row wide) ---- */
 .change{margin:2rem 0 0}
@@ -118,7 +123,10 @@ figure.chart{margin:2.25rem 0 0}
 .ledger thead th:first-child{text-align:left}
 .ledger td.n{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
 .ledger td.w{font-family:var(--font-ui);font-weight:400;color:var(--t-ink2);white-space:normal}
-.ledger tr.total td{font-weight:700;border-bottom:2px solid var(--t-ink)}
+.ledger tr.total td{font-weight:700}
+.ledger tr.total td.n{font-size:1.15rem}
+.ledger tr.part td:first-child{padding-left:1rem}
+.ledger tr[hidden]{display:none}
 .ledger tbody.later tr:first-child th,.ledger tbody.later tr:first-child td{border-top:2px solid var(--t-ink)}
 .ledger tbody.later th[scope=rowgroup]{padding-top:.9rem;text-align:left;font-family:var(--type-label-font);font-weight:700;letter-spacing:var(--type-label-tracking);text-transform:uppercase;font-size:17.5px}
 .ledger .sw{display:inline-block;width:.9em;height:.9em;margin-right:.45em;vertical-align:-.08em;border:1.5px solid}
@@ -140,7 +148,7 @@ figure.chart{margin:2.25rem 0 0}
 .flow li:last-child{margin-bottom:0}
 .flow li:not(:last-child)::after{content:"";position:absolute;left:1.5rem;bottom:calc(-1.75rem - 1px);height:1.75rem;border-left:1px solid var(--t-ink)}
 .flow b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
-#bars text{font-size:17.5px}
+#bars text{font-size:17.5px;fill:var(--t-ink)}
 #bars .bar{fill:var(--c-death);fill-opacity:.4;stroke:var(--c-death);stroke-width:1}
 #bars .rd{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
 #bars .rd,#bars .tick{paint-order:stroke;stroke:var(--t-ground);stroke-width:4px;stroke-linejoin:round}
@@ -149,7 +157,8 @@ figure.chart{margin:2.25rem 0 0}
 .table-wrap{overflow-x:auto;margin:.75rem 0 0;border-top:2px solid var(--t-ink)}
 .table-wrap:focus-visible{outline-offset:2px}
 table.nums{border-collapse:collapse;width:100%;font-size:17.5px;line-height:1.3}
-table.nums caption{caption-side:top;text-align:left;padding:.5rem 0;color:var(--t-ink2);font-size:var(--type-small-size)}
+.nums-cap{margin:.25rem 0 0;color:var(--t-ink2);font-size:var(--type-small-size);line-height:1.45}
+table.nums th:first-child,table.nums td:first-child{position:sticky;left:0;background:var(--t-ground);z-index:1}
 table.nums th,table.nums td{padding:.4rem .6rem;text-align:right;border-bottom:1px solid var(--t-rule);white-space:nowrap}
 table.nums th:first-child,table.nums td:first-child{text-align:left;padding-left:0}
 table.nums thead th{font-weight:700;vertical-align:bottom;white-space:normal;min-width:6.5rem}
@@ -170,12 +179,16 @@ table.nums tr.death td{font-weight:700;border-bottom:2px solid var(--t-ink)}
   @page{size:auto;margin:.5in}
   html,body{background:#fff}
   body>*:not(.sheet){display:none!important}
-  .sheet{display:block;width:680px;color:var(--t-ink);font:400 17.5px/1.24 var(--font-ui)}
+  .sheet{display:block;width:680px;color:var(--t-ink);font:400 17.5px/1.18 var(--font-ui)}
   .sheet>*{break-inside:avoid}
   .sh-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:0 1rem;padding:0 0 .2rem;border-bottom:3px double var(--t-ink);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
   .sh-top .sh-r{font-weight:400;letter-spacing:0;text-transform:none;color:var(--t-ink2);text-align:right}
   .sh-title{margin:.45rem 0 0;font:600 28px/1.12 var(--font-display);letter-spacing:-.01em}
-  .sh-inputs{margin:.35rem 0 0}
+  .sh-answer{margin:.35rem 0 .45rem;font-weight:600}
+  .sh-big{font:600 34px/1.1 var(--font-display);font-variant-numeric:tabular-nums lining-nums;border-bottom:3px solid var(--t-ink)}
+  .sh-sub{margin:.2rem 0 0}
+  .sh-sub b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+  .sh-inputs{margin:.3rem 0 0;color:var(--t-ink2)}
   .sh-inputs b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
   .sh-chart{margin:.4rem 0 0}
   .sh-chart svg{display:block;width:680px;height:auto}
@@ -193,18 +206,20 @@ table.nums tr.death td{font-weight:700;border-bottom:2px solid var(--t-ink)}
   .sheet svg .nofreeze{fill:none;stroke:#10161C;stroke-width:2.5}
   .sheet svg .death-line{stroke:#10161C;stroke-width:1}
   .sheet svg .deemed-line,.sheet svg .restart{fill:none;stroke:#10161C;stroke-width:1.5;stroke-dasharray:6 4}
-  .sheet svg .leader{stroke:#10161C;stroke-width:1}
+  .sheet svg .leader{stroke:#10161C;stroke-width:1.2;stroke-dasharray:1.5 3}
+  .sheet svg .leader-dot{fill:#10161C}
   .sh-ledger{width:100%;margin:.3rem 0 0;border-collapse:collapse;border-top:2px solid var(--t-ink)}
-  .sh-ledger th,.sh-ledger td{padding:.08rem .3rem;text-align:right;border-bottom:1px solid var(--t-rule);vertical-align:baseline}
+  .sh-ledger th,.sh-ledger td{padding:.04rem .3rem;text-align:right;border-bottom:1px solid var(--t-rule);vertical-align:baseline}
   .sh-ledger th:first-child,.sh-ledger td:first-child{padding-left:0;text-align:left}
   .sh-ledger td.n{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
   .sh-ledger tr.total td{font-weight:700}
+  .sh-ledger tr.part td:first-child{padding-left:1rem}
   .sh-ledger td.w{color:var(--t-ink2)}
   .sh-ledger th:not(:first-child),.sh-ledger td:not(:first-child){width:1%;white-space:nowrap}
   .sh-ledger tr.later-h th{padding-top:.3rem;border-top:2px solid var(--t-ink);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
   .sh-caveats{columns:2;column-gap:1.4rem;margin:.4rem 0 0;padding:0 0 0 1rem}
   .sh-caveats li{break-inside:avoid;margin:0 0 .1rem}
-  .sh-close{margin:.25rem 0 0;font-weight:600}
+  .sh-close{margin:.2rem 0 0;font-weight:600}
   .sh-foot{margin:.35rem 0 0;padding-top:.25rem;border-top:2px solid var(--t-ink);color:var(--t-ink2)}
   .sh-foot p{margin:0}
 }
@@ -228,8 +243,6 @@ table.nums tr.death td{font-weight:700;border-bottom:2px solid var(--t-ink)}
   .hint{margin-top:.5rem;line-height:1.35}
   .ledger .lg-wide{display:none}
   .ledger thead th{white-space:nowrap}
-  /* the death-age hint is in "How this is worked out" on phones */
-  .hint.wide-only{display:none}
   .assume{line-height:1.45}
   .slide-ticks{height:1.45rem}
   .ledger th,.ledger td{padding:.28rem .25rem}

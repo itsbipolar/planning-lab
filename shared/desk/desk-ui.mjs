@@ -61,11 +61,11 @@
 //    deskSaveButton(button, make) wires a button: make() returns { blob, name, title } (or a promise of it); in an
 //      in-app browser it shows <span class="save-note" role="note">Open this page in Safari or Chrome to save the
 //      file.</span> right after the button.
-//    deskCard({ question, bigValue, line, labels, draw, stamp? }) -> Promise<Blob>: "Save my card", a 1080x1350 PNG drawn in a
+//    deskCard({ question, bigValue, line, labels, draw, stamp?, bigMax? }) -> Promise<Blob>: "Save my card", a 1080x1350 PNG drawn in a
 //      canvas in the page's current theme: the question (serif), the big value (serif, shrunk to fit), the one line, up
 //      to three labels as chips, an optional draw(ctx, { x, y, w, h }, colours) for a small chart, and the foot stamped
 //      CARD_STAMP ("Example · Education, not advice"), or the tool's own stamp, with the site address (site-nav.json
-//      origin, no https).
+//      origin, no https). bigMax (default 230) caps the big value's px size, leaving room for draw()'s chart.
 //    deskSaveCard(o) = deskCard(o) then deskSaveFile({ blob, name: o.name || 'my-card.png', title: o.question }).
 //
 // 5. Guess, then reveal (always skippable, shown only after the first result):
@@ -519,7 +519,7 @@ function deskCard(o) {
     font('600 72px ' + serif); y += 40;
     wrapText(T.question, w, m, 4).forEach(function (l) { y += 80; x.fillText(l, P, y); });
     // the big value, shrunk until it fits one line
-    var size = 230; font('600 ' + size + 'px ' + serif);
+    var size = o.bigMax || 230; font('600 ' + size + 'px ' + serif);
     while (size > 96 && m(T.bigValue) > w) { size -= 6; font('600 ' + size + 'px ' + serif); }
     y += Math.round(size * 0.95) + 40; x.fillText(T.bigValue, P, y);
     // the one highlight: an amber rule under the figure, clear of its descenders

@@ -206,3 +206,25 @@ test('formatters', () => {
   assert.equal(fmtRate(R.cgRate), '26.76%');
   assert.equal(fmtPct(0.04), '4.0%');
 });
+
+test('the trust\'s anniversary before death: its gain then is taxed in life; only the growth since is deferred past death', () => {
+  const S = run({ freezeAge: EXAMPLE.freezeAge - 10 });
+  assert.equal(S.state, 'deemedFirst');
+  near(S.trustTaxedEarly, [11_910_000, 10_000], 'gain deemed realized at the anniversary');
+  near(S.trustHeld, [5_390_000, 10_000], 'growth since, held at death');
+  near(S.trustHeld + S.trustTaxedEarly, [S.trust, 1e-3], 'the two parts add up to the trust\'s shares');
+  near(S.deferred, [S.trustHeld * R.cgRate, 1e-3], 'deferred = held × cgRate');
+  near(S.taxTrustEarly, [S.trustTaxedEarly * R.cgRate, 1e-3], 'taxed in life');
+  assert.ok(S.deferred < S.pushed);
+  assert.equal(S.nextDeemedAge, S.deemedAge + R.trustYears);
+  // the normal state defers all of it
+  const N = run();
+  assert.equal(N.trustHeld, N.trust); assert.equal(N.trustTaxedEarly, 0); assert.equal(N.deferred, N.pushed); assert.equal(N.nextDeemedAge, N.deemedAge);
+  // two anniversaries before death: the drawn gain restarts at each
+  const T = run({ freezeAge: BOUNDS.freezeAge.min, deathAge: BOUNDS.deathAge.max });
+  const k2 = 2 * R.trustYears;
+  assert.ok(k2 <= T.n);
+  assert.equal(T.rows[k2].trustDrawn, 0);
+  near(T.trustTaxedEarly, [T.rows[k2].trust, 1e-3], 'taxed in life up to the last anniversary');
+  assert.equal(T.nextDeemedAge, T.inp.freezeAge + 3 * R.trustYears);
+});

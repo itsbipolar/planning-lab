@@ -40,7 +40,7 @@ const src = read(join(here, 'index.src.html'))
   .replace('{{question}}', () => question)
   .replace('{{lede}}', () => `A made-up retiree, ${EXAMPLE.freezeAge}, moves a portfolio into a company and freezes its value.`)
   .replace('{{value}}', () => fmtInput(EXAMPLE.value))
-  .replace('{{pushed}}', () => fmtBig(S.pushed));
+  .replace('{{pushed}}', () => fmtBig(S.deferred));
 if (/\{\{\w+\}\}/.test(src)) throw new Error('index.src.html: an unfilled {{marker}}');
 const html = deskPage(src, 'estate-freeze').replace('/*@@CSS@@*/', () => css).replace('/*@@DATA@@*/', () => data).replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
@@ -56,11 +56,11 @@ writeFileSync(join(here, 'dist', 'index.html'), html);
     y: { label: 'Gain not yet taxed, $ millions', min: 0, max: rnd(S.gainNo / 1e6, 1) },
     band: S.rows.map((r) => [r.age, rnd(r.gainWith / 1e6, 1), rnd(r.gainNo / 1e6, 1)]),
     deathAge: S.inp.deathAge, deemedAge: S.deemedAge, trustAtDeath: rnd(S.trust / 1e6, 1),
-    readings: [{ label: 'gain taxed at death', value: `${fmtM1(S.gainNo)} → ${fmtM1(S.gainWith)}`, text: `Income tax pushed past death: ${fmtBig(S.pushed)}, deferred, not removed.` }],
-    labels: [{ text: `Trust’s ${ordinal(R.trustYears)} year`, at: S.deemedAge }],
+    readings: [{ label: 'gain taxed at death', value: `${fmtM1(S.gainNo)} → ${fmtM1(S.gainWith)}`, text: `Income tax pushed past death: ${fmtBig(S.deferred)}, deferred, not removed.` }],
+    labels: [{ text: `Trust’s ${ordinal(R.trustYears)} anniversary`, at: S.deemedAge }],
     source: `Income Tax Act, CRA and Ontario rates (${R.rateYear}); Statistics Canada life table`,
     asOf,
   });
   console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
 }
-console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): rates ${R.rateYear}, ${R.used.length} facts, version ${version}; pushed ${fmtBig(S.pushed)}`);
+console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): rates ${R.rateYear}, ${R.used.length} facts, version ${version}; pushed ${fmtBig(S.deferred)}`);

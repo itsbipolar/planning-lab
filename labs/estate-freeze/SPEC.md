@@ -7,6 +7,38 @@ sections 3, 5 and 6). The page is **unlisted** until Mo's firm compliance approv
 illustration's layout, wording, colours or branding is used, and no firm is named anywhere (this includes code,
 tests, fixtures, commits and the making-of page).
 
+## Changes after the independent review (2026-11-15; these win over the sections below where they differ)
+
+- **The trust's anniversary before death (deemedFirst).** The gain the trust holds at each anniversary before death is
+  deemed realized and taxed then, in life (104(4)(b)). The engine now returns `trustHeld` (the growth since the last
+  anniversary, still untaxed at death), `trustTaxedEarly` and `taxTrustEarly` (the gain and its tax at today's top rate
+  on gains), `deferred` (= trustHeld × the rate: the big answer in every state) and `nextDeemedAge`. The label stays
+  "Income tax pushed past death"; the line says the anniversary comes first and what is taxed then. The ledger shows
+  the trust's growth since then, its deferred tax and a row for the tax in life; the chart reading uses trustHeld, so
+  the number and the drawn band agree. Several anniversaries before death restart the drawn gain at each one.
+- **Wording.** "21st year" is now "21st anniversary". The flow names the section 85 election (tax-deferred move) and
+  says the preferred shares have a fixed redemption value of the rest, equal to today's gain because the note takes
+  the tax cost. The redemption text says the deemed dividend is the amount above paid-up capital (nil here).
+- **Caveats (seven).** No surviving spouse or the second death (70(6)); section 85 and no corporate attribution;
+  post-death planning keeps the gain from being taxed twice; the note unpaid until death; the secondary-will
+  assumption (a result of holding company shares, not of the freeze); the company's own unrealized gain not shown;
+  yearly tax, fees and technical rules left out. The sheet carries shorter versions.
+- **Exhausted or no preferred shares:** the extra line says the example then stops paying the retiree and the
+  company's kept income is not counted.
+- **Sources:** Income Tax Act 70(5), 70(6), 74.4, 84(3) and 85 are linked as qualitative sources (no figure read).
+- **Own wording and layout:** the ledger leads with "Due at death", then its parts and the gain it is worked out on,
+  then "In the trust"; the chart readings say "if not frozen" and "held by the trust, taxed later".
+- **Chart:** y labels in a left gutter with $0; marker labels set in age order and never across an earlier marker's
+  line; after death the trust's block stays stacked where it was at death; leaders are dotted with a dot at the band.
+  The stamp is said once (by the first control); the chart has a one-line hint about the crosshair.
+- **Tax cost clamp:** a portfolio below the chosen cost lowers it only while it is below, with a note; it comes back.
+- **Numbers in a sentence share one scale** (fmtScale); zero reads "nothing" or "$0".
+- **Save as one page:** leads with the answer, a taller chart with all three readings on one line each, the tool's
+  address, one page on Letter and A4. **Save my card:** no chips; the line names the example; a small band chart with
+  the two gains (deskCard takes `bigMax` to leave it room).
+- **Go deeper** comes before the ledger and caveats (the template's 2,800px budget at 390, with the caveats and the
+  death-age hint now shown on phones); its last section is "The numbers behind the chart", with its first column held.
+
 ---
 
 ## 0. The choice: scores and what was grafted

@@ -42,33 +42,18 @@
     <figure class="chart freeze-chart" id="freeze-chart" aria-labelledby="chart-title">
       <figcaption>
         <p class="chart-title" id="chart-title"></p>
-        <p class="chart-sub" id="chart-sub">Gain not yet taxed, by age, $ millions</p>
-        <p class="chart-tags"><span class="chip tag-example">Example data</span><span class="chip tag-stamp">Hypothetical illustration · Education, not advice</span></p>
+        <p class="chart-sub" id="chart-sub">Gain not yet taxed, by age, $ millions <span class="chart-tags"><span class="chip tag-example">Example data</span></span></p>
       </figcaption>
       <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Gain not yet taxed, by age</title><desc id="chart-desc"></desc></svg></div>
+      <p class="chart-hint">Touch or hover the chart to read any age.</p>
     </figure>
 
     <section class="change" aria-labelledby="change-h">
       <h2 class="sec-label" id="change-h">Change the example</h2>
       <div class="steppers" id="steppers"></div>
-      <p class="hint wide-only" id="death-hint" hidden></p>
+      <p class="hint" id="cost-hint">Tax cost changes what is owed at death, not what moves to the trust.</p>
+      <p class="hint" id="death-hint" hidden></p>
       <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
-    </section>
-
-    <section class="books" aria-label="At death, and later">
-      <div class="ledger-wrap">
-        <table class="ledger" id="ledger">
-          <caption class="desk-sr">What is owed at death without and with the freeze, and what the trust holds to be taxed later</caption>
-          <thead><tr><th scope="col" id="ledger-h"></th><th scope="col">No freeze</th><th scope="col">With<span class="lg-wide"> the</span> freeze</th></tr></thead>
-          <tbody id="ledger-now"></tbody>
-          <tbody class="later" id="ledger-later"></tbody>
-        </table>
-      </div>
-      <div class="caveats callout">
-        <h2 class="caveats-h">This example assumes</h2>
-        <ul id="caveats"></ul>
-        <p class="caveats-close">How any of this applies to a real family is a question for a tax professional and a lawyer.</p>
-      </div>
     </section>
 
     <details class="deeper" id="deeper" data-chapter="Go deeper">
@@ -88,9 +73,10 @@
         <div class="steppers steppers-more" id="steppers-more"></div>
       </section>
       <section class="deeper-sub" aria-labelledby="years-h">
-        <h3 id="years-h">Year by year</h3>
-        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="years-cap">
-          <table class="nums" id="years"><caption id="years-cap">The numbers behind the chart, at the end of each year</caption>
+        <h3 id="years-h">The numbers behind the chart</h3>
+        <p class="nums-cap" id="years-cap">At the end of each year. On a phone, the table scrolls sideways.</p>
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="years-h years-cap">
+          <table class="nums" id="years" aria-labelledby="years-h">
             <thead><tr><th scope="col">Age</th><th scope="col">Portfolio</th><th scope="col">Redeemed that year</th><th scope="col">Preferred left</th><th scope="col">Trust’s shares</th><th scope="col">Gain taxed at death, no freeze</th><th scope="col">With the freeze</th></tr></thead>
             <tbody id="years-rows"></tbody>
           </table>
@@ -98,8 +84,24 @@
       </section>
     </details>
 
+    <section class="books" aria-label="At death, and later">
+      <div class="ledger-wrap">
+        <table class="ledger" id="ledger">
+          <caption class="desk-sr">What is owed at death without and with the freeze, and what the trust holds to be taxed later</caption>
+          <thead><tr><th scope="col" id="ledger-h"></th><th scope="col">No freeze</th><th scope="col">With<span class="lg-wide"> the</span> freeze</th></tr></thead>
+          <tbody id="ledger-now"></tbody>
+          <tbody class="later" id="ledger-later"></tbody>
+        </table>
+      </div>
+      <div class="caveats callout">
+        <h2 class="caveats-h">This example assumes</h2>
+        <ul id="caveats"></ul>
+        <p class="caveats-close">How any of this applies to a real family is a question for a tax professional and a lawyer.</p>
+      </div>
+    </section>
+
     <p class="save-row">
-      <button type="button" class="btn-you" id="print">Save as one page</button>
+      <button type="button" class="btn-2" id="print">Save as one page</button>
       <button type="button" class="btn-2" id="card">Save my card</button>
       <span class="note">Made in this browser; nothing is sent.</span>
     </p>

@@ -141,14 +141,26 @@ export function freeze(R, raw) {
   const eatWith = R.eat ? 0 : null;  // not payable (assumed): the note and preferred shares pass under a secondary will
   const deemedAge = freezeAge + R.trustYears;   // the trust is assumed to be set up at the freeze
   const deemedFirst = deemedAge <= deathAge;
-  // in the deemedFirst state the trust's gain after its deemed sale restarts from that year's value (a new tax cost)
-  const atDeemed = deemedFirst ? rows[deemedAge - freezeAge].trust : null;
-  for (const r of rows) r.trustDrawn = deemedFirst && r.age >= deemedAge ? r.trust - atDeemed : r.trust;
+  // in the deemedFirst state the trust's gain after each deemed sale (every trustYears) restarts from that year's value
+  // (a new tax cost); what it held at the last anniversary before death was taxed in life
+  let lastDeemed = null;
+  for (const r of rows) {
+    if (r.t > 0 && r.t % R.trustYears === 0) lastDeemed = r.trust;
+    r.trustDrawn = lastDeemed == null ? r.trust : r.trust - lastDeemed;
+  }
+  const atDeemed = deemedFirst ? lastDeemed : null;
+  // what the trust still holds untaxed at death, and (deemedFirst) the gain it was deemed to realize, in life, at its
+  // anniversary: taxed then, so it is not deferred past death
+  const trustHeld = end.trustDrawn;
+  const trustTaxedEarly = deemedFirst ? atDeemed : 0;
+  const taxTrustEarly = trustTaxedEarly * cg;
+  const deferred = trustHeld * cg;
+  const nextDeemedAge = freezeAge + (Math.floor(n / R.trustYears) + 1) * R.trustYears;
   const state = pushed <= 0 ? 'nothing' : deemedFirst ? 'deemedFirst' : growth === 0 ? 'noGrowth' : 'normal';
   return {
     inp, n, note, pref0, rows, redeemed, Vn: end.V, gainNo, gainWith, trust,
     trustSplit: { growth: end.V - value, redemptions: redeemed },
-    taxNo, taxWith, pushed, eatNo, eatWith,
+    taxNo, taxWith, pushed, eatNo, eatWith, trustHeld, trustTaxedEarly, taxTrustEarly, deferred, nextDeemedAge,
     payableNo: taxNo + (eatNo || 0), payableWith: taxWith,
     deemedAge, deemedFirst, exhaustedAge, state,
     exhausted: exhaustedAge != null, noGainAtFreeze: pref0 === 0,
@@ -168,20 +180,34 @@ export function fmtBig(n) {
   return '$' + grp(Math.round(v));
 }
 /** The ledger: $X.XXM. */
-export const fmtM2 = (n) => '$' + grp(Math.max(0, n) / M, 2) + 'M';
+export const fmtM2 = (n) => (Math.round(Math.max(0, n) / K) === 0 ? '$0' : '$' + grp(Math.max(0, n) / M, 2) + 'M');
 /** Chart readings: $X.XM. */
-export const fmtM1 = (n) => '$' + grp(Math.max(0, n) / M, 1) + 'M';
+export const fmtM1 = (n) => (Math.round(Math.max(0, n) / K) === 0 ? '$0' : '$' + grp(Math.max(0, n) / M, 1) + 'M');
 /** Inputs (the slider bubble, the cost stepper): as many decimals as the step needs ($7.5M, $7.25M, $10M, $750K). */
 export function fmtInput(n) {
   if (n === 0) return '$0';
   if (n < M) return '$' + grp(n / K) + 'K';
   return '$' + (n / M).toLocaleString('en-CA', { maximumFractionDigits: 2 }) + 'M';
 }
+/** One unit for a line of figures (dp decimals on millions): $X.XM when the largest is $1M or more, else $XXXK; zero is "nothing". Returns the
+ *  formatter, so every figure in one sentence uses the same scale. */
+export function fmtScale(dp, ...ns) {
+  const big = Math.max(0, ...ns) >= M - 50 * K;
+  return (n) => {
+    const v = Math.max(0, n);
+    if (Math.round(v / K) === 0) return 'nothing';
+    if (!big) return '$' + grp(Math.round(v / K)) + 'K';
+    const least = M / 10 ** dp;
+    return v < least / 2 ? 'under $' + grp(least / M, dp) + 'M' : '$' + grp(v / M, dp) + 'M';
+  };
+}
+/** A yearly amount rounded to the thousand: $90,000, $124,000. */
+export const fmtAbout = (n) => '$' + grp(Math.round(n / K) * K);
 /** Redemptions and other yearly amounts: $XX,XXX. */
 export const fmtDollars = (n) => '$' + grp(Math.round(n));
 /** Rates to 2 decimals, inputs to 1 (fractions in, per cent out). */
 export const fmtRate = (r) => grp(r * 100, 2) + '%';
 export const fmtPct = (r) => grp(r * 100, 1) + '%';
-/** Axis labels on the chart: $4M, $12M, $0.5M. */
-export const fmtAxis = (n) => '$' + (n / M).toLocaleString('en-CA', { maximumFractionDigits: 1 }) + 'M';
+/** Axis labels on the chart: $0, $4M, $12M, $0.5M. */
+export const fmtAxis = (n) => (n === 0 ? '$0' : '$' + (n / M).toLocaleString('en-CA', { maximumFractionDigits: 1 }) + 'M');
 // @@END
