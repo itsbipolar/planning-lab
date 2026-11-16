@@ -1,6 +1,6 @@
 {
   "_note": "The portfolio site's masthead, shared with every tool's tool bar (redesign v2, step 1). The site's sync-labs check compares nav with src/site.config.ts. origin is where the site lives (share cards and canonical links need absolute URLs).",
-  "origin": "https://mo.chayeb.workers.dev",
+  "origin": "https://mochayeb.com",
   "wordmark": "Mohammed El Chayeb",
   "footerNote": "Education only, not advice.",
   "aiNote": "Made with AI assistance; every figure is checked at its source.",
