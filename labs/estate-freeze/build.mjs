@@ -9,7 +9,7 @@ import { deskCSS } from '../../shared/desk/desk.mjs';
 import { deskUICSS, deskUIJS } from '../../shared/desk/desk-ui.mjs';
 import { deskPage, toolFor, questionOf } from '../../shared/desk/desk-page.mjs';
 import { writePoster, r as rnd } from '../../shared/desk/poster.mjs';
-import { EXAMPLE, freezeRules, defaultDeathAge, freeze, fmtBig, fmtM1, fmtInput } from './model.mjs';
+import { EXAMPLE, freezeRules, defaultDeathAge, freeze, fmtInput, taxScale, taxParts } from './model.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
 const read = (p) => readFileSync(p, 'utf8');
@@ -19,7 +19,7 @@ const confirmed = all.filter((f) => f.status === 'confirmed');
 const R = freezeRules(all);
 // the example opens at the life table's age, so its age at death can be read from the life-expectancy facts
 if (EXAMPLE.freezeAge !== R.lifeTable.age) throw new Error(`EXAMPLE.freezeAge (${EXAMPLE.freezeAge}) differs from the life table's age (${R.lifeTable.age})`);
-const S = freeze(R, { ...EXAMPLE, deathAge: defaultDeathAge(R, EXAMPLE.freezeAge) });
+const S = freeze(R, { ...EXAMPLE, deathAge: defaultDeathAge(R, EXAMPLE.freezeAge) }), T = taxScale(S), cg = R.cgRate;
 
 const tool = toolFor('estate-freeze'), question = questionOf(tool);
 if (/\d/.test(question) || question.split(/\s+/).length > 12) throw new Error(`the question "${question}" must be 12 words or fewer with no digit`);
@@ -40,27 +40,29 @@ const src = read(join(here, 'index.src.html'))
   .replace('{{question}}', () => question)
   .replace('{{lede}}', () => `A made-up retiree, ${EXAMPLE.freezeAge}, moves a portfolio into a company and freezes its value.`)
   .replace('{{value}}', () => fmtInput(EXAMPLE.value))
-  .replace('{{pushed}}', () => fmtBig(S.deferred));
+  .replace('{{pushed}}', () => T(taxParts(S).moved));
 if (/\{\{\w+\}\}/.test(src)) throw new Error('index.src.html: an unfilled {{marker}}');
 const html = deskPage(src, 'estate-freeze').replace('/*@@CSS@@*/', () => css).replace('/*@@DATA@@*/', () => data).replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);
 
-// the poster (dist/poster.json): the two bands by age from the freeze to death (low: the gain taxed at death with the
-// freeze; top: the whole gain, taxed at death without one), the death and the trust's 21st year, and the one reading
+// the poster (dist/poster.json): income tax if death came at each age, from the freeze to death (low: due at death with
+// the freeze; top: due at death without one), the death age, the trust's anniversary only when it comes before death,
+// and the one reading. Every tax figure uses the page's formatter (taxScale), so the poster and the page agree.
 {
+  const ann = S.anniversaries.filter((a) => a < S.inp.deathAge);
   const p = writePoster(join(here, 'dist'), 'estate-freeze', {
     kind: 'band',
     example: 'A made-up retiree · Hypothetical illustration',
     x: { label: 'Age', min: EXAMPLE.freezeAge, max: S.xMax },
-    y: { label: 'Gain not yet taxed, $ millions', min: 0, max: rnd(S.gainNo / 1e6, 1) },
-    band: S.rows.map((r) => [r.age, rnd(r.gainWith / 1e6, 1), rnd(r.gainNo / 1e6, 1)]),
-    deathAge: S.inp.deathAge, deemedAge: S.deemedAge, trustAtDeath: rnd(S.trust / 1e6, 1),
-    readings: [{ label: 'Gain taxed at death, without and with a freeze', value: `${fmtM1(S.gainNo)} → ${fmtM1(S.gainWith)}`, text: `Income tax pushed past death: ${fmtBig(S.deferred)}, deferred, not removed.` }],
-    labels: [{ text: `Trust’s ${ordinal(R.trustYears)} anniversary`, at: S.deemedAge }],
+    y: { label: 'Income tax if death came at each age, $ millions', min: 0, max: rnd(S.taxNo / 1e6, 2) },
+    band: S.rows.map((r) => [r.age, rnd(r.gainWith * cg / 1e6, 2), rnd(r.gainNo * cg / 1e6, 2)]),
+    deathAge: S.inp.deathAge, deemedAge: S.deemedAge, trustAtDeath: rnd(S.deferred / 1e6, 2),
+    readings: [{ label: 'Income tax due at death, without and with a freeze', value: `${T(S.taxNo)} → ${T(S.taxWith)}`, text: `Income tax pushed past death: ${T(S.deferred)}, deferred, not removed.` }],
+    labels: ann.map((a) => ({ text: `Trust’s ${ordinal(R.trustYears)} anniversary`, at: a })),
     source: `Income Tax Act, CRA and Ontario rates (${R.rateYear}); Statistics Canada life table`,
     asOf,
   });
   console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
 }
-console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): rates ${R.rateYear}, ${R.used.length} facts, version ${version}; pushed ${fmtBig(S.deferred)}`);
+console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): rates ${R.rateYear}, ${R.used.length} facts, version ${version}; pushed ${T(S.deferred)}`);

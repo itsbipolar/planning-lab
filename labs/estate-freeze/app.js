@@ -1,6 +1,12 @@
 // Estate freeze: the page. The engine is FREEZE (model.mjs, inlined by build.mjs); every rate comes from the confirmed
 // facts in the page's data block. Inputs live in memory only: nothing in the address, nothing stored. The page makes no
 // request after it loads; the card and the one-page sheet are made in this browser.
+// Clarity pass (2026-11-16): the main path speaks only in income tax (every tax figure through one formatter,
+// FREEZE.taxScale), says the sum (due at death + paid by the trust = the tax without a freeze), explains the moves
+// before the chart, and the chart ends at death. Gains live in folds, always called "gain".
+// Second pass (2026-11-16, after fresh readers): the answer is the income tax moved to the trust (it no longer falls
+// when the trust's anniversary comes first); the shown parts are rounded once (FREEZE.taxParts) so they add up; the
+// moves carry their figures and say who gets what; "original cost" replaces "amount paid"; the ledger sits in Go deeper.
 (function () {
   'use strict';
   var DATA = JSON.parse(document.getElementById('data').textContent);
@@ -14,7 +20,7 @@
   var KEYS = ['value', 'cost', 'growth', 'freezeAge', 'deathAge', 'income', 'eligibleShare', 'incomeGrowth'];
   var START = {};
   KEYS.forEach(function (k) { START[k] = k === 'deathAge' ? F.defaultDeathAge(R, E.freezeAge) : E[k]; });
-  var st = copy(START), S = null;
+  var st = copy(START), S = null, T = null, TP = null; // T: the one income-tax formatter; TP: the parts as shown (they add up)
 
   function copy(o) { var c = {}; KEYS.forEach(function (k) { c[k] = o[k]; }); return c; }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -37,7 +43,19 @@
   function measure(text, font) { ctx2.font = font; return ctx2.measureText(text).width; }
   var fSans = '400 ' + FS + 'px ' + SANS, fSans6 = '600 ' + FS + 'px ' + SANS;
 
-  // ---- the chart: two stacked bands whose top edge is always the no-freeze gain ----
+  // ---- the words for the trust's anniversaries (computed: the 21 is a fact, every age comes from the state) ----
+  function agesText(list) { return list.length < 2 ? String(list[0]) : list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1]; }
+  function anns(S) { return S.anniversaries; }                       // ages of the trust’s anniversaries up to death
+  function annWhen(S) { var a = anns(S); return a[a.length - 1] < S.inp.deathAge ? 'before death' : 'in the year of death'; }
+  function annPhrase(S) { return 'at ' + agesText(anns(S)); }         // "at 81", "at 76 and 97"
+  // the per-age income tax at today's rate: due at death with the freeze, paid later by the trust, paid by the trust at
+  // its anniversaries in life, and due at death without a freeze (the first three add up to the last)
+  function taxAt(r) {
+    var cg = R.cgRate;
+    return { death: r.gainWith * cg, later: r.trustDrawn * cg, early: (r.trust - r.trustDrawn) * cg, no: r.gainNo * cg };
+  }
+
+  // ---- the chart: income tax if death came at each age; three stacked bands under the no-freeze line ----
   function niceStep(range, n) {
     var raw = range / n, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
     return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p;
@@ -45,7 +63,7 @@
   function Placer(W, H) {
     var boxes = [];
     function hit(b) { return b.x < 0 || b.x + b.w > W || b.y < 0 || b.y + b.h > H || boxes.some(function (o) { return b.x < o.x + o.w + 4 && o.x < b.x + b.w + 4 && b.y < o.y + o.h + 2 && o.y < b.y + b.h + 2; }); }
-    return { hit: hit, add: function (b) { boxes.push(b); }, boxes: boxes };
+    return { hit: hit, add: function (b) { boxes.push(b); }, boxes: boxes, grow: function (h) { H = h; } };
   }
   function textBox(x, y, w, anchor, size) { var s = size || FS; var x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x; return { x: x0, y: y - s * 0.8, w: w, h: s * 1.05 }; }
 
@@ -53,35 +71,62 @@
   function drawBand(svg, S, o) {
     clear(svg);
     var W = o.W, H = o.H, narrow = W < 640, VF = o.print ? 18 : 19, LH = Math.round(FS * 1.5);
-    var fVal = '600 ' + VF + 'px ' + SERIF;
+    var fVal = '600 ' + VF + 'px ' + SERIF, TX = F.taxScale(S), PT = F.taxParts(S);
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     svg.setAttribute('width', W); svg.setAttribute('height', H);
     var defs = el('defs', {}, svg);
     var pat = el('pattern', { id: o.hatch, patternUnits: 'userSpaceOnUse', width: 7, height: 7, patternTransform: 'rotate(45)' }, defs);
     el('line', { x1: 1, y1: 0, x2: 1, y2: 7, 'class': 'hatch-line' }, pat);
     var hatch = 'url(#' + o.hatch + ')';
-    var rows = S.rows, n = S.n, a0 = S.inp.freezeAge, aD = S.inp.deathAge, a21 = S.deemedAge, aMax = S.xMax, last = rows[n];
+    var rows = S.rows, n = S.n, a0 = S.inp.freezeAge, aD = S.inp.deathAge, last = taxAt(rows[n]);
+    var tx = rows.map(taxAt), A = anns(S), aFirst = A.length ? A[0] : null;
 
     // the y scale first (its labels set the left gutter): $0 and round steps, a little headroom over the top value
-    var hi = 0; rows.forEach(function (r) { hi = Math.max(hi, r.gainNo); });
-    if (hi <= 0) hi = S.inp.value || 1;
-    var step = niceStep(hi, narrow || o.print ? 3 : 4), top = hi * 1.08, ticks = [];
+    var hi = 0; tx.forEach(function (t) { hi = Math.max(hi, t.no); });
+    if (hi <= 0) hi = S.inp.value * R.cgRate || 1;
+    var step = niceStep(hi, o.print ? 3 : 4), top = hi * 1.08, ticks = [];
     for (var tv = 0; tv <= top + 1e-6; tv += step) ticks.push(tv);
-    var lgut = Math.ceil(Math.max.apply(null, ticks.map(function (t) { return measure(F.fmtAxis(t), fSans); })) + 10);
-    // the right gutter for the readings: wide enough for the longest word line
-    // (on paper each reading is one line, value and words, so the gutter fits the longest of them)
-    var trustWords = S.deemedFirst ? 'trust growth since ' + a21 + (o.print ? '' : ', taxed later') : 'held by the trust' + (o.print ? '' : ', taxed later');
-    var printW = !o.print ? 0 : Math.max.apply(null, [[last.gainWith, 'taxed at death'], [S.trustHeld, trustWords], [last.gainNo, 'if not frozen']].map(function (p) { return measure(F.fmtM1(p[0]) + ' ', fVal) + measure(p[1], fSans); })) + 18;
-    var gut = Math.ceil(Math.max(112, printW, 0.14 * W, measure('taxed at death', fSans) + 18, measure('$00.0M', fVal) + 18));
+    // the axis speaks in the answer's unit: $1M steps beside $X.XXM figures, $K steps beside $XXXK figures
+    var axisFmt = /M$/.test(TX(S.taxNo)) ? F.fmtAxis : TX;
+    var lgut = Math.ceil(Math.max.apply(null, ticks.map(function (t) { return measure(axisFmt(t), fSans); })) + 10);
+
+    // the readings at death, in the order the bands stack, bottom to top: due at death, paid by the trust at its
+    // anniversaries (solid), paid later (hatched, on top, under the no-freeze line). Each names what it is and when it
+    // is paid; lo and hi are its band. The figures are the shown parts (they add up to the no-freeze figure).
+    var reads;
+    if (last.later + last.early <= 0) reads = [{ key: 'nofreeze', v: PT.total, words: 'all due at death', at: last.no }];
+    else {
+      reads = [
+        { key: 'death', v: PT.death, words: 'due at death with the freeze', lo: 0, hi: last.death },
+        { key: 'early', v: PT.early, words: 'paid by the trust ' + annPhrase(S), lo: last.death, hi: last.death + last.early },
+        { key: 'later', v: PT.later, words: 'paid later, by the trust', lo: last.death + last.early, hi: last.no },
+        { key: 'nofreeze', v: PT.total, words: 'due at death without a freeze', at: last.no },
+      ].filter(function (r) { return r.key === 'nofreeze' || r.v > 0; });
+    }
+    // the right gutter: wide enough for the readings (on paper each is one line, value and words)
+    var printW = !o.print ? 0 : Math.max.apply(null, reads.map(function (r) { return measure(TX(r.v) + ' ', fVal) + measure(r.words, fSans); })) + 24;
+    var gut = Math.ceil(Math.max(narrow ? 140 : 150, printW, narrow ? 0 : 0.15 * W, measure('$00.00M', fVal) + 24));
     var x0 = lgut, x1 = W - gut;
-    var X = function (a) { return x0 + (a - a0) / (aMax - a0) * (x1 - x0); };
+    var X = function (a) { return x0 + (a - a0) / (aD - a0) * (x1 - x0); };
+    // each reading's height (on screen: the figure, then its words wrapped to the gutter)
+    var bx = x1 + 7, lx = x1 + 18, wordW = W - lx - 2;
+    reads.forEach(function (r) {
+      r.lines = o.print ? [] : wrapText(r.words, wordW, function (s) { return measure(s, fSans); });
+      r.h = o.print ? VF * 1.25 : VF * 1.15 + r.lines.length * FS * 1.2;
+    });
 
     // the marker labels above the plot, set in age order (top row first); a label never crosses an earlier marker's line
     var P = Placer(W, H), markRows = 0, markers = [], lines = [];
-    var deathT = 'Death at ' + aD + ' (example)', trustT = 'Trust’s ' + Y21 + ' anniversary, age ' + a21;
-    var marks = a21 === aD
-      ? [{ age: aD, v: ['Death and the trust’s ' + Y21 + ' anniversary, ' + aD, 'Death and the trust’s', Y21 + ' anniversary, ' + aD], cls: 'death-line' }]
-      : [{ age: aD, v: [deathT, 'Death at ' + aD, '(example)'], cls: 'death-line' }, { age: a21, v: [trustT, 'Trust’s ' + Y21, 'anniversary, ' + a21], cls: 'deemed-line' }];
+    var marks = [];
+    if (aFirst === aD) marks.push({ age: aD, v: ['Death and the trust’s ' + Y21 + ' anniversary, ' + aD, 'Death and the trust’s', Y21 + ' anniversary, ' + aD], cls: 'death-line' });
+    else {
+      // on paper the inputs line already says the age at death is an example
+      marks.push({ age: aD, v: o.print ? ['Death at ' + aD, 'Death at', String(aD)] : ['Death at ' + aD + ' (example)', 'Death at ' + aD, '(example)'], cls: 'death-line' });
+      if (aFirst != null) {
+        var paid = TX(tx[aFirst - a0].early);
+        marks.push({ age: aFirst, v: [Y21 + ' anniversary, ' + aFirst + ': trust pays ' + paid + ' tax', Y21 + ' anniversary, ' + aFirst + ':', 'trust pays ' + paid + ' tax'], cls: 'deemed-line' });
+      }
+    }
     marks.sort(function (p, q) { return p.age - q.age; });
     function crossesLine(b) { return lines.some(function (l) { return b.x < l.x + 6 && l.x - 6 < b.x + b.w && b.y + b.h > l.y; }); }
     marks.forEach(function (m) {
@@ -89,7 +134,7 @@
       for (var r = 0; r < 4 && !done; r++) {
         for (var vi = 0; vi < variants.length && !done; vi++) {
           var ls = variants[vi], w = Math.max.apply(null, ls.map(function (s) { return measure(s, fSans6); }));
-          var cands = [['end', x - 6], ['start', x + 6], ['end', W]];
+          var cands = [['end', x - 6], ['start', x + 6], ['end', W - 2]];
           for (var c = 0; c < cands.length && !done; c++) {
             var bs = ls.map(function (s, k) { return textBox(cands[c][1], 4 + FS + (r + k) * LH, w, cands[c][0]); });
             if (bs.some(function (b) { return P.hit(b) || crossesLine(b); })) continue;
@@ -99,72 +144,73 @@
           }
         }
       }
-      if (!done) { m.lines = [m.v[0]]; m.anchor = 'end'; m.tx = Math.min(W, Math.max(measure(m.v[0], fSans6), x)); m.ty = m.bottom = 4 + FS + markRows * LH; markRows++; }
+      if (!done) { m.lines = [m.v[0]]; m.anchor = 'end'; m.tx = Math.min(W - 2, Math.max(measure(m.v[0], fSans6), x)); m.ty = m.bottom = 4 + FS + markRows * LH; markRows++; }
       lines.push({ x: x, y: m.bottom + 4 });
       markers.push(m);
     });
-    var padT = 8 + markRows * LH + 10, padB = FS + 16, PH = H - padT - padB;
+    var padT = 8 + markRows * LH + 10, padB = FS + 16;
+    // on screen the plot grows until every reading fits beside it, the no-freeze one included
+    if (!o.print) {
+      var need = reads.reduce(function (t, r) { return t + r.h; }, 0) + 8 * (reads.length - 1) + 10;
+      if (H - padT - padB < need) { H = Math.ceil(padT + padB + need); P.grow(H); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('height', H); }
+    }
+    var PH = H - padT - padB;
     var Y = function (v) { return padT + (1 - v / top) * PH; };
     var gGrid = el('g', {}, svg), gMarks = el('g', {}, svg), gText = el('g', {}, svg);
 
     // gridlines, and the y labels in the left gutter, centred on their lines
     ticks.forEach(function (t) {
       if (t > 0) el('line', { x1: x0, x2: x1, y1: Y(t).toFixed(1), y2: Y(t).toFixed(1), 'class': 'grid' }, gGrid);
-      var lb = F.fmtAxis(t), by = Y(t) + FS * 0.33;
+      var lb = axisFmt(t), by = Y(t) + FS * 0.33;
       el('text', { x: x0 - 8, y: by.toFixed(1), 'text-anchor': 'end', 'class': 'ylab' }, gText, lb);
       P.add(textBox(x0 - 8, by, measure(lb, fSans), 'end'));
     });
 
-    // the step edge of the frozen shares' gain (it drops at each year-end redemption)
-    function stepPts(t0, t1) {
-      var pts = [[X(rows[t0].age), Y(rows[t0].gainWith)]];
-      for (var i = t0 + 1; i <= t1; i++) { pts.push([X(rows[i].age), Y(rows[i - 1].gainWith)]); pts.push([X(rows[i].age), Y(rows[i].gainWith)]); }
-      return pts;
-    }
     function line(pts) { return pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(''); }
     function band(topPts, botPts) { return line(topPts.concat(botPts.slice().reverse())) + 'Z'; }
-    var iD = n, i21 = a21 - a0, edge = stepPts(0, iD);
-    // taxed at death (with the freeze): from zero to the step edge, ending at death
+    // a stepped line from row k0 to death: it steps at each year end (the buy-backs, the trust's anniversaries)
+    function stepLine(f, k0) {
+      var pts = [[X(rows[k0].age), Y(f(k0))]];
+      for (var i = k0 + 1; i <= n; i++) { pts.push([X(rows[i].age), Y(f(i - 1))]); pts.push([X(rows[i].age), Y(f(i))]); }
+      return pts;
+    }
+    var fDeath = function (k) { return tx[k].death; }, fMid = function (k) { return tx[k].death + tx[k].early; };
+    var edge = stepLine(fDeath, 0), noPts = tx.map(function (t, k) { return [X(rows[k].age), Y(t.no)]; });
+    // due at death with the freeze: from zero to the step edge
     el('path', { d: line([[X(a0), Y(0)]].concat(edge).concat([[X(aD), Y(0)]])) + 'Z', 'class': 'band-death' }, gMarks);
-    // to the trust, taxed later: between the step edge and the no-freeze gain (restarting after a deemed sale)
-    var tops = [], t1 = S.deemedFirst ? i21 : iD;
-    for (var k = 0; k <= t1; k++) tops.push([X(rows[k].age), Y(rows[k].gainNo)]);
-    var bandD = band(tops, stepPts(0, t1));
-    el('path', { d: bandD, 'class': 'band-trust' }, gMarks);
-    el('path', { d: bandD, 'class': 'band-hatch', fill: hatch }, gMarks);
-    if (S.deemedFirst && i21 < iD) {
-      var tops2 = [];
-      for (var k2 = i21; k2 <= iD; k2++) tops2.push([X(rows[k2].age), Y(rows[k2].gainWith + rows[k2].trustDrawn)]);
-      var bandR = band(tops2, stepPts(i21, iD));
-      el('path', { d: bandR, 'class': 'band-trust' }, gMarks);
-      el('path', { d: bandR, 'class': 'band-hatch', fill: hatch }, gMarks);
-      el('path', { d: line(tops2), 'class': 'restart' }, gMarks);
+    // paid later, by the trust (hatched: waiting): on top, from what is due at death (and what the trust paid at its
+    // anniversaries) up to the no-freeze line. At an anniversary it starts again from nothing.
+    var bandL = band(noPts, stepLine(fMid, 0));
+    el('path', { d: bandL, 'class': 'band-trust' }, gMarks);
+    el('path', { d: bandL, 'class': 'band-hatch', fill: hatch }, gMarks);
+    // paid by the trust at its anniversaries, in life (solid: paid): from the first anniversary, on the due-at-death band
+    if (aFirst != null) {
+      var k1 = aFirst - a0;
+      el('path', { d: band(stepLine(fMid, k1), stepLine(fDeath, k1)), 'class': 'band-early' }, gMarks);
+      if (k1 < n) el('path', { d: line(stepLine(fMid, k1)), 'class': 'restart' }, gMarks);
     }
     el('path', { d: line(edge), 'class': 'edge-death' }, gMarks);
-    // after death: the trust's shares wait, stacked where they were at death, until the trust's anniversary
-    var after = !S.deemedFirst && a21 > aD && S.trustHeld > 0;
-    var yTop = Y(last.gainWith + last.trustDrawn), yBot = Y(last.gainWith);
-    if (after) el('rect', { x: X(aD).toFixed(1), y: yTop.toFixed(1), width: (X(a21) - X(aD)).toFixed(1), height: Math.max(0, yBot - yTop).toFixed(1), 'class': 'after', fill: hatch }, gMarks);
-    // no freeze: the whole gain, taxed at death
-    var nf = []; for (var k3 = 0; k3 <= iD; k3++) nf.push([X(rows[k3].age), Y(rows[k3].gainNo)]);
-    el('path', { d: line(nf), 'class': 'nofreeze' }, gMarks);
+    // without a freeze: all of it due at death
+    el('path', { d: line(tx.map(function (t, k) { return [X(rows[k].age), Y(t.no)]; })), 'class': 'nofreeze' }, gMarks);
     el('line', { x1: x0, x2: x1, y1: Y(0), y2: Y(0), 'class': 'zero' }, gMarks);
-    // the death line and the trust's anniversary, with their labels
+    // later anniversaries before death: their line only
+    A.slice(1).forEach(function (a) { if (a < aD) el('line', { x1: X(a).toFixed(1), x2: X(a).toFixed(1), y1: padT, y2: Y(0).toFixed(1), 'class': 'deemed-line' }, gMarks); });
+    // the death line (the right edge) and the trust's first anniversary, with their labels
     markers.forEach(function (m) {
       var x = X(m.age).toFixed(1);
       el('line', { x1: x, x2: x, y1: (m.bottom + 6).toFixed(1), y2: Y(0).toFixed(1), 'class': m.cls }, gMarks);
-      var tx = el('text', { x: m.tx.toFixed(1), y: m.ty.toFixed(1), 'text-anchor': m.anchor, 'class': 'mark-t' }, gText);
-      m.lines.forEach(function (s, i) { el('tspan', { x: m.tx.toFixed(1), dy: i ? LH : 0 }, tx, s); });
+      var t = el('text', { x: m.tx.toFixed(1), y: m.ty.toFixed(1), 'text-anchor': m.anchor, 'class': 'mark-t' }, gText);
+      m.lines.forEach(function (s, i) { el('tspan', { x: m.tx.toFixed(1), dy: i ? LH : 0 }, t, s); });
     });
 
-    // x ticks: the freeze, death and the anniversary always; every 5 years when wide
-    var must = [a0, aD, a21].filter(function (a, i, s) { return s.indexOf(a) === i; }).sort(function (p, q) { return p - q; });
+    // x ticks: the freeze, death and the first anniversary always; every 5 years when wide
+    var must = [a0, aD].concat(aFirst != null && aFirst < aD ? [aFirst] : []).sort(function (p, q) { return p - q; });
     var extra = [];
-    if (!narrow) for (var a = Math.ceil(a0 / 5) * 5; a <= aMax; a += 5) if (must.indexOf(a) < 0) extra.push(a);
+    if (!narrow) for (var a = Math.ceil(a0 / 5) * 5; a <= aD; a += 5) if (must.indexOf(a) < 0) extra.push(a);
     var ty = Y(0) + FS + 8;
     must.concat(extra).forEach(function (age) {
       var txt = age === a0 ? 'Age ' + age : String(age), w = measure(txt, fSans), x = X(age);
-      var cands = age === a0 ? [['start', x - Math.min(lgut, w / 2)], ['start', x]] : age === aMax ? [['end', x + 4], ['middle', x]] : [['middle', x], ['end', x + w / 2], ['start', x - w / 2]];
+      var cands = age === a0 ? [['start', x - Math.min(lgut, w / 2)], ['start', x]] : age === aD ? [['middle', x], ['end', x + 4]] : [['middle', x], ['end', x + w / 2], ['start', x - w / 2]];
       for (var c = 0; c < cands.length; c++) {
         var b = textBox(cands[c][1], ty, w, cands[c][0]);
         if (b.x >= 0 && b.x + b.w <= W && !P.hit(b)) {
@@ -176,18 +222,9 @@
       }
     });
 
-    // the readings in the right gutter, each with a dotted leader to its band; no legend. The trust's reading is the
-    // gain it still holds untaxed at death (after a deemed sale in life, only its growth since then).
-    var wordW = gut - 14, xd = X(aD), xFrom = after ? X(a21) : xd;
-    var reads = [
-      { key: 'death', v: last.gainWith, words: 'taxed at death', ty: (Y(0) + Y(last.gainWith)) / 2, from: xd },
-      { key: 'trust', v: S.trustHeld, words: trustWords, ty: (yBot + yTop) / 2, from: xFrom },
-      { key: 'nofreeze', v: last.gainNo, words: 'if not frozen', ty: Y(last.gainNo), from: xFrom },
-    ].filter(function (r) { return r.key !== 'trust' || S.trustHeld > 0; });
-    reads.forEach(function (r) {
-      r.lines = o.print ? [] : wrapText(r.words, wordW, function (s) { return measure(s, fSans); });
-      r.h = o.print ? VF * 1.25 : VF * 1.15 + r.lines.length * FS * 1.2;
-    });
+    // the readings in the right gutter. A band's reading has a 2px bracket in its colour spanning the band at death, so
+    // its height is its value; the no-freeze reading points at the top line. No legend.
+    reads.forEach(function (r) { r.ty = r.at != null ? Y(r.at) : (Y(r.lo) + Y(r.hi)) / 2; });
     function layout(list) {
       var lo = padT - 4, hiY = Y(0) - 3, gap = 8;
       list.sort(function (p, q) { return p.ty - q.ty; });
@@ -212,59 +249,70 @@
       return true;
     }
     var shown = reads.slice();
-    if (!layout(shown)) { shown = reads.filter(function (r) { return r.key !== 'nofreeze'; }); layout(shown); }
-    var lx = x1 + 12;
+    // too many to fit (on paper only; on screen the plot grew): the no-freeze reading goes first (its figure is in the answer)
+    if (!layout(shown)) { shown = reads.filter(function (r) { return r.key !== 'nofreeze' || reads.length === 1; }); layout(shown); }
     shown.forEach(function (r) {
       var mid = r.top + VF * 0.6;
-      el('path', { d: 'M' + (r.from + 2).toFixed(1) + ' ' + r.ty.toFixed(1) + 'L' + (x1 + 3).toFixed(1) + ' ' + r.ty.toFixed(1) + 'L' + (lx - 4).toFixed(1) + ' ' + mid.toFixed(1), 'class': 'leader', fill: 'none' }, gMarks);
-      el('circle', { cx: (r.from + 2).toFixed(1), cy: r.ty.toFixed(1), r: 2.5, 'class': 'leader-dot' }, gMarks);
-      var tx = el('text', { x: lx, y: (r.top + VF * 0.95).toFixed(1), 'class': 'rd' }, gText);
-      el('tspan', { x: lx, 'class': 'rd-v r-' + r.key }, tx, F.fmtM1(r.v));
-      if (o.print) el('tspan', { 'class': 'rd-w', dx: 6 }, tx, r.words);
-      r.lines.forEach(function (s, i) { el('tspan', { x: lx, dy: (i ? FS * 1.2 : VF * 0.2 + FS * 1.05).toFixed(1), 'class': 'rd-w' }, tx, s); });
-      P.add({ x: lx, y: r.top, w: gut - 12, h: r.h });
+      if (r.at != null) {
+        el('circle', { cx: (x1 + 1).toFixed(1), cy: r.ty.toFixed(1), r: 3, 'class': 'end-dot' }, gMarks);
+        el('path', { d: 'M' + (x1 + 4).toFixed(1) + ' ' + r.ty.toFixed(1) + 'L' + (lx - 4).toFixed(1) + ' ' + mid.toFixed(1), 'class': 'leader', fill: 'none' }, gMarks);
+      } else {
+        var yH = Y(r.hi) + 1, yL = Y(r.lo) - 1;
+        if (yL - yH >= 3) el('path', { d: 'M' + (bx - 4).toFixed(1) + ' ' + yH.toFixed(1) + 'H' + bx.toFixed(1) + 'V' + yL.toFixed(1) + 'H' + (bx - 4).toFixed(1), 'class': 'bracket b-' + r.key, fill: 'none' }, gMarks);
+        else el('circle', { cx: bx.toFixed(1), cy: r.ty.toFixed(1), r: 2.5, 'class': 'bracket-dot b-' + r.key }, gMarks);
+        el('path', { d: 'M' + (bx + 2).toFixed(1) + ' ' + r.ty.toFixed(1) + 'L' + (lx - 4).toFixed(1) + ' ' + mid.toFixed(1), 'class': 'leader', fill: 'none' }, gMarks);
+      }
+      var t = el('text', { x: lx, y: (r.top + VF * 0.95).toFixed(1), 'class': 'rd' }, gText);
+      el('tspan', { x: lx, 'class': 'rd-v r-' + r.key }, t, TX(r.v));
+      if (o.print) el('tspan', { 'class': 'rd-w', dx: 6 }, t, r.words);
+      r.lines.forEach(function (s, i) { el('tspan', { x: lx, dy: (i ? FS * 1.2 : VF * 0.2 + FS * 1.05).toFixed(1), 'class': 'rd-w' }, t, s); });
+      P.add({ x: lx, y: r.top, w: W - lx, h: r.h });
     });
 
-    // the one annotation, inside the taxed-at-death band, with a 1px leader to its stepped edge
-    if (S.pref0 > 0) {
-      var texts = narrow ? [['Each redemption', 'trims this']] : [['Each redemption trims this'], ['Each redemption', 'trims this']];
+    // the one annotation, inside the due-at-death band, with a 1px leader to its stepped edge (only when there are buy-backs)
+    if (S.pref0 > 0 && S.redeemed > 0) {
+      var texts = narrow ? [['Yearly buy-backs', 'shrink this']] : [['Yearly buy-backs shrink this'], ['Yearly buy-backs', 'shrink this']];
       for (var q = 0; q < texts.length; q++) {
         var ls = texts[q], w = Math.max.apply(null, ls.map(function (s) { return measure(s, fSans6); })), h = ls.length * FS * 1.2;
         var ax = X(a0) + 8, base = Y(0) - 7 - (ls.length - 1) * FS * 1.2, boxA = { x: ax - 2, y: base - FS * 0.85, w: w + 4, h: h };
-        var reach = Math.min(aD, a0 + (ax + w + 28 - x0) / (x1 - x0) * (aMax - a0)), ti = Math.min(iD, Math.ceil(reach - a0));
-        if (ti < 1 || Y(rows[ti].gainWith) > boxA.y - 3 || P.hit(boxA)) continue;
+        var reach = Math.min(aD, a0 + (ax + w + 28 - x0) / (x1 - x0) * (aD - a0)), ti = Math.min(n, Math.ceil(reach - a0));
+        if (ti < 1 || Y(tx[ti].death) > boxA.y - 3 || P.hit(boxA)) continue;
         P.add(boxA);
         var at = el('text', { x: ax.toFixed(1), y: base.toFixed(1), 'class': 'annot' }, gText);
         ls.forEach(function (s, i) { el('tspan', { x: ax.toFixed(1), dy: i ? (FS * 1.2).toFixed(1) : 0 }, at, s); });
-        var lxA = ax + Math.min(w * 0.55, measure(ls[0], fSans6) * 0.8), la = a0 + (lxA - x0) / (x1 - x0) * (aMax - a0), li = Math.min(iD, Math.max(1, Math.ceil(la - a0)));
-        if (Y(rows[li].gainWith) + 3 < boxA.y - 3) el('path', { d: 'M' + lxA.toFixed(1) + ' ' + (boxA.y - 3).toFixed(1) + 'V' + (Y(rows[li].gainWith) + 3).toFixed(1), 'class': 'leader', fill: 'none' }, gMarks);
+        var lxA = ax + Math.min(w * 0.55, measure(ls[0], fSans6) * 0.8), la = a0 + (lxA - x0) / (x1 - x0) * (aD - a0), li = Math.min(n, Math.max(1, Math.ceil(la - a0)));
+        if (Y(tx[li].death) + 3 < boxA.y - 3) el('path', { d: 'M' + lxA.toFixed(1) + ' ' + (boxA.y - 3).toFixed(1) + 'V' + (Y(tx[li].death) + 3).toFixed(1), 'class': 'leader', fill: 'none' }, gMarks);
         break;
       }
     }
-    return { X: X, Y: Y, x0: X(a0), x1: X(aMax), padT: padT, y0: Y(0), W: W };
+    return { X: X, Y: Y, x0: X(a0), x1: X(aD), padT: padT, y0: Y(0), W: W };
   }
 
   // ---- the chart on the page ----
   var chart = $('chart'), frame = $('chart-frame'), dropCross = null, scales = null, kbAge = null;
   function drawChart() {
-    var W = Math.max(300, Math.floor(frame.clientWidth)), H = W < 640 ? 390 : W < 1000 ? 420 : 440;
+    var W = Math.max(300, Math.floor(frame.clientWidth)), H = W < 640 ? 344 : W < 1000 ? 420 : 440;
     if (dropCross) { dropCross(); dropCross = null; }
     scales = drawBand(chart, S, { W: W, H: H, print: false, hatch: 'ef-hatch' });
-    var rows = S.rows, a0 = S.inp.freezeAge, aD = S.inp.deathAge, aMax = S.xMax;
-    dropCross = deskCrosshair(chart, { x0: scales.x0, x1: scales.x1, y0: scales.padT, y1: scales.y0, read: function (px) {
-      var a = Math.round(a0 + (px - scales.x0) / (scales.x1 - scales.x0) * (aMax - a0));
-      a = Math.max(a0, Math.min(aMax, a));
-      if (a <= aD) {
-        var r = rows[a - a0];
-        return { x: scales.X(a), y: scales.Y(r.gainNo), lines: ['If death came at ' + a, 'Taxed at death ' + F.fmtM1(r.gainWith), 'Held by the trust ' + F.fmtM1(r.trustDrawn), 'If not frozen ' + F.fmtM1(r.gainNo)] };
-      }
-      var last = rows[S.n];
-      return { x: scales.X(a), y: scales.Y(last.gainWith + S.trustHeld), lines: ['Age ' + a + ', after death', 'Held by the trust ' + F.fmtM1(S.trustHeld), 'Taxed when sold, or at age ' + S.deemedAge] };
+    var rows = S.rows, a0 = S.inp.freezeAge, aD = S.inp.deathAge;
+    // x1 is the svg's right edge, not death's: the reading box may then use the gutter, so on a phone it is never pushed
+    // off the left edge (a point in the gutter reads the age at death)
+    dropCross = deskCrosshair(chart, { x0: scales.x0, x1: scales.W - 2, y0: scales.padT, y1: scales.y0, read: function (px) {
+      var a = Math.round(a0 + (px - scales.x0) / (scales.x1 - scales.x0) * (aD - a0));
+      a = Math.max(a0, Math.min(aD, a));
+      // in the card's order: without a freeze first, then the parts with it (rounded once, so they add up)
+      var t = taxAt(rows[a - a0]), past = anns(S).filter(function (x) { return x <= a; });
+      var p = F.taxParts({ taxNo: t.no, taxWith: t.death, taxTrustEarly: t.early }, S);
+      var lines = ['If death came at ' + a, 'Without a freeze, due at death ' + T(p.total), 'With the freeze, due at death ' + T(p.death)];
+      if (past.length) lines.push('Paid by the trust at ' + agesText(past) + ' ' + T(p.early));
+      lines.push('Paid later, by the trust ' + T(p.later));
+      // pinned to the top of the plot, so the reading box never sits on the point it reads
+      return { x: scales.X(a), y: scales.padT, lines: lines };
     } });
   }
   // the arrow keys step the reading one year at a time when the chart has focus
   chart.addEventListener('keydown', function (e) {
-    var a0 = S.inp.freezeAge, aMax = S.xMax, k = e.key;
+    var a0 = S.inp.freezeAge, aMax = S.inp.deathAge, k = e.key;
     if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(k) < 0) return;
     e.preventDefault();
     if (kbAge == null) kbAge = S.inp.deathAge; else kbAge += k === 'ArrowRight' ? 1 : k === 'ArrowLeft' ? -1 : 0;
@@ -274,6 +322,13 @@
     chart.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: rc.top + rc.height / 2 }));
   });
   chart.addEventListener('blur', function () { kbAge = null; chart.dispatchEvent(new PointerEvent('pointerleave')); });
+  // touch: a finger lifting fires pointerleave, which would hide the reading at once. On touch the reading stays until a
+  // tap outside the chart (this capture listener runs before the shared crosshair's own).
+  chart.addEventListener('pointerleave', function (e) { if (e.pointerType === 'touch') e.stopImmediatePropagation(); }, true);
+  document.addEventListener('pointerdown', function (e) {
+    if (chart.contains(e.target)) return;
+    var g = chart.querySelector('.crosshair'); if (g) g.style.display = 'none';
+  });
 
   // ---- the first move: the portfolio-value slider ----
   var range = $('value'), bubble = $('value-out');
@@ -296,7 +351,7 @@
     var v = Math.max(B.value.min, Math.min(B.value.max, st.value + (e.key === 'PageUp' ? 1 : -1) * B.value.page));
     range.value = v; setValue(v); paintSlider(); render(false, true);
   });
-  // the tax cost the visitor chose (or the example's): a portfolio below it lowers the cost only while it is below
+  // the original cost the visitor chose (or the example's): a portfolio below it lowers it only while it is below
   var wantCost = st.cost;
   function setValue(v) {
     st.value = v;
@@ -304,12 +359,12 @@
     paintClamp();
   }
   function paintClamp() {
-    $('clamp').textContent = st.cost < wantCost ? 'Tax cost lowered to ' + F.fmtInput(st.cost) + ' while the portfolio is below ' + F.fmtInput(wantCost) + '.' : '';
+    $('clamp').textContent = st.cost < wantCost ? 'What the retiree first paid for the investments (the original cost) is set to ' + F.fmtInput(st.cost) + ' here: it can’t be more than the portfolio. It goes back to ' + F.fmtInput(wantCost) + ' once the portfolio is ' + F.fmtInput(wantCost) + ' or more.' : '';
   }
 
   // ---- steppers: label, minus, the value, plus; 48px buttons, disabled at a bound, never wrapping ----
   var STEPS = [
-    { key: 'cost', label: 'Tax cost', name: 'tax cost', fmt: F.fmtInput, min: function () { return B.cost.min; }, max: function () { return st.value; }, step: B.cost.step },
+    { key: 'cost', label: 'Original cost', name: 'original cost', fmt: F.fmtInput, min: function () { return B.cost.min; }, max: function () { return st.value; }, step: B.cost.step },
     { key: 'growth', label: 'Growth a year', name: 'growth', fmt: F.fmtPct, min: function () { return B.growth.min; }, max: function () { return B.growth.max; }, step: B.growth.step },
     { key: 'freezeAge', label: 'Age at the freeze', name: 'age at the freeze', fmt: String, min: function () { return B.freezeAge.min; }, max: function () { return B.freezeAge.max; }, step: B.freezeAge.step },
     { key: 'deathAge', label: 'Age at death', name: 'age at death', fmt: String, min: function () { return st.freezeAge + 1; }, max: function () { return B.deathAge.max; }, step: B.deathAge.step },
@@ -319,6 +374,7 @@
     { key: 'eligibleShare', label: 'Share that is eligible dividends', name: 'eligible dividend share', fmt: F.fmtPct, min: function () { return B.eligibleShare.min; }, max: function () { return B.eligibleShare.max; }, step: B.eligibleShare.step },
     { key: 'incomeGrowth', label: 'Income growth a year', name: 'income growth', fmt: F.fmtPct, min: function () { return B.incomeGrowth.min; }, max: function () { return B.incomeGrowth.max; }, step: B.incomeGrowth.step },
   ];
+  var cueKey = 'cost';                              // the cue line names what the last-touched control changes
   function snap(v, step) { return Math.round(Math.round(v / step) * step * 1e6) / 1e6; }
   function makeStepper(host, c) {
     var box = document.createElement('div'); box.className = 'stepper';
@@ -334,6 +390,7 @@
       st[c.key] = v;
       if (c.key === 'cost') { wantCost = v; paintClamp(); }
       if (c.key === 'freezeAge' && st.deathAge < st.freezeAge + 1) st.deathAge = st.freezeAge + 1;
+      if (STEPS.indexOf(c) >= 0) cueKey = c.key;
       render();
     }
     dn.addEventListener('click', function () { go(-1); }); up.addEventListener('click', function () { go(1); });
@@ -348,58 +405,48 @@
   }
   STEPS.forEach(function (c) { makeStepper($('steppers'), c); });
   MORE.forEach(function (c) { makeStepper($('steppers-more'), c); });
-  $('reset').addEventListener('click', function () { st = copy(START); wantCost = st.cost; range.value = st.value; paintClamp(); paintSlider(); render(); range.focus(); });
+  $('reset').addEventListener('click', function () { st = copy(START); wantCost = st.cost; cueKey = 'cost'; range.value = st.value; paintClamp(); paintSlider(); render(); range.focus(); });
 
-  // ---- the ledger: built once, its figures updated on every change. What is due at death comes first, then its parts
-  // and the gain it is worked out on; below, what the trust holds and when it is taxed ----
+  // ---- the ledger: income tax only, built once, its figures updated on every change. Due at death; paid by the trust
+  // at its anniversaries (only when one comes before death); paid later, by the trust; and in all ----
   var LED = {};
   (function buildLedger() {
-    function row(tb, key, labelHTML, cls) {
+    var tb = $('ledger-rows');
+    function row(key, cls) {
       var tr = document.createElement('tr'); if (cls) tr.className = cls;
-      var th = document.createElement('td'); th.innerHTML = labelHTML; tr.appendChild(th);
+      var th = document.createElement('th'); th.setAttribute('scope', 'row'); tr.appendChild(th);
       var a = document.createElement('td'), b = document.createElement('td'); a.className = b.className = 'n';
       a.setAttribute('data-flash', ''); b.setAttribute('data-flash', '');
       tr.appendChild(a); tr.appendChild(b); tb.appendChild(tr);
       LED[key] = { tr: tr, label: th, no: a, with: b };
     }
-    var now = $('ledger-now'), later = $('ledger-later');
-    row(now, 'pay', 'Due at death', 'total');
-    row(now, 'tax', 'Income tax', 'part');
-    if (R.eat) row(now, 'eat', 'Ontario estate administration tax', 'part');
-    row(now, 'gain', '<span class="sw death" aria-hidden="true"></span>The gain it is worked out on');
-    var h = document.createElement('tr'), hth = document.createElement('th'); hth.setAttribute('scope', 'rowgroup'); hth.colSpan = 3; hth.textContent = 'In the trust'; h.appendChild(hth); later.appendChild(h);
-    row(later, 'trust', '');
-    row(later, 'defer', 'Its income tax at today’s rate, deferred past death');
-    row(later, 'early', '');
-    row(later, 'when', '');
+    row('death'); row('early'); row('later'); row('all', 'total');
   })();
+  function laterNote(S) {
+    // counted from death, never as the retiree's age (the retiree is no longer alive then)
+    var k = Math.round((S.nextDeemedAge - S.inp.freezeAge) / R.trustYears), yrs = S.nextDeemedAge - S.inp.deathAge;
+    return 'when it sells, or at its ' + ordinal(k * R.trustYears) + ' anniversary, ' + yrs + (yrs === 1 ? ' year' : ' years') + ' after death';
+  }
+  // the ledger's rows as [key, label HTML, without, with]; the sheet reuses them
   function ledgerRows() {
-    var d = S.deemedFirst, t = [];
-    t.push(['trust', '<span class="sw trust" aria-hidden="true"></span>' + (d ? 'Its growth since age ' + S.deemedAge + ', still untaxed at death' : 'Gain held by the trust at death <span class="lg-note">(' + esc(F.fmtM2(S.trustSplit.growth)) + ' growth + ' + esc(F.fmtM2(S.trustSplit.redemptions)) + ' redeemed)</span>'), F.fmtM2(S.trustHeld)]);
-    t.push(['defer', 'Its income tax at today’s rate, deferred past death', F.fmtM2(S.deferred)]);
-    var many = S.nextDeemedAge - R.trustYears > S.deemedAge;
-    if (d) t.push(['early', 'Taxed at its ' + (many ? 'anniversaries from age ' + S.deemedAge : Y21 + ' anniversary, age ' + S.deemedAge) + ', before death <span class="lg-note">(on ' + esc(F.fmtM2(S.trustTaxedEarly)) + ' of gain)</span>', F.fmtM2(S.taxTrustEarly)]);
-    var yrs = S.nextDeemedAge - S.inp.deathAge;
-    t.push(['when', 'Taxed when the trust sells, or at its ' + (d ? ordinal(2 * R.trustYears) : Y21) + ' anniversary', d ? yrs + (yrs === 1 ? ' year' : ' years') + ' after death' : 'age ' + S.nextDeemedAge]);
+    var t = [['death', '<span class="sw death" aria-hidden="true"></span>Due at death', T(TP.total), T(TP.death)]];
+    if (S.deemedFirst) t.push(['early', '<span class="sw early" aria-hidden="true"></span>Paid by the trust ' + annPhrase(S) + ', ' + annWhen(S), 'none', T(TP.early)]);
+    t.push(['later', '<span class="sw trust" aria-hidden="true"></span>Paid later, by the trust <span class="lg-note">' + esc(laterNote(S)) + '</span>', 'none', T(TP.later)]);
+    t.push(['all', 'In all, at today’s rates <span class="lg-note">yearly tax on income and buy-backs left out of both</span>', T(TP.total), T(TP.total)]);
     return t;
   }
   function paintLedger() {
-    $('ledger-h').textContent = 'At death, age ' + S.inp.deathAge;
-    LED.pay.no.textContent = F.fmtM2(S.payableNo); LED.pay.with.textContent = F.fmtM2(S.payableWith);
-    LED.tax.label.innerHTML = 'Income tax <span class="lg-note">(' + esc(rate(R.cgRate)) + ' top rate on gains, ' + R.rateYear + ')</span>';
-    LED.tax.no.textContent = F.fmtM2(S.taxNo); LED.tax.with.textContent = F.fmtM2(S.taxWith);
-    if (LED.eat) { LED.eat.no.textContent = F.fmtM2(S.eatNo); LED.eat.with.textContent = 'not payable (assumed)'; LED.eat.with.className = 'w'; }
-    LED.gain.no.textContent = F.fmtM2(S.gainNo); LED.gain.with.textContent = F.fmtM2(S.gainWith);
+    $('ledger-h').textContent = 'Income tax, death at ' + S.inp.deathAge;
     LED.early.tr.hidden = !S.deemedFirst;
     ledgerRows().forEach(function (r) {
       var L = LED[r[0]];
       L.label.innerHTML = r[1];
-      L.no.textContent = r[0] === 'when' ? '' : 'none'; L.no.className = 'w';
-      L.with.textContent = r[2];
+      L.no.textContent = r[2]; L.no.className = r[2] === 'none' ? 'w' : 'n';
+      L.with.textContent = r[3];
     });
   }
 
-  // ---- the caveats (the same list on the page and on the sheet) ----
+  // ---- the caveats, in three groups (the same seven on the page; shorter on the sheet) ----
   var LAW = 'https://laws-lois.justice.gc.ca/eng/acts/I-3.3/';
   // the Income Tax Act sections the illustration rests on, named but not quantified (no figure is read from them)
   var STATUTES = [
@@ -408,107 +455,188 @@
     { s: '74.4', page: 'section-74.4.html', what: 'corporate attribution' },
     { s: '84(3)', page: 'section-84.html', what: 'deemed dividend on a redemption' },
     { s: '85', page: 'section-85.html', what: 'tax-deferred transfer to a company' },
+    { s: '104(4)', page: 'section-104.html', what: 'a trust’s deemed disposition every ' + R.trustYears + ' years' },
   ];
-  function caveats(link) {
+  function caveatGroups(link) {
     var twice = link ? '<a href="/watch/double-tax-at-death/">taxed twice</a>' : 'taxed twice';
-    var list = [
-      'The owner has no surviving spouse, or this is the second death. Leaving property to a surviving spouse can defer the tax at death in both cases; that is not shown.',
-      'The portfolio moves into the company under a section 85 election, so the move itself is tax-deferred, and the freeze is set up so corporate attribution does not apply.',
-      'After death, the estate does the planning that keeps the same gain from being ' + twice + '; it is taxed one time, as a capital gain.',
-      'The note stays unpaid until death.',
+    var death = [
+      'After death, the estate does the planning that keeps the gain from being ' + twice + '; it is taxed once, as a capital gain.',
+      'The IOU stays unpaid until death.',
     ];
-    if (R.eat) list.push('The note and frozen shares pass under a secondary will that is not submitted for probate, so no estate administration tax is charged on them. That comes from holding company shares, not from the freeze, and it is an assumption, not a rule.');
-    list.push('The company’s own unrealized gain on the portfolio, and the tax when it sells, are not shown.');
-    list.push('Yearly tax on income and redemptions, fees, corporate costs and many technical rules are left out.');
-    return list;
+    if (R.eat) death.push('The IOU and fixed shares pass under a secondary will that is not submitted for probate, so no estate administration tax (probate) is charged on them. That comes from holding company shares, not from the freeze, and it is an assumption, not a rule.');
+    return [
+      ['The family and the set-up', [
+        'No surviving spouse, or this is the second death. Leaving property to a surviving spouse can defer the tax at death (section 70(6)); that is not shown.',
+        'The move uses a section 85 election, so it is tax-deferred, and the freeze is set up so corporate attribution does not apply.',
+      ]],
+      ['At and after death', death],
+      ['Left out', [
+        'The company’s own unrealized gain on the portfolio, and its tax when it sells.',
+        'How a trust may plan for its ' + Y21 + ' anniversary: the example simply taxes the trust’s gain then.',
+        'Yearly tax on the income and the buy-backs, fees, corporate costs and many technical rules.',
+      ]],
+    ];
   }
   // the same caveats, said shorter for the one-page sheet
   function caveatsShort() {
     var list = [
-      'No surviving spouse, or the second death: a spouse could defer the tax.',
+      'No surviving spouse, or the second death; a spouse could defer the tax (70(6)).',
       'A section 85 election defers tax on the move; no corporate attribution.',
       'After death, planning stops the gain being taxed twice; it counts as a capital gain.',
-      'The note stays unpaid until death.',
+      'The IOU stays unpaid until death.',
     ];
-    if (R.eat) list.push('Note and frozen shares pass under a secondary will not submitted for probate (assumed; a result of holding company shares, not of the freeze).');
-    list.push('Not shown: the company’s own gain on the portfolio and its tax.');
-    list.push('Left out: yearly tax, fees, corporate costs, many technical rules.');
+    if (R.eat) list.push('IOU and fixed shares pass under a secondary will not submitted for probate (assumed; from holding company shares, not the freeze).');
+    list.push('Not shown: the company’s own gain and its tax; planning for the trust’s ' + Y21 + ' year.');
+    list.push('Left out: yearly tax, fees, costs, many rules.');
     return list;
   }
-  $('caveats').innerHTML = caveats(true).map(function (s) { return '<li>' + s + '</li>'; }).join('');
+  $('caveats').innerHTML = caveatGroups(true).map(function (g) {
+    return '<div class="cv-group"><h3 class="cv-h">' + g[0] + '</h3><ul>' + g[1].map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ul></div>';
+  }).join('');
+
+  // ---- What happens: the four moves, before the chart, with the example's figures and who gets what ----
+  function stepsFor(S) {
+    var i = S.inp, v = esc(F.fmtInput(i.value)), c = esc(F.fmtInput(i.cost)), f = esc(F.fmtInput(S.pref0));
+    var freeze = S.noGainAtFreeze
+      ? '<b>Freeze.</b> The retiree gets back an IOU for what they first paid for the investments (the original cost, ' + c + '). Here that equals the portfolio, so there is no gain to freeze and no fixed shares.'
+      : '<b>Freeze.</b> The retiree gets back an IOU for what they first paid for the investments (the original cost, ' + c + ') and preferred shares with a fixed redemption value for the rest (' + f + ', today’s gain): together, today’s ' + v + ' portfolio.';
+    var buy = S.noGainAtFreeze ? '<b>Buy back.</b> With no fixed shares, there is nothing to buy back.'
+      : S.redeemed <= 0 ? '<b>Buy back.</b> With no investment income here, the company buys back nothing; the retiree keeps all the fixed shares until death.'
+        : '<b>Buy back.</b> Each year the company uses its investment income to buy back some fixed shares, so less is left to tax at death. The portfolio isn’t spent: that value moves to the trust’s shares.';
+    return [
+      '<b>Move.</b> The portfolio goes into a new company. A section 85 election defers the tax on the move.',
+      freeze,
+      '<b>Trust.</b> A family trust for the retiree’s family buys the growth shares for a nominal amount. All growth from now on is the trust’s.',
+      buy,
+    ];
+  }
 
   // ---- the readout and the words that follow the state ----
   var readout = deskReadout('#answer', { format: F.fmtBig });
   function fact(ids, text) { return '<span data-fact="' + esc(ids) + '">' + esc(text) + '</span>'; }
+  // the line under the answer (14 words or fewer): when the trust pays the tax moved to it
   function lineFor(S) {
+    var A = anns(S), many = A.length > 1, atDeath = A[A.length - 1] === S.inp.deathAge;
     return {
-      normal: 'Deferred, not removed: the trust’s shares are taxed when sold or deemed sold.',
-      deemedFirst: 'The trust’s ' + Y21 + ' anniversary, age ' + S.deemedAge + ', comes first: ' + F.fmtScale(1, S.taxTrustEarly)(S.taxTrustEarly) + ' is taxed then.',
-      noGrowth: 'With no growth, the trust’s gain comes only from redemptions.',
-      nothing: 'Nothing moves to the trust without growth or redemptions.',
+      normal: 'Deferred, not removed: the family trust pays it later, when it sells its shares.',
+      deemedFirst: TP.later <= 0
+        ? (many ? 'The trust pays it at its anniversaries, ' + agesText(A) + ', the last in the year of death.'
+          : 'The trust pays it at ' + A[0] + ', its ' + Y21 + ' anniversary' + (atDeath ? ', the year of death.' : '.'))
+        : many ? 'The trust pays ' + T(TP.early) + ' of tax at its anniversaries (' + agesText(A) + '), and ' + T(TP.later) + ' later.'
+          : 'The trust pays ' + T(TP.early) + ' of tax at ' + A[0] + ', its ' + Y21 + ' anniversary, and ' + T(TP.later) + ' later.',
+      noGrowth: 'With no growth, the trust’s tax comes only from the buy-backs.',
+      nothing: 'Nothing moves to the trust without growth or buy-backs.',
     }[S.state];
+  }
+  // the split: without a freeze, all due at death; with it, the same income tax in two (or three) parts. Equal bar
+  // lengths show the sum.
+  // the split's words; fig(v) sets each figure (the page sets them in the serif)
+  function splitWith(S, sep, fig) {
+    var f = fig || function (v) { return v; };
+    if (S.state === 'nothing') return f(T(TP.death)) + ', all due at death too';
+    var p = [f(T(TP.death)) + ' due at death'];
+    if (S.deemedFirst) p.push(f(T(TP.early)) + ' paid by the trust ' + annPhrase(S));
+    if (!S.deemedFirst || TP.later > 0) p.push(f(T(TP.later)) + (S.deemedFirst ? ' paid later' : ' paid later, by the trust'));
+    return p.join(sep);
+  }
+  function figB(v) { return '<b>' + esc(v) + '</b>'; }
+  function paintSplit() {
+    var tot = S.taxNo, pc = function (v) { return tot > 0 ? Math.max(0, Math.min(100, v / tot * 100)).toFixed(2) + '%' : '0%'; };
+    $('split-no-t').innerHTML = figB(T(TP.total)) + ', all due at death';
+    $('split-with-t').innerHTML = splitWith(S, ' + ', figB);
+    var q = function (c) { return document.querySelector('#split .' + c); };
+    q('seg-no').style.width = tot > 0 ? '100%' : '0%';
+    q('seg-death').style.width = pc(S.taxWith); q('seg-early').style.width = pc(S.taxTrustEarly); q('seg-later').style.width = pc(S.deferred);
+    // the sum, in the shown figures (rounded once, so they add up), and what both sides leave out
+    var parts = [T(TP.death)].concat(S.deemedFirst ? [T(TP.early)] : []).concat(!S.deemedFirst || TP.later > 0 ? [T(TP.later)] : []);
+    $('split-sr').textContent = S.state === 'nothing' ? 'The same income tax, all due at death. Yearly tax on income and buy-backs is left out of both.'
+      : parts.join(' + ') + ' = ' + T(TP.total) + ': the same income tax at today’s rates, paid at different times. Yearly tax on income and buy-backs is left out of both.';
+  }
+  function cueFor(S) {
+    var a21 = S.deemedAge, i = S.inp;
+    return {
+      cost: 'Original cost: what the retiree first paid for the investments. Gain = portfolio − original cost, so the cost changes the tax due at death.',
+      growth: 'More growth means more gain, and all of it after the freeze is the trust’s.',
+      freezeAge: 'The trust’s ' + Y21 + ' anniversary is ' + R.trustYears + ' years after the freeze, here at ' + a21 + '.',
+      deathAge: i.deathAge < a21 ? 'Past ' + a21 + ', the trust’s ' + Y21 + ' anniversary comes first and the trust pays then.'
+        : a21 === i.deathAge ? 'Here death and the trust’s ' + Y21 + ' anniversary fall in the same year, ' + a21 + ': the trust pays its tax then.'
+          : 'Here the trust’s ' + Y21 + ' anniversary, at ' + a21 + ', comes first: the trust pays then, before death.',
+    }[cueKey];
+  }
+  // the age at death, said the same way in the hint and in How this is worked out (only at the life table's age)
+  function deathLine(i, withFacts) {
+    var lt = R.lifeTable, lo = Math.round(Math.min(lt.male, lt.female)), hi = Math.round(Math.max(lt.male, lt.female));
+    if (i.freezeAge !== lt.age) return null;
+    var avg = 'on average a person of ' + lt.age + ' has about ' + lo + ' to ' + hi + ' more years';
+    if (i.deathAge === F.defaultDeathAge(R, i.freezeAge)) {
+      return 'Death at ' + i.deathAge + ' is an example: ' + avg + (withFacts ? ' (men ' + fact('life_expectancy_age70_male', String(lt.male)) + ', women ' + fact('life_expectancy_age70_female', String(lt.female)) + '; ' : ' (')
+        + 'Statistics Canada, ' + lt.from + ' to ' + lt.to + '). Not a prediction.';
+    }
+    var y = i.deathAge - i.freezeAge;
+    return 'Death at ' + i.deathAge + ' is an example, ' + y + (y === 1 ? ' year' : ' years') + ' after the freeze. On average a person of ' + lt.age + ' has about ' + lo + ' to ' + hi + ' more years.';
   }
   function paintWords(first) {
     var i = S.inp;
-    readout.set({ n: S.deferred, label: 'Income tax pushed past death', line: lineFor(S), animate: first ? false : undefined });
-    var fo = F.fmtScale(2, S.taxNo, S.taxWith);
-    $('answer-sub').innerHTML = 'Owed at death: <b>' + esc(fo(S.taxWith)) + '</b> with the freeze, <b>' + esc(fo(S.taxNo)) + '</b> without.';
-    var extra = S.exhausted ? 'The preferred shares are all bought back by age ' + S.exhaustedAge + '. After that, the example stops paying the retiree, and the company’s kept income is not counted.'
-      : S.noGainAtFreeze ? 'No gain at the freeze: all later growth goes to the trust. The example pays the retiree nothing, and the company’s kept income is not counted.' : '';
+    readout.set({ n: TP.moved, format: T, label: 'Income tax moved to the trust', line: lineFor(S), animate: first ? false : undefined });
+    paintSplit();
+    var extra = S.exhausted ? 'By ' + S.exhaustedAge + ' the company has bought back all the fixed shares, so nothing of the retiree’s is left to tax at death.'
+      : S.noGainAtFreeze ? 'Here the original cost equals the portfolio, so there is no gain to freeze and no buy-backs: all growth is the trust’s.' : '';
+    var stp = stepsFor(S), li = $('steps').children;
+    if (li.length !== stp.length) $('steps').innerHTML = stp.map(function (s) { return '<li>' + s + '</li>'; }).join('');
+    else stp.forEach(function (s, k) { if (li[k].innerHTML !== s) li[k].innerHTML = s; });
     $('answer-extra').textContent = extra; $('answer-extra').hidden = !extra;
     $('lede').textContent = 'A made-up retiree, ' + i.freezeAge + ', moves a portfolio into a company and freezes its value.';
-    $('assume-text').textContent = 'One made-up Ontario owner, ' + R.rateYear + ' top rates, every figure an example. Tax moved to the trust is deferred, not removed.';
-    var f1 = F.fmtScale(1, S.gainNo, S.gainWith);
-    $('chart-title').textContent = 'Taxed at ' + i.deathAge + ': ' + f1(S.gainWith) + ', not ' + f1(S.gainNo);
-    $('chart-desc').textContent = 'From age ' + i.freezeAge + ' to ' + i.deathAge + ', the gain not yet taxed grows from ' + F.fmtM1(S.rows[0].gainNo) + ' to ' + F.fmtM1(S.gainNo)
-      + '. With the freeze, ' + F.fmtM1(S.gainWith) + ' of it is taxed at death. '
-      + (S.deemedFirst
-        ? 'The trust’s ' + Y21 + ' anniversary comes first, at age ' + S.deemedAge + ': its ' + F.fmtM1(S.trustTaxedEarly) + ' gain is taxed then, in life, and its growth after that, ' + F.fmtM1(S.trustHeld) + ' at death, is taxed later.'
-        : 'The trust holds ' + F.fmtM1(S.trustHeld) + ', taxed when it sells or at its ' + Y21 + ' anniversary, at age ' + S.deemedAge + '.')
-      + ' The year-by-year table in Go deeper has every number.';
-    // How this is worked out
-    var rid = 'federal_brackets.' + R.rateYear + ' ontario_brackets.' + R.rateYear + ' ontario_surtax.' + R.rateYear;
+    $('assume-text').textContent = 'One made-up Ontario owner, ' + R.rateYear + ' top rates, every figure an example.';
+    // the chart's title says what to look at (no figures, so it never competes with the answer); the line under it says
+    // what happens after death, which the chart does not draw
+    $('chart-title').textContent = S.state === 'nothing' ? 'With no growth and no buy-backs, all the tax stays due at death'
+      : S.deemedFirst ? (anns(S).length > 1 ? 'At ' + agesText(anns(S)) + ', the trust’s anniversaries, the trust pays its share' : 'At ' + anns(S)[0] + ', the trust’s ' + Y21 + ' anniversary, the trust pays its share')
+      : 'The longer the retiree lives, the more of the tax the trust carries';
+    var after = $('chart-after');
+    after.textContent = S.state === 'nothing' || TP.later <= 0 ? ''
+      : 'After death, the trust’s ' + T(TP.later) + ' of tax' + (S.deemedFirst ? ' on growth since ' + anns(S)[anns(S).length - 1] : '') + ' waits until it sells its shares, or until its ' + laterNote(S).replace('when it sells, or at its ', '') + '. Growth after death is not shown.';
+    after.hidden = !after.textContent;
+    var t0 = taxAt(S.rows[0]);
+    $('chart-desc').textContent = 'Income tax if death came at each age from ' + i.freezeAge + ' to ' + i.deathAge + '. Without a freeze it grows from ' + T(t0.no) + ' to ' + T(TP.total) + ', all due at death. With the freeze, '
+      + T(TP.death) + ' is due at death' + (S.deemedFirst ? ', the trust pays ' + T(TP.early) + ' ' + annPhrase(S) + ', ' + annWhen(S) + ',' : '') + ' and the trust pays ' + T(TP.later) + ' later. The tables in Go deeper have every number.';
+    // How this is worked out: plain steps, every rate wrapped in its fact
+    var rid = 'federal_brackets.' + R.rateYear + ' ontario_brackets.' + R.rateYear + ' ontario_surtax.' + R.rateYear, m2 = function (v) { return esc(F.fmtM2(v)); };
     var how = [
-      'Portfolio at ' + i.deathAge + ' = ' + esc(F.fmtInput(i.value)) + ' grown ' + esc(F.fmtPct(i.growth)) + ' a year for ' + S.n + (S.n === 1 ? ' year' : ' years') + ' = ' + esc(F.fmtM2(S.Vn)) + '.',
-      'No freeze: gain = ' + esc(F.fmtM2(S.Vn)) + ' − tax cost ' + esc(F.fmtInput(i.cost)) + ' = ' + esc(F.fmtM2(S.gainNo)) + '.',
-      'Freeze: the note takes the ' + esc(F.fmtInput(i.cost)) + ' tax cost, so the preferred shares (' + esc(F.fmtM2(S.pref0)) + ') carry the whole gain. Each year’s redemption = (interest × '
-        + fact('refundable_investment_income_rate', rate(R.refInvest)) + ' + eligible dividends × ' + fact('part_iv_tax_rate', rate(R.partIV)) + ') ÷ ' + fact('dividend_refund_rate', rate(R.refundRate))
-        + ', so ' + esc(F.fmtM2(S.redeemed)) + ' is bought back by ' + i.deathAge + ', leaving ' + esc(F.fmtM2(S.gainWith)) + '.',
-      'Tax at death = gain × ' + fact('capital_gains_inclusion_rate', rate(R.inclusion)) + ' × ' + fact(rid, rate(R.topOrdinary)) + ' (the ' + R.rateYear
-        + ' top federal and Ontario rates with the Ontario surtax) = gain × ' + fact(rid + ' capital_gains_inclusion_rate', rate(R.cgRate)) + '.',
+      'The portfolio grows ' + esc(F.fmtPct(i.growth)) + ' a year: ' + esc(F.fmtInput(i.value)) + ' at ' + i.freezeAge + ' is ' + m2(S.Vn) + ' at ' + i.deathAge + '.',
+      'Without a freeze: gain = ' + m2(S.Vn) + ' − ' + esc(F.fmtInput(i.cost)) + ' original cost = ' + m2(S.gainNo) + ', all taxed at death: ' + esc(T(TP.total)) + ' of tax.',
+      'With the freeze: today’s ' + esc(F.fmtInput(S.pref0)) + ' gain sits in the fixed shares. The company buys back ' + m2(S.redeemed) + ' of them by ' + i.deathAge + ', so ' + m2(S.gainWith) + ' of gain is taxed at death: ' + esc(T(TP.death)) + ' of tax.',
+      // why the trust's gain is more than the growth: the buy-backs are paid from income, so their value stays in the
+      // portfolio and lands on the trust's shares
+      'The trust’s shares hold the rest, ' + m2(S.trust) + ' of gain: ' + m2(S.trustSplit.growth) + ' of growth since ' + i.freezeAge
+        + (S.redeemed > 0 ? ', plus the ' + m2(S.trustSplit.redemptions) + ' of fixed shares bought back. The buy-backs are paid from the company’s yearly income, not from the portfolio, so that value stays in the portfolio and lands on the trust’s shares.' : '.')
+        + (S.deemedFirst
+          ? ' Of that gain, ' + m2(S.trustTaxedEarly) + ' is taxed ' + annPhrase(S) + ', the trust’s ' + (anns(S).length > 1 ? 'anniversaries' : Y21 + ' anniversary') + ': ' + esc(T(TP.early)) + ' of tax, ' + annWhen(S) + '.'
+            + (TP.later > 0 ? ' Its gain after that, ' + m2(S.trustHeld) + ', is taxed later: ' + esc(T(TP.later)) + ' of tax.' : '')
+          : ' Its tax, ' + esc(T(TP.later)) + ', is paid later.'),
+      'Tax = gain × ' + fact('capital_gains_inclusion_rate', rate(R.inclusion)) + ' (the share of a capital gain that is taxed) × ' + fact(rid, rate(R.topOrdinary)) + ' (the ' + R.rateYear
+        + ' top federal and Ontario rate with the Ontario surtax) = gain × ' + fact(rid + ' capital_gains_inclusion_rate', rate(R.cgRate)) + '.',
     ];
-    var lt0 = R.lifeTable;
-    how.push('The age at death, ' + i.deathAge + ', is an example: ' + (i.freezeAge === lt0.age && i.deathAge === F.defaultDeathAge(R, i.freezeAge)
-      ? 'about ' + Math.round((lt0.male + lt0.female) / 2) + ' more years at ' + lt0.age + ', between men’s ' + fact('life_expectancy_age70_male', String(lt0.male)) + ' and women’s ' + fact('life_expectancy_age70_female', String(lt0.female)) + ' (Statistics Canada, ' + lt0.from + ' to ' + lt0.to + '), not a prediction for anyone.'
-      : 'changed from the example; not a prediction for anyone.'));
-    if (R.eat) how.push('Estate administration tax = ' + fact('ontario_estate_admin_tax_rate', money0(R.eat.rate)) + ' per ' + esc(money0(R.eat.per)) + ' (or part) of the estate over '
-      + fact('ontario_estate_admin_tax_exemption', money0(R.eat.exemption)) + ', on ' + esc(F.fmtM2(S.Vn)) + '. With the freeze it is assumed not payable (a secondary will).');
-    var close = S.deemedFirst
-      ? 'The big figure is the trust’s ' + esc(F.fmtM2(S.trustHeld)) + ' of growth since its ' + Y21 + ' anniversary at ' + S.deemedAge + ', times today’s ' + esc(rate(R.cgRate)) + '. The ' + esc(F.fmtM2(S.trustTaxedEarly))
-        + ' gain it held at ' + S.deemedAge + ' is taxed then, before death: about ' + esc(F.fmtM2(S.taxTrustEarly)) + ' at today’s rate.'
-      : 'The big figure is the trust’s ' + esc(F.fmtM2(S.trustHeld)) + ' gain at death times today’s ' + esc(rate(R.cgRate)) + '.';
-    $('how').innerHTML = '<ol>' + how.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><p>' + close
-      + ' The real tax comes when the trust sells or is deemed to sell, at the rates of that day. Growth after death is not modelled.</p>';
-    // the death-age hint (only at the life table's age)
-    var lt = R.lifeTable, hint = $('death-hint');
-    if (i.freezeAge === lt.age) {
-      hint.textContent = 'Death at ' + i.deathAge + ' is an example: about ' + Math.round((lt.male + lt.female) / 2) + ' more years, between men’s ' + lt.male + ' and women’s ' + lt.female + ' at ' + lt.age
-        + ' (Statistics Canada, ' + lt.from + ' to ' + lt.to + '). Not a prediction.';
-      hint.hidden = false;
-    } else hint.hidden = true;
-    $('reset').hidden = KEYS.every(function (k) { return Math.abs(st[k] - START[k]) < 1e-9; });
-    var fl = $('flow').children;
-    var flow = [
-      'The retiree moves the portfolio into a new company on a tax-deferred basis (a section 85 election), so no tax is due on the move.',
-      'Back come a note for its tax cost (<b>' + esc(F.fmtInput(i.cost)) + '</b>) and preferred shares with a fixed redemption value of the rest (<b>' + esc(F.fmtInput(S.pref0)) + '</b>), equal to today’s gain because the note takes the tax cost.',
-      'A family trust buys the company’s common shares for a nominal amount; growth from here lands on them.',
-      'Each year the company buys back some preferred shares.',
-    ];
-    if (!fl.length) $('flow').innerHTML = flow.map(function (s) { return '<li>' + s + '</li>'; }).join('');
-    else flow.forEach(function (s, k) { if (fl[k].innerHTML !== s) fl[k].innerHTML = s; });
+    var dl = deathLine(i, true);
+    how.push(dl || 'Death at ' + i.deathAge + ' is an example; not a prediction for anyone.');
+    if (R.eat) how.push('Ontario estate administration tax (probate) = ' + fact('ontario_estate_admin_tax_rate', money0(R.eat.rate)) + ' per ' + esc(money0(R.eat.per)) + ' (or part) of the estate over '
+      + fact('ontario_estate_admin_tax_exemption', money0(R.eat.exemption)) + ', on ' + m2(S.Vn) + ': ' + m2(S.eatNo) + ' of tax without a freeze. With it, assumed not payable: the IOU and fixed shares are holding company shares that pass under a secondary will. That comes from holding company shares, not from the freeze.');
+    var close = 'At today’s rates. The trust’s real tax depends on the rates in the year it pays. Growth after death is not shown. Yearly tax on income and buy-backs is left out, without and with the freeze. The yearly buy-back arithmetic is in Go deeper.';
+    if (S.exhausted) close += ' Once the fixed shares are all bought back, the example stops paying the retiree, and the company’s kept income is not counted.';
+    else if (S.noGainAtFreeze) close += ' With no fixed shares, the example pays the retiree nothing, and the company’s kept income is not counted.';
+    $('how').innerHTML = '<ol>' + how.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><p>' + close + '</p>';
+    // Change the example: the cue, the age at death, the echo
+    $('cue').textContent = cueFor(S);
+    var hint = $('death-hint'), dh = deathLine(i, false);
+    hint.textContent = dh || ''; hint.hidden = !dh;
+    var changed = !KEYS.every(function (k) { return Math.abs(st[k] - START[k]) < 1e-9; });
+    $('reset').hidden = !changed;
+    var echo = $('echo');
+    echo.textContent = !changed ? '' : 'Now, income tax: ' + T(TP.total) + ' due at death without a freeze; with it, ' + T(TP.death) + ' due at death, '
+      + (S.deemedFirst ? T(TP.early) + ' paid by the trust ' + annPhrase(S) + ' and ' + T(TP.later) + ' paid later.' : T(TP.later) + ' paid later, by the trust.');
+    echo.hidden = !changed;
   }
 
-  // ---- Go deeper: redemptions and the year-by-year table (drawn when open) ----
+  // ---- Go deeper: buy-backs and the year-by-year table (drawn when open) ----
   var deeper = $('deeper');
   function drawDeeper() {
     if (!deeper.open) return;
@@ -527,15 +655,32 @@
     }
     el('text', { x: 0, y: H - 4, 'class': 'tick' }, svg, 'Age ' + (S.inp.freezeAge + 1));
     if (rows.length > 1) el('text', { x: W - 3, y: H - 4, 'text-anchor': 'end', 'class': 'tick' }, svg, String(S.inp.deathAge));
+    var paid = rows.map(function (r) { return r.R; }).filter(function (v) { return v > 0; });
+    $('buy-open').textContent = !paid.length ? 'With no investment income, the company buys back nothing.'
+      : 'Each year the company pays the retiree about ' + F.fmtAbout(Math.min.apply(null, paid)) + (paid.length > 1 && F.fmtAbout(Math.min.apply(null, paid)) !== F.fmtAbout(Math.max.apply(null, paid)) ? ' to ' + F.fmtAbout(Math.max.apply(null, paid)) : '')
+        + ' to buy back fixed shares. The retiree is taxed on it as a dividend; that yearly tax is not shown.';
     var c1 = S.rows[1];
     $('cash-line').textContent = c1.cash == null ? '' : 'In year one the company earns ' + money0(c1.income) + ', pays ' + money0(c1.corpTax) + ' in tax, gets ' + money0(c1.refund) + ' back and buys back ' + money0(c1.R) + ' of shares.';
     $('cash-line').hidden = c1.cash == null;
-    $('mechanism').textContent = 'Part of the tax the company pays on its investment income is refundable: it comes back when the company pays dividends, and buying back its own shares counts as one, for the amount above the shares’ paid-up capital, which is nil here. So each year it buys back just enough to recover that tax: the refundable tax ÷ the ' + rate(R.refundRate) + ' dividend refund rate.'
-      + (S.exhausted ? ' Here the preferred shares run out at age ' + S.exhaustedAge + '.' : '');
+    $('mechanism').innerHTML = 'Why that amount: part of the company’s tax on investment income is refundable when it pays dividends. A buy-back counts as a dividend for the amount above the shares’ paid-up capital (nil here, so all of it). So each year the company buys back just enough to get that tax back: (interest × '
+      + fact('refundable_investment_income_rate', rate(R.refInvest)) + ' + eligible dividends × ' + fact('part_iv_tax_rate', rate(R.partIV)) + ') ÷ the ' + fact('dividend_refund_rate', rate(R.refundRate)) + ' dividend refund rate.'
+      + (S.exhausted ? ' Here the fixed shares run out at age ' + S.exhaustedAge + '.' : '');
+    // the numbers behind the chart: the income tax first (so a phone shows it before any swipe), then the portfolio and
+    // the year's buy-back (the paid-at-anniversaries column only when one comes before death)
+    var cols = ['If death came at', 'Tax due at death, without a freeze', 'Tax due at death, with the freeze'];
+    if (S.deemedFirst) cols.push('Tax paid by the trust at its anniversaries');
+    cols.push('Tax paid later, by the trust', 'Portfolio', 'Bought back that year');
+    $('years-head').innerHTML = cols.map(function (c) { return '<th scope="col">' + c + '</th>'; }).join('');
     $('years-rows').innerHTML = S.rows.map(function (r) {
-      return '<tr' + (r.t === S.n ? ' class="death"' : '') + '><td>' + r.age + (r.t === S.n ? ' (death)' : '') + '</td><td>' + F.fmtM2(r.V) + '</td><td>' + (r.t ? money0(r.R) : '–') + '</td><td>' + F.fmtM2(r.prefLeft)
-        + '</td><td>' + F.fmtM2(r.trust) + '</td><td>' + F.fmtM2(r.gainNo) + '</td><td>' + F.fmtM2(r.gainWith) + '</td></tr>';
+      var t = taxAt(r), p = F.taxParts({ taxNo: t.no, taxWith: t.death, taxTrustEarly: t.early }, S), cells = [r.age + (r.t === S.n ? ' (death)' : ''), T(p.total), T(p.death)];
+      if (S.deemedFirst) cells.push(T(p.early));
+      cells.push(T(p.later), F.fmtM2(r.V), r.t ? money0(r.R) : '–');
+      return '<tr' + (r.t === S.n ? ' class="death"' : '') + '><th scope="row">' + cells[0] + '</th><td>' + cells.slice(1).join('</td><td>') + '</td></tr>';
     }).join('');
+    // on a phone, say how many columns are off to the right
+    var wrap = $('years-wrap'), wr = wrap.getBoundingClientRect(), hidden = 0;
+    [].forEach.call(document.querySelectorAll('#years-head th'), function (th) { if (th.getBoundingClientRect().right - wr.left + wrap.scrollLeft > wrap.clientWidth + 1) hidden++; });
+    $('years-cap').textContent = 'At the end of each year; income tax at today’s rates.' + (hidden ? ' On a phone, swipe the table for ' + hidden + ' more column' + (hidden === 1 ? '' : 's') + ' →' : '');
   }
   deeper.addEventListener('toggle', drawDeeper);
 
@@ -546,7 +691,7 @@
     var ver = 'Version ' + DATA.version + ' · rates as of ' + longDate(DATA.asOf) + ' · made in this browser; nothing was sent.';
     $('sources').innerHTML = '<p>Every rate and rule on this page is read from these official sources (confirmed values only). The life expectancy figures are from <a href="' + esc(R.lifeTable.url)
       + '">Statistics Canada table 13-10-0114-01</a> (its data download), life tables, ' + R.lifeTable.from + ' to ' + R.lifeTable.to + '.</p><ul>' + items.join('') + '</ul>'
-      + '<p>The rules the example rests on, described here without figures:</p><ul>' + laws.join('') + '</ul>'
+      + '<p>The rules the example rests on, described here without figures (the trust’s ' + R.trustYears + ' years are read from the facts above):</p><ul>' + laws.join('') + '</ul>'
       + '<p>How it’s made: the calculation was written from scratch for this site and runs in this browser. The retiree and the inputs are made up: example assumptions, not facts, and not anyone’s situation. ' + esc(ver) + '</p>';
     $('foot-version').textContent = ver;
   })();
@@ -558,7 +703,7 @@
     // the sources, shortened to statute sections and page names (one line or two on paper)
     var acts = STATUTES.map(function (x) { return x.s; }), pagesBy = [], HOSTS = [['canada.ca', 'CRA T4127 and rates'], ['ontario.ca', 'Ontario.ca'], ['statcan.gc.ca', 'Statistics Canada 13-10-0114-01']];
     R.used.forEach(function (f) {
-      var m = f.title.match(/Income Tax Act ([\d.]+)/);
+      var m = f.title.match(/Income Tax Act ([\d.]+(?:\(\d+\))?)/);
       if (m) { if (acts.indexOf(m[1]) < 0) acts.push(m[1]); return; }
       var host = f.source_url.replace(/^https:\/\/([^/]+).*$/, '$1'), hit = HOSTS.filter(function (h) { return host === h[0] || host.slice(-h[0].length - 1) === '.' + h[0]; })[0];
       var name = hit ? hit[1] : f.title.split(/ \(|,/)[0].trim();
@@ -568,71 +713,77 @@
     var addr = siteAddress(DESK_SITE.origin), date = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
     var td = function (v) { return '<td class="' + (/^\$/.test(v) ? 'n' : 'w') + '">' + esc(v) + '</td>'; };
     var tr = function (r, cls) { return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + r[0] + '</td>' + td(r[1]) + td(r[2]) + '</tr>'; };
-    var rowsNow = [tr(['Due at death', F.fmtM2(S.payableNo), F.fmtM2(S.payableWith)], 'total'),
-      tr(['Income tax (' + esc(rate(R.cgRate)) + ' top rate on gains, ' + R.rateYear + ')', F.fmtM2(S.taxNo), F.fmtM2(S.taxWith)], 'part')];
-    if (R.eat) rowsNow.push(tr(['Ontario estate administration tax', F.fmtM2(S.eatNo), 'not payable (assumed)'], 'part'));
-    rowsNow.push(tr(['The gain it is worked out on', F.fmtM2(S.gainNo), F.fmtM2(S.gainWith)]));
-    // on paper the trust's rows drop their bracketed notes
-    var rowsLater = ledgerRows().map(function (r) { return tr([r[1].replace(/<span class="sw[^>]*><\/span>/, '').replace(/ ?<span class="lg-note">[^<]*<\/span>/, ''), r[0] === 'when' ? '' : 'none', r[2]]); });
+    // on paper the ledger drops its swatches and keeps its notes short; the probate and gain rows follow as plain rows
+    var rows = ledgerRows().map(function (r) { return tr([r[1].replace(/<span class="sw[^>]*><\/span>/, '').replace(/ ?<span class="lg-note">[^<]*<\/span>/, ''), r[2], r[3]], r[0] === 'all' ? 'total' : ''); });
+    // probate is not income tax: its own row, labelled so, and credited to the holding company shares, not the freeze
+    if (R.eat) rows.push(tr(['Not income tax: probate', F.fmtM2(S.eatNo), 'not payable (assumed)'], 'more'));
+    var split = 'Without a freeze, ' + T(TP.total) + ' is due at death. With it, ' + (S.state === 'nothing' ? T(TP.death) + ' is due at death too.'
+      : S.deemedFirst ? T(TP.death) + ' is due at death, ' + T(TP.early) + ' is paid by the trust ' + annPhrase(S) + ', ' + annWhen(S) + ', and ' + T(TP.later) + ' is paid later.'
+        : T(TP.death) + ' is due at death and ' + T(TP.later) + ' is paid later, by the trust.');
+    var steps = ['<b>1 Move:</b> into a company, section 85 election (tax-deferred).',
+      '<b>2 Freeze:</b> an IOU for the original cost (' + esc(F.fmtInput(i.cost)) + '), preferred shares at a fixed redemption value (' + esc(F.fmtInput(S.pref0)) + ').',
+      '<b>3 Trust:</b> a family trust takes the growth.',
+      '<b>4 Buy back:</b> yearly; the value moves to the trust.'];
     sheet.innerHTML = '<div class="sh-top"><span>' + esc(STAMP) + '</span><span class="sh-r">Printed ' + esc(date) + '</span></div>'
       + '<p class="sh-title">' + esc($('question').textContent) + '</p>'
-      + '<p class="sh-answer"><span class="sh-big">' + esc(F.fmtBig(S.deferred)) + '</span> of income tax pushed past death: deferred, not removed.</p>'
-      + (S.deemedFirst ? '<p class="sh-sub">' + esc(lineFor(S)) + '</p>' : '')
-      + '<p class="sh-inputs">A made-up retiree, <b>' + i.freezeAge + '</b>: portfolio <b>' + esc(F.fmtInput(i.value)) + '</b>, tax cost <b>' + esc(F.fmtInput(i.cost)) + '</b>, growth <b>' + esc(F.fmtPct(i.growth))
-        + '</b> a year, income <b>' + esc(F.fmtInput(i.income)) + '</b> (' + esc(F.fmtPct(i.eligibleShare)) + ' eligible dividends, growing ' + esc(F.fmtPct(i.incomeGrowth)) + '), death at <b>' + i.deathAge
-        + '</b> (example). Ontario, ' + R.rateYear + ' top rates.</p>'
-      + '<div class="sh-chart"><svg id="sheet-chart" role="img" aria-label="Gain not yet taxed, by age"></svg></div>'
-      + '<table class="sh-ledger"><thead><tr><th>At death, age ' + i.deathAge + '</th><th>No freeze</th><th>With the freeze</th></tr></thead><tbody>'
-      + rowsNow.join('') + '<tr class="later-h"><th colspan="3">In the trust</th></tr>' + rowsLater.join('') + '</tbody></table>'
+      + '<p class="sh-answer"><span class="sh-big">' + esc(T(TP.moved)) + '</span> of income tax moved to the trust' + (S.deemedFirst ? ': not removed.' : ': deferred, not removed.') + ' <span class="sh-sub">' + esc(split) + '</span></p>'
+      + '<p class="sh-inputs">A made-up retiree, <b>' + i.freezeAge + '</b>: portfolio <b>' + esc(F.fmtInput(i.value)) + '</b>, original cost <b>' + esc(F.fmtInput(i.cost)) + '</b>, growth <b>' + esc(F.fmtPct(i.growth))
+        + '</b>, income <b>' + esc(F.fmtInput(i.income)) + '</b> (' + esc(F.fmtPct(i.eligibleShare)) + ' eligible dividends, +' + esc(F.fmtPct(i.incomeGrowth)) + ' a year), death at <b>' + i.deathAge
+        + '</b> (example).</p>'
+      + '<p class="sh-steps">' + steps.join(' ') + '</p>'
+      + '<div class="sh-chart"><svg id="sheet-chart" role="img" aria-label="Income tax if death came at each age"></svg>'
+      + '<p class="sh-cap">Income tax if death came at each age (Ontario, ' + R.rateYear + ' top rates), $ millions. ' + esc($('chart-after').textContent) + '</p></div>'
+      + '<table class="sh-ledger"><thead><tr><th>Income tax, death at ' + i.deathAge + '</th><th>Without a freeze</th><th>With the freeze</th></tr></thead><tbody>'
+      + rows.join('') + '</tbody></table>'
       + '<ul class="sh-caveats">' + caveatsShort().map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ul><p class="sh-close">How any of this applies to a real family is a question for a tax professional and a lawyer.</p>'
       + '<div class="sh-foot"><p>' + esc(DESK_SITE.wordmark) + ' · <b>' + esc(addr) + '/tools/estate-freeze/</b> · Version ' + esc(DATA.version) + '</p>'
       + '<p>Sources (as of ' + esc(shortDate(DATA.asOf)) + '): Income Tax Act ss. ' + esc(acts.join(', ')) + '; ' + esc(pagesBy.join('; ')) + '. ' + esc(notes ? notes.textContent.replace(/\s+/g, ' ').trim() : '') + '</p></div>';
-    drawBand($('sheet-chart'), S, { W: 680, H: S.deemedFirst ? 180 : 210, print: true, hatch: 'ef-sh-hatch' });
+    drawBand($('sheet-chart'), S, { W: 680, H: 160, print: true, hatch: 'ef-sh-hatch' });
   }
-  $('print').addEventListener('click', function () { buildSheet(); try { window.print(); } catch (e) { /* the sheet is ready for the browser's own print */ } });
+  $('print').addEventListener('click', function () { buildSheet(); try { window.print(); } catch (e) { /* the sheet is ready for the browser’s own print */ } });
   addEventListener('beforeprint', buildSheet);
 
-  // ---- Save my card: 1080x1350, the line naming the example, a small band chart with its two end readings, the stamp ----
+  // ---- Save my card: 1080x1350, the line naming the example, a small chart in income tax with two end readings, the stamp ----
   function tok(n) { return getComputedStyle(document.documentElement).getPropertyValue('--t-' + n).trim(); }
   function miniBand(x, full, C) {
-    var rows = S.rows, a0 = S.inp.freezeAge, aD = S.inp.deathAge, aMax = S.xMax, d3 = tok('d3'), d4 = tok('d4');
-    var lw = 360, box = { x: full.x, y: full.y, w: full.w - lw, h: full.h };
-    var hi = 0; rows.forEach(function (r) { hi = Math.max(hi, r.gainNo); }); hi = hi || 1;
-    var X = function (a) { return box.x + (a - a0) / (aMax - a0) * box.w; }, Y = function (v) { return box.y + box.h - v / hi * box.h; };
+    var rows = S.rows, a0 = S.inp.freezeAge, aD = S.inp.deathAge, d3 = tok('d3'), d4 = tok('d4'), tx = rows.map(taxAt);
+    var lw = 380, box = { x: full.x, y: full.y, w: full.w - lw, h: full.h };
+    var hi = 0; tx.forEach(function (t) { hi = Math.max(hi, t.no); }); hi = hi || 1;
+    var X = function (a) { return box.x + (a - a0) / (aD - a0) * box.w; }, Y = function (v) { return box.y + box.h - v / hi * box.h; };
     function path(pts, close) { x.beginPath(); pts.forEach(function (p, k) { if (k) x.lineTo(p[0], p[1]); else x.moveTo(p[0], p[1]); }); if (close) x.closePath(); }
-    var edge = [[X(a0), Y(rows[0].gainWith)]];
-    for (var k = 1; k <= S.n; k++) { edge.push([X(rows[k].age), Y(rows[k - 1].gainWith)]); edge.push([X(rows[k].age), Y(rows[k].gainWith)]); }
-    var topPts = rows.map(function (r) { return [X(r.age), Y(r.gainWith + r.trustDrawn)]; });
-    var last = rows[S.n], after = !S.deemedFirst && S.deemedAge > aD;
+    var edge = [[X(a0), Y(tx[0].death)]];
+    for (var k = 1; k <= S.n; k++) { edge.push([X(rows[k].age), Y(tx[k - 1].death)]); edge.push([X(rows[k].age), Y(tx[k].death)]); }
+    // the same stack as the page's chart, bottom to top: due at death, paid at the trust's anniversaries (solid), paid later
+    // (hatched, up to the no-freeze line)
+    var mid = [[X(a0), Y(tx[0].death + tx[0].early)]];
+    for (var j = 1; j <= S.n; j++) { mid.push([X(rows[j].age), Y(tx[j - 1].death + tx[j - 1].early)]); mid.push([X(rows[j].age), Y(tx[j].death + tx[j].early)]); }
+    var noLine = rows.map(function (r, k) { return [X(r.age), Y(tx[k].no)]; });
     x.save(); x.globalAlpha = 0.4; x.fillStyle = d4; path([[X(a0), Y(0)]].concat(edge).concat([[X(aD), Y(0)]]), true); x.fill();
-    x.fillStyle = d3; path(topPts.concat(edge.slice().reverse()), true); x.fill();
-    if (after) x.fillRect(X(aD), Y(last.gainWith + S.trustHeld), X(S.deemedAge) - X(aD), Y(last.gainWith) - Y(last.gainWith + S.trustHeld));
+    x.fillStyle = d3; path(noLine.concat(mid.slice().reverse()), true); x.fill();
     x.restore();
-    // the hatch over the trust's share
-    x.save(); path(topPts.concat(edge.slice().reverse()), true);
-    if (after) x.rect(X(aD), Y(last.gainWith + S.trustHeld), X(S.deemedAge) - X(aD), Y(last.gainWith) - Y(last.gainWith + S.trustHeld));
+    if (S.deemedFirst) { x.save(); x.globalAlpha = 0.85; x.fillStyle = d3; path(mid.concat(edge.slice().reverse()), true); x.fill(); x.restore(); }
+    x.save(); path(noLine.concat(mid.slice().reverse()), true);
     x.clip(); x.strokeStyle = d3; x.lineWidth = 3;
     for (var h = box.x - box.h; h < box.x + box.w; h += 18) { x.beginPath(); x.moveTo(h, box.y + box.h); x.lineTo(h + box.h, box.y); x.stroke(); }
     x.restore();
     x.strokeStyle = d4; x.lineWidth = 5; path(edge); x.stroke();
-    x.strokeStyle = C.ink; x.lineWidth = 5; path(rows.map(function (r) { return [X(r.age), Y(r.gainNo)]; })); x.stroke();
+    x.strokeStyle = C.ink; x.lineWidth = 5; path(noLine); x.stroke();
     x.lineWidth = 2; x.beginPath(); x.moveTo(X(aD), box.y); x.lineTo(X(aD), box.y + box.h); x.stroke();
-    x.strokeStyle = d3; x.lineWidth = 3; x.setLineDash([14, 10]); x.beginPath(); x.moveTo(X(S.deemedAge), box.y); x.lineTo(X(S.deemedAge), box.y + box.h); x.stroke(); x.setLineDash([]);
     x.fillStyle = C.ink; x.fillRect(box.x, box.y + box.h, box.w, 2);
-    // the two end readings: the whole gain if not frozen, and the gain taxed at death with the freeze
-    var tx = box.x + box.w + 28;
+    // the two end readings: the tax due at death without a freeze, and with it
+    var tx0 = box.x + box.w + 28, serif = '600 44px "Source Serif 4 Variable", Georgia, serif', sans = '400 32px "Source Sans 3 Variable", system-ui, sans-serif';
     x.textBaseline = 'alphabetic';
-    x.font = '600 44px "Source Serif 4 Variable", Georgia, serif'; x.fillStyle = C.ink; x.fillText(F.fmtM1(S.gainNo), tx, box.y + 44);
-    x.font = '400 34px "Source Sans 3 Variable", system-ui, sans-serif'; x.fillStyle = C.ink2; x.fillText('gain if not frozen', tx, box.y + 84);
-    x.font = '600 44px "Source Serif 4 Variable", Georgia, serif'; x.fillStyle = C.ink; x.fillText(F.fmtM1(S.gainWith), tx, box.y + box.h - 40);
-    x.font = '400 34px "Source Sans 3 Variable", system-ui, sans-serif'; x.fillStyle = C.ink2; x.fillText('gain taxed at death', tx, box.y + box.h);
+    x.font = serif; x.fillStyle = C.ink; x.fillText(T(TP.total), tx0, box.y + 44);
+    x.font = sans; x.fillStyle = C.ink2; x.fillText('tax due at death', tx0, box.y + 82); x.fillText('without a freeze', tx0, box.y + 118);
+    x.font = serif; x.fillStyle = C.ink; x.fillText(T(TP.death), tx0, box.y + box.h - 76);
+    x.font = sans; x.fillStyle = C.ink2; x.fillText('tax due at death', tx0, box.y + box.h - 38); x.fillText('with the freeze', tx0, box.y + box.h - 2);
   }
   function cardLine() {
-    return 'of income tax pushed past death for a made-up retiree, ' + S.inp.freezeAge + ', with ' + F.fmtInput(S.inp.value) + ': deferred, not removed.';
+    return 'of income tax moved to the trust for a made-up retiree, ' + S.inp.freezeAge + ', with ' + F.fmtInput(S.inp.value) + (S.deemedFirst ? ': paid by the trust, not removed.' : ': deferred, not removed.');
   }
   deskSaveButton('#card', function () {
     return deskCard({
-      question: $('question').textContent, bigValue: F.fmtBig(S.deferred), bigMax: 170,
+      question: $('question').textContent, bigValue: T(TP.moved), bigMax: 170,
       line: cardLine(), labels: [],
       draw: miniBand, stamp: STAMP,
     }).then(function (blob) { return { blob: blob, name: 'estate-freeze-card.png', title: $('question').textContent }; });
@@ -641,7 +792,7 @@
   // ---- one render for every change ----
   var queued = false;
   function render(first, later) {
-    S = F.freeze(R, st);
+    S = F.freeze(R, st); T = F.taxScale(S); TP = F.taxParts(S);
     st.cost = S.inp.cost; st.deathAge = S.inp.deathAge;
     paintWords(first === true);
     paintLedger();

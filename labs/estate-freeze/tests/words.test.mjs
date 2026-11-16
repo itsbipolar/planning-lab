@@ -32,6 +32,19 @@ test('"deferred" and the stamp are on the page, in the sheet and on the card', (
   assert.ok(strings.some((s) => /deferred, not removed/.test(s)), 'the card and sheet say deferred, not removed');
 });
 
+test('clarity pass (2026-11-16): one term per concept; "taxed" never sits next to a dollar figure without "gain"', () => {
+  const RETIRED = /\bif not frozen\b|\bpayable at death\b|\bowed at death\b|Each redemption trims|held by the trust, taxed later/i;
+  const TAXED = /\btaxed\b[^.]{0,40}\$\d/i;
+  const bad = (text) => text.split(/(?<=[.;])\s+/).filter((c) => TAXED.test(c) && !/\bgain\b/i.test(c));
+  assert.doesNotMatch(visible, RETIRED);
+  assert.deepEqual(bad(visible), []);
+  for (const s of strings) { assert.doesNotMatch(s, RETIRED, s); assert.deepEqual(bad(s), [], s); }
+  for (const need of ['In all, at today’s rates', 'paid later, by the trust', 'Deferred, not removed']) assert.ok(strings.some((s) => s.includes(need)) || visible.includes(need), need);
+  // the checker can fail
+  assert.deepEqual(bad('Taxed at 87: $3.2M, not $12.1M'), ['Taxed at 87: $3.2M, not $12.1M']);
+  assert.deepEqual(bad('Gain taxed at death: $12.11M without a freeze.'), []);
+});
+
 test('the question is 12 words or fewer with no digit, and it is the H1', () => {
   const q = questionOf(toolFor('estate-freeze'));
   assert.ok(q.split(/\s+/).length <= 12);

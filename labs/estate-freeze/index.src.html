@@ -5,7 +5,7 @@
 <script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Estate freeze · Mohammed El Chayeb</title>
-<meta name="description" content="A made-up retiree freezes a portfolio in a company. See how much gain is taxed at death, and how much moves to a trust to be taxed later. Education, not advice.">
+<meta name="description" content="A made-up retiree freezes a portfolio in a company. See how much income tax is due at death, and how much the trust pays later. Education, not advice.">
 <style>/*@@CSS@@*/</style>
 </head>
 <body>
@@ -28,43 +28,63 @@
       </div>
 
       <div class="readout answer" id="answer" data-answer aria-live="polite">
-        <p class="readout-k" id="answer-k">Income tax pushed past death</p>
+        <p class="readout-k" id="answer-k">Income tax moved to the trust</p>
         <p class="readout-v big" id="answer-v" data-readout-v>{{pushed}}</p>
-        <p class="readout-t" id="answer-t" data-readout-t>Deferred, not removed: the trust’s shares are taxed when sold or deemed sold.</p>
-        <p class="readout-sub" id="answer-sub"></p>
+        <p class="readout-t" id="answer-t" data-readout-t>Deferred, not removed: the family trust pays it later, when it sells its shares.</p>
+        <div class="split" id="split">
+          <div class="split-row" id="split-no"><p class="split-t"><b class="split-l">Without a freeze</b> <span class="split-v" id="split-no-t"></span></p><div class="split-bar" aria-hidden="true"><span class="seg seg-no"></span></div></div>
+          <div class="split-row" id="split-with"><p class="split-t"><b class="split-l">With the freeze</b> <span class="split-v" id="split-with-t"></span></p><div class="split-bar" aria-hidden="true"><span class="seg seg-death"></span><span class="seg seg-early"></span><span class="seg seg-later"></span></div></div>
+          <p class="split-sum" id="split-sr"></p>
+        </div>
         <p class="readout-sub readout-extra" id="answer-extra" hidden></p>
         <details class="readout-how" id="how-fold"><summary>How this is worked out</summary><div id="how"></div></details>
       </div>
 
       <p class="assume" id="assume" data-assumptions><strong class="stamp">Hypothetical illustration · Education, not advice.</strong> <span id="assume-text"></span></p>
+
+      <section class="moves" aria-labelledby="moves-h">
+        <h2 class="sec-label" id="moves-h">What happens</h2>
+        <ol class="steps" id="steps"></ol>
+      </section>
     </section>
 
     <figure class="chart freeze-chart" id="freeze-chart" aria-labelledby="chart-title">
       <figcaption>
         <p class="chart-title" id="chart-title"></p>
-        <p class="chart-sub" id="chart-sub">Gain not yet taxed, by age, $ millions <span class="chart-tags"><span class="chip tag-example">Example data</span></span></p>
+        <p class="chart-sub" id="chart-sub">Income tax if death came at each age, $&nbsp;millions <span class="chart-tags"><span class="chip tag-example">Example data</span></span></p>
       </figcaption>
-      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Gain not yet taxed, by age</title><desc id="chart-desc"></desc></svg></div>
+      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Income tax if death came at each age</title><desc id="chart-desc"></desc></svg></div>
+      <p class="chart-after" id="chart-after"></p>
       <p class="chart-hint">Touch or hover the chart to read any age.</p>
     </figure>
 
-    <section class="change" aria-labelledby="change-h">
-      <h2 class="sec-label" id="change-h">Change the example</h2>
-      <div class="steppers" id="steppers"></div>
-      <p class="hint" id="cost-hint">Tax cost changes what is owed at death, not what moves to the trust.</p>
-      <p class="hint" id="death-hint" hidden></p>
-      <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
-    </section>
+    <div class="work">
+      <section class="change" aria-labelledby="change-h">
+        <h2 class="sec-label" id="change-h">Change the example</h2>
+        <div class="steppers" id="steppers"></div>
+        <p class="hint cue" id="cue" aria-live="polite"></p>
+        <p class="hint" id="death-hint" hidden></p>
+        <p class="echo" id="echo" hidden></p>
+        <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
+      </section>
+    </div>
 
     <details class="deeper" id="deeper" data-chapter="Go deeper">
       <summary>Go deeper</summary>
-      <section class="deeper-sub" aria-labelledby="moves-h">
-        <h3 id="moves-h">The moves, in plain words</h3>
-        <ol class="flow" id="flow"></ol>
+      <section class="deeper-sub books" aria-labelledby="ledger-title">
+        <h3 id="ledger-title">Income tax, and when it is paid</h3>
+        <div class="ledger-wrap">
+          <table class="ledger" id="ledger">
+            <caption class="desk-sr">Income tax without and with the freeze: what is due at death, what the trust pays, and the total at today’s rates</caption>
+            <thead><tr><th scope="col" id="ledger-h"></th><th scope="col">Without a freeze</th><th scope="col">With the freeze</th></tr></thead>
+            <tbody id="ledger-rows"></tbody>
+          </table>
+        </div>
       </section>
       <section class="deeper-sub" aria-labelledby="redeem-h">
-        <h3 id="redeem-h">Redemptions, year by year</h3>
-        <div class="chart-frame" id="bars-frame"><svg id="bars" data-chart role="img" aria-labelledby="bars-title"><title id="bars-title">Preferred shares bought back each year</title></svg></div>
+        <h3 id="redeem-h">Buy-backs, year by year</h3>
+        <p id="buy-open"></p>
+        <div class="chart-frame" id="bars-frame"><svg id="bars" data-chart role="img" aria-labelledby="bars-title"><title id="bars-title">Fixed shares bought back each year</title></svg></div>
         <p id="cash-line"></p>
         <p id="mechanism"></p>
       </section>
@@ -74,30 +94,20 @@
       </section>
       <section class="deeper-sub" aria-labelledby="years-h">
         <h3 id="years-h">The numbers behind the chart</h3>
-        <p class="nums-cap" id="years-cap">At the end of each year. On a phone, the table scrolls sideways.</p>
-        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="years-h years-cap">
+        <p class="nums-cap" id="years-cap">At the end of each year; income tax at today’s rates.</p>
+        <div class="table-wrap" id="years-wrap" tabindex="0" role="region" aria-labelledby="years-h years-cap">
           <table class="nums" id="years" aria-labelledby="years-h">
-            <thead><tr><th scope="col">Age</th><th scope="col">Portfolio</th><th scope="col">Redeemed that year</th><th scope="col">Preferred left</th><th scope="col">Trust’s shares</th><th scope="col">Gain taxed at death, no freeze</th><th scope="col">With the freeze</th></tr></thead>
+            <thead><tr id="years-head"></tr></thead>
             <tbody id="years-rows"></tbody>
           </table>
         </div>
       </section>
     </details>
 
-    <section class="books" aria-label="At death, and later">
-      <div class="ledger-wrap">
-        <table class="ledger" id="ledger">
-          <caption class="desk-sr">What is owed at death without and with the freeze, and what the trust holds to be taxed later</caption>
-          <thead><tr><th scope="col" id="ledger-h"></th><th scope="col">No freeze</th><th scope="col">With<span class="lg-wide"> the</span> freeze</th></tr></thead>
-          <tbody id="ledger-now"></tbody>
-          <tbody class="later" id="ledger-later"></tbody>
-        </table>
-      </div>
-      <div class="caveats callout">
-        <h2 class="caveats-h">This example assumes</h2>
-        <ul id="caveats"></ul>
-        <p class="caveats-close">How any of this applies to a real family is a question for a tax professional and a lawyer.</p>
-      </div>
+    <section class="caveats callout" aria-labelledby="caveats-h">
+      <h2 class="caveats-h" id="caveats-h">This example assumes</h2>
+      <div class="cv-groups" id="caveats"></div>
+      <p class="caveats-close">How any of this applies to a real family is a question for a tax professional and a lawyer.</p>
     </section>
 
     <p class="save-row">

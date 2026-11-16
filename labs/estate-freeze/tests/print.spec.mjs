@@ -30,15 +30,19 @@ test('Save as one page builds the sheet and calls print; in print only the sheet
   await expect(sheet.locator('.sh-top')).toContainText('Hypothetical illustration · Education, not advice');
   await expect(sheet.locator('.sh-top')).toContainText('Printed');
   await expect(sheet.locator('.sh-title')).toHaveText('How much tax does an estate freeze push past death?');
-  await expect(sheet.locator('.sh-inputs')).toContainText('A made-up retiree, 70: portfolio $7.5M, tax cost $2.5M');
-  await expect(sheet.locator('.sh-answer')).toContainText('$2.38M of income tax pushed past death: deferred, not removed.');
-  await expect(sheet.locator('.sh-ledger')).toContainText('Its income tax at today’s rate, deferred past death');
-  await expect(sheet.locator('svg text', { hasText: 'Death at 87 (example)' })).toBeVisible();
-  // all three end readings on paper, the no-freeze one included
-  for (const v of ['$12.1M', '$8.9M', '$3.2M']) await expect(sheet.locator('svg .rd-v', { hasText: v })).toHaveCount(1);
-  for (const v of ['$12.11M', '$3.20M', '$3.24M', '$0.86M', '$8.91M', '$2.38M', 'not payable (assumed)']) await expect(sheet.locator('.sh-ledger')).toContainText(v);
-  await expect(sheet.locator('.sh-ledger')).toContainText(/in the trust/i);
+  await expect(sheet.locator('.sh-inputs')).toContainText('A made-up retiree, 70: portfolio $7.5M, original cost $2.5M');
+  await expect(sheet.locator('.sh-answer')).toContainText('$2.38M of income tax moved to the trust: deferred, not removed.');
+  await expect(sheet.locator('.sh-sub')).toHaveText('Without a freeze, $3.24M is due at death. With it, $0.86M is due at death and $2.38M is paid later, by the trust.');
+  for (const t of ['1 Move:', '2 Freeze:', '3 Trust:', '4 Buy back:', 'fixed redemption value']) await expect(sheet.locator('.sh-steps')).toContainText(t);
+  await expect(sheet.locator('.sh-steps')).toContainText('section 85 election');
+  await expect(sheet.locator('svg text', { hasText: 'Death at 87' })).toBeVisible();
+  await expect(sheet.locator('.sh-inputs')).toContainText('death at 87 (example)');
+  // the chart in income tax: all three end readings on paper, the no-freeze one included
+  for (const v of ['$3.24M', '$2.38M', '$0.86M']) await expect(sheet.locator('svg .rd-v', { hasText: v })).toHaveCount(1);
+  await expect(sheet.locator('.sh-chart')).toContainText('21st anniversary, 4 years after death');
+  for (const v of ['Due at death', 'Paid later, by the trust', 'In all, at today’s rates', '$3.24M', '$0.86M', '$2.38M', '$0.22M', 'not payable (assumed)', 'Not income tax: probate']) await expect(sheet.locator('.sh-ledger')).toContainText(v);
   await expect(sheet.locator('.sh-caveats li')).toHaveCount(7);
+  await expect(sheet.locator('.sh-caveats')).toContainText('planning for the trust’s 21st year');
   await expect(sheet.locator('.sh-close')).toContainText('a tax professional and a lawyer');
   await expect(sheet.locator('.sh-foot')).toContainText('/tools/estate-freeze/');
   await expect(sheet.locator('.sh-foot')).toContainText(/Version [0-9a-f]{8}/);
@@ -60,13 +64,13 @@ for (const state of ['example', 'longest']) {
     await page.goto(url);
     if (state === 'longest') {
       await page.locator('#value').focus(); await page.keyboard.press('End');
-      await step(page, 'tax cost', -1, 200);
+      await step(page, 'original cost', -1, 200);
       await step(page, 'growth', 1, 8);
       await step(page, 'age at the freeze', -1, 15);
       await step(page, 'age at death', 1, 20);
       await page.locator('#deeper > summary').click();
       await step(page, 'investment income', 1, 50);
-      await expect(page.locator('#answer-t')).toContainText('anniversary');
+      await expect(page.locator('#answer-t')).toContainText('anniversar');
     }
     await page.click('#print');
     for (const format of ['Letter', 'A4']) {

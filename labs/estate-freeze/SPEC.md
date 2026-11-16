@@ -7,6 +7,125 @@ sections 3, 5 and 6). The page is **unlisted** until Mo's firm compliance approv
 illustration's layout, wording, colours or branding is used, and no firm is named anywhere (this includes code,
 tests, fixtures, commits and the making-of page).
 
+## Second clarity pass (2026-11-16, after fresh readers and a rules review; wins over everything below)
+
+- **The answer** is "Income tax moved to the trust": the trust's whole share (paid at its anniversaries in life plus
+  paid later), `taxParts(S).moved`. The old "pushed past death" figure fell to $0 when death reached the trust's 21st
+  anniversary; this one does not. The line under it says when the trust pays ("Deferred, not removed: the family trust
+  pays it later, when it sells its shares", or the anniversary split). The H1 question is unchanged.
+- **One rounding**: `taxParts(S, ref)` (model.mjs) rounds the parts once on `taxScale`'s grid, and "paid later" is the
+  remainder, so every shown sum adds up (answer, split, the visible sum line, chart readings, crosshair, both tables,
+  sheet, card). Tested over 840 input combinations.
+- **The split** shows its sum as a visible line and says that yearly tax on income and buy-backs is left out of both
+  sides; the without-freeze bar is filled in the due-at-death colour.
+- **What happens** has four steps with the example's figures: Move; Freeze (an IOU for what the retiree first paid,
+  "the original cost", and preferred shares with a fixed redemption value for the rest, together today's value); Trust
+  (a family trust for the retiree's family); Buy back (the value bought back stays in the portfolio and moves to the
+  trust's shares). Go deeper's "The moves, in detail" is gone (one telling).
+- **"Original cost"** replaces "amount paid (tax cost)" everywhere; the slider's clamp note says what it is.
+- **The chart** stacks, bottom to top: due at death, paid by the trust at its anniversaries (solid), paid later
+  (hatched, up to the no-freeze line), the same order as its readings. On screen the plot grows until all four
+  readings fit, so the no-freeze reading never drops. The tap read-out lists without-a-freeze first, and the gutter
+  readings fade under it.
+- **The ledger** moved into Go deeper (first sub-section); its fold is gone. "How this is worked out" is the one place
+  for the gains: it reconciles the trust's gain (growth since the freeze + fixed shares bought back, and why) and says
+  probate's saving comes from holding company shares, not from the freeze. The sheet labels probate "Not income tax".
+- **Anniversary words**: counted from death ("4 years after death"), never as the dead retiree's age; death in the
+  anniversary year reads "the year of death"; "Left out" adds that planning for the trust's 21st anniversary is not
+  shown (no rule is stated).
+
+## Clarity pass (2026-11-16; wins over every section below where they differ, sections 1, 2, 5, 6, 7 and 8 included)
+
+Mo found the page confusing to read and use. Three cold reads (a family owner at 390, a planner at 1440, a skimmer
+at 390) traced it to seven causes. Two kinds of dollars (tax and gain) sat under one verb, "Taxed". The sum was never
+stated. The moves were explained last. The chart drew an after-death block that the model doesn't calculate. The
+headline dropped when the anniversary came first. Some edge text was stale or broken. Some lines were repeated or
+too long. The fix: **the main path speaks only in income tax, states the sum, explains the three moves before the
+chart, and ends the chart at death.** Gains live in folds and are always called "gain". The engine's figures are
+unchanged.
+
+- **One term per concept.**
+  - Tax figures are "due at death", "paid later, by the trust" or "paid by the trust at {age}, before death". "Pushed
+    past death" stays only in the H1 and the answer label.
+  - "Amount paid (tax cost)" replaces "tax cost" alone. "An IOU (the note)" replaces "the note".
+  - "Preferred shares fixed at today's gain (a fixed redemption value)" and later "the fixed shares" replace "frozen"
+    and "preferred left".
+  - "Growth shares" replaces "common shares". "Buys back (redeems)" and "buy-backs" replace "redemption".
+  - "21st anniversary" replaces "deemed sold" on the main path. "Without a freeze" / "with the freeze" replace "no
+    freeze" and "if not frozen".
+  - "Taxed" never sits next to a dollar figure unless the sentence is about a gain (words.test and page.spec check it).
+- **One formatter for income tax:** `taxScale(S)` (model.mjs, FORMAT block) picks $X.XXM when the no-freeze tax is $1M
+  or more, else $XXXK. The answer, split, chart, crosshair, ledger, echo, sheet, card and poster all use it, so one
+  figure always reads as the same string.
+- **The answer:** the big figure, then "Deferred, not removed: the trust pays it later, when it sells its shares." Below
+  it, a two-row **split** replaces the old sub-line, with bars on one scale in the chart's colours:
+  - "Without a freeze {$3.24M}, all due at death"
+  - "With the freeze {$0.86M} due at death + {$2.38M} paid later, by the trust"
+
+  A hidden sentence states the sum for screen readers. When the anniversary comes first, the line says what the trust
+  pays then, and the split has three parts (d4, solid d3, hatched d3), so a lower big figure never reads as a better
+  result. With two or more anniversaries before death, the line reads "From {76}, at each 21-year anniversary...".
+- **What happens** (new, before the chart, no figures): three numbered steps, Move, Freeze and Buy back, set as text
+  over one rule. They name the section 85 election and the fixed redemption value. At 960 and wider they read across
+  under both columns.
+- **The chart, in income tax, ends at death** (`S.xMax = deathAge`):
+  - The d4 band is due at death with the freeze. The hatched d3 band is paid later. A solid d3 band, from the first
+    anniversary before death, is what the trust paid then. The ink line is due at death without a freeze. All three
+    bands add up to the line at every age (model.test checks the invariant).
+  - The title is state-driven and has no figures. The subtitle is "Income tax if death came at each age, $ millions".
+  - End readings sit in the right gutter. Each band's reading has a 2px bracket in its colour spanning the band at
+    death, so the bracket's height is the value.
+  - The anniversary marker reads "21st anniversary, {81}: trust pays {$3.19M} tax". Later anniversaries get a line
+    only.
+  - The annotation reads "Yearly buy-backs shrink this".
+  - One line under the chart says what happens after death, which is not drawn.
+  - The crosshair reads in tax, pinned to the top of the plot. On touch the reading stays after the finger lifts, until
+    a tap elsewhere. This is a capture listener in app.js, not a change to shared/desk.
+- **The ledger moved up** (between the chart and Change the example; side by side with it from 960):
+  - Rows: income tax due at death, paid by the trust at {age} (only when that comes first), paid later, and **"In all,
+    at today's rates"**. "In all" is a sum of income tax only. Probate stays out of it.
+  - A closed fold, "Probate, and the gains behind this tax", holds the probate figure (not payable with the freeze,
+    assumed), the gain taxed at death, the trust's gain (growth + buy-backs, and in deemedFirst the part taxed at the
+    anniversary) and the rate, Tax = gain × {26.76%}.
+  - Money columns don't wrap. The ledger fits 358px at death 100, $25M (tested).
+- **Change the example:** "Amount paid (tax cost)", then one cue line that names what the last-touched stepper changes.
+  - The death-age line is correct at every age: "Death at {93} is an example, {23} years after the freeze." The 16 to
+    18 years are rounded from the facts. At 390 the line is shown only inside How this is worked out (the 2,800px
+    budget).
+  - An echo line (when changed) repeats the figures next to the controls.
+  - The clamp note reads "Amount paid set to {$1M} here: it can't be more than the portfolio...".
+- **How this is worked out:** plain steps in tax, with "gain" said wherever a gain is meant. Every rate is wrapped in its
+  fact. The buy-back formula moved to Go deeper.
+- **Go deeper:**
+  - Sections: "The moves, in detail" (two columns at 1440); "Buy-backs, year by year" (an opening line on the yearly
+    payment to the retiree, bars in ink-3 because this is cash, not tax, and the mechanism with the deemed dividend
+    above paid-up capital, every rate in a fact span); More assumptions; "The numbers behind the chart".
+  - The table puts the tax columns first ("Tax due at death, without a freeze", "...with the freeze", "Tax paid by the
+    trust at its anniversaries" in deemedFirst only, "Tax paid later, by the trust"), then Portfolio and "Bought back
+    that year". On a phone its caption counts the columns off-screen.
+- **This example assumes:** the same seven caveats in three groups (The family and the set-up; At and after death;
+  Left out). They come after Go deeper, three columns wide from 960. The first names 70(6).
+- **Sources** add Income Tax Act 104(4) (a trust's deemed disposition every {21} years; the 21 is read from the facts).
+- **Save as one page:**
+  - The answer with the split as one sentence, then the three steps as one paragraph.
+  - The chart in tax, with "Death at {87}" (the inputs line says it is an example) and one caption that holds the units,
+    the rate year and the after-death line.
+  - The ledger as on the page, plus probate as a plain row, and the seven short caveats.
+  - It fits one page on Letter and A4 at the example and the longest state.
+- **Save my card:** the big figure in taxScale, and the small chart in tax with "tax due at death without a freeze" and
+  "...with the freeze".
+- **poster.json:** y in income tax ($ millions, 2 decimals); x from the freeze to death; the reading reads "Income tax
+  due at death, without and with a freeze: {$3.24M} → {$0.86M}"; the anniversary label appears only when it comes
+  before death.
+- **Layout:** at 960 and wider, the answer spans the play row's rows above the steps, so opening How this is worked out
+  grows only the right column (tested: the slider moves by no more than 4px). Go deeper's summary sits at about 2,770px
+  at 390 (budget 2,800).
+- **Not done here (outside this lab):**
+  - The site's dek and headlines keys (`freezeTaxBefore` / `freezeTaxAfter`) and the og:description.
+  - The shared crosshair touch fix in desk-ui.mjs, for every tool. This tool handles touch itself.
+- **Open question for Mo (does not block):** the "In all, at today's rates" row, against the earlier note of no
+  total-of-everything figure. It adds income tax only, to show "deferred, not removed" as arithmetic.
+
 ## Changes after the independent review (2026-11-15; these win over the sections below where they differ)
 
 - **The trust's anniversary before death (deemedFirst).** The gain the trust holds at each anniversary before death is

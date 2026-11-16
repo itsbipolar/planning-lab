@@ -165,7 +165,9 @@ export function freeze(R, raw) {
     deemedAge, deemedFirst, exhaustedAge, state,
     exhausted: exhaustedAge != null, noGainAtFreeze: pref0 === 0,
     leftoverTotal: R.corpInvest != null ? leftoverTotal : null,
-    xMax: Math.max(deathAge, deemedAge),
+    xMax: deathAge,                  // the chart ends at death (clarity pass, 2026-11-16)
+    // the trust's anniversaries up to death (each one taxes the trust's gain then, in life)
+    anniversaries: rows.filter((r) => r.t > 0 && r.t % R.trustYears === 0).map((r) => r.age),
   };
 }
 
@@ -200,6 +202,28 @@ export function fmtScale(dp, ...ns) {
     const least = M / 10 ** dp;
     return v < least / 2 ? 'under $' + grp(least / M, dp) + 'M' : '$' + grp(v / M, dp) + 'M';
   };
+}
+/** One formatter for every income-tax figure on the page, the sheet, the card and the poster, so one figure always
+ *  reads the same: $X.XXM when the largest tax (S.taxNo) is $1M or more, else $XXXK; zero is $0. */
+export function taxScale(S) {
+  const big = Math.max(0, S.taxNo) >= M - 5 * K;
+  return (n) => {
+    const v = Math.max(0, n);
+    if (Math.round(v / K) === 0) return '$0';
+    return big ? '$' + grp(v / M, 2) + 'M' : '$' + grp(Math.round(v / K)) + 'K';
+  };
+}
+/** The income-tax parts as the page shows them, rounded once on taxScale's grid so the shown parts add up to the shown
+ *  total: total (due at death without a freeze), death (due at death with it), early (paid by the trust at its
+ *  anniversaries in life), later (the remainder: paid later, by the trust) and moved (early + later, the tax moved to the
+ *  trust). S may be a plain { taxNo, taxWith, taxTrustEarly }; ref sets the grid ($10K steps when ref's tax is $1M or
+ *  more, else $1K), so a per-age row uses the page's own unit. Display rounding only. */
+export function taxParts(S, ref = S) {
+  const u = Math.max(0, ref.taxNo) >= M - 5 * K ? 10 * K : K;
+  const q = (n) => Math.round(Math.max(0, n || 0) / u);
+  const total = q(S.taxNo), death = Math.min(q(S.taxWith), total), early = Math.min(q(S.taxTrustEarly), total - death);
+  const later = total - death - early;
+  return { total: total * u, death: death * u, early: early * u, later: later * u, moved: (early + later) * u };
 }
 /** A yearly amount rounded to the thousand: $90,000, $124,000. */
 export const fmtAbout = (n) => '$' + grp(Math.round(n / K) * K);

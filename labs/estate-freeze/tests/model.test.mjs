@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   EXAMPLE, BOUNDS, freezeRules, defaultDeathAge, freeze, eatOn, RATE_SERIES, REQUIRED, EAT_IDS, CORP_IDS,
-  fmtBig, fmtM2, fmtM1, fmtInput, fmtDollars, fmtRate, fmtPct,
+  fmtBig, fmtM2, fmtM1, fmtInput, fmtDollars, fmtRate, fmtPct, taxScale, taxParts,
 } from '../model.mjs';
 
 const ALL = JSON.parse(readFileSync(new URL('../../../shared/facts.json', import.meta.url), 'utf8')).facts;
@@ -44,6 +44,9 @@ test('the example matches the illustration it is checked against, using only con
   for (const [k, want] of Object.entries(FX.display)) assert.equal(k === 'pushed' ? fmtBig(S[k]) : fmtM2(S[k]), want, k);
   assert.equal(S.state, 'normal');
   assert.equal(S.deemedFirst, false);
+  // the chart ends at death (clarity pass, 2026-11-16)
+  assert.equal(S.xMax, 87);
+  assert.deepEqual(S.anniversaries, []);
 });
 
 test('every rate is read from the facts: the rate year is the latest complete one, and changing a fact changes the answer', () => {
@@ -227,4 +230,57 @@ test('the trust\'s anniversary before death: its gain then is taxed in life; onl
   assert.equal(T.rows[k2].trustDrawn, 0);
   near(T.trustTaxedEarly, [T.rows[k2].trust, 1e-3], 'taxed in life up to the last anniversary');
   assert.equal(T.nextDeemedAge, T.inp.freezeAge + 3 * R.trustYears);
+});
+
+test('taxScale: one string per income-tax figure, chosen by the largest tax (the no-freeze tax at death)', () => {
+  const S = run(), T = taxScale(S);
+  assert.equal(T(S.deferred), '$2.38M');
+  assert.equal(T(S.taxWith), '$0.86M');
+  assert.equal(T(S.taxNo), '$3.24M');
+  assert.equal(T(0), '$0');
+  assert.equal(T(-5), '$0');
+  // the anniversary before death: the small deferred part keeps the same two-decimal millions
+  const D = run({ deathAge: 93 }), TD = taxScale(D);
+  assert.equal(D.state, 'deemedFirst');
+  assert.equal(TD(D.deferred), '$0.45M');
+  assert.deepEqual(D.anniversaries, [D.deemedAge]);
+  // below $1M of tax: thousands
+  const small = run({ value: BOUNDS.value.min, cost: 0 }), TS = taxScale(small);
+  assert.ok(small.taxNo < 1e6);
+  assert.match(TS(small.taxNo), /^\$\d{3}K$/);
+});
+
+test('invariant: due at death + paid by the trust at its anniversaries + paid later = the tax without a freeze', () => {
+  const cases = {
+    example: {}, deemedFirst: { freezeAge: 60 }, twoAnniversaries: { freezeAge: BOUNDS.freezeAge.min, deathAge: BOUNDS.deathAge.max },
+    noGrowth: { growth: 0 }, exhausted: { value: 1_000_000, cost: 0, income: 500_000 }, costIsValue: { cost: EXAMPLE.value },
+    oneYear: { deathAge: EXAMPLE.freezeAge + 1 }, death93: { deathAge: 93 }, nothing: { growth: 0, income: 0 },
+  };
+  for (const [name, over] of Object.entries(cases)) {
+    const S = run(over);
+    near(S.taxWith + S.taxTrustEarly + S.deferred, [S.taxNo, 1], name);
+    // and at every age the chart draws
+    for (const r of S.rows) near((r.gainWith + r.trustDrawn + (r.trust - r.trustDrawn)) * R.cgRate, [r.gainNo * R.cgRate, 1], `${name} at ${r.age}`);
+    assert.equal(S.xMax, S.inp.deathAge, `${name}: the chart ends at death`);
+  }
+  assert.deepEqual(run(cases.twoAnniversaries).anniversaries, [BOUNDS.freezeAge.min + R.trustYears, BOUNDS.freezeAge.min + 2 * R.trustYears]);
+});
+
+test('taxParts: the shown parts add up to the shown total on every grid point, and the moved part never falls at the anniversary', () => {
+  const num = (str) => (str === '$0' ? 0 : /M$/.test(str) ? Math.round(parseFloat(str.slice(1)) * 100) : parseInt(str.slice(1).replace(/,/g, ''), 10));
+  let n = 0;
+  for (const value of [1e6, 2.5e6, 6e6, 7.5e6, 12e6, 25e6]) for (const growth of [0, 0.02, 0.04, 0.06, 0.08]) for (const freezeAge of [55, 62, 70, 78]) for (const add of [1, 5, 13, 17, 21, 25, 30]) {
+    const S = freeze(R, ex({ value, growth, freezeAge, deathAge: freezeAge + add })), T = taxScale(S), P = taxParts(S);
+    const parts = [P.death, P.early, P.later].map(T).map(num), total = num(T(P.total));
+    assert.equal(parts[0] + parts[1] + parts[2], total, `${value} ${growth} ${freezeAge}+${add}`);
+    assert.equal(T(P.total), T(S.taxNo), 'the total is the no-freeze tax as shown');
+    assert.equal(T(P.death), T(S.taxWith), 'due at death is the with-freeze tax as shown');
+    assert.equal(P.moved, P.early + P.later);
+    assert.ok(Math.abs(P.moved - S.pushed) <= 2e4, 'moved is the tax off the death return');
+    n++;
+  }
+  assert.ok(n > 800);
+  // the moved part keeps rising with the age at death through the trust's anniversary (the old "pushed past death" fell)
+  const moved = [88, 89, 90, 91, 92, 93].map((d) => taxParts(run({ deathAge: d })).moved);
+  for (let i = 1; i < moved.length; i++) assert.ok(moved[i] >= moved[i - 1], moved.join(' '));
 });
