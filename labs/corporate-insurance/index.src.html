@@ -18,29 +18,21 @@
       <p class="lede" id="lede">{{lede}}</p>
 
       <div class="move" data-first-move>
-        <label class="label" for="acb" id="acb-label">The policy’s tax cost at death (its adjusted cost basis)</label>
+        <label class="label" for="acb" id="acb-label">The policy’s cost base at death</label>
         <div class="slide" id="slide">
           <output class="bubble" id="acb-out" for="acb" aria-hidden="true">{{acb}}</output>
           <input type="range" id="acb" name="acb" aria-labelledby="acb-label" aria-describedby="acb-help">
           <div class="slide-ticks" aria-hidden="true"><span id="tick-lo"></span><span id="tick-hi"></span></div>
         </div>
-        <p class="help" id="acb-help">Premiums raise it; the net cost of pure insurance lowers it.</p>
         <p class="clamp-note" id="clamp" role="status" aria-live="polite"></p>
       </div>
 
+      <div class="side" id="side">
       <div class="readout answer" id="answer" data-answer aria-live="polite">
         <p class="readout-k" id="answer-k">Paid tax-free as a capital dividend</p>
         <p class="readout-fig"><span class="readout-v big" id="answer-v" data-readout-v>{{capdiv}}</span> <span class="readout-of" id="answer-of">{{of}}</span></p>
         <p class="readout-t" id="answer-t" data-readout-t></p>
         <div class="split" id="split">
-          <div class="split-row" id="split-cda">
-            <p class="split-t"><b class="split-l">Through the capital dividend account:</b> <span class="split-v" id="split-cda-t"></span></p>
-            <div class="split-bar" aria-hidden="true"><span class="seg seg-cap"></span><span class="seg seg-after"></span><span class="seg seg-tax"></span></div>
-          </div>
-          <div class="split-row" id="split-cmp">
-            <p class="split-t"><b class="split-l">For comparison, the same payout as a taxable dividend:</b> <span class="split-v" id="split-cmp-t"></span></p>
-            <div class="split-bar thin" aria-hidden="true"><span class="seg seg-cafter"></span><span class="seg seg-ctax"></span></div>
-          </div>
           <div class="sum" id="sum" aria-hidden="true"></div>
           <p class="desk-sr" id="sum-sr"></p>
         </div>
@@ -48,6 +40,9 @@
       </div>
 
       <p class="assume" id="assume" data-assumptions><strong class="stamp">Hypothetical illustration · Education, not advice.</strong> <span id="assume-text"></span></p>
+      </div>
+
+      <p class="help" id="acb-help"><span id="acb-help-name">The cost base is the policy’s adjusted cost basis under the Income Tax Act. The payout less it is what can go out as a capital dividend.</span> <span id="acb-help-rule">Among other things, premiums raise it and the net cost of pure insurance lowers it.</span></p>
 
       <section class="moves" aria-labelledby="moves-h">
         <h2 class="sec-label" id="moves-h">What happens</h2>
@@ -58,7 +53,8 @@
     <figure class="chart ins-chart" id="ins-chart" aria-labelledby="chart-title">
       <figcaption>
         <p class="chart-title" id="chart-title"></p>
-        <p class="chart-sub" id="chart-sub">Dollars of one example payout, by who ends up with them <span class="chart-tags"><span class="chip tag-example">Example data</span><span class="chip tag-stamp">Hypothetical illustration</span></span></p>
+        <p class="chart-sub" id="chart-sub">Dollars of one example payout, by who ends up with them</p>
+        <p class="chart-tags"><span class="chip tag-example">Example data</span><span class="chip tag-stamp">Hypothetical illustration</span></p>
       </figcaption>
       <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Where the payout goes</title><desc id="chart-desc"></desc></svg></div>
       <div class="desk-sr"><table id="chart-table">
@@ -66,13 +62,12 @@
         <thead><tr><th scope="col">Bar</th><th scope="col">Part</th><th scope="col">Dollars</th></tr></thead>
         <tbody id="chart-table-rows"></tbody>
       </table></div>
-      <p class="chart-hint">Tap or hover a part of a bar to read it.</p>
     </figure>
 
     <section class="change" aria-labelledby="change-h">
       <h2 class="sec-label" id="change-h">Change the example</h2>
       <div class="steppers" id="steppers"></div>
-      <p class="hint cue" id="cue">The payout changes every bar; the tax cost moves the line between them.</p>
+      <p class="hint cue" id="cue">The payout changes the whole bar; the cost base moves the line between its parts.</p>
       <p class="echo" id="echo" hidden></p>
       <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
       <p class="hint" id="year-line"></p>
@@ -81,7 +76,7 @@
     <details class="deeper" id="deeper" data-chapter="Go deeper">
       <summary>Go deeper</summary>
       <section class="deeper-sub" id="acb-sec" aria-labelledby="acb-h">
-        <h3 id="acb-h">The tax cost, in the Act</h3>
+        <h3 id="acb-h">The cost base, in the Act</h3>
         <div id="acb-rule"></div>
       </section>
       <section class="deeper-sub" aria-labelledby="div-h">

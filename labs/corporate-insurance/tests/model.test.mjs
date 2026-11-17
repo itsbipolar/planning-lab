@@ -35,7 +35,7 @@ test('every sum is exact over the whole grid, and the money to the family never 
       const S = split(R, { payout, acb });
       assert.equal(S.capDiv + S.afterTax + S.tax, payout);
       assert.equal(S.compare.family + S.compare.tax, payout);
-      assert.ok(S.tax >= 0 && S.afterTax >= 0 && S.tax % 1000 === 0);
+      assert.ok(S.tax >= 0 && S.afterTax >= 0 && Number.isInteger(S.tax) && Math.abs(S.tax - S.taxable * R.rate) <= 0.5);
       if (last) { assert.ok(S.capDiv <= last.capDiv); assert.ok(S.family <= last.family, `${payout} ${acb}`); }
       last = S; n++;
     }
@@ -54,7 +54,7 @@ test('the states: no tax cost, all tax cost, clamped; the longest figure', () =>
 });
 
 test('display strings, full dollars, never K or M', () => {
-  assert.equal(money(800000), fx.display.capDiv); assert.equal(money(95000), fx.display.tax);
+  assert.equal(money(800000), fx.display.capDiv); assert.equal(money(95480), fx.display.tax);
   assert.equal(money(1e6), fx.display.payout); assert.equal(money(1e7), fx.display.max); assert.equal(money(0), fx.display.zero);
   assert.deepEqual(['15', '69.2307692308', '22.895', '13.16', '33'].map(factPct), ['15%', '69.23%', '22.895%', '13.16%', '33%']);
 });
@@ -95,4 +95,14 @@ test('the rate year moves to 2027 by itself once its facts are confirmed, with t
   assert.equal(R7.onDTC, on27);
   assert.ok(R7.rate > R.rate, 'a smaller Ontario credit gives a higher rate');
   for (const s of RATE_SERIES) assert.ok(R7.used.some((f) => f.id === `${s}.2027`), s);
+  assert.equal(R7.onDTCLater, null, 'no later lower credit once 2027 is the rate year');
+});
+
+test('a later year with a confirmed, lower Ontario credit is named (the page says the tax would be higher then)', () => {
+  const later = facts.filter((f) => f.series === 'ontario_dividend_tax_credit_non_eligible' && f.status === 'confirmed' && f.tax_year > R.rateYear && Number(f.value) / 100 < R.onDTC);
+  if (!later.length) { assert.equal(R.onDTCLater, null); return; }
+  assert.equal(R.onDTCLater.year, Math.min(...later.map((f) => f.tax_year)));
+  assert.ok(R.used.some((f) => f.id === R.onDTCLater.id));
+  const R2 = insuranceRules(facts.filter((f) => !later.includes(f)));
+  assert.equal(R2.onDTCLater, null); assert.equal(R2.rate, R.rate);
 });

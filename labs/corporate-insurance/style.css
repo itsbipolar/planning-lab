@@ -27,7 +27,7 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
 .slide-ticks span{position:absolute;top:0;white-space:nowrap}
 .slide-ticks span:first-child{left:0}
 .slide-ticks span:last-child{right:0}
-.help{margin:.35rem 0 0;font-size:var(--type-small-size);line-height:1.4;color:var(--t-ink)}
+.help{margin:.9rem 0 0;max-width:34rem;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink)}
 .clamp-note{margin:.25rem 0 0;font-size:var(--type-small-size);color:var(--t-ink)}
 .clamp-note:empty{margin:0}
 
@@ -35,29 +35,21 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
 .readout-fig{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .6rem;margin:.1rem 0 .35rem}
 .readout-fig .readout-v{margin:0}
 .readout-of{font-size:var(--type-small-size);line-height:1.35;color:var(--t-ink);font-variant-numeric:lining-nums;white-space:nowrap}
-/* the split: the payout through the account and, for comparison, as a taxable dividend, on one scale (equal lengths) */
-.split{margin:.85rem 0 0;display:grid;gap:.6rem}
-.split-row{display:grid;gap:.25rem}
-.split-row[hidden]{display:none}
-.split-t{margin:0;font-size:var(--type-small-size);line-height:1.4;color:var(--t-ink)}
-.split-l{font-weight:700;margin-right:.2rem}
-.split-v b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
-.split-bar{display:flex;height:14px;width:100%}
-.split-bar.thin{height:9px}
-.split-bar .seg{display:block;height:100%;flex:none;min-width:0;box-sizing:border-box}
-.split-bar .seg+.seg{border-left:2px solid var(--t-ground)}
-.split-bar .seg[hidden]+.seg,.split-bar .seg:first-child{border-left:0}
-.split-bar .seg[hidden]{display:none}
-.split-bar .seg-cap{background:var(--c-fam)}
-.split-bar .seg-after,.split-bar .seg-cafter{background:repeating-linear-gradient(45deg,var(--c-fam) 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1.5px var(--c-fam)}
-.split-bar .seg-tax,.split-bar .seg-ctax{background:var(--c-tax)}
-/* the sum: a four-row mini ledger on phones (money right-aligned, a rule above the total); one line from 600px */
-.sum{display:grid;grid-template-columns:auto auto minmax(0,1fr);column-gap:0;margin:.35rem 0 0;font-size:var(--type-small-size);line-height:1.4}
+/* the sum: a small ledger under the big figure (money right-aligned): the capital dividend, plus what is left after
+   dividend tax, equals the family's money (the total row, a size up, over a rule); the income tax is the rest */
+.split{margin:.6rem 0 0}
+.sum{display:grid;grid-template-columns:auto auto minmax(0,1fr);column-gap:0;margin:0;font-size:var(--type-small-size);line-height:1.4}
 .sum-row{display:contents}
 .sum-op{padding-right:.45rem;text-align:center;color:var(--t-ink2)}
 .sum-v{text-align:right;font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
 .sum-w{padding-left:.55rem;color:var(--t-ink)}
-.sum-row.total>*{border-top:1px solid var(--t-ink);padding-top:.15rem;margin-top:.15rem}
+.sum-row.plus>.sum-v,.sum-row.plus>.sum-w{border-bottom:1px solid var(--t-ink);padding-bottom:.2rem}
+.sum-row.total>*{padding-top:.25rem}
+.sum{align-items:baseline}
+.sum-row.total .sum-v{font-size:1.45rem;line-height:1.25}
+.sum-row.total .sum-w{font-weight:700}
+.sum-row.tax>*{padding-top:.3rem}
+.sum-row.tax .sum-v{color:var(--t-ink)}
 .readout-how ol{margin:.25rem 0 .5rem;padding-left:1.25rem}
 .readout-how li{margin:.3rem 0}
 .readout-how [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
@@ -73,15 +65,23 @@ abbr[title]{text-decoration:underline dotted;text-underline-offset:.15em}
 .steps li::before{content:counter(step);position:absolute;left:0;top:-.12em;font:600 1.5rem/1.2 var(--font-display);font-variant-numeric:lining-nums;color:var(--t-ink)}
 .steps b{font-weight:700}
 
+/* The answer and the assumptions line sit in one wrapper (.side): on phones it disappears (display: contents), so the
+   order is the control, the answer, the assumptions, then the help that names the cost base */
+.side{display:contents}
+.readout-t{text-wrap:pretty}
 /* 700-959: the control and the answer side by side (6/6) */
 @media (min-width:700px) and (max-width:959px){
   .play{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2rem;align-items:start}
-  .play>*{grid-column:1/-1;min-width:0}
-  .play>.move{grid-column:1}
-  .play>.readout.answer{grid-column:2;margin-top:1rem}
+  .play>*,.play>.side>*{grid-column:1/-1;min-width:0}
+  .play>.move{grid-column:1;grid-row:4}
+  .play>.side>.readout.answer{grid-column:2;grid-row:4/6;margin-top:1rem}
+  .play>.help{grid-column:1;grid-row:5}
+  .play>.side>.assume{grid-row:6}
+  .play>.moves{grid-row:7}
 }
-/* 960+: the question, the control and the assumptions on the left (7 of 12); the answer on the right, spanning those
-   rows; the three steps across under both */
+/* 960+: the question, the control and the help on the left (7 of 12); the answer and the assumptions on the right,
+   spanning those rows, so the two columns end together; the three steps across under both. The help's row is the
+   flexible one, so opening "How this is worked out" never moves the control. */
 @media (min-width:960px){
   .play{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem);grid-template-rows:auto auto auto auto 1fr auto;align-items:start}
   .play>*{grid-column:1/8;min-width:0}
@@ -89,8 +89,10 @@ abbr[title]{text-decoration:underline dotted;text-underline-offset:.15em}
   .play>h1{grid-row:2}
   .play>.lede{grid-row:3}
   .play>.move{grid-row:4;margin-top:.75rem}
-  .play>.assume{grid-row:5}
-  .play>.readout.answer{grid-column:8/13;grid-row:1/6;margin-top:2.4rem}
+  .play>.help{grid-row:5;margin-top:.5rem}
+  .play>.side{display:block;grid-column:8/13;grid-row:1/6;margin-top:2.4rem}
+  .play>.side>.readout.answer{margin-top:0}
+  .play>.side>.assume{margin-top:1.25rem}
   .play>.moves{grid-row:6;grid-column:1/-1;margin-top:1.75rem}
   .steps{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem)}
   figure.chart{margin-top:2rem}
@@ -99,8 +101,7 @@ abbr[title]{text-decoration:underline dotted;text-underline-offset:.15em}
 /* ---- The chart: drawn at the frame's own width (1 unit = 1px), every label 17.5px or more ---- */
 figure.chart{margin:2rem 0 0}
 #chart{touch-action:pan-y}
-.chart-hint{margin:.35rem 0 0;font-size:17.5px;line-height:1.35;color:var(--t-ink2)}
-.chart-tags{margin:0 0 0 .5rem;color:var(--t-ink2);font-size:17.5px;line-height:1.35}
+.chart-tags{margin:.15rem 0 0;padding:0;color:var(--t-ink2);font-size:17.5px;line-height:1.35}
 .chart-tags .chip{display:inline;margin:0 .75rem 0 0;padding:0;border:0;background:none;color:var(--t-ink2);white-space:nowrap}
 .chart-tags .tag-stamp{font-family:var(--font-ui);font-weight:600;letter-spacing:0;text-transform:none}
 .chart-frame{width:100%;padding:.25rem 0 0}
@@ -124,7 +125,10 @@ figure.chart{margin:2rem 0 0}
 .chart svg .bracket.p-cap{stroke:var(--c-fam)}
 .chart svg .bracket.p-after{stroke:var(--c-fam);stroke-dasharray:4 3}
 .chart svg .bracket.p-tax{stroke:var(--c-tax)}
-.chart svg .leader{fill:none;stroke:var(--t-ink);stroke-width:1}
+.chart svg .span-bracket{stroke:var(--t-ink);stroke-width:1.5;stroke-linecap:square}
+.chart svg .key-sw.p-cap{fill:var(--c-fam)}
+.chart svg .key-sw.p-after{fill:url(#ins-hatch)}
+.chart svg .key-sw.p-tax{fill:var(--c-tax)}
 .chart svg .seg-read rect{fill:var(--t-raised);stroke:var(--t-ink);stroke-width:1}
 .chart svg .seg-read text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
 .chart svg .seg-read .rv{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
@@ -197,7 +201,7 @@ table.nums tr.now th,table.nums tr.now td{font-weight:700;border-bottom:2px soli
   .bubble{font-size:1.6rem;line-height:1.1}
   .slide-ticks{height:1.4rem;margin-top:-.2rem}
   .slide input[type=range]{height:44px}
-  .help{margin-top:.15rem;line-height:1.35}
+  .help{margin-top:.6rem;line-height:1.4}
   .readout.answer{margin-top:.6rem;padding-top:.15rem}
   .assume{margin-top:.6rem;line-height:1.45}
   .moves{margin-top:1.1rem}

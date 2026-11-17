@@ -19,8 +19,9 @@ export const BOUNDS = {
 // @@END
 
 // @@FORMAT: display rounding only (the page, the chart, the hidden table and the poster use these and nothing else).
-/** Income tax is rounded once, to the nearest $1,000; every other part is found by subtraction, so every sum is exact. */
-export const ROUND = 1_000;
+/** Income tax is rounded once, to the dollar; every other part is found by subtraction, so every sum is exact and the
+ *  tax never departs from the stated rate by more than half a dollar. */
+export const ROUND = 1;
 const grp = (n, dp = 0) => n.toLocaleString('en-CA', { minimumFractionDigits: dp, maximumFractionDigits: dp });
 /** Every dollar figure: full dollars, never K or M ("$95,000", "$1,000,000", "$0"). */
 export const money = (n) => '$' + grp(Math.round(Math.max(0, n)) || 0);
@@ -81,6 +82,10 @@ export function insuranceRules(facts) {
   const grossUp = pct(gu), fedDTC = pct(fdtc);
   const acbF = find(F, OPTIONAL[0]);
   if (acbF) used.push(acbF);
+  // a later year whose Ontario credit is already confirmed and lower than the rate year's (the page says so: the tax on
+  // the taxable part would be higher then, other rates unchanged)
+  const laterF = F.filter((f) => f.series === 'ontario_dividend_tax_credit_non_eligible' && f.tax_year > rateYear && pct(f) < onDTC).sort((a, b) => a.tax_year - b.tax_year)[0] || null;
+  if (laterF) used.push(laterF);
 
   // the top rate on a non-eligible dividend, per $1 of dividend: the federal credit is a share of the gross-up (121(a));
   // the Ontario credit is a share of the federal gross-up (19.1) and comes off after the surtax (16(2))
@@ -90,6 +95,7 @@ export function insuranceRules(facts) {
     rateYear, grossUp, fedDTC, onDTC, fedTop, onTop, surtax, surtaxRows, fed, on, rate: fed + on,
     text: { cdaAdd: add, cdaLess: less, election: elect, surtaxBase: base, acbRule: acbF },
     acbRule: acbF ? acbF.value : null,
+    onDTCLater: laterF ? { year: laterF.tax_year, id: laterF.id } : null,
     ids: {
       grossUp: gu.id, fedDTC: fdtc.id, onDTC: `ontario_dividend_tax_credit_non_eligible.${rateYear}`,
       fedTop: `federal_brackets.${rateYear}`, onTop: `ontario_brackets.${rateYear}`, surtax: surtaxF.id, surtaxBase: base.id,
@@ -99,8 +105,8 @@ export function insuranceRules(facts) {
   };
 }
 
-/** Income tax on a taxable (non-eligible) dividend at the top rate, rounded once to the nearest $1,000, never more than
- *  the dividend. */
+/** Income tax on a taxable (non-eligible) dividend at the top rate, rounded once to the dollar, never more than the
+ *  dividend. */
 export function taxOn(R, amount) {
   return Math.min(amount, Math.round(amount * R.rate / ROUND) * ROUND);
 }

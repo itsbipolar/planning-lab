@@ -7,9 +7,10 @@
   var DATA = JSON.parse(document.getElementById('data').textContent);
   var F = INSURANCE, B = F.BOUNDS, E = F.EXAMPLE;
   var R = F.insuranceRules(DATA.facts);
-  // the comparison bar (the same payout as a taxable dividend). If the firm's compliance prefers, false removes the bar,
-  // the split's second row and the table's comparison columns (SPEC.md section 8.2).
-  var COMPARE = true;
+  // the comparison bar (the same payout as a taxable dividend): off under the safer route (Mo, 2026-11-17). Next to the
+  // account it read as what company-owned insurance gains, and the page can't state the rules a fair comparison needs
+  // (SPEC.md section 8.2). true would bring back the chart's second bar and the table's comparison columns.
+  var COMPARE = false;
   var STAMP = 'Hypothetical illustration · Education, not advice';
   var NS = 'http://www.w3.org/2000/svg';
   var SANS = '"Source Sans 3 Variable", system-ui, sans-serif', SERIF = '"Source Serif 4 Variable", Georgia, serif';
@@ -79,24 +80,24 @@
         y += LH; el('text', { x: 0, y: (y - LH * 0.28).toFixed(1), 'class': 'bar-t' }, gText, s);
       });
       y += 6;
-      // the one annotation, above bar 1, at the line between the tax-free part and the tax cost part (normal state only)
+      // the one annotation, above bar 1 (normal state only): a bracket over the whole cost base span (the hatched part
+      // and the income tax), labelled once above it
       var bx = X(S.capDiv);
       if (b === 0 && S.state === 'normal') {
-        var one = 'The policy’s tax cost: this part pays dividend tax';
+        var one = 'The ' + m(S.inp.acb) + ' cost base: a taxable dividend here';
         var mw = function (s) { return measure(s, fSans6); }, full = mw(one);
-        var lines = full + bx + 8 <= W - 4 ? [one] : wrapText(one, Math.min(W - 2, Math.max(W - bx - 8, W * 0.62)), mw);
-        // balanced: no line of one word
+        var lines = full <= W - 2 ? [one] : wrapText(one, W - 2, mw);
         if (lines.length > 1) { var bal = wrapText(one, Math.ceil(full / lines.length) + 24, mw); if (bal.length === lines.length) lines = bal; }
-        var w = Math.max.apply(null, lines.map(function (s) { return measure(s, fSans6); }));
-        var tx = bx + 8 + w <= W - 4 ? bx + 8 : Math.max(0, W - w - 4), t0 = y;
+        var w = Math.max.apply(null, lines.map(mw));
+        // right-aligned to the span's right end (the bar's end), so it sits over the span it names
+        var tx = Math.max(0, W - w - 1);
         var at = el('text', { x: tx.toFixed(1), y: (y + FS).toFixed(1), 'class': 'annot' }, gText);
         lines.forEach(function (s, i) { el('tspan', { x: tx.toFixed(1), dy: i ? LH : 0 }, at, s); });
-        y += lines.length * LH + 6;
-        // the leader: from beside the text (or under it, when the text covers the line) down to the bar
-        var covers = tx <= bx + 1;
-        var ly0 = covers ? y - 4 : t0 + FS * 0.4;
-        el('path', { d: 'M' + bx.toFixed(1) + ' ' + ly0.toFixed(1) + 'V' + (y + 4).toFixed(1), 'class': 'leader' }, svg);
-        if (!covers) el('path', { d: 'M' + bx.toFixed(1) + ' ' + ly0.toFixed(1) + 'H' + (tx - 3).toFixed(1), 'class': 'leader' }, svg);
+        y += lines.length * LH + 8;
+        // the bracket: ticks down at both ends of the span, the line across the top
+        var a0 = Math.min(bx + 1, W - 7), z0 = W - 1;
+        el('path', { d: 'M' + a0.toFixed(1) + ' ' + (y + 6).toFixed(1) + 'V' + y.toFixed(1) + 'H' + z0.toFixed(1) + 'V' + (y + 6).toFixed(1), 'class': 'span-bracket', fill: 'none' }, svg);
+        y += 6;
       }
       y += 4;
       var h = BARH[b], x0 = 0, top = y;
@@ -113,13 +114,32 @@
         x0 = x1;
       });
       y += h;
-      // the readings: each a 2px bracket spanning its part, then its figure and words; packed into rows under the bar
+      var shown = list.filter(function (p) { return p.v > 0; });
+      // phones: a stacked key under the bar, one row per part (swatch, figure, words), in bar order
+      if (narrow) {
+        y += 12;
+        shown.forEach(function (p) {
+          var sw = 18, rowH = Math.max(LH, VF + 6), cy = y + rowH / 2;
+          el('rect', { x: 0, y: (cy - sw / 2).toFixed(1), width: sw, height: sw, 'class': 'key-sw ' + p.cls, 'pointer-events': 'none' }, svg);
+          if (p.cls === 'p-after') el('rect', { x: 1, y: (cy - sw / 2 + 1).toFixed(1), width: sw - 2, height: sw - 2, 'class': 'seg-edge', 'pointer-events': 'none' }, svg);
+          var tx2 = sw + 10, avail = W - tx2 - 2, fig = m(p.v), wf = measure(fig, fVal), sep = ' · ';
+          var t = el('text', { x: tx2, y: (cy + VF * 0.34).toFixed(1), 'class': 'rd', 'data-key': p.key }, gText);
+          el('tspan', { 'class': 'rd-v ' + p.cls }, t, fig);
+          if (wf + measure(sep + p.words, fSans) <= avail) { el('tspan', { 'class': 'rd-w' }, t, sep + p.words); y += rowH + 4; }
+          else {
+            var ws = wrapText(p.words, avail, function (s) { return measure(s, fSans); });
+            ws.forEach(function (s2) { el('tspan', { 'class': 'rd-w', x: tx2, dy: LH }, t, s2); });
+            y += rowH + ws.length * LH + 4;
+          }
+        });
+        return;
+      }
+      // wider: each reading under its part, a 2px bracket spanning the part, then its figure and words, in rows
       var Pl = Placer(W), rows = [];
-      list.filter(function (p) { return p.v > 0; }).forEach(function (p) {
+      shown.forEach(function (p) {
         var fig = m(p.v), sep = ' · ', wf = measure(fig, fVal), ws = measure(sep, fSans), ww = measure(p.words, fSans);
         var one = wf + ws + ww, two = Math.max(wf, ww);
         var forms = one <= W - 2 ? [{ lines: 1, w: one }, { lines: 2, w: two }] : [{ lines: 2, w: two }];
-        if (narrow) forms = forms.slice(0, 1);
         for (var r = 0; r < 6; r++) {
           for (var k = 0; k < forms.length; k++) {
             var f = forms[k], tx = Math.max(0, Math.min(p.x0, W - f.w));
@@ -199,7 +219,7 @@
   });
   chart.addEventListener('blur', function () { kbIndex = null; hideRead(); });
 
-  // ---- the first move: the tax cost slider (from $0 to the payout) ----
+  // ---- the first move: the cost base slider (from $0 to the payout) ----
   var range = $('acb'), bubble = $('acb-out');
   range.min = B.acb.min; range.step = B.acb.step;
   function paintSlider() {
@@ -234,7 +254,7 @@
       var v = Math.max(c.min, Math.min(c.max, Math.round((st.payout + dir * c.step) / c.step) * c.step));
       if (v === st.payout) return;
       st.payout = v;
-      if (st.acb > v) { st.acb = v; clampNote = 'Tax cost lowered to ' + m(v) + ': it can’t be more than the payout here.'; } else clampNote = '';
+      if (st.acb > v) { st.acb = v; clampNote = 'Cost base lowered to ' + m(v) + ': it can’t be more than the payout here.'; } else clampNote = '';
       paintSlider(); render();
     }
     dn.addEventListener('click', function () { go(-1); }); up.addEventListener('click', function () { go(1); });
@@ -253,32 +273,25 @@
   var readout = deskReadout('#answer', { format: m });
   function lineFor(S) {
     return {
-      normal: 'The ' + m(S.inp.acb) + ' tax cost can’t go out that way: it’s a taxable dividend.',
-      noCost: 'No tax cost at death: all of the payout can go out this way.',
-      allCost: 'The tax cost equals the payout, so none of it goes out this way.',
+      normal: 'If paid out now, the ' + m(S.inp.acb) + ' cost base is a taxable dividend here.',
+      noCost: 'No cost base at death: here, all of the payout can go out this way.',
+      allCost: 'The cost base equals the payout, so none of it goes out this way.',
     }[S.state];
   }
   function figB(v) { return '<b>' + esc(v) + '</b>'; }
   function pc(v) { return S.inp.payout > 0 ? Math.max(0, Math.min(100, v / S.inp.payout * 100)).toFixed(3) + '%' : '0%'; }
   function paintSplit() {
-    $('split-cda-t').innerHTML = figB(m(S.family)) + ' to the family + ' + figB(m(S.tax)) + ' income tax';
-    $('split-cmp-t').innerHTML = figB(m(S.compare.family)) + ' to the family + ' + figB(m(S.compare.tax)) + ' income tax';
-    var q = function (c) { return document.querySelector('#split .' + c); };
-    q('seg-cap').style.width = pc(S.capDiv); q('seg-after').style.width = pc(S.afterTax); q('seg-tax').style.width = pc(S.tax);
-    q('seg-cafter').style.width = pc(S.compare.family); q('seg-ctax').style.width = pc(S.compare.tax);
-    [['seg-cap', S.capDiv], ['seg-after', S.afterTax], ['seg-tax', S.tax]].forEach(function (s) { q(s[0]).hidden = !(s[1] > 0); });
-    $('split-cmp').hidden = !COMPARE;
-    // the sum, as a small ledger: every part in full dollars, adding to the payout exactly
-    var rows = [[m(S.capDiv), 'tax-free (capital dividend)', ''], [m(S.afterTax), 'to the family after dividend tax', '+'], [m(S.tax), 'income tax', '+']];
-    $('sum').innerHTML = rows.map(function (r) { return '<span class="sum-row"><span class="sum-op">' + r[2] + '</span><b class="sum-v">' + esc(r[0]) + '</b><span class="sum-w">' + esc(r[1]) + '</span></span>'; }).join('')
-      + '<span class="sum-row total"><span class="sum-op">=</span><b class="sum-v">' + esc(m(S.inp.payout)) + '</b><span class="sum-w">the payout</span></span>';
-    $('sum-sr').textContent = m(S.capDiv) + ' tax-free as a capital dividend, plus ' + m(S.afterTax) + ' to the family after dividend tax, plus ' + m(S.tax) + ' income tax, make the ' + m(S.inp.payout) + ' payout.';
+    // the sum, as a small ledger: the capital dividend plus what is left after dividend tax is the family's money (the
+    // total row); the income tax takes the rest. Every part in full dollars; the family and the tax add to the payout.
+    var rows = [[m(S.capDiv), 'as a capital dividend', '', ''], [m(S.afterTax), 'after dividend tax', '+', ' plus'], [m(S.family), 'to the family in all', '=', ' total'], [m(S.tax), 'income tax', '', ' tax']];
+    $('sum').innerHTML = rows.map(function (r) { return '<span class="sum-row' + r[3] + '"><span class="sum-op">' + r[2] + '</span><b class="sum-v">' + esc(r[0]) + '</b><span class="sum-w">' + esc(r[1]) + '</span></span>'; }).join('');
+    $('sum-sr').textContent = m(S.capDiv) + ' tax-free as a capital dividend, plus ' + m(S.afterTax) + ' after dividend tax, makes ' + m(S.family) + ' to the family in all; ' + m(S.tax) + ' of the ' + m(S.inp.payout) + ' payout is income tax.';
   }
   function stepsHtml() {
     return [
       '<b>The payout.</b> When the owner dies, the company receives the policy’s death benefit.',
-      '<b>The account.</b> The payout, less the policy’s tax cost just before the death, goes into a tax account the company keeps (the capital dividend account).',
-      '<b>The election.</b> The company elects, on the prescribed form and on time, to pay that much as a capital dividend. It is not counted in the family’s income. The tax cost part comes out as an ordinary taxable dividend.',
+      '<b>The account.</b> The payout, less the policy’s cost base just before the death, is added to a running tax tally the company keeps (the capital dividend account). No money moves.',
+      '<b>The election.</b> The company elects, on the prescribed form and on time, to pay that much as a capital dividend. It is not counted in the family’s income. Here, the cost base part is paid out now as an ordinary taxable dividend.',
     ];
   }
   var rid = [R.ids.fedTop, R.ids.onTop, R.ids.surtax, R.ids.grossUp, R.ids.fedDTC, R.ids.onDTC].join(' ');
@@ -291,17 +304,17 @@
     $('clamp').textContent = clampNote;
     $('chart-title').textContent = S.state === 'noCost' ? 'All of it through the account' : S.state === 'allCost' ? 'None of it through the account' : 'Where the payout goes';
     $('chart-svg-title').textContent = $('chart-title').textContent;
-    $('chart-desc').textContent = 'Two bars of one example payout of ' + m(i.payout) + '. Through the capital dividend account: ' + m(S.capDiv) + ' tax-free as a capital dividend, '
+    $('chart-desc').textContent = (COMPARE ? 'Two bars' : 'One bar') + ' of one example payout of ' + m(i.payout) + '. Through the capital dividend account: ' + m(S.capDiv) + ' tax-free as a capital dividend, '
       + m(S.afterTax) + ' to the family after dividend tax and ' + m(S.tax) + ' income tax.'
       + (COMPARE ? ' For comparison, the same payout as a taxable dividend: ' + m(S.compare.family) + ' to the family and ' + m(S.compare.tax) + ' income tax.' : '');
     $('chart-table-rows').innerHTML = parts(S).map(function (p) { return '<tr><td>' + esc(p.bar ? 'For comparison: as a taxable dividend' : BAR_TITLES[0]) + '</td><td>' + esc(p.words) + '</td><td>' + esc(m(p.v)) + '</td></tr>'; }).join('');
     // How this is worked out: plain steps, every rate wrapped in its fact
     var how = [
-      'Into the capital dividend account (<abbr title="capital dividend account">CDA</abbr>): payout ' + esc(m(i.payout)) + ' − the policy’s tax cost ' + esc(m(i.acb)) + ' = ' + esc(m(S.cda)) + '.',
+      'Into the capital dividend account (<abbr title="capital dividend account">CDA</abbr>): payout ' + esc(m(i.payout)) + ' − the policy’s cost base ' + esc(m(i.acb)) + ' = ' + esc(m(S.cda)) + '.',
       'Elected as a capital dividend: ' + esc(m(S.capDiv)) + ', not counted in the family’s income.',
       i.acb > 0
-        ? 'The tax cost part, ' + esc(m(i.acb)) + ', as a taxable dividend: income tax ' + esc(m(i.acb)) + ' × ' + fact(rid, F.pct2(R.rate)) + ' = ' + esc(m(S.tax)) + ' (rounded to the nearest ' + esc(m(F.ROUND)) + '), leaving ' + esc(m(S.afterTax)) + '.'
-        : 'With no tax cost, nothing is paid as a taxable dividend, so there is no income tax.',
+        ? 'The cost base part, ' + esc(m(i.acb)) + ', paid out now as a taxable dividend: income tax ' + esc(m(i.acb)) + ' × ' + fact(rid, F.pct2(R.rate)) + ' = ' + esc(m(S.tax)) + ' (to the dollar), leaving ' + esc(m(S.afterTax)) + '.'
+        : 'With no cost base, nothing is paid as a taxable dividend, so there is no income tax.',
       'The family receives ' + esc(m(S.capDiv)) + ' + ' + esc(m(S.afterTax)) + ' = ' + esc(m(S.family)) + ' of the ' + esc(m(i.payout)) + '.',
     ];
     $('how').innerHTML = '<ol>' + how.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><p>The rate is the ' + R.rateYear + ' top federal and Ontario rate on a non-eligible dividend, worked out in Go deeper.</p>';
@@ -310,16 +323,19 @@
     var changed = i.payout !== E.payout || i.acb !== E.acb;
     $('reset').hidden = !changed;
     var echo = $('echo');
-    echo.textContent = changed ? 'Now: a ' + m(i.payout) + ' payout, a ' + m(i.acb) + ' tax cost.' : '';
+    echo.textContent = changed ? 'Now: a ' + m(i.payout) + ' payout, a ' + m(i.acb) + ' cost base.' : '';
     echo.hidden = !changed;
   }
 
   // ---- static words: the assumptions, the year, Go deeper's rules, the caveats, the sources ----
   $('assume-text').textContent = 'A made-up Ontario owner; the family taxed at the ' + R.rateYear + ' top rate; every figure an example.';
-  $('year-line').textContent = 'Rates for ' + R.rateYear + ': the latest year with every figure published.';
-  if (!R.acbRule) { $('acb-help').remove(); $('acb').removeAttribute('aria-describedby'); $('acb-sec').remove(); }
+  // the year, and (when a later year's Ontario credit is already confirmed and lower) what that does to the taxable part
+  $('year-line').innerHTML = esc('Rates for ' + R.rateYear + ': the latest year with every figure published.')
+    + (R.onDTCLater ? ' ' + fact(R.onDTCLater.id, 'The Ontario dividend credit is already set lower from ' + R.onDTCLater.year) + esc(', so with other rates unchanged the tax on the taxable part would be higher then.') : '');
+  // without the 148(9) fact, the help keeps only its name line and Go deeper drops "The cost base, in the Act"
+  if (!R.acbRule) { $('acb-help-rule').remove(); $('acb-sec').remove(); }
   else {
-    $('acb-rule').innerHTML = '<p>The Act (section 148(9)) builds the tax cost from a formula. Amounts that raise it include the cost of acquiring an interest in the policy and the premiums paid. Amounts that lower it include proceeds of disposition and the net cost of pure insurance, which the insurer works out under the regulations.</p>'
+    $('acb-rule').innerHTML = '<p>Section 148(9) of the Act builds the cost base from a formula. In the words of the facts this page reads:</p>'
       + '<p class="rule-text">' + fact(R.ids.acbRule, R.acbRule) + '</p>'
       + '<p>Which way it moves over a policy’s life depends on the policy; this tool does not estimate it.</p>';
   }
@@ -334,13 +350,13 @@
     ];
     $('div-lines').innerHTML = '<p>Per $' + L.dividend + ' of non-eligible dividend, at the ' + R.rateYear + ' top rates; each line is rounded to the cent.</p><ol class="fold-list">' + rows.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol>';
   })();
-  $('elect').innerHTML = '<p>The company elects for the full amount of the dividend, in the prescribed manner and form and on time. The dividend is a capital dividend only up to the account’s balance just before it becomes payable, and no part of it is counted in any shareholder’s income (section 83(2)).</p>'
+  $('elect').innerHTML = '<p>Section 83(2) of the Act, in the words of the facts this page reads:</p>'
     + '<p class="rule-text">' + fact(R.ids.election, R.text.election.value) + '</p>'
-    + '<p>Rules on an election larger than the account, and the anti-avoidance rules around it, are left out here.</p>';
+    + '<p>An election larger than the account has consequences of its own; those, and the anti-avoidance rules around the election, are left out here.</p>';
   $('caveats').innerHTML = [
-    ['The set-up', ['A made-up owner of an Ontario private company.', 'The company owns the policy and is its beneficiary.', 'The account holds only this payout.', 'The owner’s family are the company’s shareholders after the death.']],
-    ['Paying it out', ['The election is made on time, for the full dividend.', 'The tax cost part is paid now, as a non-eligible dividend.', 'The family is taxed at the ' + R.rateYear + ' top Ontario rate.']],
-    ['Left out', ['Premiums, and how they are paid.', 'Which kind of policy (for example, permanent life insurance).', 'Any tax the company may pay on the payout.', 'How the tax cost changes over the years.', 'Holding the policy personally.',
+    ['The set-up', ['A made-up owner of an Ontario private company.', 'The company owns the policy and is its beneficiary.', 'The account holds only this payout, with nothing else added or taken off.', 'The owner’s family are the company’s shareholders after the death.']],
+    ['Paying it out', ['The election is made on time, for the full dividend.', 'The cost base part is paid out now, as a non-eligible dividend.', 'The family is taxed at the ' + R.rateYear + ' top Ontario rate.']],
+    ['Left out', ['Premiums, and how they are paid.', 'Which kind of policy.', 'Policies tied to borrowing arrangements, and some older policies.', 'The estate as the first shareholder after the death.', 'Any tax the company may pay on the payout.', 'How the cost base changes over the years.', 'Holding the policy personally.',
       'Tax on the owner’s shares at death, and the payout’s effect on their value.', 'Probate; creditors’ claims on company assets.', 'The dividend refund and other company tax accounts.', 'Keeping the money in the company.', 'Family members outside Ontario or Canada.', 'Lower brackets.']],
   ].map(function (g) { return '<div class="cv-group"><h3 class="cv-h">' + g[0] + '</h3><ul>' + g[1].map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div>'; }).join('');
   (function sources() {
@@ -356,7 +372,7 @@
   var deeper = $('deeper');
   function drawTable() {
     if (!deeper.open) return;
-    var cols = ['Tax cost', 'Capital dividend, tax-free', 'To the family after dividend tax', 'Income tax', 'Family in all'];
+    var cols = ['Cost base', 'Capital dividend, tax-free', 'To the family after dividend tax', 'Income tax', 'Family in all'];
     if (COMPARE) cols.push('As a taxable dividend: to the family', 'As a taxable dividend: income tax');
     $('nums-head').innerHTML = cols.map(function (c) { return '<th scope="col">' + c + '</th>'; }).join('');
     $('nums-rows').innerHTML = F.tableRows(R, S.inp.payout, S.inp.acb).map(function (r) {
@@ -366,7 +382,7 @@
     }).join('');
     var wrap = $('nums-wrap'), wr = wrap.getBoundingClientRect(), hidden = 0;
     [].forEach.call(document.querySelectorAll('#nums-head th'), function (th) { if (th.getBoundingClientRect().right - wr.left + wrap.scrollLeft > wrap.clientWidth + 1) hidden++; });
-    $('nums-cap').textContent = 'The tax cost at 0, a quarter, half, three quarters and all of the ' + m(S.inp.payout) + ' payout, and now.' + (hidden ? ' Swipe the table for ' + hidden + ' more column' + (hidden === 1 ? '' : 's') + ' →' : '');
+    $('nums-cap').textContent = 'The cost base at 0, a quarter, half, three quarters and all of the ' + m(S.inp.payout) + ' payout, and now.' + (hidden ? ' Swipe the table for ' + hidden + ' more column' + (hidden === 1 ? '' : 's') + ' →' : '');
   }
   deeper.addEventListener('toggle', drawTable);
 

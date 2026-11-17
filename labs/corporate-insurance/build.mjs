@@ -46,20 +46,23 @@ const html = deskPage(src, LAB).replace('/*@@CSS@@*/', () => css).replace('/*@@D
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);
 
-// the poster (dist/poster.json), kind "split": the two bars as shares of the payout (through the account: capital
-// dividend, to the family after dividend tax, income tax; for comparison: to the family, income tax) and the one reading.
-// Every figure uses the page's formatter (money), so the poster and the page agree.
+// the poster (dist/poster.json), kind "split": the bar as shares of the payout (through the account: capital dividend,
+// to the family after dividend tax, income tax) and the one reading. The comparison bar goes on the poster only when
+// app.js turns it on (COMPARE; off under the safer route). Every figure uses the page's formatter (money), so the poster
+// and the page agree.
+const COMPARE = /var COMPARE = true;/.test(read(join(here, 'app.js')));
 {
   const f = (v) => rnd(v / S.inp.payout, 4);
+  const cmp = { label: 'For comparison: as a taxable dividend', parts: [f(S.compare.family), f(S.compare.tax)], keys: ['after-tax', 'income-tax'] };
   const p = writePoster(join(here, 'dist'), LAB, {
     kind: 'split',
     example: 'A made-up owner · Hypothetical illustration',
     bars: [
       { label: 'Through the capital dividend account', parts: [f(S.capDiv), f(S.afterTax), f(S.tax)], keys: ['capital-dividend', 'after-tax', 'income-tax'] },
-      { label: 'For comparison: as a taxable dividend', parts: [f(S.compare.family), f(S.compare.tax)], keys: ['after-tax', 'income-tax'] },
+      ...(COMPARE ? [cmp] : []),
     ],
     readings: [{ label: 'paid tax-free as a capital dividend', value: money(S.capDiv), text: `of a ${money(S.inp.payout)} example payout` }],
-    labels: [{ text: 'For comparison: as a taxable dividend' }],
+    labels: COMPARE ? [{ text: cmp.label }] : [],
     source: `Income Tax Act 83(2) and 89(1); CRA and Ontario rates (${R.rateYear})`,
     asOf,
   });
