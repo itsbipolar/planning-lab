@@ -2,7 +2,7 @@
 //  - Statistics Canada, Table 18-10-0004-01 Consumer Price Index, monthly, Canada, all-items (vector v41690973)
 //  - Bank of Canada Valet, V39079 policy rate, V80691335 5-year posted mortgage, FXUSDCAD, CPI_TRIM, CPI_MEDIAN (P4, from the year before)
 //  - Bank of Canada Valet, V80691311 Prime rate (weekly, from 1975; the older monthly prime and 5-year mortgage series stop in 2019)
-// Run: node scripts/fetch-data.mjs   Then commit the changed files: the date inside each file is the "retrieved" date.
+// Run: npm run fetch-data (also refreshes the long-bond snapshot via scripts/fetch-bond-yield.mjs)   Then commit the changed files: the date inside each file is the "retrieved" date.
 import { writeFileSync, mkdirSync } from 'node:fs';
 const today = new Date().toISOString().slice(0, 10);
 mkdirSync('shared/data', { recursive: true });
