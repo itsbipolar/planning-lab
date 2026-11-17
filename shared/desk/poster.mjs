@@ -4,7 +4,7 @@
 //
 // {
 //   "v": 1, "slug": "<site slug>", "lab": "<lab slug>", "question": "<the tool's question>",
-//   "kind": "lanes" | "lines" | "line" | "dates" | "heat",     how the hero chart is drawn (see each build)
+//   "kind": "lanes" | "lines" | "line" | "dates" | "heat" | "band" | "split",   how the hero chart is drawn (see each build)
 //   "example": "<a label saying what the example is>",           always shown on the poster (an illustration)
 //   "x": { "label", "min", "max", "ticks"? }, "y": { "label", "min", "max" }?,
 //   ...the series for that kind,

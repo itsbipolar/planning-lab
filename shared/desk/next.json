@@ -5,7 +5,8 @@
     { "slug": "when-to-start-cpp", "labSlug": "two-number-letter", "question": "When does waiting for CPP pay off?", "next": "order-of-returns" },
     { "slug": "order-of-returns", "labSlug": "order-of-returns", "question": "Same ten years. Why does one retiree run out?", "next": "money-then-now" },
     { "slug": "money-then-now", "labSlug": "money-then-now", "question": "What did $100 buy the year you were born?", "next": "estate-freeze" },
-    { "slug": "estate-freeze", "labSlug": "estate-freeze", "question": "How much tax does an estate freeze push past death?", "next": "tax-dates", "listed": true },
+    { "slug": "estate-freeze", "labSlug": "estate-freeze", "question": "How much tax does an estate freeze push past death?", "next": "company-life-insurance", "listed": true },
+    { "slug": "company-life-insurance", "labSlug": "corporate-insurance", "question": "Where does a company’s life insurance payout go?", "next": "tax-dates", "listed": false },
     { "slug": "tax-dates", "labSlug": "planning-calendar", "question": "What’s your next tax date?", "next": "retirement-wave" },
     { "slug": "retirement-wave", "labSlug": "retirement-wave", "question": "How many Canadians are about to turn {{oas_start_age}}?", "next": "your-year" }
   ],

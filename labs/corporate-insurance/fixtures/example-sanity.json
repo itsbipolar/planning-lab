@@ -1,0 +1,17 @@
+{
+  "_note": "A hand calculation of the example (a made-up owner's company; example assumptions, not facts), checked against the confirmed facts in shared/facts.json by tests/model.test.mjs. The top 2026 rate on a non-eligible dividend, per $1 of dividend: federal (1 + 0.15) x 0.33 - 0.15 x 9/13 = 0.3795 - 0.1038462 = 0.2756538; Ontario (1 + 0.15) x 0.1316 x (1 + 0.20 + 0.36) - 0.15 x 0.22895 = 0.2360904 - 0.0343425 = 0.2017479 (the Ontario credit comes off after the surtax, Taxation Act 2007 16(2)); together 0.4774017. Income tax is rounded once to the nearest $1,000.",
+  "inputs": { "payout": 1000000, "acb": 200000 },
+  "expect": {
+    "rateYear": 2026,
+    "ratePercent": [47.74, 0.005],
+    "fed": [0.27565, 0.00001],
+    "on": [0.20175, 0.00001],
+    "capDiv": 800000,
+    "tax": 95000,
+    "afterTax": 105000,
+    "family": 905000,
+    "compareTax": 477000,
+    "compareFamily": 523000
+  },
+  "display": { "capDiv": "$800,000", "tax": "$95,000", "payout": "$1,000,000", "max": "$10,000,000", "zero": "$0", "rate": "47.74%" }
+}

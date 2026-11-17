@@ -37,7 +37,35 @@ test('flipping the one flag makes it the next of Money, then and now and of the 
   const r = resolvedNext(d);
   assert.equal(r.tools.find((t) => t.slug === 'money-then-now').to, 'estate-freeze');
   assert.equal(r.films['double-tax-at-death'].to, 'estate-freeze');
-  assert.ok(r.tools.every((t) => t.listed === true));
+  assert.ok(r.tools.every((t) => t.listed === true || t.slug === 'company-life-insurance'));
+});
+
+// Company life insurance (labs/corporate-insurance) goes live unlisted (SPEC.md there, section 10): estate-freeze's door
+// follows it to its own next, Tax dates, until the one flag is flipped.
+const cli = (listed) => ({ ...NEXT, tools: NEXT.tools.map((t) => (t.slug === 'company-life-insurance' ? { ...t, listed } : t)) });
+
+test('company-life-insurance is unlisted: estate-freeze still opens Tax dates, and its dist links there', () => {
+  const t = NEXT.tools.find((x) => x.slug === 'company-life-insurance');
+  assert.equal(t.labSlug, 'corporate-insurance');
+  assert.equal(isListed(t), false);
+  assert.equal(NEXT.tools.find((x) => x.slug === 'estate-freeze').next, 'company-life-insurance');
+  assert.equal(effectiveNext('company-life-insurance').slug, 'tax-dates');
+  const r = resolvedNext();
+  assert.equal(r.tools.find((x) => x.slug === 'estate-freeze').to, 'tax-dates');
+  assert.equal(r.tools.find((x) => x.slug === 'company-life-insurance').to, 'tax-dates', 'its own Up next');
+  assert.ok(Object.values(r.films).every((f) => f.to !== 'company-life-insurance'), 'no film points to it');
+  const ef = readFileSync(`${root}labs/estate-freeze/dist/index.html`, 'utf8');
+  assert.match(ef, /<a class="desk-next" data-next href="\/tools\/tax-dates\/">/);
+  assert.match(readFileSync(`${root}labs/corporate-insurance/dist/index.html`, 'utf8'), /<meta name="robots" content="noindex">/);
+});
+
+test('flipping its flag makes it estate-freeze\'s next, and its own next stays Tax dates', () => {
+  const d = cli(true);
+  assert.equal(effectiveNext(d.tools.find((x) => x.slug === 'estate-freeze').next, d).slug, 'company-life-insurance');
+  const r = resolvedNext(d);
+  assert.equal(r.tools.find((x) => x.slug === 'estate-freeze').to, 'company-life-insurance');
+  assert.equal(r.tools.find((x) => x.slug === 'company-life-insurance').to, 'tax-dates');
+  assert.equal(resolvedNext(cli(false)).tools.find((x) => x.slug === 'estate-freeze').to, 'tax-dates');
 });
 
 test('the resolver guards against a loop and an unknown slug', () => {

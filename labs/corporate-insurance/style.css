@@ -1,0 +1,211 @@
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--t-ground)}
+body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased}
+/* The container, type roles, labels, buttons, readouts and the chart frame come from shared/desk/desk-ui.mjs. */
+:focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
+:root[data-theme="light"] :focus-visible{outline-color:var(--t-point-deep)}
+/* colour by data type, the same everywhere (split bars, chart, brackets): money that reaches the family d1 (solid: the
+   tax-free capital dividend; hatched: after dividend tax); income tax d4 */
+:root{--c-fam:var(--t-d1);--c-tax:var(--t-d4)}
+
+/* ---- The play row: the question, the one control, the big answer ---- */
+.play{padding-top:1.1rem}
+.play .kicker{margin:0}
+.play h1{margin:.3rem 0 0}
+.play .lede{margin:.6rem 0 0}
+.move{margin:1rem 0 0;max-width:34rem}
+.move>.label{display:block}
+.slide{position:relative;padding-top:2.6rem}
+.bubble{position:absolute;top:0;left:0;transform:translateX(-50%);padding:0 .1rem;font:600 1.75rem/1.25 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink);white-space:nowrap;pointer-events:none}
+.slide input[type=range]{display:block;width:100%;height:48px;margin:0;background:transparent;accent-color:var(--t-ink);cursor:pointer;-webkit-appearance:none;appearance:none}
+.slide input[type=range]::-webkit-slider-runnable-track{height:6px;background:linear-gradient(to right,var(--t-ink) var(--fill,30%),var(--t-rule) var(--fill,30%));border-radius:3px}
+.slide input[type=range]::-moz-range-track{height:6px;background:var(--t-rule);border-radius:3px}
+.slide input[type=range]::-moz-range-progress{height:6px;background:var(--t-ink);border-radius:3px}
+.slide input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink)}
+.slide input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink)}
+.slide-ticks{position:relative;height:1.6rem;font-size:17.5px;color:var(--t-ink2);font-variant-numeric:lining-nums}
+.slide-ticks span{position:absolute;top:0;white-space:nowrap}
+.slide-ticks span:first-child{left:0}
+.slide-ticks span:last-child{right:0}
+.help{margin:.35rem 0 0;font-size:var(--type-small-size);line-height:1.4;color:var(--t-ink)}
+.clamp-note{margin:.25rem 0 0;font-size:var(--type-small-size);color:var(--t-ink)}
+.clamp-note:empty{margin:0}
+
+.readout.answer{margin:1.1rem 0 0}
+.readout-fig{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .6rem;margin:.1rem 0 .35rem}
+.readout-fig .readout-v{margin:0}
+.readout-of{font-size:var(--type-small-size);line-height:1.35;color:var(--t-ink);font-variant-numeric:lining-nums;white-space:nowrap}
+/* the split: the payout through the account and, for comparison, as a taxable dividend, on one scale (equal lengths) */
+.split{margin:.85rem 0 0;display:grid;gap:.6rem}
+.split-row{display:grid;gap:.25rem}
+.split-row[hidden]{display:none}
+.split-t{margin:0;font-size:var(--type-small-size);line-height:1.4;color:var(--t-ink)}
+.split-l{font-weight:700;margin-right:.2rem}
+.split-v b{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
+.split-bar{display:flex;height:14px;width:100%}
+.split-bar.thin{height:9px}
+.split-bar .seg{display:block;height:100%;flex:none;min-width:0;box-sizing:border-box}
+.split-bar .seg+.seg{border-left:2px solid var(--t-ground)}
+.split-bar .seg[hidden]+.seg,.split-bar .seg:first-child{border-left:0}
+.split-bar .seg[hidden]{display:none}
+.split-bar .seg-cap{background:var(--c-fam)}
+.split-bar .seg-after,.split-bar .seg-cafter{background:repeating-linear-gradient(45deg,var(--c-fam) 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1.5px var(--c-fam)}
+.split-bar .seg-tax,.split-bar .seg-ctax{background:var(--c-tax)}
+/* the sum: a four-row mini ledger on phones (money right-aligned, a rule above the total); one line from 600px */
+.sum{display:grid;grid-template-columns:auto auto minmax(0,1fr);column-gap:0;margin:.35rem 0 0;font-size:var(--type-small-size);line-height:1.4}
+.sum-row{display:contents}
+.sum-op{padding-right:.45rem;text-align:center;color:var(--t-ink2)}
+.sum-v{text-align:right;font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
+.sum-w{padding-left:.55rem;color:var(--t-ink)}
+.sum-row.total>*{border-top:1px solid var(--t-ink);padding-top:.15rem;margin-top:.15rem}
+.readout-how ol{margin:.25rem 0 .5rem;padding-left:1.25rem}
+.readout-how li{margin:.3rem 0}
+.readout-how [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+abbr[title]{text-decoration:underline dotted;text-underline-offset:.15em}
+.assume{margin:.9rem 0 0}
+.assume .stamp{color:var(--t-ink);font-weight:700}
+
+/* What happens: three numbered steps as text over one rule (no boxes) */
+.moves{margin:1.5rem 0 0}
+.moves .sec-label{margin-bottom:.4rem}
+.steps{list-style:none;counter-reset:step;margin:0;padding:0;display:grid;gap:.55rem}
+.steps li{counter-increment:step;position:relative;padding-left:1.7rem;font-size:var(--type-small-size);line-height:1.45;max-width:62ch}
+.steps li::before{content:counter(step);position:absolute;left:0;top:-.12em;font:600 1.5rem/1.2 var(--font-display);font-variant-numeric:lining-nums;color:var(--t-ink)}
+.steps b{font-weight:700}
+
+/* 700-959: the control and the answer side by side (6/6) */
+@media (min-width:700px) and (max-width:959px){
+  .play{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2rem;align-items:start}
+  .play>*{grid-column:1/-1;min-width:0}
+  .play>.move{grid-column:1}
+  .play>.readout.answer{grid-column:2;margin-top:1rem}
+}
+/* 960+: the question, the control and the assumptions on the left (7 of 12); the answer on the right, spanning those
+   rows; the three steps across under both */
+@media (min-width:960px){
+  .play{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem);grid-template-rows:auto auto auto auto 1fr auto;align-items:start}
+  .play>*{grid-column:1/8;min-width:0}
+  .play>.kicker{grid-row:1}
+  .play>h1{grid-row:2}
+  .play>.lede{grid-row:3}
+  .play>.move{grid-row:4;margin-top:.75rem}
+  .play>.assume{grid-row:5}
+  .play>.readout.answer{grid-column:8/13;grid-row:1/6;margin-top:2.4rem}
+  .play>.moves{grid-row:6;grid-column:1/-1;margin-top:1.75rem}
+  .steps{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem)}
+  figure.chart{margin-top:2rem}
+}
+
+/* ---- The chart: drawn at the frame's own width (1 unit = 1px), every label 17.5px or more ---- */
+figure.chart{margin:2rem 0 0}
+#chart{touch-action:pan-y}
+.chart-hint{margin:.35rem 0 0;font-size:17.5px;line-height:1.35;color:var(--t-ink2)}
+.chart-tags{margin:0 0 0 .5rem;color:var(--t-ink2);font-size:17.5px;line-height:1.35}
+.chart-tags .chip{display:inline;margin:0 .75rem 0 0;padding:0;border:0;background:none;color:var(--t-ink2);white-space:nowrap}
+.chart-tags .tag-stamp{font-family:var(--font-ui);font-weight:600;letter-spacing:0;text-transform:none}
+.chart-frame{width:100%;padding:.25rem 0 0}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+#chart:focus-visible{outline-offset:6px}
+.chart svg text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
+.chart svg .bar-t{font-weight:700}
+.chart svg .annot{font-weight:600}
+.chart svg .rd-v{font-family:var(--font-display);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums lining-nums}
+.chart svg .rd-v.p-cap,.chart svg .rd-v.p-after{fill:var(--c-fam)}
+.chart svg .rd-v.p-tax{fill:var(--c-tax)}
+.chart svg .seg{cursor:pointer}
+.chart svg .seg.p-cap{fill:var(--c-fam)}
+.chart svg .seg.p-after{fill:url(#ins-hatch)}
+.chart svg .seg-edge{fill:none;stroke:var(--c-fam);stroke-width:2}
+.chart svg .seg.p-tax{fill:var(--c-tax)}
+.chart svg .seg.on{stroke:var(--t-ink);stroke-width:3}
+.chart svg .hatch-bg{fill:color-mix(in srgb,var(--c-fam) 14%,var(--t-ground))}
+.chart svg .hatch-line{stroke:var(--c-fam);stroke-width:2}
+.chart svg .bracket{stroke-width:2;stroke-linecap:square}
+.chart svg .bracket.p-cap{stroke:var(--c-fam)}
+.chart svg .bracket.p-after{stroke:var(--c-fam);stroke-dasharray:4 3}
+.chart svg .bracket.p-tax{stroke:var(--c-tax)}
+.chart svg .leader{fill:none;stroke:var(--t-ink);stroke-width:1}
+.chart svg .seg-read rect{fill:var(--t-raised);stroke:var(--t-ink);stroke-width:1}
+.chart svg .seg-read text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
+.chart svg .seg-read .rv{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+#chart:has(.seg-read:not([style*="none"])) .labels{opacity:.25}
+
+/* ---- Change the example: the payout stepper, the cue, the echo, the year ---- */
+.change{margin:2rem 0 0}
+.steppers{display:grid;grid-template-columns:minmax(0,17rem);gap:1.1rem 1.25rem;margin:.75rem 0 0}
+.stepper{display:flex;flex-direction:column;gap:.35rem;min-width:0}
+.stepper-l{font-weight:650;font-size:17.5px;line-height:1.3;color:var(--t-ink)}
+.stepper-row{display:flex;align-items:center;gap:.4rem}
+.stepper button{flex:none;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;border:1.5px solid var(--t-ink);border-radius:0;background:transparent;color:var(--t-ink);font:600 1.6rem/1 var(--font-ui);cursor:pointer}
+.stepper button:hover:not(:disabled){background:var(--t-raised)}
+.stepper button:disabled{border-color:var(--t-rule);color:var(--t-ink3);cursor:not-allowed}
+.stepper output{flex:1 1 auto;min-width:0;text-align:center;font:600 1.3rem/1.2 var(--font-display);font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
+.hint{margin:.75rem 0 0;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink2);max-width:60ch}
+.cue{color:var(--t-ink)}
+.echo{margin:.75rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-ink);font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink);max-width:60ch}
+.echo[hidden]{display:none}
+.reset-row{margin:.5rem 0 0}
+.text-btn{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:none;color:var(--t-ink);font:600 17.5px/1.3 var(--font-ui);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 35%,transparent);text-underline-offset:.2em;cursor:pointer}
+.text-btn:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
+.text-btn[hidden]{display:none}
+.reset-row:has(>[hidden]){display:none}
+
+/* ---- Go deeper ---- */
+.deeper h3{margin:0 0 .5rem;font-family:var(--type-card-font);font-weight:var(--type-card-weight);font-size:var(--type-card-size);line-height:var(--type-card-line)}
+.deeper p,.deeper li{font-size:var(--type-small-size);line-height:1.5;max-width:68ch}
+.deeper [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+.deeper .rule-text{padding-left:.75rem;border-left:2px solid var(--t-rule);color:var(--t-ink2)}
+.deeper .rule-text [data-fact]{font-family:var(--font-ui);font-weight:400;color:var(--t-ink2)}
+#div-total{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+.fold-list{margin:.25rem 0 .5rem;padding-left:1.25rem}
+.fold-list li{margin:.35rem 0}
+.table-wrap{overflow-x:auto;margin:.75rem 0 0;border-top:2px solid var(--t-ink)}
+.table-wrap:focus-visible{outline-offset:2px}
+table.nums{border-collapse:collapse;width:100%;font-size:17.5px;line-height:1.3}
+.nums-cap{margin:.25rem 0 0;color:var(--t-ink2)}
+table.nums th:first-child,table.nums td:first-child{position:sticky;left:0;background:var(--t-ground);z-index:1}
+table.nums tbody th{font-weight:400;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
+table.nums th,table.nums td{padding:.4rem .6rem;text-align:right;border-bottom:1px solid var(--t-rule);white-space:nowrap}
+table.nums th:first-child,table.nums td:first-child{text-align:left;padding-left:0}
+table.nums thead th{font-weight:700;vertical-align:bottom;white-space:normal;min-width:7.5rem}
+table.nums thead th:first-child{min-width:0}
+table.nums td{font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
+table.nums tr.now th,table.nums tr.now td{font-weight:700;border-bottom:2px solid var(--t-ink)}
+.now-tag{font-family:var(--font-ui);font-weight:700;font-size:17.5px;color:var(--t-ink)}
+
+/* ---- The caveats in three groups ---- */
+.caveats{margin:2.25rem 0 0}
+.caveats-h{margin:0;font:700 1.15rem/1.35 var(--font-ui)}
+.cv-groups{display:grid;gap:.75rem;margin:.5rem 0 0}
+@media (min-width:960px){.cv-groups{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:2rem}}
+.cv-h{margin:0;font:700 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
+.caveats ul{margin:.25rem 0 0;padding-left:1.1rem}
+.caveats li{margin:.3rem 0;font-size:var(--type-small-size);line-height:1.4}
+.caveats-close{margin:.75rem 0 0;font-size:var(--type-small-size);line-height:1.45;font-weight:600}
+
+.prose p,.prose li{font-size:var(--type-small-size);line-height:1.5}
+.prose ul{padding-left:1.1rem}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem 2rem;margin:3rem 0 0;padding:1.25rem 0 2.5rem;border-top:3px double var(--t-ink);font-size:var(--type-small-size)}
+.foot p{margin:.25rem 0}
+.desk-next{margin-top:3rem}
+
+/* phones: the same blocks, closer together (the big figure by 700px, the Go deeper summary within the first 2,800px) */
+@media (max-width:559px){
+  .play{padding-top:.8rem}
+  .move{margin-top:.6rem}
+  .slide{padding-top:1.95rem}
+  .bubble{font-size:1.6rem;line-height:1.1}
+  .slide-ticks{height:1.4rem;margin-top:-.2rem}
+  .slide input[type=range]{height:44px}
+  .help{margin-top:.15rem;line-height:1.35}
+  .readout.answer{margin-top:.6rem;padding-top:.15rem}
+  .assume{margin-top:.6rem;line-height:1.45}
+  .moves{margin-top:1.1rem}
+  .steps{gap:.4rem}
+  figure.chart{margin-top:1.25rem}
+  .change{margin-top:1.25rem}
+  .caveats{padding-left:.75rem;margin-top:1.75rem}
+  .caveats li{margin:.2rem 0;line-height:1.35}
+  .hint{margin-top:.5rem;line-height:1.35}
+  body>.page details.deeper{margin-top:1.75rem}
+}

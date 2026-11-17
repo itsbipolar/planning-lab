@@ -1,0 +1,2 @@
+// The words the page never uses (the safer route, Mo, 2026-11-17), shared by words.test.mjs and page.spec.mjs.
+export const BANNED = /\bshould\b|recommend|\bbest\b|consider|right for you|\bbuy|purchas|\bquote|illustration of a policy|premium[^.]{0,20}\$|\$[^.]{0,20}premium|coverage|protect|agent|licen[cs]ed|LLQP|advis[eo]r|planner|savings?|\bsaved?\b|guarantee|\byour (company|policy|family|payout|business)\b|call us|book|contact/i;

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Company life insurance · Mohammed El Chayeb</title>
+<meta name="description" content="A made-up owner’s company receives a life insurance payout. See how much can go to the family as a tax-free capital dividend, and the part that can’t. Education, not advice.">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<!--@@TOOLBAR@@-->
+<div class="page">
+  <main>
+    <section class="play" data-chapter="The payout">
+      <p class="kicker">Tool</p>
+      <h1 id="question">{{question}}</h1>
+      <p class="lede" id="lede">{{lede}}</p>
+
+      <div class="move" data-first-move>
+        <label class="label" for="acb" id="acb-label">The policy’s tax cost at death (its adjusted cost basis)</label>
+        <div class="slide" id="slide">
+          <output class="bubble" id="acb-out" for="acb" aria-hidden="true">{{acb}}</output>
+          <input type="range" id="acb" name="acb" aria-labelledby="acb-label" aria-describedby="acb-help">
+          <div class="slide-ticks" aria-hidden="true"><span id="tick-lo"></span><span id="tick-hi"></span></div>
+        </div>
+        <p class="help" id="acb-help">Premiums raise it; the net cost of pure insurance lowers it.</p>
+        <p class="clamp-note" id="clamp" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="readout answer" id="answer" data-answer aria-live="polite">
+        <p class="readout-k" id="answer-k">Paid tax-free as a capital dividend</p>
+        <p class="readout-fig"><span class="readout-v big" id="answer-v" data-readout-v>{{capdiv}}</span> <span class="readout-of" id="answer-of">{{of}}</span></p>
+        <p class="readout-t" id="answer-t" data-readout-t></p>
+        <div class="split" id="split">
+          <div class="split-row" id="split-cda">
+            <p class="split-t"><b class="split-l">Through the capital dividend account:</b> <span class="split-v" id="split-cda-t"></span></p>
+            <div class="split-bar" aria-hidden="true"><span class="seg seg-cap"></span><span class="seg seg-after"></span><span class="seg seg-tax"></span></div>
+          </div>
+          <div class="split-row" id="split-cmp">
+            <p class="split-t"><b class="split-l">For comparison, the same payout as a taxable dividend:</b> <span class="split-v" id="split-cmp-t"></span></p>
+            <div class="split-bar thin" aria-hidden="true"><span class="seg seg-cafter"></span><span class="seg seg-ctax"></span></div>
+          </div>
+          <div class="sum" id="sum" aria-hidden="true"></div>
+          <p class="desk-sr" id="sum-sr"></p>
+        </div>
+        <details class="readout-how" id="how-fold"><summary>How this is worked out</summary><div id="how"></div></details>
+      </div>
+
+      <p class="assume" id="assume" data-assumptions><strong class="stamp">Hypothetical illustration · Education, not advice.</strong> <span id="assume-text"></span></p>
+
+      <section class="moves" aria-labelledby="moves-h">
+        <h2 class="sec-label" id="moves-h">What happens</h2>
+        <ol class="steps" id="steps"></ol>
+      </section>
+    </section>
+
+    <figure class="chart ins-chart" id="ins-chart" aria-labelledby="chart-title">
+      <figcaption>
+        <p class="chart-title" id="chart-title"></p>
+        <p class="chart-sub" id="chart-sub">Dollars of one example payout, by who ends up with them <span class="chart-tags"><span class="chip tag-example">Example data</span><span class="chip tag-stamp">Hypothetical illustration</span></span></p>
+      </figcaption>
+      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Where the payout goes</title><desc id="chart-desc"></desc></svg></div>
+      <div class="desk-sr"><table id="chart-table">
+        <caption>The figures in the chart</caption>
+        <thead><tr><th scope="col">Bar</th><th scope="col">Part</th><th scope="col">Dollars</th></tr></thead>
+        <tbody id="chart-table-rows"></tbody>
+      </table></div>
+      <p class="chart-hint">Tap or hover a part of a bar to read it.</p>
+    </figure>
+
+    <section class="change" aria-labelledby="change-h">
+      <h2 class="sec-label" id="change-h">Change the example</h2>
+      <div class="steppers" id="steppers"></div>
+      <p class="hint cue" id="cue">The payout changes every bar; the tax cost moves the line between them.</p>
+      <p class="echo" id="echo" hidden></p>
+      <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
+      <p class="hint" id="year-line"></p>
+    </section>
+
+    <details class="deeper" id="deeper" data-chapter="Go deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub" id="acb-sec" aria-labelledby="acb-h">
+        <h3 id="acb-h">The tax cost, in the Act</h3>
+        <div id="acb-rule"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="div-h">
+        <h3 id="div-h">The dividend tax on the taxable part</h3>
+        <div id="div-lines"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="elect-h">
+        <h3 id="elect-h">The election</h3>
+        <div id="elect"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="nums-h">
+        <h3 id="nums-h">The numbers behind the chart</h3>
+        <p class="nums-cap" id="nums-cap"></p>
+        <div class="table-wrap" id="nums-wrap" tabindex="0" role="region" aria-labelledby="nums-h nums-cap">
+          <table class="nums" id="nums">
+            <thead><tr id="nums-head"></tr></thead>
+            <tbody id="nums-rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </details>
+
+    <section class="caveats callout" aria-labelledby="caveats-h">
+      <h2 class="caveats-h" id="caveats-h">This example assumes</h2>
+      <div class="cv-groups" id="caveats"></div>
+      <p class="caveats-close">How any of this applies to a real company is a question for a tax professional and a lawyer.</p>
+    </section>
+
+    <details class="fold sources-fold" data-chapter="Sources" data-preview="The statute sections and tax rates used, each linked to its official page">
+      <summary>Sources and how it’s made</summary>
+      <div id="sources" class="prose"></div>
+    </details>
+
+    <!--@@NEXT@@-->
+
+    <footer class="foot">
+      <div>
+        <!--@@NOTES@@-->
+        <p class="note" id="foot-version"></p>
+      </div>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/tools/">All tools</a></p>
+    </footer>
+  </main>
+</div>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>
