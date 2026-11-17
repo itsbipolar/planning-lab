@@ -193,213 +193,149 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
 /* The container, type roles, labels, buttons, readouts and the chart frame come from shared/desk/desk-ui.mjs. */
 :focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
 :root[data-theme="light"] :focus-visible{outline-color:var(--t-point-deep)}
-/* colour by data type, the same everywhere (split bars, chart, brackets): money that reaches the family d1 (solid: the
-   tax-free capital dividend; hatched: after dividend tax); income tax d4 */
+/* colour by data type: money that reaches the family d1 (solid: the tax-free capital dividend; hatched: a taxable
+   dividend, after tax); income tax d4; the cost base (a span, not money that goes anywhere) and the handle in ink */
 :root{--c-fam:var(--t-d1);--c-tax:var(--t-d4)}
 
-/* ---- The play row: the question, the one control, the big answer ---- */
+/* ---- The play row: the question, the big answer, the one picture (which is the control), the assumptions ---- */
 .play{padding-top:1.1rem}
 .play .kicker{margin:0}
 .play h1{margin:.3rem 0 0}
 .play .lede{margin:.6rem 0 0}
-.move{margin:1rem 0 0;max-width:34rem}
-.move>.label{display:block}
-.slide{position:relative;padding-top:2.6rem}
-.bubble{position:absolute;top:0;left:0;transform:translateX(-50%);padding:0 .1rem;font:600 1.75rem/1.25 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink);white-space:nowrap;pointer-events:none}
-.slide input[type=range]{display:block;width:100%;height:48px;margin:0;background:transparent;accent-color:var(--t-ink);cursor:pointer;-webkit-appearance:none;appearance:none}
-.slide input[type=range]::-webkit-slider-runnable-track{height:6px;background:linear-gradient(to right,var(--t-ink) var(--fill,30%),var(--t-rule) var(--fill,30%));border-radius:3px}
-.slide input[type=range]::-moz-range-track{height:6px;background:var(--t-rule);border-radius:3px}
-.slide input[type=range]::-moz-range-progress{height:6px;background:var(--t-ink);border-radius:3px}
-.slide input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink)}
-.slide input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink)}
-.slide-ticks{position:relative;height:1.6rem;font-size:17.5px;color:var(--t-ink2);font-variant-numeric:lining-nums}
-.slide-ticks span{position:absolute;top:0;white-space:nowrap}
-.slide-ticks span:first-child{left:0}
-.slide-ticks span:last-child{right:0}
-.help{margin:.9rem 0 0;max-width:34rem;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink)}
-.clamp-note{margin:.25rem 0 0;font-size:var(--type-small-size);color:var(--t-ink)}
-.clamp-note:empty{margin:0}
-
 .readout.answer{margin:1.1rem 0 0}
-.readout-fig{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .6rem;margin:.1rem 0 .35rem}
-.readout-fig .readout-v{margin:0}
-.readout-of{font-size:var(--type-small-size);line-height:1.35;color:var(--t-ink);font-variant-numeric:lining-nums;white-space:nowrap}
-/* the sum: a small ledger under the big figure (money right-aligned): the capital dividend, plus what is left after
-   dividend tax, equals the family's money (the total row, a size up, over a rule); the income tax is the rest */
-.split{margin:.6rem 0 0}
-.sum{display:grid;grid-template-columns:auto auto minmax(0,1fr);column-gap:0;margin:0;font-size:var(--type-small-size);line-height:1.4}
-.sum-row{display:contents}
-.sum-op{padding-right:.45rem;text-align:center;color:var(--t-ink2)}
-.sum-v{text-align:right;font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
-.sum-w{padding-left:.55rem;color:var(--t-ink)}
-.sum-row.plus>.sum-v,.sum-row.plus>.sum-w{border-bottom:1px solid var(--t-ink);padding-bottom:.2rem}
-.sum-row.total>*{padding-top:.25rem}
-.sum{align-items:baseline}
-.sum-row.total .sum-v{font-size:1.45rem;line-height:1.25}
-.sum-row.total .sum-w{font-weight:700}
-.sum-row.tax>*{padding-top:.3rem}
-.sum-row.tax .sum-v{color:var(--t-ink)}
-.readout-how ol{margin:.25rem 0 .5rem;padding-left:1.25rem}
-.readout-how li{margin:.3rem 0}
-.readout-how [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+.readout-fig{margin:.1rem 0 .2rem}
+.readout-fig .readout-v{margin:0;white-space:nowrap}
+.readout-t{text-wrap:pretty}
 abbr[title]{text-decoration:underline dotted;text-underline-offset:.15em}
 .assume{margin:.9rem 0 0}
 .assume .stamp{color:var(--t-ink);font-weight:700}
 
-/* What happens: three numbered steps as text over one rule (no boxes) */
-.moves{margin:1.5rem 0 0}
-.moves .sec-label{margin-bottom:.4rem}
-.steps{list-style:none;counter-reset:step;margin:0;padding:0;display:grid;gap:.55rem}
-.steps li{counter-increment:step;position:relative;padding-left:1.7rem;font-size:var(--type-small-size);line-height:1.45;max-width:62ch}
-.steps li::before{content:counter(step);position:absolute;left:0;top:-.12em;font:600 1.5rem/1.2 var(--font-display);font-variant-numeric:lining-nums;color:var(--t-ink)}
-.steps b{font-weight:700}
-
-/* The answer and the assumptions line sit in one wrapper (.side): on phones it disappears (display: contents), so the
-   order is the control, the answer, the assumptions, then the help that names the cost base */
-.side{display:contents}
-.readout-t{text-wrap:pretty}
-/* 700-959: the control and the answer side by side (6/6) */
-@media (min-width:700px) and (max-width:959px){
-  .play{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2rem;align-items:start}
-  .play>*,.play>.side>*{grid-column:1/-1;min-width:0}
-  .play>.move{grid-column:1;grid-row:4}
-  .play>.side>.readout.answer{grid-column:2;grid-row:4/6;margin-top:1rem}
-  .play>.help{grid-column:1;grid-row:5}
-  .play>.side>.assume{grid-row:6}
-  .play>.moves{grid-row:7}
-}
-/* 960+: the question, the control and the help on the left (7 of 12); the answer and the assumptions on the right,
-   spanning those rows, so the two columns end together; the three steps across under both. The help's row is the
-   flexible one, so opening "How this is worked out" never moves the control. */
-@media (min-width:960px){
-  .play{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem);grid-template-rows:auto auto auto auto 1fr auto;align-items:start}
-  .play>*{grid-column:1/8;min-width:0}
-  .play>.kicker{grid-row:1}
-  .play>h1{grid-row:2}
-  .play>.lede{grid-row:3}
-  .play>.move{grid-row:4;margin-top:.75rem}
-  .play>.help{grid-row:5;margin-top:.5rem}
-  .play>.side{display:block;grid-column:8/13;grid-row:1/6;margin-top:2.4rem}
-  .play>.side>.readout.answer{margin-top:0}
-  .play>.side>.assume{margin-top:1.25rem}
-  .play>.moves{grid-row:6;grid-column:1/-1;margin-top:1.75rem}
-  .steps{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem)}
-  figure.chart{margin-top:2rem}
-}
-
-/* ---- The chart: drawn at the frame's own width (1 unit = 1px), every label 17.5px or more ---- */
-figure.chart{margin:2rem 0 0}
-#chart{touch-action:pan-y}
-.chart-tags{margin:.15rem 0 0;padding:0;color:var(--t-ink2);font-size:17.5px;line-height:1.35}
-.chart-tags .chip{display:inline;margin:0 .75rem 0 0;padding:0;border:0;background:none;color:var(--t-ink2);white-space:nowrap}
-.chart-tags .tag-stamp{font-family:var(--font-ui);font-weight:600;letter-spacing:0;text-transform:none}
-.chart-frame{width:100%;padding:.25rem 0 0}
+/* ---- The picture: the payout as one bar, drawn at the frame's own width (1 unit = 1px); the range lies over it ---- */
+figure.chart.ins-chart{margin:1.4rem 0 0;padding-top:.75rem}
+.ins-chart figcaption{margin:.5rem 0 0}
+.ins-chart .chip.tag-example{display:inline;margin:0 .4rem 0 0}
+.ins-chart .hint{font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink)}
+.pic{position:relative;width:100%}
 .chart svg{display:block;width:100%;height:auto;overflow:visible}
-#chart:focus-visible{outline-offset:6px}
 .chart svg text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
-.chart svg .bar-t{font-weight:700}
-.chart svg .annot{font-weight:600}
 .chart svg .rd-v{font-family:var(--font-display);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums lining-nums}
-.chart svg .rd-v.p-cap,.chart svg .rd-v.p-after{fill:var(--c-fam)}
-.chart svg .rd-v.p-tax{fill:var(--c-tax)}
-.chart svg .seg{cursor:pointer}
+.chart svg .r-cap .rd-v,.chart svg .r-fam .rd-v,.chart svg .t-fam{fill:var(--c-fam)}
+.chart svg .r-tax .rd-v{fill:var(--c-tax)}
 .chart svg .seg.p-cap{fill:var(--c-fam)}
 .chart svg .seg.p-after{fill:url(#ins-hatch)}
 .chart svg .seg-edge{fill:none;stroke:var(--c-fam);stroke-width:2}
 .chart svg .seg.p-tax{fill:var(--c-tax)}
-.chart svg .seg.on{stroke:var(--t-ink);stroke-width:3}
 .chart svg .hatch-bg{fill:color-mix(in srgb,var(--c-fam) 14%,var(--t-ground))}
 .chart svg .hatch-line{stroke:var(--c-fam);stroke-width:2}
 .chart svg .bracket{stroke-width:2;stroke-linecap:square}
-.chart svg .bracket.p-cap{stroke:var(--c-fam)}
-.chart svg .bracket.p-after{stroke:var(--c-fam);stroke-dasharray:4 3}
-.chart svg .bracket.p-tax{stroke:var(--c-tax)}
-.chart svg .span-bracket{stroke:var(--t-ink);stroke-width:1.5;stroke-linecap:square}
-.chart svg .key-sw.p-cap{fill:var(--c-fam)}
-.chart svg .key-sw.p-after{fill:url(#ins-hatch)}
-.chart svg .key-sw.p-tax{fill:var(--c-tax)}
-.chart svg .seg-read rect{fill:var(--t-raised);stroke:var(--t-ink);stroke-width:1}
-.chart svg .seg-read text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
-.chart svg .seg-read .rv{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
-#chart:has(.seg-read:not([style*="none"])) .labels{opacity:.25}
+.chart svg .bracket.b-acb{stroke:var(--t-ink)}
+.chart svg .bracket.b-cap,.chart svg .bracket.b-fam{stroke:var(--c-fam)}
+.chart svg .bracket.b-tax{stroke:var(--c-tax)}
+.chart svg .handle{pointer-events:none}
+.chart svg .handle-rule{fill:var(--t-ink)}
+.chart svg .grip{fill:var(--t-ground);stroke:var(--t-ink);stroke-width:2.5}
+.chart svg .chev{fill:none;stroke:var(--t-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* steps by key, page or tap ease over 160ms; a drag follows the thumb on the same frame (no class) */
+.pic.ease .seg,.pic.ease .seg-edge{transition:x .16s ease-out,width .16s ease-out}
+.pic.ease .handle{transition:transform .16s ease-out}
 
-/* ---- Change the example: the payout stepper, the cue, the echo, the year ---- */
-.change{margin:2rem 0 0}
-.steppers{display:grid;grid-template-columns:minmax(0,17rem);gap:1.1rem 1.25rem;margin:.75rem 0 0}
-.stepper{display:flex;flex-direction:column;gap:.35rem;min-width:0}
-.stepper-l{font-weight:650;font-size:17.5px;line-height:1.3;color:var(--t-ink)}
-.stepper-row{display:flex;align-items:center;gap:.4rem}
-.stepper button{flex:none;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;border:1.5px solid var(--t-ink);border-radius:0;background:transparent;color:var(--t-ink);font:600 1.6rem/1 var(--font-ui);cursor:pointer}
-.stepper button:hover:not(:disabled){background:var(--t-raised)}
-.stepper button:disabled{border-color:var(--t-rule);color:var(--t-ink3);cursor:not-allowed}
-.stepper output{flex:1 1 auto;min-width:0;text-align:center;font:600 1.3rem/1.2 var(--font-display);font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
-.hint{margin:.75rem 0 0;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink2);max-width:60ch}
-.cue{color:var(--t-ink)}
-.echo{margin:.75rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-ink);font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink);max-width:60ch}
-.echo[hidden]{display:none}
-.reset-row{margin:.5rem 0 0}
-.text-btn{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:none;color:var(--t-ink);font:600 17.5px/1.3 var(--font-ui);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 35%,transparent);text-underline-offset:.2em;cursor:pointer}
-.text-btn:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
-.text-btn[hidden]{display:none}
-.reset-row:has(>[hidden]){display:none}
+/* the control: the range over the bar; its thumb is an invisible 28px grip, the handle is drawn in the picture */
+.move{position:absolute;left:0;right:0;top:0}
+.move input[type=range]{position:absolute;top:0;height:100%;left:-14px;width:calc(100% + 28px);margin:0;padding:0;background:transparent;cursor:ew-resize;-webkit-appearance:none;appearance:none;touch-action:pan-y}
+.move input[type=range]::-webkit-slider-runnable-track{height:100%;background:transparent;border:0}
+.move input[type=range]::-moz-range-track{height:100%;background:transparent;border:0}
+.move input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:100%;min-height:44px;background:transparent;border:0;cursor:ew-resize}
+.move input[type=range]::-moz-range-thumb{width:28px;height:100%;background:transparent;border:0;border-radius:0}
+.move input[type=range]:focus-visible{outline:2px solid var(--t-point);outline-offset:4px}
+:root[data-theme="light"] .move input[type=range]:focus-visible{outline-color:var(--t-point-deep)}
+
+/* The answer and the picture sit in one wrapper (.stage): on phones it disappears (display: contents), so the order is
+   the question, the answer, the picture, the assumptions. 960+: the question, the lede and the assumptions on the left
+   (5 of 12); the answer and, under it, the picture on the right (7 of 12), top-aligned with the question, so the
+   answer sits next to the control that makes it. */
+.stage{display:contents}
+@media (min-width:960px){
+  .play{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem);grid-template-rows:auto auto auto 1fr;align-items:start}
+  .play>*{grid-column:1/6;min-width:0}
+  .play>.kicker{grid-row:1}
+  .play>h1{grid-row:2}
+  .play>.lede{grid-row:3}
+  .play>.assume{grid-row:4}
+  .play>.stage{display:block;grid-column:6/13;grid-row:1/5;margin-top:2.2rem}
+  .play>.stage>.readout.answer{margin-top:0}
+  .play>.stage>figure.chart.ins-chart{margin-top:1.5rem}
+}
 
 /* ---- Go deeper ---- */
 .deeper h3{margin:0 0 .5rem;font-family:var(--type-card-font);font-weight:var(--type-card-weight);font-size:var(--type-card-size);line-height:var(--type-card-line)}
 .deeper p,.deeper li{font-size:var(--type-small-size);line-height:1.5;max-width:68ch}
 .deeper [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
-.deeper .rule-text{padding-left:.75rem;border-left:2px solid var(--t-rule);color:var(--t-ink2)}
-.deeper .rule-text [data-fact]{font-family:var(--font-ui);font-weight:400;color:var(--t-ink2)}
+.deeper blockquote.rule-text{margin:.5rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-rule);font:400 var(--type-small-size)/1.5 var(--font-ui);color:var(--t-ink);max-width:68ch}
+.deeper .rule-src{margin:.3rem 0 0;color:var(--t-ink2)}
 #div-total{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
 .fold-list{margin:.25rem 0 .5rem;padding-left:1.25rem}
 .fold-list li{margin:.35rem 0}
+/* Step by step: three numbered steps as text (no boxes) */
+.steps{list-style:none;counter-reset:step;margin:0;padding:0;display:grid;gap:.55rem}
+.steps li{counter-increment:step;position:relative;padding-left:1.7rem;line-height:1.45}
+.steps li::before{content:counter(step);position:absolute;left:0;top:-.12em;font:600 1.5rem/1.2 var(--font-display);font-variant-numeric:lining-nums;color:var(--t-ink)}
+.steps b{font-weight:700}
+/* the trend picture in Go deeper: what reaches the family (d1) under the line, the income tax (d4) over it */
+.trend{margin:.5rem 0 0}
+.trend svg{display:block;width:100%;height:auto;overflow:visible}
+.trend svg text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
+.trend svg .rd-v{font-family:var(--font-display);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums lining-nums}
+.trend svg .t-fam{fill:var(--c-fam)}
+.trend svg .ar-fam{fill:color-mix(in srgb,var(--c-fam) 16%,var(--t-ground))}
+.trend svg .ar-tax{fill:color-mix(in srgb,var(--c-tax) 16%,var(--t-ground))}
+.trend svg .ln-fam{stroke:var(--c-fam);stroke-width:3}
+.trend svg .ln-axis{stroke:var(--t-ink);stroke-width:1.5}
+.trend svg .ln-now{stroke:var(--t-ink);stroke-width:1.5;stroke-dasharray:4 3}
+.trend svg .dot-now{fill:var(--c-fam);stroke:var(--t-ground);stroke-width:2}
+.sub-h{margin:1rem 0 .25rem;font:700 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
+#how [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
 .table-wrap{overflow-x:auto;margin:.75rem 0 0;border-top:2px solid var(--t-ink)}
 .table-wrap:focus-visible{outline-offset:2px}
 table.nums{border-collapse:collapse;width:100%;font-size:17.5px;line-height:1.3}
-.nums-cap{margin:.25rem 0 0;color:var(--t-ink2)}
+.nums-cap{caption-side:bottom;margin:.25rem 0 0;text-align:left;font-size:var(--type-small-size);color:var(--t-ink2)}
 table.nums th:first-child,table.nums td:first-child{position:sticky;left:0;background:var(--t-ground);z-index:1}
 table.nums tbody th{font-weight:400;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
 table.nums th,table.nums td{padding:.4rem .6rem;text-align:right;border-bottom:1px solid var(--t-rule);white-space:nowrap}
 table.nums th:first-child,table.nums td:first-child{text-align:left;padding-left:0}
-table.nums thead th{font-weight:700;vertical-align:bottom;white-space:normal;min-width:7.5rem}
+table.nums thead th{font-weight:700;vertical-align:bottom;white-space:normal}
 table.nums thead th:first-child{min-width:0}
 table.nums td{font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
 table.nums tr.now th,table.nums tr.now td{font-weight:700;border-bottom:2px solid var(--t-ink)}
 .now-tag{font-family:var(--font-ui);font-weight:700;font-size:17.5px;color:var(--t-ink)}
 
-/* ---- The caveats in three groups ---- */
-.caveats{margin:2.25rem 0 0}
-.caveats-h{margin:0;font:700 1.15rem/1.35 var(--font-ui)}
+/* This example assumes: the three groups, inside Go deeper */
 .cv-groups{display:grid;gap:.75rem;margin:.5rem 0 0}
 @media (min-width:960px){.cv-groups{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:2rem}}
 .cv-h{margin:0;font:700 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
 .caveats ul{margin:.25rem 0 0;padding-left:1.1rem}
-.caveats li{margin:.3rem 0;font-size:var(--type-small-size);line-height:1.4}
-.caveats-close{margin:.75rem 0 0;font-size:var(--type-small-size);line-height:1.45;font-weight:600}
+.caveats li{margin:.3rem 0;line-height:1.4}
+/* the one line that points to a professional, always visible after Go deeper */
+.caveats-close{margin:1.25rem 0 0;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink2)}
 
 .prose p,.prose li{font-size:var(--type-small-size);line-height:1.5}
 .prose ul{padding-left:1.1rem}
 .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem 2rem;margin:3rem 0 0;padding:1.25rem 0 2.5rem;border-top:3px double var(--t-ink);font-size:var(--type-small-size)}
 .foot p{margin:.25rem 0}
 .desk-next{margin-top:3rem}
+body>.page .caveats-close+details.fold{margin-top:1.75rem}
 
-/* phones: the same blocks, closer together (the big figure by 700px, the Go deeper summary within the first 2,800px) */
+/* phones: the same blocks at the same sizes, closer together, so the bar (the control) starts by y = 630 at 390 x 700:
+   the site's link walk wants 48px of the control above y = 700, and this keeps 20px or more in hand. Only the gaps and
+   the line spacing of the question, the lede and the answer's line are tighter; no text is smaller. */
 @media (max-width:559px){
-  .play{padding-top:.8rem}
-  .move{margin-top:.6rem}
-  .slide{padding-top:1.95rem}
-  .bubble{font-size:1.6rem;line-height:1.1}
-  .slide-ticks{height:1.4rem;margin-top:-.2rem}
-  .slide input[type=range]{height:44px}
-  .help{margin-top:.6rem;line-height:1.4}
-  .readout.answer{margin-top:.6rem;padding-top:.15rem}
+  .play{padding-top:.15rem}
+  .play h1{margin-top:0;line-height:1}
+  .play .lede{margin-top:.3rem;line-height:1.25}
+  .readout.answer{margin-top:.3rem;padding-top:0;padding-bottom:0}
+  .readout.answer .readout-fig{margin:0}
+  .readout-t{min-height:2.7em;line-height:1.35}
+  figure.chart.ins-chart{margin-top:.3rem;padding-top:.25rem}
   .assume{margin-top:.6rem;line-height:1.45}
-  .moves{margin-top:1.1rem}
-  .steps{gap:.4rem}
-  figure.chart{margin-top:1.25rem}
-  .change{margin-top:1.25rem}
-  .caveats{padding-left:.75rem;margin-top:1.75rem}
-  .caveats li{margin:.2rem 0;line-height:1.35}
-  .hint{margin-top:.5rem;line-height:1.35}
   body>.page details.deeper{margin-top:1.75rem}
 }
 </style>
@@ -431,95 +367,80 @@ table.nums tr.now th,table.nums tr.now td{font-weight:700;border-bottom:2px soli
     <section class="play" data-chapter="The payout">
       <p class="kicker">Tool</p>
       <h1 id="question">Where does a company’s life insurance payout go?</h1>
-      <p class="lede" id="lede">A made-up owner dies, and the company receives $1,000,000.</p>
+      <p class="lede" id="lede">A made-up owner dies; the company receives $1,000,000.</p>
 
-      <div class="move" data-first-move>
-        <label class="label" for="acb" id="acb-label">The policy’s cost base at death</label>
-        <div class="slide" id="slide">
-          <output class="bubble" id="acb-out" for="acb" aria-hidden="true">$200,000</output>
-          <input type="range" id="acb" name="acb" aria-labelledby="acb-label" aria-describedby="acb-help">
-          <div class="slide-ticks" aria-hidden="true"><span id="tick-lo"></span><span id="tick-hi"></span></div>
-        </div>
-        <p class="clamp-note" id="clamp" role="status" aria-live="polite"></p>
+      <div class="stage" id="stage">
+      <div class="readout answer" id="answer" data-answer aria-live="polite">
+        <p class="readout-k" id="answer-k">Reaches the family</p>
+        <p class="readout-fig"><span class="readout-v big" id="answer-v" data-readout-v>$904,520</span></p>
+        <p class="readout-t" id="answer-t" data-readout-t></p>
       </div>
 
-      <div class="side" id="side">
-      <div class="readout answer" id="answer" data-answer aria-live="polite">
-        <p class="readout-k" id="answer-k">Paid tax-free as a capital dividend</p>
-        <p class="readout-fig"><span class="readout-v big" id="answer-v" data-readout-v>$800,000</span> <span class="readout-of" id="answer-of">of the $1,000,000 payout</span></p>
-        <p class="readout-t" id="answer-t" data-readout-t></p>
-        <div class="split" id="split">
-          <div class="sum" id="sum" aria-hidden="true"></div>
-          <p class="desk-sr" id="sum-sr"></p>
+      <!-- The one picture is also the one control: the payout as a bar, read left to right. Over it, the policy's cost base
+           and the capital dividend; under it, the income tax and what reaches the family. The range's handle is the line
+           between the cost base and the capital dividend. -->
+      <figure class="chart ins-chart" id="ins-chart">
+        <div class="pic" id="pic">
+          <svg id="chart" role="img" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Where the payout goes</title><desc id="chart-desc"></desc></svg>
+          <div class="move" id="move" data-first-move>
+            <input type="range" id="acb" name="acb" aria-label="The policy’s cost base" aria-describedby="acb-sr">
+          </div>
         </div>
-        <details class="readout-how" id="how-fold"><summary>How this is worked out</summary><div id="how"></div></details>
+        <p class="desk-sr" id="acb-sr">The policy’s adjusted cost basis under the Income Tax Act; the payout less it can go out as a capital dividend.</p>
+        <div class="desk-sr"><table id="chart-table">
+          <caption>The figures in the picture</caption>
+          <thead><tr><th scope="col">Part</th><th scope="col">Dollars</th></tr></thead>
+          <tbody id="chart-table-rows"></tbody>
+        </table></div>
+        <figcaption><span class="chip tag-example">Example data</span> <span class="hint" id="hint"></span></figcaption>
+      </figure>
       </div>
 
       <p class="assume" id="assume" data-assumptions><strong class="stamp">Hypothetical illustration · Education, not advice.</strong> <span id="assume-text"></span></p>
-      </div>
-
-      <p class="help" id="acb-help"><span id="acb-help-name">The cost base is the policy’s adjusted cost basis under the Income Tax Act. The payout less it is what can go out as a capital dividend.</span> <span id="acb-help-rule">Among other things, premiums raise it and the net cost of pure insurance lowers it.</span></p>
-
-      <section class="moves" aria-labelledby="moves-h">
-        <h2 class="sec-label" id="moves-h">What happens</h2>
-        <ol class="steps" id="steps"></ol>
-      </section>
     </section>
 
-    <figure class="chart ins-chart" id="ins-chart" aria-labelledby="chart-title">
-      <figcaption>
-        <p class="chart-title" id="chart-title"></p>
-        <p class="chart-sub" id="chart-sub">Dollars of one example payout, by who ends up with them</p>
-        <p class="chart-tags"><span class="chip tag-example">Example data</span><span class="chip tag-stamp">Hypothetical illustration</span></p>
-      </figcaption>
-      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Where the payout goes</title><desc id="chart-desc"></desc></svg></div>
-      <div class="desk-sr"><table id="chart-table">
-        <caption>The figures in the chart</caption>
-        <thead><tr><th scope="col">Bar</th><th scope="col">Part</th><th scope="col">Dollars</th></tr></thead>
-        <tbody id="chart-table-rows"></tbody>
-      </table></div>
-    </figure>
-
-    <section class="change" aria-labelledby="change-h">
-      <h2 class="sec-label" id="change-h">Change the example</h2>
-      <div class="steppers" id="steppers"></div>
-      <p class="hint cue" id="cue">The payout changes the whole bar; the cost base moves the line between its parts.</p>
-      <p class="echo" id="echo" hidden></p>
-      <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
-      <p class="hint" id="year-line"></p>
-    </section>
-
-    <details class="deeper" id="deeper" data-chapter="Go deeper">
+    <details class="deeper" id="deeper" data-chapter="Go deeper" data-preview="Chart, steps, assumptions">
       <summary>Go deeper</summary>
-      <section class="deeper-sub" id="acb-sec" aria-labelledby="acb-h">
-        <h3 id="acb-h">The cost base, in the Act</h3>
-        <div id="acb-rule"></div>
-      </section>
-      <section class="deeper-sub" aria-labelledby="div-h">
-        <h3 id="div-h">The dividend tax on the taxable part</h3>
-        <div id="div-lines"></div>
-      </section>
-      <section class="deeper-sub" aria-labelledby="elect-h">
-        <h3 id="elect-h">The election</h3>
-        <div id="elect"></div>
-      </section>
-      <section class="deeper-sub" aria-labelledby="nums-h">
-        <h3 id="nums-h">The numbers behind the chart</h3>
-        <p class="nums-cap" id="nums-cap"></p>
-        <div class="table-wrap" id="nums-wrap" tabindex="0" role="region" aria-labelledby="nums-h nums-cap">
+      <section class="deeper-sub" aria-labelledby="trend-h">
+        <h3 id="trend-h">A bigger cost base, less to the family</h3>
+        <figure class="trend" id="trend-fig">
+          <svg id="trend" role="img" aria-labelledby="trend-h trend-desc"><desc id="trend-desc"></desc></svg>
+        </figure>
+        <div class="table-wrap" id="nums-wrap" tabindex="0" role="region" aria-labelledby="trend-h nums-cap">
           <table class="nums" id="nums">
+            <caption class="nums-cap" id="nums-cap"></caption>
             <thead><tr id="nums-head"></tr></thead>
             <tbody id="nums-rows"></tbody>
           </table>
         </div>
       </section>
+      <section class="deeper-sub" aria-labelledby="steps-h">
+        <h3 id="steps-h">Step by step</h3>
+        <ol class="steps" id="steps"></ol>
+        <h4 class="sub-h" id="how-h">In this example’s numbers</h4>
+        <div id="how"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="div-h">
+        <h3 id="div-h">The dividend tax on the taxable part</h3>
+        <div id="div-lines"></div>
+        <p id="year-line"></p>
+      </section>
+      <section class="deeper-sub" id="acb-sec" aria-labelledby="acb-h">
+        <h3 id="acb-h">The cost base, in the Act</h3>
+        <p id="acb-help">The cost base is the policy’s adjusted cost basis under the Income Tax Act. The payout less it is what can go out as a capital dividend. Among other things, premiums raise it and the net cost of pure insurance lowers it.</p>
+        <div id="acb-rule"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="elect-h">
+        <h3 id="elect-h">The election</h3>
+        <div id="elect"></div>
+      </section>
+      <section class="deeper-sub caveats callout" aria-labelledby="caveats-h">
+        <h3 id="caveats-h">This example assumes</h3>
+        <div class="cv-groups" id="caveats"></div>
+      </section>
     </details>
 
-    <section class="caveats callout" aria-labelledby="caveats-h">
-      <h2 class="caveats-h" id="caveats-h">This example assumes</h2>
-      <div class="cv-groups" id="caveats"></div>
-      <p class="caveats-close">How any of this applies to a real company is a question for a tax professional and a lawyer.</p>
-    </section>
+    <p class="caveats-close" id="close-line">How any of this applies to a real company is a question for a tax professional and a lawyer.</p>
 
     <details class="fold sources-fold" data-chapter="Sources" data-preview="The statute sections and tax rates used, each linked to its official page">
       <summary>Sources and how it’s made</summary>
@@ -531,13 +452,12 @@ table.nums tr.now th,table.nums tr.now td{font-weight:700;border-bottom:2px soli
     <footer class="foot">
       <div>
         <p class="desk-notes"><strong>Education only, not advice.</strong> Made with AI assistance; every figure is checked at its source.</p>
-        <p class="note" id="foot-version"></p>
       </div>
       <p><a href="/">Mohammed El Chayeb</a> · <a href="/tools/">All tools</a></p>
     </footer>
   </main>
 </div>
-<script type="application/json" id="data">{"facts":[{"id":"rrif_minimum_factors","series":"rrif_minimum_factors","title":"RRIF minimum withdrawal factors by age (Income Tax Regulations 7308(4))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":[{"age":71,"factor":"0.0528"},{"age":72,"factor":"0.0540"},{"age":73,"factor":"0.0553"},{"age":74,"factor":"0.0567"},{"age":75,"factor":"0.0582"},{"age":76,"factor":"0.0598"},{"age":77,"factor":"0.0617"},{"age":78,"factor":"0.0636"},{"age":79,"factor":"0.0658"},{"age":80,"factor":"0.0682"},{"age":81,"factor":"0.0708"},{"age":82,"factor":"0.0738"},{"age":83,"factor":"0.0771"},{"age":84,"factor":"0.0808"},{"age":85,"factor":"0.0851"},{"age":86,"factor":"0.0899"},{"age":87,"factor":"0.0955"},{"age":88,"factor":"0.1021"},{"age":89,"factor":"0.1099"},{"age":90,"factor":"0.1192"},{"age":91,"factor":"0.1306"},{"age":92,"factor":"0.1449"},{"age":93,"factor":"0.1634"},{"age":94,"factor":"0.1879"},{"age":95,"factor":"0.2000"}],"unit":"factor","source_url":"https://laws-lois.justice.gc.ca/eng/regulations/C.R.C.,_c._945/section-7308.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"fhsa_annual_base_limit","series":"fhsa_annual_base_limit","title":"FHSA annual participation room before carryforward (Income Tax Act 146.6(1), annual FHSA limit)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"8000","unit":"CAD","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.6.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"fhsa_lifetime_limit","series":"fhsa_lifetime_limit","title":"FHSA lifetime contribution limit (Income Tax Act 146.6)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"40000","unit":"CAD","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.6.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"oas_deferral_increase","series":"oas_deferral_increase","title":"OAS pension increase for each month of voluntary deferral (Old Age Security Act 7.1)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"0.6","unit":"percent_per_month","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_dollar_limit.2025","series":"rrsp_dollar_limit","title":"RRSP dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"32490","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_dollar_limit.2026","series":"rrsp_dollar_limit","title":"RRSP dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"33810","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_dollar_limit.2027","series":"rrsp_dollar_limit","title":"RRSP dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2027,"value":"35390","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_dollar_limit.2028","series":"rrsp_dollar_limit","title":"RRSP dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2028,"value":"36390","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ympe.2025","series":"ympe","title":"Year's maximum pensionable earnings (YMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"71300","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ympe.2026","series":"ympe","title":"Year's maximum pensionable earnings (YMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"74600","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ympe.2027","series":"ympe","title":"Year's maximum pensionable earnings (YMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2027,"value":"76700","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"yampe.2025","series":"yampe","title":"Year's additional maximum pensionable earnings (YAMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"81200","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"yampe.2026","series":"yampe","title":"Year's additional maximum pensionable earnings (YAMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"85000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"yampe.2027","series":"yampe","title":"Year's additional maximum pensionable earnings (YAMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2027,"value":"87400","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_annual_limit.2025","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"7000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_annual_limit.2026","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"7000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"federal_brackets.2026","series":"federal_brackets","title":"Federal income tax brackets","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":[{"from":"0","to":"58523","rate":"14"},{"from":"58523.01","to":"117045","rate":"20.5"},{"from":"117045.01","to":"181440","rate":"26"},{"from":"181440.01","to":"258482","rate":"29"},{"from":"258482.01","rate":"33"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ontario_brackets.2026","series":"ontario_brackets","title":"Ontario income tax brackets","kind":"yearly","jurisdiction":"ON","tax_year":2026,"value":[{"from":"0","to":"53891","rate":"5.05"},{"from":"53891.01","to":"107785","rate":"9.15"},{"from":"107785.01","to":"150000","rate":"11.16"},{"from":"150000.01","to":"220000","rate":"12.16"},{"from":"220000.01","rate":"13.16"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"federal_brackets.2025","series":"federal_brackets","title":"Federal income tax brackets","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":[{"from":"0","to":"57375","rate":"14.5"},{"from":"57375.01","to":"114750","rate":"20.5"},{"from":"114750.01","to":"177882","rate":"26"},{"from":"177882.01","to":"253414","rate":"29"},{"from":"253414.01","rate":"33"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/last-year.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ontario_brackets.2025","series":"ontario_brackets","title":"Ontario income tax brackets","kind":"yearly","jurisdiction":"ON","tax_year":2025,"value":[{"from":"0","to":"52886","rate":"5.05"},{"from":"52886.01","to":"105775","rate":"9.15"},{"from":"105775.01","to":"150000","rate":"11.16"},{"from":"150000.01","to":"220000","rate":"12.16"},{"from":"220000.01","rate":"13.16"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/last-year.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"oas_recovery_threshold.2024","series":"oas_recovery_threshold","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","kind":"yearly","jurisdiction":"federal","tax_year":2024,"value":"90997","unit":"CAD","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"oas_recovery_threshold.2025","series":"oas_recovery_threshold","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"93454","unit":"CAD","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"oas_recovery_threshold.2026","series":"oas_recovery_threshold","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"95323","unit":"CAD","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"cpp_early_start_reduction","series":"cpp_early_start_reduction","title":"CPP retirement pension reduction for each month started before 65","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"0.6","unit":"percent_per_month","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"cpp_late_start_increase","series":"cpp_late_start_increase","title":"CPP retirement pension increase for each month started after 65","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"0.7","unit":"percent_per_month","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_contribution_deadline.2025","series":"rrsp_contribution_deadline","title":"RRSP contribution deadline for the tax year","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"2026-03-02","unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_annual_limit.2023","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2023,"value":"6500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_annual_limit.2024","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2024,"value":"7000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_first_year","series":"tfsa_first_year","title":"First calendar year a TFSA dollar limit applies (Income Tax Act 207.01(1), TFSA dollar limit)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2009","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"fhsa_first_available","series":"fhsa_first_available","title":"When an FHSA can first be opened (Income Tax Act 146.6(1), qualifying arrangement)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"after March 2023","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.6.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_minimum_age","series":"tfsa_minimum_age","title":"Minimum age for a TFSA dollar limit to apply (Income Tax Act 207.01(1), unused TFSA contribution room)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"18","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","authority":"statute","as_of":"2026-11-10","status":"confirmed"},{"id":"rrsp_maturity_age","series":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"71","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","authority":"statute","as_of":"2026-11-10","status":"confirmed"},{"id":"oas_start_age","series":"oas_start_age","title":"Age at which OAS pension eligibility starts (Old Age Security Act 3(1))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"65","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html","authority":"statute","as_of":"2026-11-10","status":"confirmed"},{"id":"oas_deferral_max_age","series":"oas_deferral_max_age","title":"Age after whose month the OAS deferral increase stops (Old Age Security Act 7.1(4)(b))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"70","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","authority":"statute","as_of":"2026-11-10","status":"confirmed"},{"id":"cpp_standard_start_age","series":"cpp_standard_start_age","title":"Standard age to start the CPP retirement pension","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"65","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"cpp_earliest_start_age","series":"cpp_earliest_start_age","title":"Earliest age to start the CPP retirement pension","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"60","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"cpp_latest_start_age","series":"cpp_latest_start_age","title":"Latest age to start the CPP retirement pension (no benefit to wait after it)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"70","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"oas_start_year","series":"oas_start_year","title":"Year the Old Age Security Act came into force (OAS basic pension first paid)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"1952","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/oca/actuarial-reports/actuarial-report-18th-old-age-security-program-31-december-2021","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"rrsp_introduced_year","series":"rrsp_introduced_year","title":"Year registered retirement savings plans were introduced","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"1957","unit":"text","source_url":"https://www150.statcan.gc.ca/n1/pub/13f0026m/2010001/section1-eng.htm","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"cpp_start_year","series":"cpp_start_year","title":"Year the Canada Pension Plan began (inception)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"1966","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/oca/actuarial-reports/actuarial-report-32nd-canada-pension-plan-revised-version","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_t1_filing_date","series":"budget2026_t1_filing_date","title":"Proposed T1 filing and balance-due date for individuals (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"May 15","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_t1_filing_date_start","series":"budget2026_t1_filing_date_start","title":"First taxation year the proposed May 15 date would apply to (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2027","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_t1135_threshold","series":"budget2026_t1135_threshold","title":"Proposed Form T1135 filing threshold, cost of specified foreign property (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"200000","unit":"CAD","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_t1135_start","series":"budget2026_t1135_start","title":"When the proposed T1135 thresholds would apply (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"taxation years or fiscal periods that end after 2026","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_instalment_threshold","series":"budget2026_instalment_threshold","title":"Proposed instalment threshold, individuals outside Quebec (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"7500","unit":"CAD","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_instalment_start","series":"budget2026_instalment_start","title":"When the proposed instalment thresholds would apply (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2028-01-01","unit":"date","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_caregiver_refundable_start","series":"budget2026_caregiver_refundable_start","title":"First taxation year the Canada Caregiver Credit would be refundable (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2027","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_caregiver_max_relief_2027","series":"budget2026_caregiver_max_relief_2027","title":"Most tax relief from the Canada Caregiver Credit for an infirm adult relative, 2027 (Budget 2026 page)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"1260","unit":"CAD","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_rrsp_for_life_consultation_deadline","series":"budget2026_rrsp_for_life_consultation_deadline","title":"Deadline for comments on the proposed 'RRSP for life' (Budget 2026 consultation)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2027-01-08","unit":"date","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_cgi_limit","series":"budget2026_cgi_limit","title":"Canada Growth Incentive exemption limit, per individual per business (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"15000000","unit":"CAD","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_cgi_issue_window","series":"budget2026_cgi_issue_window","title":"Which shares the proposed Canada Growth Incentive exemption would cover (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"issued on or after Budget Day and before 2037","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_budget_day","series":"budget2026_budget_day","title":"Date Budget 2026 was presented (Budget Day)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2026-11-05","unit":"date","source_url":"https://budget.canada.ca/2026/report-rapport/toc-tdm-en.html","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"t1_self_employed_filing_deadline.2026","series":"t1_self_employed_filing_deadline","title":"Income tax filing deadline for self-employed individuals, for the tax year","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"2027-06-15","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"t1_balance_due_date.2026","series":"t1_balance_due_date","title":"Balance-due date for individuals' income tax, for the tax year","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"2027-04-30","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"individual_instalment_due_dates","series":"individual_instalment_due_dates","title":"Tax instalment due dates for individuals (the same four dates each year)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"March 15, June 15, September 15, December 15","unit":"text","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"t3_filing_deadline_rule","series":"t3_filing_deadline_rule","title":"When a trust's T3 return is due","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"no later than 90 days after the trust's tax year-end","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/trust-administrators/t3-return/filing-trust-return/when-file.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"t2_filing_deadline_rule","series":"t2_filing_deadline_rule","title":"When a corporation's T2 return is due","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"within six months of the end of each tax year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/t4012/t2-corporation-income-tax-guide-before-you-start.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"trust_deemed_disposition_years","series":"trust_deemed_disposition_years","title":"Years after a trust's creation at which it is deemed to dispose of its property (Income Tax Act 104(4)(b))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"21","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-104.html","authority":"statute","as_of":"2026-11-11","status":"confirmed"},{"id":"superficial_loss_period","series":"superficial_loss_period","title":"The period around a sale in which buying the same property back makes the loss superficial","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"30 calendar days before the sale to 30 calendar days after the sale","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/personal-income/line-12700-capital-gains/capital-losses-deductions.html","authority":"cra_position","as_of":"2026-11-11","status":"confirmed"},{"id":"fhsa_contribution_period","series":"fhsa_contribution_period","title":"FHSA contribution period (contributions are deductible for the calendar year they are made in)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"January 1 to December 31 of the same year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/first-home-savings-account/tax-deductions-fhsa-contributions.html","authority":"cra_position","as_of":"2026-11-11","status":"confirmed"},{"id":"rrif_minimum_payment_timing","series":"rrif_minimum_payment_timing","title":"When the first RRIF minimum amount must be paid","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"in the year following the year the RRIF is entered into","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-retirement-income-fund-rrif.html","authority":"cra_position","as_of":"2026-11-11","status":"confirmed"},{"id":"donations_claim_year","series":"donations_claim_year","title":"Donations claimed on a year's return are the ones made in that year (unused amounts can be carried forward)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"donations and gifts made in the year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-34900-donations-gifts/how-claim.html","authority":"cra_position","as_of":"2026-11-11","status":"confirmed"},{"id":"cesg_basic_rate","series":"cesg_basic_rate","title":"Basic Canada Education Savings Grant, figured on each year's contributions","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"20% of annual personal contributions","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-education-savings-plans-resps/canada-education-savings-programs-cesp/canada-education-savings-grant-cesg.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"tfsa_annual_limit.2009","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2009,"value":"5000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2010","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2010,"value":"5000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2011","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2011,"value":"5000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2012","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2012,"value":"5000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2013","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2013,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2014","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2014,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2015","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2015,"value":"10000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2016","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2016,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2017","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2017,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2018","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2018,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2019","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2019,"value":"6000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2020","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2020,"value":"6000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2021","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2021,"value":"6000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2022","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2022,"value":"6000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"oas_age75_increase","series":"oas_age75_increase","title":"OAS pension increase at age 75","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"10","unit":"percent","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/payments.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"oas_recovery_rate","series":"oas_recovery_rate","title":"OAS recovery tax rate on net income above the threshold","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"15","unit":"percent","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"capital_gains_inclusion_rate","series":"capital_gains_inclusion_rate","title":"Share of a capital gain that is taxable (Income Tax Act 38(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"50","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-38.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"ontario_surtax.2026","series":"ontario_surtax","title":"Ontario surtax on basic Ontario tax (each row's rate applies to basic Ontario tax above its 'from' amount; the rows add together)","kind":"yearly","jurisdiction":"ON","tax_year":2026,"value":[{"from":"5818","rate":"20"},{"from":"7446","rate":"36"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4127-payroll-deductions-formulas/t4127-jan/t4127-jan-payroll-deductions-formulas-computer-programs.html","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"ontario_estate_admin_tax_rate","series":"ontario_estate_admin_tax_rate","title":"Ontario Estate Administration Tax, dollars per $1,000 (or part) of estate value over $50,000 (estate certificates applied for on or after January 1, 2020)","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"15","unit":"CAD","source_url":"https://www.ontario.ca/page/estate-administration-tax","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"ontario_estate_admin_tax_exemption","series":"ontario_estate_admin_tax_exemption","title":"Ontario estate value at or below which no Estate Administration Tax is payable (estate certificates applied for on or after January 1, 2020)","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"50000","unit":"CAD","source_url":"https://www.ontario.ca/page/estate-administration-tax","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"dividend_refund_rate","series":"dividend_refund_rate","title":"Dividend refund to a private corporation, percent of taxable dividends paid, up to its refundable dividend tax on hand (Income Tax Act 129(1)(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"38.3333333333","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-129.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"part_iv_tax_rate","series":"part_iv_tax_rate","title":"Part IV tax on dividends a private corporation receives from corporations not connected with it (Income Tax Act 186(1)(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"38.3333333333","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-186.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"refundable_investment_income_rate","series":"refundable_investment_income_rate","title":"Share of a CCPC's aggregate investment income added to its non-eligible refundable dividend tax on hand (Income Tax Act 129(4))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"30.6666666667","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-129.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"federal_corporate_basic_rate","series":"federal_corporate_basic_rate","title":"Federal basic corporate income tax rate on taxable income (Income Tax Act 123(1)(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"38","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-123.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"federal_corporate_abatement","series":"federal_corporate_abatement","title":"Federal tax abatement for corporate taxable income earned in a province (Income Tax Act 124(1))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"10","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-124.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"ccpc_additional_refundable_tax_rate","series":"ccpc_additional_refundable_tax_rate","title":"Additional refundable tax on a CCPC's aggregate investment income (Income Tax Act 123.3)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"10.6666666667","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-123.3.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"ontario_corporate_general_rate","series":"ontario_corporate_general_rate","title":"Ontario general corporate income tax rate","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"11.5","unit":"percent","source_url":"https://www.ontario.ca/document/corporations-tax/corporate-income-tax","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"life_expectancy_age70_male","series":"life_expectancy_age70_male","title":"Life expectancy at age 70, males, Canada, three-year estimate 2022 to 2024 (years remaining)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"15.63","unit":"years","source_url":"https://www150.statcan.gc.ca/n1/tbl/csv/13100114-eng.zip","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"life_expectancy_age70_female","series":"life_expectancy_age70_female","title":"Life expectancy at age 70, females, Canada, three-year estimate 2022 to 2024 (years remaining)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"18.02","unit":"years","source_url":"https://www150.statcan.gc.ca/n1/tbl/csv/13100114-eng.zip","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"cda_life_insurance_proceeds","series":"cda_life_insurance_proceeds","title":"Life insurance proceeds a corporation receives on a death are added to its capital dividend account (Income Tax Act 89(1), capital dividend account, paragraph (d))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"Added to the capital dividend account: the proceeds of a life insurance policy received by the corporation in consequence of the death of any person, less the policy's adjusted cost basis immediately before the death (see cda_life_insurance_acb_deduction)","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-89.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"cda_life_insurance_acb_deduction","series":"cda_life_insurance_acb_deduction","title":"The policy's adjusted cost basis immediately before the death is taken off the proceeds added to the capital dividend account (Income Tax Act 89(1), capital dividend account, subparagraph (d)(iii))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"Subtracted from the life insurance proceeds added to the capital dividend account: the adjusted cost basis (as defined in 148(9)), immediately before the death, of the policyholder's interest in the policy (deaths after March 21, 2016)","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-89.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"capital_dividend_election","series":"capital_dividend_election","title":"A dividend a private corporation elects to be a capital dividend is not included in the shareholder's income (Income Tax Act 83(2))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"When a private corporation elects for the full amount of a dividend (in prescribed manner and form, on time), the dividend is a capital dividend to the extent of its capital dividend account immediately before it became payable, and no part of it is included in computing the income of any shareholder","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-83.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"dividend_gross_up_non_eligible","series":"dividend_gross_up_non_eligible","title":"Gross-up on taxable dividends other than eligible dividends, percent of the dividend added to an individual's income (Income Tax Act 82(1)(b)(i))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"15","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-82.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"dividend_gross_up_eligible","series":"dividend_gross_up_eligible","title":"Gross-up on eligible dividends, percent of the dividend added to an individual's income (Income Tax Act 82(1)(b)(ii))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"38","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-82.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"federal_dividend_tax_credit_non_eligible","series":"federal_dividend_tax_credit_non_eligible","title":"Federal dividend tax credit on dividends other than eligible dividends, percent of the gross-up amount (Income Tax Act 121(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"69.2307692308","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-121.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"federal_dividend_tax_credit_eligible","series":"federal_dividend_tax_credit_eligible","title":"Federal dividend tax credit on eligible dividends, percent of the gross-up amount (Income Tax Act 121(b))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"54.5454545455","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-121.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"ontario_dividend_tax_credit_non_eligible.2026","series":"ontario_dividend_tax_credit_non_eligible","title":"Ontario dividend tax credit on dividends other than eligible dividends, percent of the federal gross-up amount (Taxation Act, 2007 (Ontario) 19.1)","kind":"yearly","jurisdiction":"ON","tax_year":2026,"value":"22.895","unit":"percent","source_url":"https://www.ontario.ca/laws/statute/07t11","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"ontario_dividend_tax_credit_non_eligible.2027","series":"ontario_dividend_tax_credit_non_eligible","title":"Ontario dividend tax credit on dividends other than eligible dividends, percent of the federal gross-up amount (Taxation Act, 2007 (Ontario) 19.1)","kind":"yearly","jurisdiction":"ON","tax_year":2027,"value":"15.2283","unit":"percent","source_url":"https://www.ontario.ca/laws/statute/07t11","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"ontario_dividend_tax_credit_eligible","series":"ontario_dividend_tax_credit_eligible","title":"Ontario dividend tax credit on eligible dividends, percent of the federal gross-up amount (Taxation Act, 2007 (Ontario) 19.1(b))","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"36.3158","unit":"percent","source_url":"https://www.ontario.ca/laws/statute/07t11","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"life_insurance_policy_acb_definition","series":"life_insurance_policy_acb_definition","title":"Adjusted cost basis of a policyholder's interest in a life insurance policy (Income Tax Act 148(9))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"A formula: amounts that raise the basis (A to G.1, among them the cost of an interest acquired and premiums paid by or on behalf of the policyholder) less amounts that lower it (H to O, among them proceeds of disposition and, for policies last acquired after December 1, 1982, the net cost of pure insurance determined by the issuer)","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-148.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"ontario_surtax_base","series":"ontario_surtax_base","title":"What the Ontario surtax is figured on, the gross tax amount, and where the Ontario dividend tax credit comes in (Taxation Act, 2007 (Ontario) 16(2))","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"The surtax is figured on the gross tax amount: basic Ontario tax less the non-refundable credits in subdivision b, plus additional taxes (sections 11 and 12), less the credits in subdivision d. The Ontario dividend tax credit (section 19.1, subdivision g) is not among them, so it comes off after the surtax","unit":"text","source_url":"https://www.ontario.ca/laws/statute/07t11","authority":"statute","as_of":"2026-11-17","status":"confirmed"}],"version":"530dc4f7","asOf":"2026-11-17"}</script>
+<script type="application/json" id="data">{"facts":[{"id":"rrif_minimum_factors","series":"rrif_minimum_factors","title":"RRIF minimum withdrawal factors by age (Income Tax Regulations 7308(4))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":[{"age":71,"factor":"0.0528"},{"age":72,"factor":"0.0540"},{"age":73,"factor":"0.0553"},{"age":74,"factor":"0.0567"},{"age":75,"factor":"0.0582"},{"age":76,"factor":"0.0598"},{"age":77,"factor":"0.0617"},{"age":78,"factor":"0.0636"},{"age":79,"factor":"0.0658"},{"age":80,"factor":"0.0682"},{"age":81,"factor":"0.0708"},{"age":82,"factor":"0.0738"},{"age":83,"factor":"0.0771"},{"age":84,"factor":"0.0808"},{"age":85,"factor":"0.0851"},{"age":86,"factor":"0.0899"},{"age":87,"factor":"0.0955"},{"age":88,"factor":"0.1021"},{"age":89,"factor":"0.1099"},{"age":90,"factor":"0.1192"},{"age":91,"factor":"0.1306"},{"age":92,"factor":"0.1449"},{"age":93,"factor":"0.1634"},{"age":94,"factor":"0.1879"},{"age":95,"factor":"0.2000"}],"unit":"factor","source_url":"https://laws-lois.justice.gc.ca/eng/regulations/C.R.C.,_c._945/section-7308.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"fhsa_annual_base_limit","series":"fhsa_annual_base_limit","title":"FHSA annual participation room before carryforward (Income Tax Act 146.6(1), annual FHSA limit)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"8000","unit":"CAD","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.6.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"fhsa_lifetime_limit","series":"fhsa_lifetime_limit","title":"FHSA lifetime contribution limit (Income Tax Act 146.6)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"40000","unit":"CAD","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.6.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"oas_deferral_increase","series":"oas_deferral_increase","title":"OAS pension increase for each month of voluntary deferral (Old Age Security Act 7.1)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"0.6","unit":"percent_per_month","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_dollar_limit.2025","series":"rrsp_dollar_limit","title":"RRSP dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"32490","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_dollar_limit.2026","series":"rrsp_dollar_limit","title":"RRSP dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"33810","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_dollar_limit.2027","series":"rrsp_dollar_limit","title":"RRSP dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2027,"value":"35390","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_dollar_limit.2028","series":"rrsp_dollar_limit","title":"RRSP dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2028,"value":"36390","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ympe.2025","series":"ympe","title":"Year's maximum pensionable earnings (YMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"71300","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ympe.2026","series":"ympe","title":"Year's maximum pensionable earnings (YMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"74600","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ympe.2027","series":"ympe","title":"Year's maximum pensionable earnings (YMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2027,"value":"76700","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"yampe.2025","series":"yampe","title":"Year's additional maximum pensionable earnings (YAMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"81200","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"yampe.2026","series":"yampe","title":"Year's additional maximum pensionable earnings (YAMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"85000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"yampe.2027","series":"yampe","title":"Year's additional maximum pensionable earnings (YAMPE)","kind":"yearly","jurisdiction":"federal","tax_year":2027,"value":"87400","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_annual_limit.2025","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"7000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_annual_limit.2026","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"7000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"federal_brackets.2026","series":"federal_brackets","title":"Federal income tax brackets","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":[{"from":"0","to":"58523","rate":"14"},{"from":"58523.01","to":"117045","rate":"20.5"},{"from":"117045.01","to":"181440","rate":"26"},{"from":"181440.01","to":"258482","rate":"29"},{"from":"258482.01","rate":"33"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ontario_brackets.2026","series":"ontario_brackets","title":"Ontario income tax brackets","kind":"yearly","jurisdiction":"ON","tax_year":2026,"value":[{"from":"0","to":"53891","rate":"5.05"},{"from":"53891.01","to":"107785","rate":"9.15"},{"from":"107785.01","to":"150000","rate":"11.16"},{"from":"150000.01","to":"220000","rate":"12.16"},{"from":"220000.01","rate":"13.16"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"federal_brackets.2025","series":"federal_brackets","title":"Federal income tax brackets","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":[{"from":"0","to":"57375","rate":"14.5"},{"from":"57375.01","to":"114750","rate":"20.5"},{"from":"114750.01","to":"177882","rate":"26"},{"from":"177882.01","to":"253414","rate":"29"},{"from":"253414.01","rate":"33"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/last-year.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"ontario_brackets.2025","series":"ontario_brackets","title":"Ontario income tax brackets","kind":"yearly","jurisdiction":"ON","tax_year":2025,"value":[{"from":"0","to":"52886","rate":"5.05"},{"from":"52886.01","to":"105775","rate":"9.15"},{"from":"105775.01","to":"150000","rate":"11.16"},{"from":"150000.01","to":"220000","rate":"12.16"},{"from":"220000.01","rate":"13.16"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/last-year.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"oas_recovery_threshold.2024","series":"oas_recovery_threshold","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","kind":"yearly","jurisdiction":"federal","tax_year":2024,"value":"90997","unit":"CAD","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"oas_recovery_threshold.2025","series":"oas_recovery_threshold","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"93454","unit":"CAD","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"oas_recovery_threshold.2026","series":"oas_recovery_threshold","title":"OAS pension recovery tax threshold (minimum income recovery threshold)","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"95323","unit":"CAD","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"cpp_early_start_reduction","series":"cpp_early_start_reduction","title":"CPP retirement pension reduction for each month started before 65","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"0.6","unit":"percent_per_month","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"cpp_late_start_increase","series":"cpp_late_start_increase","title":"CPP retirement pension increase for each month started after 65","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"0.7","unit":"percent_per_month","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"rrsp_contribution_deadline.2025","series":"rrsp_contribution_deadline","title":"RRSP contribution deadline for the tax year","kind":"yearly","jurisdiction":"federal","tax_year":2025,"value":"2026-03-02","unit":"date","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_annual_limit.2023","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2023,"value":"6500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_annual_limit.2024","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2024,"value":"7000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html","authority":"official_publication","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_first_year","series":"tfsa_first_year","title":"First calendar year a TFSA dollar limit applies (Income Tax Act 207.01(1), TFSA dollar limit)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2009","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"fhsa_first_available","series":"fhsa_first_available","title":"When an FHSA can first be opened (Income Tax Act 146.6(1), qualifying arrangement)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"after March 2023","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.6.html","authority":"statute","as_of":"2026-11-09","status":"confirmed"},{"id":"tfsa_minimum_age","series":"tfsa_minimum_age","title":"Minimum age for a TFSA dollar limit to apply (Income Tax Act 207.01(1), unused TFSA contribution room)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"18","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-207.01.html","authority":"statute","as_of":"2026-11-10","status":"confirmed"},{"id":"rrsp_maturity_age","series":"rrsp_maturity_age","title":"Age by whose year-end an RRSP must mature (Income Tax Act 146(2)(b.4))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"71","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-146.html","authority":"statute","as_of":"2026-11-10","status":"confirmed"},{"id":"oas_start_age","series":"oas_start_age","title":"Age at which OAS pension eligibility starts (Old Age Security Act 3(1))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"65","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-3.html","authority":"statute","as_of":"2026-11-10","status":"confirmed"},{"id":"oas_deferral_max_age","series":"oas_deferral_max_age","title":"Age after whose month the OAS deferral increase stops (Old Age Security Act 7.1(4)(b))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"70","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/O-9/section-7.1.html","authority":"statute","as_of":"2026-11-10","status":"confirmed"},{"id":"cpp_standard_start_age","series":"cpp_standard_start_age","title":"Standard age to start the CPP retirement pension","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"65","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"cpp_earliest_start_age","series":"cpp_earliest_start_age","title":"Earliest age to start the CPP retirement pension","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"60","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"cpp_latest_start_age","series":"cpp_latest_start_age","title":"Latest age to start the CPP retirement pension (no benefit to wait after it)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"70","unit":"years","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"oas_start_year","series":"oas_start_year","title":"Year the Old Age Security Act came into force (OAS basic pension first paid)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"1952","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/oca/actuarial-reports/actuarial-report-18th-old-age-security-program-31-december-2021","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"rrsp_introduced_year","series":"rrsp_introduced_year","title":"Year registered retirement savings plans were introduced","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"1957","unit":"text","source_url":"https://www150.statcan.gc.ca/n1/pub/13f0026m/2010001/section1-eng.htm","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"cpp_start_year","series":"cpp_start_year","title":"Year the Canada Pension Plan began (inception)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"1966","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/oca/actuarial-reports/actuarial-report-32nd-canada-pension-plan-revised-version","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_t1_filing_date","series":"budget2026_t1_filing_date","title":"Proposed T1 filing and balance-due date for individuals (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"May 15","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_t1_filing_date_start","series":"budget2026_t1_filing_date_start","title":"First taxation year the proposed May 15 date would apply to (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2027","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_t1135_threshold","series":"budget2026_t1135_threshold","title":"Proposed Form T1135 filing threshold, cost of specified foreign property (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"200000","unit":"CAD","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_t1135_start","series":"budget2026_t1135_start","title":"When the proposed T1135 thresholds would apply (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"taxation years or fiscal periods that end after 2026","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_instalment_threshold","series":"budget2026_instalment_threshold","title":"Proposed instalment threshold, individuals outside Quebec (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"7500","unit":"CAD","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_instalment_start","series":"budget2026_instalment_start","title":"When the proposed instalment thresholds would apply (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2028-01-01","unit":"date","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_caregiver_refundable_start","series":"budget2026_caregiver_refundable_start","title":"First taxation year the Canada Caregiver Credit would be refundable (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2027","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_caregiver_max_relief_2027","series":"budget2026_caregiver_max_relief_2027","title":"Most tax relief from the Canada Caregiver Credit for an infirm adult relative, 2027 (Budget 2026 page)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"1260","unit":"CAD","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_rrsp_for_life_consultation_deadline","series":"budget2026_rrsp_for_life_consultation_deadline","title":"Deadline for comments on the proposed 'RRSP for life' (Budget 2026 consultation)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2027-01-08","unit":"date","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_cgi_limit","series":"budget2026_cgi_limit","title":"Canada Growth Incentive exemption limit, per individual per business (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"15000000","unit":"CAD","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_cgi_issue_window","series":"budget2026_cgi_issue_window","title":"Which shares the proposed Canada Growth Incentive exemption would cover (Budget 2026 proposal)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"issued on or after Budget Day and before 2037","unit":"text","source_url":"https://budget.canada.ca/2026/report-rapport/tm-mf-en.html","authority":"budget_proposal","as_of":"2026-11-10","status":"confirmed"},{"id":"budget2026_budget_day","series":"budget2026_budget_day","title":"Date Budget 2026 was presented (Budget Day)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"2026-11-05","unit":"date","source_url":"https://budget.canada.ca/2026/report-rapport/toc-tdm-en.html","authority":"official_publication","as_of":"2026-11-10","status":"confirmed"},{"id":"t1_self_employed_filing_deadline.2026","series":"t1_self_employed_filing_deadline","title":"Income tax filing deadline for self-employed individuals, for the tax year","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"2027-06-15","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"t1_balance_due_date.2026","series":"t1_balance_due_date","title":"Balance-due date for individuals' income tax, for the tax year","kind":"yearly","jurisdiction":"federal","tax_year":2026,"value":"2027-04-30","unit":"date","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"individual_instalment_due_dates","series":"individual_instalment_due_dates","title":"Tax instalment due dates for individuals (the same four dates each year)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"March 15, June 15, September 15, December 15","unit":"text","source_url":"https://www.canada.ca/en/services/taxes/resources-for-small-and-medium-businesses/2026-tax-deadlines-canadian-businesses-self-employed-individuals.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"t3_filing_deadline_rule","series":"t3_filing_deadline_rule","title":"When a trust's T3 return is due","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"no later than 90 days after the trust's tax year-end","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/trust-administrators/t3-return/filing-trust-return/when-file.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"t2_filing_deadline_rule","series":"t2_filing_deadline_rule","title":"When a corporation's T2 return is due","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"within six months of the end of each tax year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/t4012/t2-corporation-income-tax-guide-before-you-start.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"trust_deemed_disposition_years","series":"trust_deemed_disposition_years","title":"Years after a trust's creation at which it is deemed to dispose of its property (Income Tax Act 104(4)(b))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"21","unit":"years","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-104.html","authority":"statute","as_of":"2026-11-11","status":"confirmed"},{"id":"superficial_loss_period","series":"superficial_loss_period","title":"The period around a sale in which buying the same property back makes the loss superficial","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"30 calendar days before the sale to 30 calendar days after the sale","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/personal-income/line-12700-capital-gains/capital-losses-deductions.html","authority":"cra_position","as_of":"2026-11-11","status":"confirmed"},{"id":"fhsa_contribution_period","series":"fhsa_contribution_period","title":"FHSA contribution period (contributions are deductible for the calendar year they are made in)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"January 1 to December 31 of the same year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/first-home-savings-account/tax-deductions-fhsa-contributions.html","authority":"cra_position","as_of":"2026-11-11","status":"confirmed"},{"id":"rrif_minimum_payment_timing","series":"rrif_minimum_payment_timing","title":"When the first RRIF minimum amount must be paid","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"in the year following the year the RRIF is entered into","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-retirement-income-fund-rrif.html","authority":"cra_position","as_of":"2026-11-11","status":"confirmed"},{"id":"donations_claim_year","series":"donations_claim_year","title":"Donations claimed on a year's return are the ones made in that year (unused amounts can be carried forward)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"donations and gifts made in the year","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-34900-donations-gifts/how-claim.html","authority":"cra_position","as_of":"2026-11-11","status":"confirmed"},{"id":"cesg_basic_rate","series":"cesg_basic_rate","title":"Basic Canada Education Savings Grant, figured on each year's contributions","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"20% of annual personal contributions","unit":"text","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/registered-education-savings-plans-resps/canada-education-savings-programs-cesp/canada-education-savings-grant-cesg.html","authority":"official_publication","as_of":"2026-11-11","status":"confirmed"},{"id":"tfsa_annual_limit.2009","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2009,"value":"5000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2010","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2010,"value":"5000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2011","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2011,"value":"5000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2012","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2012,"value":"5000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2013","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2013,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2014","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2014,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2015","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2015,"value":"10000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2016","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2016,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2017","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2017,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2018","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2018,"value":"5500","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2019","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2019,"value":"6000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2020","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2020,"value":"6000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2021","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2021,"value":"6000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"tfsa_annual_limit.2022","series":"tfsa_annual_limit","title":"TFSA dollar limit","kind":"yearly","jurisdiction":"federal","tax_year":2022,"value":"6000","unit":"CAD","source_url":"https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"oas_age75_increase","series":"oas_age75_increase","title":"OAS pension increase at age 75","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"10","unit":"percent","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/payments.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"oas_recovery_rate","series":"oas_recovery_rate","title":"OAS recovery tax rate on net income above the threshold","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"15","unit":"percent","source_url":"https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/recovery-tax.html","authority":"official_publication","as_of":"2026-11-13","status":"confirmed"},{"id":"capital_gains_inclusion_rate","series":"capital_gains_inclusion_rate","title":"Share of a capital gain that is taxable (Income Tax Act 38(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"50","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-38.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"ontario_surtax.2026","series":"ontario_surtax","title":"Ontario surtax on basic Ontario tax (each row's rate applies to basic Ontario tax above its 'from' amount; the rows add together)","kind":"yearly","jurisdiction":"ON","tax_year":2026,"value":[{"from":"5818","rate":"20"},{"from":"7446","rate":"36"}],"unit":"percent","source_url":"https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4127-payroll-deductions-formulas/t4127-jan/t4127-jan-payroll-deductions-formulas-computer-programs.html","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"ontario_estate_admin_tax_rate","series":"ontario_estate_admin_tax_rate","title":"Ontario Estate Administration Tax, dollars per $1,000 (or part) of estate value over $50,000 (estate certificates applied for on or after January 1, 2020)","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"15","unit":"CAD","source_url":"https://www.ontario.ca/page/estate-administration-tax","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"ontario_estate_admin_tax_exemption","series":"ontario_estate_admin_tax_exemption","title":"Ontario estate value at or below which no Estate Administration Tax is payable (estate certificates applied for on or after January 1, 2020)","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"50000","unit":"CAD","source_url":"https://www.ontario.ca/page/estate-administration-tax","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"dividend_refund_rate","series":"dividend_refund_rate","title":"Dividend refund to a private corporation, percent of taxable dividends paid, up to its refundable dividend tax on hand (Income Tax Act 129(1)(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"38.3333333333","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-129.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"part_iv_tax_rate","series":"part_iv_tax_rate","title":"Part IV tax on dividends a private corporation receives from corporations not connected with it (Income Tax Act 186(1)(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"38.3333333333","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-186.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"refundable_investment_income_rate","series":"refundable_investment_income_rate","title":"Share of a CCPC's aggregate investment income added to its non-eligible refundable dividend tax on hand (Income Tax Act 129(4))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"30.6666666667","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-129.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"federal_corporate_basic_rate","series":"federal_corporate_basic_rate","title":"Federal basic corporate income tax rate on taxable income (Income Tax Act 123(1)(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"38","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-123.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"federal_corporate_abatement","series":"federal_corporate_abatement","title":"Federal tax abatement for corporate taxable income earned in a province (Income Tax Act 124(1))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"10","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-124.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"ccpc_additional_refundable_tax_rate","series":"ccpc_additional_refundable_tax_rate","title":"Additional refundable tax on a CCPC's aggregate investment income (Income Tax Act 123.3)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"10.6666666667","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-123.3.html","authority":"statute","as_of":"2026-11-15","status":"confirmed"},{"id":"ontario_corporate_general_rate","series":"ontario_corporate_general_rate","title":"Ontario general corporate income tax rate","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"11.5","unit":"percent","source_url":"https://www.ontario.ca/document/corporations-tax/corporate-income-tax","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"life_expectancy_age70_male","series":"life_expectancy_age70_male","title":"Life expectancy at age 70, males, Canada, three-year estimate 2022 to 2024 (years remaining)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"15.63","unit":"years","source_url":"https://www150.statcan.gc.ca/n1/tbl/csv/13100114-eng.zip","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"life_expectancy_age70_female","series":"life_expectancy_age70_female","title":"Life expectancy at age 70, females, Canada, three-year estimate 2022 to 2024 (years remaining)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"18.02","unit":"years","source_url":"https://www150.statcan.gc.ca/n1/tbl/csv/13100114-eng.zip","authority":"official_publication","as_of":"2026-11-15","status":"confirmed"},{"id":"cda_life_insurance_proceeds","series":"cda_life_insurance_proceeds","title":"Life insurance proceeds a corporation receives on a death are added to its capital dividend account (Income Tax Act 89(1), capital dividend account, paragraph (d))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"(ii) all amounts each of which is the proceeds of a life insurance policy (other than an LIA policy) of which the corporation was not a beneficiary on or before June 28, 1982 received by the corporation in the period and after May 23, 1985 in consequence of the death of any person","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-89.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"cda_life_insurance_acb_deduction","series":"cda_life_insurance_acb_deduction","title":"The policy's adjusted cost basis immediately before the death is taken off the proceeds added to the capital dividend account (Income Tax Act 89(1), capital dividend account, subparagraph (d)(iii))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"(iii) the adjusted cost basis (in this paragraph as defined in subsection 148(9)), immediately before the death, of","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-89.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"capital_dividend_election","series":"capital_dividend_election","title":"A dividend a private corporation elects to be a capital dividend is not included in the shareholder's income (Income Tax Act 83(2))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"(b) no part of the dividend shall be included in computing the income of any shareholder of the corporation.","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-83.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"dividend_gross_up_non_eligible","series":"dividend_gross_up_non_eligible","title":"Gross-up on taxable dividends other than eligible dividends, percent of the dividend added to an individual's income (Income Tax Act 82(1)(b)(i))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"15","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-82.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"dividend_gross_up_eligible","series":"dividend_gross_up_eligible","title":"Gross-up on eligible dividends, percent of the dividend added to an individual's income (Income Tax Act 82(1)(b)(ii))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"38","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-82.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"federal_dividend_tax_credit_non_eligible","series":"federal_dividend_tax_credit_non_eligible","title":"Federal dividend tax credit on dividends other than eligible dividends, percent of the gross-up amount (Income Tax Act 121(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"69.2307692308","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-121.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"federal_dividend_tax_credit_eligible","series":"federal_dividend_tax_credit_eligible","title":"Federal dividend tax credit on eligible dividends, percent of the gross-up amount (Income Tax Act 121(b))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"54.5454545455","unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-121.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"ontario_dividend_tax_credit_non_eligible.2026","series":"ontario_dividend_tax_credit_non_eligible","title":"Ontario dividend tax credit on dividends other than eligible dividends, percent of the federal gross-up amount (Taxation Act, 2007 (Ontario) 19.1)","kind":"yearly","jurisdiction":"ON","tax_year":2026,"value":"22.895","unit":"percent","source_url":"https://www.ontario.ca/laws/statute/07t11","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"ontario_dividend_tax_credit_non_eligible.2027","series":"ontario_dividend_tax_credit_non_eligible","title":"Ontario dividend tax credit on dividends other than eligible dividends, percent of the federal gross-up amount (Taxation Act, 2007 (Ontario) 19.1)","kind":"yearly","jurisdiction":"ON","tax_year":2027,"value":"15.2283","unit":"percent","source_url":"https://www.ontario.ca/laws/statute/07t11","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"ontario_dividend_tax_credit_eligible","series":"ontario_dividend_tax_credit_eligible","title":"Ontario dividend tax credit on eligible dividends, percent of the federal gross-up amount (Taxation Act, 2007 (Ontario) 19.1(b))","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"36.3158","unit":"percent","source_url":"https://www.ontario.ca/laws/statute/07t11","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"life_insurance_policy_acb_definition","series":"life_insurance_policy_acb_definition","title":"Adjusted cost basis of a policyholder's interest in a life insurance policy (Income Tax Act 148(9))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"adjusted cost basis, at any time to a policyholder of the policyholder’s interest in a life insurance policy, means the amount determined by the formula","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-3.3/section-148.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"ontario_surtax_base","series":"ontario_surtax_base","title":"What the Ontario surtax is figured on, the gross tax amount, and where the Ontario dividend tax credit comes in (Taxation Act, 2007 (Ontario) 16(2))","kind":"fixed","jurisdiction":"ON","tax_year":null,"value":"1. Determine the amount, if any, by which the individual’s basic personal income tax for the year, as determined under subdivision a, exceeds the sum of all non-refundable tax credits under subdivision b that are deducted by the individual for the year.","unit":"text","source_url":"https://www.ontario.ca/laws/statute/07t11","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"par_separate_account","series":"par_separate_account","title":"A life insurer keeps the accounts for its participating policies separate from its other policies (Insurance Companies Act 456)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"A company shall maintain accounts, in the form and manner determined by the Superintendent, in respect of participating policies, separately from those maintained in respect of other policies.","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-11.8/section-456.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"par_dividends_not_guaranteed","series":"par_dividends_not_guaranteed","title":"Participating policy dividends cannot be guaranteed, because actual experience is not known in advance (OSFI Guideline E-16, section 4)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"The statement should be clear that since actual levels of experience cannot be known in advance, dividends cannot be guaranteed.","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/participating-account-management-disclosure-participating-policyholders-adjustable-policyholders","authority":"official_publication","as_of":"2026-11-17","status":"confirmed"},{"id":"par_board_discretion","series":"par_board_discretion","title":"Participating policy dividends are declared at the discretion of a life insurer's board of directors (Policyholders Disclosure Regulations 2(a)(i))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"that the dividends or bonuses are declared at the discretion of the board of directors of the company","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/regulations/SOR-2010-234/FullText.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"par_actual_vs_assumed","series":"par_actual_vs_assumed","title":"Participating policy dividends come from the difference between actual and assumed experience (OSFI Guideline E-16, section 4)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"It is important to indicate that policy dividends are generated by the differences between actual levels of experience for certain factors (e.g. mortality, expenses, investment income, etc.) and assumed levels of experience for these factors.","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/participating-account-management-disclosure-participating-policyholders-adjustable-policyholders","authority":"official_publication","as_of":"2026-11-17","status":"confirmed"},{"id":"par_smoothing_allowed","series":"par_smoothing_allowed","title":"Smoothing of participating policy dividends is allowed but must not cross-subsidize one cohort with another (OSFI Guideline E-16, section 3)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"Smoothing of dividends should be allowed, and may even be desirable, but should not result in cross-subsidization of one cohort by another.","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/participating-account-management-disclosure-participating-policyholders-adjustable-policyholders","authority":"official_publication","as_of":"2026-11-17","status":"confirmed"},{"id":"par_smoothing_purpose","series":"par_smoothing_purpose","title":"Smoothing is only for avoiding undue yearly swings in the dividend scale, by a justifiable, documented method (OSFI Guideline E-16, section 3)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"Smoothing should only be used to avoid undue yearly fluctuations in the dividend scale and the method used should be reasonably justifiable and documented.","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/participating-account-management-disclosure-participating-policyholders-adjustable-policyholders","authority":"official_publication","as_of":"2026-11-17","status":"confirmed"},{"id":"par_return_unsmoothed","series":"par_return_unsmoothed","title":"The participating account's disclosed investment return is a market yield without smoothing, net of investment expenses (OSFI Guideline E-16, section 4)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"Investment rate of return should be expressed as a market yield without smoothing and net of investment expenses.","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/participating-account-management-disclosure-participating-policyholders-adjustable-policyholders","authority":"official_publication","as_of":"2026-11-17","status":"confirmed"},{"id":"par_actuary_report","series":"par_actuary_report","title":"Before a participating dividend is declared, the company's actuary reports to the directors on its fairness (Insurance Companies Act 464(2))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"The company’s actuary shall, in writing, report to the directors on the fairness to participating policyholders of a proposed dividend, bonus or other benefit and whether it is in accordance with the policy.","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-11.8/section-464.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"par_shareholder_cap_range","series":"par_shareholder_cap_range","title":"Most that a company with shareholders may transfer to them from a participating account, as a share of the profits set for distribution (OSFI Guideline E-16, section 2; Insurance Companies Act 461)","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"A transferable percentage (varying from 2.5% to 10%) is calculated based on the size of the sum of all the participating accounts, including any closed blocks resulting from demutualization;","unit":"text","source_url":"https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/participating-account-management-disclosure-participating-policyholders-adjustable-policyholders","authority":"official_publication","as_of":"2026-11-17","status":"confirmed"},{"id":"par_shareholder_cap_tiers","series":"par_shareholder_cap_tiers","title":"Statutory tiers behind the shareholder transfer ceiling, percent applied to each slice of the sum of opening participating account balances, then divided by that sum (Insurance Companies Act 461(a))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":[{"from":"0","to":"250000000","rate":"10"},{"from":"250000000","to":"500000000","rate":"7.5"},{"from":"500000000","to":"1000000000","rate":"5"},{"from":"1000000000","rate":"2.5"}],"unit":"percent","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-11.8/section-461.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"},{"id":"par_policies_on_request","series":"par_policies_on_request","title":"A participating policyholder can get a life insurer's dividend policy and participating account management policy free on request (Insurance Companies Act 165(4.1))","kind":"fixed","jurisdiction":"federal","tax_year":null,"value":"The company shall on request and free of charge send a copy of a policy established or amended under paragraph (2)(e) or (e.1) to a shareholder or participating policyholder and on payment of a reasonable fee to any other person.","unit":"text","source_url":"https://laws-lois.justice.gc.ca/eng/acts/I-11.8/section-165.html","authority":"statute","as_of":"2026-11-17","status":"confirmed"}],"version":"b096ba6c","asOf":"2026-11-17"}</script>
 <script>
 (function () {
   'use strict';
@@ -974,6 +894,12 @@ return { EXAMPLE, BOUNDS, ROUND, money, cents, toCents, pct2, factPct, RATE_SERI
 // from the confirmed facts in the page's data block. Inputs live in memory only: nothing in the address, nothing stored.
 // The page makes no request after it loads. Education only: a made-up owner, no product, no policy, no premium figure,
 // no call to act. Every dollar figure goes through INSURANCE.money (full dollars), so the parts always add to the payout.
+//
+// The read-left-to-right pass (SPEC.md, "Read left to right (2026-11-17)"): one picture is the explanation and the
+// control. The example payout is one bar: the income tax (d4), the taxable dividend after tax (d1, hatched) and the
+// capital dividend (d1, solid). Over the bar, two spans split the payout at the handle: the policy's cost base and the
+// tax-free capital dividend. Under it, two spans: the family's income tax and what reaches the family. The four readings
+// sit at the bar's two ends and never move; only the spans and the handle do.
 (function () {
   'use strict';
   var DATA = JSON.parse(document.getElementById('data').textContent);
@@ -981,20 +907,27 @@ return { EXAMPLE, BOUNDS, ROUND, money, cents, toCents, pct2, factPct, RATE_SERI
   var R = F.insuranceRules(DATA.facts);
   // the comparison bar (the same payout as a taxable dividend): off under the safer route (Mo, 2026-11-17). Next to the
   // account it read as what company-owned insurance gains, and the page can't state the rules a fair comparison needs
-  // (SPEC.md section 8.2). true would bring back the chart's second bar and the table's comparison columns.
+  // (SPEC.md section 8.2). build.mjs reads this line for the poster; the page no longer draws a second bar.
   var COMPARE = false;
   var STAMP = 'Hypothetical illustration · Education, not advice';
   var NS = 'http://www.w3.org/2000/svg';
   var SANS = '"Source Sans 3 Variable", system-ui, sans-serif', SERIF = '"Source Serif 4 Variable", Georgia, serif';
-  var FS = 17.5, VF = 19;                          // every chart label 17.5px or more; figures 19px in the serif
+  var FS = 17.5, VF = 19;                          // every picture label 17.5px or more; figures 19px in the serif
   var $ = function (id) { return document.getElementById(id); };
   var m = F.money;
+  // the payout is fixed at the example's; only the cost base moves
   var st = { payout: E.payout, acb: E.acb }, S = null;
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   function longDate(d) { var p = String(d).split('-').map(Number); return MONTHS[p[1] - 1] + ' ' + p[2] + ', ' + p[0]; }
   function fact(ids, text) { return '<span data-fact="' + esc(ids) + '">' + esc(text) + '</span>'; }
+  // a rule in the Act's own words: the fact's value as a quotation (it is the official line, word for word, so nothing
+  // is added to or taken from it), with its source under it
+  function quote(f, where) {
+    return '<blockquote class="rule-text" data-fact="' + esc(f.id) + '" cite="' + esc(f.source_url) + '">' + esc(f.value) + '</blockquote>'
+      + '<p class="rule-src">' + esc(where) + ' · <a href="' + esc(f.source_url) + '">source</a></p>';
+  }
   function el(tag, attrs, parent, text) {
     var e = document.createElementNS(NS, tag);
     for (var k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
@@ -1005,259 +938,149 @@ return { EXAMPLE, BOUNDS, ROUND, money, cents, toCents, pct2, factPct, RATE_SERI
   function clear(svg) { Array.prototype.slice.call(svg.childNodes).forEach(function (c) { if (c.nodeName !== 'title' && c.nodeName !== 'desc') svg.removeChild(c); }); }
   var ctx2 = document.createElement('canvas').getContext('2d');
   function measure(text, font) { ctx2.font = font; return ctx2.measureText(text).width; }
-  var fSans = '400 ' + FS + 'px ' + SANS, fSans6 = '600 ' + FS + 'px ' + SANS, fVal = '600 ' + VF + 'px ' + SERIF;
+  var fSans = '400 ' + FS + 'px ' + SANS, fVal = '600 ' + VF + 'px ' + SERIF;
+  var still = function () { return matchMedia('(prefers-reduced-motion: reduce)').matches; };
+  var LH = Math.round(FS * 1.25);                  // the line step of a two-line reading (phones)
 
-  // ---- the parts of the payout: one list, in bar order, with who ends up with each (the chart, the hidden table, the
-  // readings and the sum all read it) ----
+  // ---- the parts of the payout (the hidden table and the description) ----
   function parts(S) {
-    var p = [
-      { key: 'cap', bar: 0, v: S.capDiv, words: 'tax-free, capital dividend', who: 'to the family, tax-free, as a capital dividend', cls: 'p-cap' },
-      { key: 'after', bar: 0, v: S.afterTax, words: 'to the family, after dividend tax', who: 'to the family, after dividend tax', cls: 'p-after' },
-      { key: 'tax', bar: 0, v: S.tax, words: 'income tax', who: 'income tax on the taxable dividend', cls: 'p-tax' },
+    return [
+      { key: 'cap', v: S.capDiv, words: 'tax-free capital dividend' },
+      { key: 'after', v: S.afterTax, words: 'taxable dividend, after tax' },
+      { key: 'tax', v: S.tax, words: 'income tax' },
     ];
-    if (COMPARE) p.push(
-      { key: 'cafter', bar: 1, v: S.compare.family, words: 'to the family, after dividend tax', who: 'to the family, after dividend tax, if all of it were a taxable dividend', cls: 'p-after' },
-      { key: 'ctax', bar: 1, v: S.compare.tax, words: 'income tax', who: 'income tax, if all of it were a taxable dividend', cls: 'p-tax' }
-    );
-    return p;
   }
-  var BAR_TITLES = ['Through the capital dividend account', 'For comparison only: the same payout as a taxable dividend'];
+  // the four readings, at the bar's ends: over it, the payout split at the handle; under it, where the money goes
+  function readingsOf(S) {
+    return {
+      acb: { v: S.inp.acb, words: 'cost base', cls: 'r-acb', end: false, top: true },
+      cap: { v: S.capDiv, words: 'tax-free capital dividend', cls: 'r-cap', end: true, top: true },
+      tax: { v: S.tax, words: 'the family’s income tax', cls: 'r-tax', end: false, top: false },
+      fam: { v: S.family, words: 'to the family', cls: 'r-fam', end: true, top: false },
+    };
+  }
 
-  // ---- the chart: two stacked bars on one dollar scale, readings under each bar (no legend) ----
-  function Placer(W) {
-    var boxes = [];
-    function hit(b) { return b.x < -0.5 || b.x + b.w > W + 0.5 || boxes.some(function (o) { return b.x < o.x + o.w + 8 && o.x < b.x + b.w + 8 && b.y < o.y + o.h && o.y < b.y + b.h; }); }
-    return { hit: hit, add: function (b) { boxes.push(b); } };
-  }
-  var LH = Math.round(FS * 1.35), segRects = [];
-  function drawChart() {
-    var svg = $('chart'), frame = $('chart-frame');
-    var W = Math.max(300, Math.floor(frame.clientWidth)), narrow = W < 640;
-    clear(svg); segRects = [];
+  // ---- the picture: built once per width, then moved on every change ----
+  var pic = $('pic'), svg = $('chart'), move = $('move'), range = $('acb');
+  var G = null;                                    // the geometry and the shapes of the current build
+  var GAP = 2, GRIP = 14, TICK = 6;               // the ground gap between parts; the grip's radius; a bracket's tick
+  function build() {
+    clear(svg);
+    var W = Math.max(280, Math.floor(pic.clientWidth)), wide = W >= 640;
+    var BARH = matchMedia('(min-width: 960px)').matches ? 72 : 56;
     var defs = el('defs', {}, svg);
     var pat = el('pattern', { id: 'ins-hatch', patternUnits: 'userSpaceOnUse', width: 6, height: 6, patternTransform: 'rotate(45)' }, defs);
     el('rect', { x: 0, y: 0, width: 6, height: 6, 'class': 'hatch-bg' }, pat);
     el('line', { x1: 1, y1: 0, x2: 1, y2: 6, 'class': 'hatch-line' }, pat);
-    var P = parts(S), pay = S.inp.payout, X = function (v) { return v / pay * W; };
-    var gText = el('g', { 'class': 'labels' }, svg), y = 4;
-    var BARH = [40, 28], GAP = 2;
-
-    // one bar: its title, (bar 1) the annotation and its leader, the segments, then the readings in rows under the bar
-    function drawBar(b) {
-      var list = P.filter(function (p) { return p.bar === b; });
-      if (!list.length) return;
-      if (b > 0) y += 24;
-      // the bar's title (wrapped to the width)
-      wrapText(BAR_TITLES[b], W - 2, function (s) { return measure(s, fSans6); }).forEach(function (s) {
-        y += LH; el('text', { x: 0, y: (y - LH * 0.28).toFixed(1), 'class': 'bar-t' }, gText, s);
-      });
-      y += 6;
-      // the one annotation, above bar 1 (normal state only): a bracket over the whole cost base span (the hatched part
-      // and the income tax), labelled once above it
-      var bx = X(S.capDiv);
-      if (b === 0 && S.state === 'normal') {
-        var one = 'The ' + m(S.inp.acb) + ' cost base: a taxable dividend here';
-        var mw = function (s) { return measure(s, fSans6); }, full = mw(one);
-        var lines = full <= W - 2 ? [one] : wrapText(one, W - 2, mw);
-        if (lines.length > 1) { var bal = wrapText(one, Math.ceil(full / lines.length) + 24, mw); if (bal.length === lines.length) lines = bal; }
-        var w = Math.max.apply(null, lines.map(mw));
-        // right-aligned to the span's right end (the bar's end), so it sits over the span it names
-        var tx = Math.max(0, W - w - 1);
-        var at = el('text', { x: tx.toFixed(1), y: (y + FS).toFixed(1), 'class': 'annot' }, gText);
-        lines.forEach(function (s, i) { el('tspan', { x: tx.toFixed(1), dy: i ? LH : 0 }, at, s); });
-        y += lines.length * LH + 8;
-        // the bracket: ticks down at both ends of the span, the line across the top
-        var a0 = Math.min(bx + 1, W - 7), z0 = W - 1;
-        el('path', { d: 'M' + a0.toFixed(1) + ' ' + (y + 6).toFixed(1) + 'V' + y.toFixed(1) + 'H' + z0.toFixed(1) + 'V' + (y + 6).toFixed(1), 'class': 'span-bracket', fill: 'none' }, svg);
-        y += 6;
-      }
-      y += 4;
-      var h = BARH[b], x0 = 0, top = y;
-      list.forEach(function (p) {
-        var x1 = x0 + X(p.v);
-        p.x0 = x0; p.x1 = x1;
-        if (p.v > 0) {
-          // a 2px gap of the ground between parts, so each part reads against the ground (non-text contrast)
-          var a = x0 + (x0 > 0 ? GAP / 2 : 0), z = x1 - (x1 < W - 0.5 ? GAP / 2 : 0);
-          var r = el('rect', { x: a.toFixed(1), y: top, width: Math.max(1, z - a).toFixed(1), height: h, 'class': 'seg ' + p.cls, 'data-key': p.key }, svg);
-          if (p.cls === 'p-after') el('rect', { x: (a + 1).toFixed(1), y: top + 1, width: Math.max(0, z - a - 2).toFixed(1), height: h - 2, 'class': 'seg-edge', 'pointer-events': 'none' }, svg);
-          segRects.push({ p: p, el: r, x: a, w: z - a, y: top, h: h });
-        }
-        x0 = x1;
-      });
-      y += h;
-      var shown = list.filter(function (p) { return p.v > 0; });
-      // phones: a stacked key under the bar, one row per part (swatch, figure, words), in bar order
-      if (narrow) {
-        y += 12;
-        shown.forEach(function (p) {
-          var sw = 18, rowH = Math.max(LH, VF + 6), cy = y + rowH / 2;
-          el('rect', { x: 0, y: (cy - sw / 2).toFixed(1), width: sw, height: sw, 'class': 'key-sw ' + p.cls, 'pointer-events': 'none' }, svg);
-          if (p.cls === 'p-after') el('rect', { x: 1, y: (cy - sw / 2 + 1).toFixed(1), width: sw - 2, height: sw - 2, 'class': 'seg-edge', 'pointer-events': 'none' }, svg);
-          var tx2 = sw + 10, avail = W - tx2 - 2, fig = m(p.v), wf = measure(fig, fVal), sep = ' · ';
-          var t = el('text', { x: tx2, y: (cy + VF * 0.34).toFixed(1), 'class': 'rd', 'data-key': p.key }, gText);
-          el('tspan', { 'class': 'rd-v ' + p.cls }, t, fig);
-          if (wf + measure(sep + p.words, fSans) <= avail) { el('tspan', { 'class': 'rd-w' }, t, sep + p.words); y += rowH + 4; }
-          else {
-            var ws = wrapText(p.words, avail, function (s) { return measure(s, fSans); });
-            ws.forEach(function (s2) { el('tspan', { 'class': 'rd-w', x: tx2, dy: LH }, t, s2); });
-            y += rowH + ws.length * LH + 4;
-          }
-        });
-        return;
-      }
-      // wider: each reading under its part, a 2px bracket spanning the part, then its figure and words, in rows
-      var Pl = Placer(W), rows = [];
-      shown.forEach(function (p) {
-        var fig = m(p.v), sep = ' · ', wf = measure(fig, fVal), ws = measure(sep, fSans), ww = measure(p.words, fSans);
-        var one = wf + ws + ww, two = Math.max(wf, ww);
-        var forms = one <= W - 2 ? [{ lines: 1, w: one }, { lines: 2, w: two }] : [{ lines: 2, w: two }];
-        for (var r = 0; r < 6; r++) {
-          for (var k = 0; k < forms.length; k++) {
-            var f = forms[k], tx = Math.max(0, Math.min(p.x0, W - f.w));
-            // a reading under a thin part sits at the part's right edge when it can, so it stays near its bracket
-            if (p.x1 - p.x0 < f.w && p.x1 - f.w >= 0 && p.x0 > W / 2) tx = Math.max(0, Math.min(W - f.w, p.x1 - f.w));
-            var box = { x: tx, y: r * 1000, w: f.w, h: 1 };
-            if (Pl.hit(box)) continue;
-            Pl.add(box); (rows[r] = rows[r] || []).push({ p: p, x: tx, f: f });
-            r = 99; break;
-          }
-        }
-      });
-      rows.forEach(function (row) {
-        var lines = Math.max.apply(null, row.map(function (it) { return it.f.lines; }));
-        var by = y + 10;
-        row.forEach(function (it) {
-          var p = it.p, a = p.x0 + 1, z = p.x1 - 1;
-          if (z - a < 6) { a = (p.x0 + p.x1) / 2 - 3; z = a + 6; }
-          el('path', { d: 'M' + a.toFixed(1) + ' ' + (by - 5).toFixed(1) + 'V' + by.toFixed(1) + 'H' + z.toFixed(1) + 'V' + (by - 5).toFixed(1), 'class': 'bracket b-' + p.key + ' ' + p.cls, fill: 'none' }, svg);
-          var t = el('text', { x: it.x.toFixed(1), y: (by + VF + 2).toFixed(1), 'class': 'rd', 'data-key': p.key }, gText);
-          el('tspan', { 'class': 'rd-v ' + p.cls }, t, m(p.v));
-          if (it.f.lines === 1) el('tspan', { 'class': 'rd-w' }, t, ' · ' + p.words);
-          else el('tspan', { 'class': 'rd-w', x: it.x.toFixed(1), dy: LH }, t, p.words);
-        });
-        y = by + VF + 2 + (lines - 1) * LH + 8;
-      });
-    }
-    drawBar(0);
-    if (COMPARE) drawBar(1);
-    y += 4;
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + Math.ceil(y));
-    svg.setAttribute('width', W); svg.setAttribute('height', Math.ceil(y));
-    // the reading box for a tapped or hovered part, pinned above the bars (drawn last, over the titles)
-    readG = el('g', { 'class': 'crosshair seg-read' }, svg); readG.style.display = 'none';
-    readBox = el('rect', { x: 0, y: 0, rx: 2 }, readG); readTxt = el('text', { x: 0, y: 0 }, readG);
-    if (kbIndex != null) showRead(kbIndex);
+    // a reading is one line from 640px (figure, then words) and two lines under it (figure over words); the rows
+    // never change height, so nothing under the picture moves while the handle does
+    var labH = wide ? VF + 6 : VF + LH + 3;
+    // the gaps between a reading and its span, and a span and the bar: closer on phones, so the bar is higher up
+    var LG = wide ? 8 : 5, BG = wide ? 6 : 4;
+    var topBr = labH + LG, barTop = topBr + TICK + BG, barBot = barTop + BARH, botBr = barBot + BG + TICK, botLab = botBr + LG;
+    var H = botLab + labH + 4;
+    G = { W: W, wide: wide, BARH: BARH, barTop: barTop, barBot: barBot, topBr: topBr, botBr: botBr, botLab: botLab, labH: labH, H: H };
+    G.tax = el('rect', { 'class': 'seg p-tax', 'data-key': 'tax', y: barTop, height: BARH }, svg);
+    G.after = el('rect', { 'class': 'seg p-after', 'data-key': 'after', y: barTop, height: BARH }, svg);
+    G.afterEdge = el('rect', { 'class': 'seg-edge', y: barTop + 1, height: BARH - 2 }, svg);
+    G.cap = el('rect', { 'class': 'seg p-cap', 'data-key': 'cap', y: barTop, height: BARH }, svg);
+    G.brackets = el('g', { 'class': 'brackets' }, svg);
+    G.labels = el('g', { 'class': 'labels' }, svg);
+    // the four readings: fixed places at the bar's two ends
+    var R4 = readingsOf(S);
+    G.read = {};
+    Object.keys(R4).forEach(function (k) {
+      var r = R4[k], x = r.end ? W : 0, y0 = r.top ? 0 : botLab;
+      var t = el('text', { x: x, y: (y0 + VF * 0.85).toFixed(1), 'class': 'rd ' + r.cls, 'data-key': k, 'text-anchor': r.end ? 'end' : 'start' }, G.labels);
+      var v = el('tspan', { 'class': 'rd-v' }, t, '');
+      var w = wide ? el('tspan', { 'class': 'rd-w' }, t, ' ' + r.words) : el('tspan', { 'class': 'rd-w', x: x, dy: LH }, t, r.words);
+      G.read[k] = { t: t, v: v, w: w };
+    });
+    G.handle = el('g', { 'class': 'handle', 'aria-hidden': 'true' }, svg);
+    el('rect', { 'class': 'handle-rule', x: -2, y: topBr, width: 4, height: barBot + 3 - topBr }, G.handle);
+    var cy = barTop + BARH / 2;
+    el('circle', { 'class': 'grip', cx: 0, cy: cy, r: GRIP }, G.handle);
+    el('path', { 'class': 'chev', d: 'M-3 ' + (cy - 4) + 'L-7 ' + cy + 'L-3 ' + (cy + 4) + 'M3 ' + (cy - 4) + 'L7 ' + cy + 'L3 ' + (cy + 4) }, G.handle);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('width', W); svg.setAttribute('height', H);
+    // the range lies over the bar (half a thumb past each end, so the thumb's centre lands on the boundary)
+    move.style.top = barTop + 'px';
+    move.style.height = BARH + 'px';
+    place(false);
   }
 
-  // ---- reading a part: hover or tap (it stays on touch until a tap elsewhere), or Left and Right on the focused chart ----
-  var readG = null, readBox = null, readTxt = null, kbIndex = null;
-  function showRead(i) {
-    var sr = segRects[i]; if (!sr || !readG) return;
-    readG.style.display = '';
-    while (readTxt.firstChild) readTxt.removeChild(readTxt.firstChild);
-    el('tspan', { 'class': 'rv' }, readTxt, m(sr.p.v));
-    el('tspan', {}, readTxt, ' · ' + sr.p.who);
-    var W = Number($('chart').getAttribute('width')), pad = 6;
-    var bb = readTxt.getBBox(), w = bb.width + pad * 2, h = bb.height + pad * 2;
-    if (w > W) {
-      // too long for one line on a phone: the figure, then who gets it
-      while (readTxt.firstChild) readTxt.removeChild(readTxt.firstChild);
-      el('tspan', { 'class': 'rv', x: 0, dy: '1em' }, readTxt, m(sr.p.v));
-      wrapText(sr.p.who, W - pad * 2, function (s) { return measure(s, fSans); }).forEach(function (s) { el('tspan', { x: 0, dy: '1.3em' }, readTxt, s); });
-      bb = readTxt.getBBox(); w = bb.width + pad * 2; h = bb.height + pad * 2;
+  // move the shapes, the spans and the figures for the current state
+  function place(ease) {
+    if (!G) return;
+    var W = G.W, pay = S.inp.payout, X = function (v) { return v / pay * W; };
+    var xTax = X(S.tax), xAcb = X(S.inp.acb);
+    pic.classList.toggle('ease', !!ease && !still());
+    function box(r, a, z, show) {
+      r.style.display = show ? '' : 'none';
+      r.style.x = a.toFixed(1) + 'px';
+      r.style.width = Math.max(0, z - a).toFixed(1) + 'px';
     }
-    var cx = sr.x + sr.w / 2, bx = Math.max(0, Math.min(W - w, cx - w / 2)), by = Math.max(0, sr.y - h - 6);
-    readBox.setAttribute('x', bx); readBox.setAttribute('y', by); readBox.setAttribute('width', w); readBox.setAttribute('height', h);
-    readTxt.setAttribute('transform', 'translate(' + (bx + pad - bb.x) + ',' + (by + pad - bb.y) + ')');
-    segRects.forEach(function (s, k) { s.el.classList.toggle('on', k === i); });
+    var hasTax = S.tax > 0, hasAfter = S.afterTax > 0, hasCap = S.capDiv > 0;
+    // the tax, the hatched part after tax, the solid capital dividend, with 2px ground gaps
+    var tz = hasTax ? Math.max(xTax, GAP) : 0;
+    box(G.tax, 0, Math.max(GAP / 2, tz - GAP / 2), hasTax);
+    var aa = hasTax ? tz + GAP / 2 : 0, az = hasCap ? xAcb - GAP / 2 : W;
+    box(G.after, aa, Math.max(aa + 1, az), hasAfter);
+    box(G.afterEdge, aa + 1, Math.max(aa + 1, az - 1), hasAfter);
+    var ca = hasAfter || hasTax ? xAcb + GAP / 2 : 0;
+    box(G.cap, ca, W, hasCap);
+    G.handle.style.transform = 'translateX(' + xAcb.toFixed(1) + 'px)';
+    // the spans: over the bar the cost base and the capital dividend meet at the handle; under it the tax and the
+    // family's money meet where the tax ends
+    var g = G.brackets;
+    while (g.firstChild) g.removeChild(g.firstChild);
+    function span(a, z, y, down, cls) {
+      if (z - a < 1) return;
+      var t = down ? y + TICK : y - TICK;
+      el('path', { d: 'M' + a.toFixed(1) + ' ' + t + 'V' + y + 'H' + z.toFixed(1) + 'V' + t, 'class': 'bracket ' + cls, fill: 'none' }, g);
+    }
+    span(1, xAcb - 3, G.topBr, true, 'b-acb');
+    span(xAcb + 3, W - 1, G.topBr, true, 'b-cap');
+    span(1, tz - GAP / 2 - 1, G.botBr, false, 'b-tax');
+    span(aa + 1, W - 1, G.botBr, false, 'b-fam');
+    var R4 = readingsOf(S);
+    Object.keys(R4).forEach(function (k) { G.read[k].v.textContent = m(R4[k].v); });
   }
-  function hideRead() { if (readG) readG.style.display = 'none'; segRects.forEach(function (s) { s.el.classList.remove('on'); }); }
-  var chart = $('chart');
-  function segAt(e) { var k = e.target && e.target.getAttribute && e.target.getAttribute('data-key'); if (!k) return -1; for (var i = 0; i < segRects.length; i++) if (segRects[i].p.key === k) return i; return -1; }
-  chart.addEventListener('pointermove', function (e) { var i = segAt(e); if (i >= 0) showRead(i); else if (e.pointerType !== 'touch') hideRead(); });
-  chart.addEventListener('pointerdown', function (e) { var i = segAt(e); if (i >= 0) showRead(i); });
-  chart.addEventListener('pointerleave', function (e) { if (e.pointerType !== 'touch') hideRead(); });
-  document.addEventListener('pointerdown', function (e) { if (!chart.contains(e.target)) hideRead(); });
-  chart.addEventListener('keydown', function (e) {
-    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) < 0) return;
-    e.preventDefault();
-    var n = segRects.length;
-    if (kbIndex == null) kbIndex = 0;
-    else if (e.key === 'ArrowRight') kbIndex = Math.min(n - 1, kbIndex + 1);
-    else if (e.key === 'ArrowLeft') kbIndex = Math.max(0, kbIndex - 1);
-    if (e.key === 'Home') kbIndex = 0; if (e.key === 'End') kbIndex = n - 1;
-    showRead(kbIndex);
-  });
-  chart.addEventListener('blur', function () { kbIndex = null; hideRead(); });
 
-  // ---- the first move: the cost base slider (from $0 to the payout) ----
-  var range = $('acb'), bubble = $('acb-out');
-  range.min = B.acb.min; range.step = B.acb.step;
-  function paintSlider() {
-    range.max = st.payout; range.value = st.acb;
-    var f = st.payout > 0 ? (st.acb - B.acb.min) / (st.payout - B.acb.min) : 0, w = range.clientWidth, thumb = 28;
-    bubble.textContent = m(st.acb);
+  // ---- the first move: the cost base, from $0 to the payout, on the bar itself ----
+  range.min = B.acb.min; range.max = st.payout; range.step = B.acb.step;
+  function paintControl() {
+    range.value = st.acb;
     range.setAttribute('aria-valuetext', m(st.acb) + ', an example');
-    $('tick-lo').textContent = m(B.acb.min); $('tick-hi').textContent = m(st.payout);
-    var half = bubble.offsetWidth / 2, x = f * (w - thumb) + thumb / 2;
-    bubble.style.left = Math.max(half, Math.min(w - half, x)) + 'px';
-    range.style.setProperty('--fill', (f * 100).toFixed(2) + '%');
   }
-  var clampNote = '';
-  function setAcb(v) { st.acb = Math.max(B.acb.min, Math.min(st.payout, v)); clampNote = ''; paintSlider(); render(false, true); }
-  range.addEventListener('input', function () { setAcb(Number(range.value)); });
+  var pressed = false, pressMoves = 0;
+  range.addEventListener('pointerdown', function () { pressed = true; pressMoves = 0; });
+  addEventListener('pointerup', function () { pressed = false; });
+  addEventListener('pointercancel', function () { pressed = false; });
+  function setAcb(v, ease) {
+    st.acb = Math.max(B.acb.min, Math.min(st.payout, v));
+    render(ease);
+  }
+  // a drag follows the thumb on the same frame; a key, a page step or a tap eases over 160ms
+  range.addEventListener('input', function () {
+    var ease = !pressed || pressMoves === 0;
+    if (pressed) pressMoves++;
+    setAcb(Number(range.value), ease);
+  });
   range.addEventListener('keydown', function (e) {
     if (e.key !== 'PageUp' && e.key !== 'PageDown') return;
     e.preventDefault();
-    setAcb(st.acb + (e.key === 'PageUp' ? 1 : -1) * B.acb.page);
+    setAcb(st.acb + (e.key === 'PageUp' ? 1 : -1) * B.acb.page, true);
   });
-
-  // ---- the payout stepper: label, minus, the value, plus; 48px buttons, disabled at a bound, never wrapping ----
-  var STEP = { key: 'payout', label: 'The payout', name: 'the payout', min: B.payout.min, max: B.payout.max, step: B.payout.step };
-  (function makeStepper(host, c) {
-    var box = document.createElement('div'); box.className = 'stepper';
-    var id = 'st-' + c.key, lab = document.createElement('span'); lab.className = 'stepper-l'; lab.id = id + '-l'; lab.textContent = c.label;
-    var row = document.createElement('div'); row.className = 'stepper-row'; row.setAttribute('role', 'group'); row.setAttribute('aria-labelledby', id + '-l');
-    var dn = document.createElement('button'), up = document.createElement('button'), out = document.createElement('output');
-    dn.type = up.type = 'button'; dn.textContent = '−'; up.textContent = '+'; out.id = id; out.setAttribute('data-flash', '');
-    row.appendChild(dn); row.appendChild(out); row.appendChild(up); box.appendChild(lab); box.appendChild(row); host.appendChild(box);
-    function go(dir) {
-      var v = Math.max(c.min, Math.min(c.max, Math.round((st.payout + dir * c.step) / c.step) * c.step));
-      if (v === st.payout) return;
-      st.payout = v;
-      if (st.acb > v) { st.acb = v; clampNote = 'Cost base lowered to ' + m(v) + ': it can’t be more than the payout here.'; } else clampNote = '';
-      paintSlider(); render();
-    }
-    dn.addEventListener('click', function () { go(-1); }); up.addEventListener('click', function () { go(1); });
-    c.paint = function () {
-      var txt = m(st.payout);
-      out.textContent = txt;
-      dn.disabled = st.payout <= c.min; up.disabled = st.payout >= c.max;
-      dn.setAttribute('aria-label', 'Decrease ' + c.name + ', now ' + txt);
-      up.setAttribute('aria-label', 'Increase ' + c.name + ', now ' + txt);
-    };
-    c.out = out;
-  })($('steppers'), STEP);
-  $('reset').addEventListener('click', function () { st = { payout: E.payout, acb: E.acb }; clampNote = ''; paintSlider(); render(); range.focus(); });
 
   // ---- the words that follow the state ----
   var readout = deskReadout('#answer', { format: m });
   function lineFor(S) {
     return {
-      normal: 'If paid out now, the ' + m(S.inp.acb) + ' cost base is a taxable dividend here.',
-      noCost: 'No cost base at death: here, all of the payout can go out this way.',
-      allCost: 'The cost base equals the payout, so none of it goes out this way.',
+      normal: 'Paid out now, the ' + m(S.inp.acb) + ' cost base is a taxable dividend.',
+      noCost: 'No cost base: all of it can be a capital dividend.',
+      allCost: 'Paid out now, the whole payout is a taxable dividend.',
     }[S.state];
-  }
-  function figB(v) { return '<b>' + esc(v) + '</b>'; }
-  function pc(v) { return S.inp.payout > 0 ? Math.max(0, Math.min(100, v / S.inp.payout * 100)).toFixed(3) + '%' : '0%'; }
-  function paintSplit() {
-    // the sum, as a small ledger: the capital dividend plus what is left after dividend tax is the family's money (the
-    // total row); the income tax takes the rest. Every part in full dollars; the family and the tax add to the payout.
-    var rows = [[m(S.capDiv), 'as a capital dividend', '', ''], [m(S.afterTax), 'after dividend tax', '+', ' plus'], [m(S.family), 'to the family in all', '=', ' total'], [m(S.tax), 'income tax', '', ' tax']];
-    $('sum').innerHTML = rows.map(function (r) { return '<span class="sum-row' + r[3] + '"><span class="sum-op">' + r[2] + '</span><b class="sum-v">' + esc(r[0]) + '</b><span class="sum-w">' + esc(r[1]) + '</span></span>'; }).join('');
-    $('sum-sr').textContent = m(S.capDiv) + ' tax-free as a capital dividend, plus ' + m(S.afterTax) + ' after dividend tax, makes ' + m(S.family) + ' to the family in all; ' + m(S.tax) + ' of the ' + m(S.inp.payout) + ' payout is income tax.';
   }
   function stepsHtml() {
     return [
@@ -1266,21 +1089,16 @@ return { EXAMPLE, BOUNDS, ROUND, money, cents, toCents, pct2, factPct, RATE_SERI
       '<b>The election.</b> The company elects, on the prescribed form and on time, to pay that much as a capital dividend. It is not counted in the family’s income. Here, the cost base part is paid out now as an ordinary taxable dividend.',
     ];
   }
+  $('steps').innerHTML = stepsHtml().map(function (s) { return '<li>' + s + '</li>'; }).join('');
   var rid = [R.ids.fedTop, R.ids.onTop, R.ids.surtax, R.ids.grossUp, R.ids.fedDTC, R.ids.onDTC].join(' ');
   function paintWords(first) {
     var i = S.inp;
-    readout.set({ n: S.capDiv, line: lineFor(S), animate: first ? false : undefined });
-    $('answer-of').textContent = 'of the ' + m(i.payout) + ' payout';
-    paintSplit();
-    $('lede').textContent = 'A made-up owner dies, and the company receives ' + m(i.payout) + '.';
-    $('clamp').textContent = clampNote;
-    $('chart-title').textContent = S.state === 'noCost' ? 'All of it through the account' : S.state === 'allCost' ? 'None of it through the account' : 'Where the payout goes';
-    $('chart-svg-title').textContent = $('chart-title').textContent;
-    $('chart-desc').textContent = (COMPARE ? 'Two bars' : 'One bar') + ' of one example payout of ' + m(i.payout) + '. Through the capital dividend account: ' + m(S.capDiv) + ' tax-free as a capital dividend, '
-      + m(S.afterTax) + ' to the family after dividend tax and ' + m(S.tax) + ' income tax.'
-      + (COMPARE ? ' For comparison, the same payout as a taxable dividend: ' + m(S.compare.family) + ' to the family and ' + m(S.compare.tax) + ' income tax.' : '');
-    $('chart-table-rows').innerHTML = parts(S).map(function (p) { return '<tr><td>' + esc(p.bar ? 'For comparison: as a taxable dividend' : BAR_TITLES[0]) + '</td><td>' + esc(p.words) + '</td><td>' + esc(m(p.v)) + '</td></tr>'; }).join('');
-    // How this is worked out: plain steps, every rate wrapped in its fact
+    readout.set({ n: S.family, line: lineFor(S), animate: first ? false : undefined });
+    $('chart-desc').textContent = 'One bar: the example payout of ' + m(i.payout) + '. On the left, the policy’s cost base of ' + m(i.acb)
+      + '; to its right, ' + m(S.capDiv) + ' as a tax-free capital dividend. Paid out now, the cost base part loses ' + m(S.tax)
+      + ' to the family’s income tax and leaves ' + m(S.afterTax) + ', so ' + m(S.family) + ' reaches the family.';
+    $('chart-table-rows').innerHTML = parts(S).map(function (p) { return '<tr><td>' + esc(p.words) + '</td><td>' + esc(m(p.v)) + '</td></tr>'; }).join('');
+    // In this example's numbers: plain steps, every rate wrapped in its fact
     var how = [
       'Into the capital dividend account (<abbr title="capital dividend account">CDA</abbr>): payout ' + esc(m(i.payout)) + ' − the policy’s cost base ' + esc(m(i.acb)) + ' = ' + esc(m(S.cda)) + '.',
       'Elected as a capital dividend: ' + esc(m(S.capDiv)) + ', not counted in the family’s income.',
@@ -1289,26 +1107,24 @@ return { EXAMPLE, BOUNDS, ROUND, money, cents, toCents, pct2, factPct, RATE_SERI
         : 'With no cost base, nothing is paid as a taxable dividend, so there is no income tax.',
       'The family receives ' + esc(m(S.capDiv)) + ' + ' + esc(m(S.afterTax)) + ' = ' + esc(m(S.family)) + ' of the ' + esc(m(i.payout)) + '.',
     ];
-    $('how').innerHTML = '<ol>' + how.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><p>The rate is the ' + R.rateYear + ' top federal and Ontario rate on a non-eligible dividend, worked out in Go deeper.</p>';
-    var li = $('steps').children, stp = stepsHtml();
-    if (li.length !== stp.length) $('steps').innerHTML = stp.map(function (s) { return '<li>' + s + '</li>'; }).join('');
-    var changed = i.payout !== E.payout || i.acb !== E.acb;
-    $('reset').hidden = !changed;
-    var echo = $('echo');
-    echo.textContent = changed ? 'Now: a ' + m(i.payout) + ' payout, a ' + m(i.acb) + ' cost base.' : '';
-    echo.hidden = !changed;
+    $('how').innerHTML = '<ol class="fold-list">' + how.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><p>The rate is the ' + R.rateYear + ' top federal and Ontario rate on a non-eligible dividend, worked out below.</p>';
   }
 
-  // ---- static words: the assumptions, the year, Go deeper's rules, the caveats, the sources ----
-  $('assume-text').textContent = 'A made-up Ontario owner; the family taxed at the ' + R.rateYear + ' top rate; every figure an example.';
+  // ---- static words: the assumptions, the hint, Go deeper's rules and the year, the caveats, the sources ----
+  $('assume-text').textContent = 'Ontario, ' + R.rateYear + ' top rates.';
+  // the one line that says what the handle is and what moves it (the second sentence only with the 148(9) fact)
+  $('hint').textContent = R.acbRule ? 'Drag the cost base. Premiums raise it; the insurance’s cost lowers it.' : 'Drag the policy’s cost base.';
   // the year, and (when a later year's Ontario credit is already confirmed and lower) what that does to the taxable part
   $('year-line').innerHTML = esc('Rates for ' + R.rateYear + ': the latest year with every figure published.')
     + (R.onDTCLater ? ' ' + fact(R.onDTCLater.id, 'The Ontario dividend credit is already set lower from ' + R.onDTCLater.year) + esc(', so with other rates unchanged the tax on the taxable part would be higher then.') : '');
-  // without the 148(9) fact, the help keeps only its name line and Go deeper drops "The cost base, in the Act"
-  if (!R.acbRule) { $('acb-help-rule').remove(); $('acb-sec').remove(); }
-  else {
-    $('acb-rule').innerHTML = '<p>Section 148(9) of the Act builds the cost base from a formula. In the words of the facts this page reads:</p>'
-      + '<p class="rule-text">' + fact(R.ids.acbRule, R.acbRule) + '</p>'
+  // without the 148(9) fact, "The cost base, in the Act" keeps only the line that names the cost base
+  if (!R.acbRule) {
+    $('acb-h').textContent = 'The cost base';
+    $('acb-help').textContent = 'The cost base is the policy’s adjusted cost basis under the Income Tax Act. The payout less it is what can go out as a capital dividend.';
+    $('acb-rule').remove();
+  } else {
+    $('acb-rule').innerHTML = '<p>In plain words: section 148(9) of the Act builds the cost base from a formula, with amounts that raise it and amounts that lower it. The definition opens:</p>'
+      + quote(R.text.acbRule, 'Income Tax Act, subsection 148(9)')
       + '<p>Which way it moves over a policy’s life depends on the policy; this tool does not estimate it.</p>';
   }
   (function dividendLines() {
@@ -1322,60 +1138,103 @@ return { EXAMPLE, BOUNDS, ROUND, money, cents, toCents, pct2, factPct, RATE_SERI
     ];
     $('div-lines').innerHTML = '<p>Per $' + L.dividend + ' of non-eligible dividend, at the ' + R.rateYear + ' top rates; each line is rounded to the cent.</p><ol class="fold-list">' + rows.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol>';
   })();
-  $('elect').innerHTML = '<p>Section 83(2) of the Act, in the words of the facts this page reads:</p>'
-    + '<p class="rule-text">' + fact(R.ids.election, R.text.election.value) + '</p>'
+  $('elect').innerHTML = '<p>In plain words: when the company makes the election on time, for the full dividend, the dividend is a capital dividend up to the account’s balance, and none of it counts as the family’s income. Section 83(2) of the Act ends with rule (b):</p>'
+    + quote(R.text.election, 'Income Tax Act, paragraph 83(2)(b)')
     + '<p>An election larger than the account has consequences of its own; those, and the anti-avoidance rules around the election, are left out here.</p>';
   $('caveats').innerHTML = [
     ['The set-up', ['A made-up owner of an Ontario private company.', 'The company owns the policy and is its beneficiary.', 'The account holds only this payout, with nothing else added or taken off.', 'The owner’s family are the company’s shareholders after the death.']],
     ['Paying it out', ['The election is made on time, for the full dividend.', 'The cost base part is paid out now, as a non-eligible dividend.', 'The family is taxed at the ' + R.rateYear + ' top Ontario rate.']],
     ['Left out', ['Premiums, and how they are paid.', 'Which kind of policy.', 'Policies tied to borrowing arrangements, and some older policies.', 'The estate as the first shareholder after the death.', 'Any tax the company may pay on the payout.', 'How the cost base changes over the years.', 'Holding the policy personally.',
       'Tax on the owner’s shares at death, and the payout’s effect on their value.', 'Probate; creditors’ claims on company assets.', 'The dividend refund and other company tax accounts.', 'Keeping the money in the company.', 'Family members outside Ontario or Canada.', 'Lower brackets.']],
-  ].map(function (g) { return '<div class="cv-group"><h3 class="cv-h">' + g[0] + '</h3><ul>' + g[1].map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div>'; }).join('');
+  ].map(function (g) { return '<div class="cv-group"><h4 class="cv-h">' + g[0] + '</h4><ul>' + g[1].map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div>'; }).join('');
   (function sources() {
-    var items = R.used.map(function (f) { return '<li><a href="' + esc(f.source_url) + '">' + esc(f.title) + '</a> · as of ' + esc(longDate(f.as_of)) + '</li>'; });
+    // one line per source page: two facts read from the same page (a rate for two years) share it
+    var seen = {}, items = [];
+    R.used.forEach(function (f) {
+      var k = f.source_url + '|' + f.title;
+      if (seen[k]) return;
+      seen[k] = true;
+      items.push('<li><a href="' + esc(f.source_url) + '">' + esc(f.title) + '</a> · as of ' + esc(longDate(f.as_of)) + '</li>');
+    });
     var ver = 'Version ' + DATA.version + ' · rates for ' + R.rateYear + ' · made in this browser; nothing was sent.';
     $('sources').innerHTML = '<p>Every rate and rule on this page is read from these official sources (confirmed values only):</p><ul>' + items.join('') + '</ul>'
       + '<p>These rules were checked against the statutes and the government’s pages on ' + esc(longDate(DATA.asOf)) + '; reference data, verify at the source.</p>'
       + '<p>How it’s made: the calculation was written from scratch for this site, from the statute text, and runs in this browser. The owner, the company and the figures are made up: example assumptions, not facts, and not anyone’s situation. ' + esc(ver) + '</p>';
-    $('foot-version').textContent = ver;
   })();
 
-  // ---- Go deeper: the numbers behind the chart (filled when open) ----
-  var deeper = $('deeper');
-  function drawTable() {
+  // ---- Go deeper: the cost base from $0 to the payout, as a picture and a table (drawn when open) ----
+  var deeper = $('deeper'), tsvg = $('trend');
+  function drawTrend() {
     if (!deeper.open) return;
-    var cols = ['Cost base', 'Capital dividend, tax-free', 'To the family after dividend tax', 'Income tax', 'Family in all'];
-    if (COMPARE) cols.push('As a taxable dividend: to the family', 'As a taxable dividend: income tax');
+    clear(tsvg);
+    var W = Math.max(280, Math.floor($('trend-fig').clientWidth)), pay = S.inp.payout;
+    var top = 8, PH = W >= 640 ? 220 : 180, axisY = top + PH, H = axisY + 10 + VF + 6;
+    var X = function (v) { return v / pay * W; }, Y = function (v) { return top + PH - v / pay * PH; };
+    var lo = F.split(R, { payout: pay, acb: 0 }), hi = F.split(R, { payout: pay, acb: pay });
+    var y0 = Y(lo.family), y1 = Y(hi.family);
+    // what reaches the family (d1 tint) under the line; the income tax (d4 tint) between it and the payout
+    el('path', { d: 'M0 ' + y0.toFixed(1) + 'L' + W + ' ' + y1.toFixed(1) + 'V' + axisY + 'H0Z', 'class': 'ar-fam' }, tsvg);
+    el('path', { d: 'M0 ' + y0.toFixed(1) + 'L' + W + ' ' + y1.toFixed(1) + 'V' + top + 'Z', 'class': 'ar-tax' }, tsvg);
+    el('line', { x1: 0, y1: y0.toFixed(1), x2: W, y2: y1.toFixed(1), 'class': 'ln-fam' }, tsvg);
+    el('line', { x1: 0, y1: axisY, x2: W, y2: axisY, 'class': 'ln-axis' }, tsvg);
+    var Pl = [], hit = function (b) { return Pl.some(function (o) { return b.x < o.x + o.w + 8 && o.x < b.x + b.w + 8 && b.y < o.y + o.h && o.y < b.y + b.h; }); };
+    function label(x, y, parts, anchor, need) {
+      var w = parts.reduce(function (s, p) { return s + measure(p[0], p[1] === 'rd-v' ? fVal : fSans); }, 0);
+      var bx = { x: anchor === 'end' ? x - w : x, y: y - VF, w: w, h: VF + 6 };
+      if (!need && hit(bx)) return;
+      Pl.push(bx);
+      var t = el('text', { x: x.toFixed(1), y: y.toFixed(1), 'text-anchor': anchor }, tsvg);
+      parts.forEach(function (p) { el('tspan', { 'class': p[1] }, t, p[0]); });
+    }
+    // the current cost base: a rule down to the axis and a dot on the line, its reading beside the dot
+    var xa = X(S.inp.acb), ya = Y(S.family), right = xa < W / 2;
+    el('line', { x1: xa.toFixed(1), y1: ya.toFixed(1), x2: xa.toFixed(1), y2: axisY, 'class': 'ln-now' }, tsvg);
+    el('circle', { cx: xa.toFixed(1), cy: ya.toFixed(1), r: 6, 'class': 'dot-now' }, tsvg);
+    Pl.push({ x: xa - 8, y: ya - 8, w: 16, h: 16 });
+    // under the line all along the reading (the line falls to the right, so a reading to the right sits lower)
+    var nowW = measure(m(S.family), fVal) + measure(' now', fSans), slope = (y1 - y0) / W;
+    label(right ? xa + 12 : xa - 12, ya + VF + 14 + (right ? Math.max(0, slope * (12 + nowW)) : 0), [[m(S.family), 'rd-v t-fam'], [' now', 'rd-w']], right ? 'start' : 'end', true);
+    // the area names on the side away from the current cost base, then the line's right end where there is room
+    label(right ? W - 4 : 4, axisY - 12, [['Reaches the family', 'rd-w']], right ? 'end' : 'start', false);
+    label(W - 4, top + VF + 4, [['Income tax', 'rd-w']], 'end', false);
+    label(W - 4, y1 + VF + 14, [[m(hi.family), 'rd-v t-fam']], 'end', false);
+    // the cost base along the bottom
+    label(0, axisY + 10 + VF, [[m(0), 'rd-v'], [' cost base', 'rd-w']], 'start', true);
+    label(W, axisY + 10 + VF, [[m(pay), 'rd-v'], [' cost base', 'rd-w']], 'end', true);
+    tsvg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    tsvg.setAttribute('width', W); tsvg.setAttribute('height', H);
+    $('trend-desc').textContent = 'As the cost base grows from $0 to the ' + m(pay) + ' payout, what reaches the family falls in a straight line from '
+      + m(lo.family) + ' to ' + m(hi.family) + '. At the ' + m(S.inp.acb) + ' cost base now, ' + m(S.family) + ' reaches the family.';
+    // the numbers behind it: three columns, so nothing is cut off on a phone
+    var cols = ['Cost base', 'Income tax', 'Reaches the family'];
     $('nums-head').innerHTML = cols.map(function (c) { return '<th scope="col">' + c + '</th>'; }).join('');
-    $('nums-rows').innerHTML = F.tableRows(R, S.inp.payout, S.inp.acb).map(function (r) {
-      var cells = [m(r.capDiv), m(r.afterTax), m(r.tax), m(r.family)];
-      if (COMPARE) cells.push(m(r.compare.family), m(r.compare.tax));
+    $('nums-rows').innerHTML = F.tableRows(R, pay, S.inp.acb).map(function (r) {
+      var cells = [m(r.tax), m(r.family)];
       return '<tr' + (r.now ? ' class="now"' : '') + '><th scope="row">' + esc(m(r.acb)) + (r.now ? ' <span class="now-tag">now</span>' : '') + '</th><td>' + cells.map(esc).join('</td><td>') + '</td></tr>';
     }).join('');
-    var wrap = $('nums-wrap'), wr = wrap.getBoundingClientRect(), hidden = 0;
-    [].forEach.call(document.querySelectorAll('#nums-head th'), function (th) { if (th.getBoundingClientRect().right - wr.left + wrap.scrollLeft > wrap.clientWidth + 1) hidden++; });
-    $('nums-cap').textContent = 'The cost base at 0, a quarter, half, three quarters and all of the ' + m(S.inp.payout) + ' payout, and now.' + (hidden ? ' Swipe the table for ' + hidden + ' more column' + (hidden === 1 ? '' : 's') + ' →' : '');
+    var wrap = $('nums-wrap'), cut = wrap.scrollWidth > wrap.clientWidth + 1;
+    $('nums-cap').textContent = 'The cost base at 0, a quarter, half, three quarters and all of the ' + m(pay) + ' payout, and now.' + (cut ? ' Swipe the table for more →' : '');
   }
-  deeper.addEventListener('toggle', drawTable);
+  deeper.addEventListener('toggle', drawTrend);
 
-  // ---- one render for every change ----
-  var queued = false;
-  function render(first, later) {
+  // ---- one render for every change: the words at once, the picture on the next frame ----
+  var queued = false, queuedEase = false;
+  function render(ease, first) {
     S = F.split(R, st); st.acb = S.inp.acb;
+    paintControl();
     paintWords(first === true);
-    STEP.paint();
-    drawTable();
-    if (!later) { drawChart(); return; }
+    drawTrend();
+    if (first) { build(); return; }
+    queuedEase = queuedEase || !!ease;
     if (queued) return;
     queued = true;
-    requestAnimationFrame(function () { queued = false; drawChart(); });
+    requestAnimationFrame(function () { queued = false; var e = queuedEase; queuedEase = false; place(e); });
   }
-  render(true);
-  paintSlider();
-  deskWatchFlash(STEP.out);
-  var frame = $('chart-frame'), lastW = frame.clientWidth;
-  new ResizeObserver(function () { if (frame.clientWidth !== lastW) { lastW = frame.clientWidth; drawChart(); paintSlider(); } }).observe(frame);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { drawChart(); paintSlider(); });
+  render(false, true);
+  var lastW = pic.clientWidth;
+  new ResizeObserver(function () { if (pic.clientWidth !== lastW) { lastW = pic.clientWidth; build(); drawTrend(); } }).observe(pic);
+  addEventListener('resize', function () { build(); drawTrend(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { build(); drawTrend(); });
 })();
 </script>
 </body>

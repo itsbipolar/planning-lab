@@ -15,15 +15,17 @@
 export const EXAMPLE = {
   label: 'Example assumptions, not facts',
   N: 5,          // spread growth-asset gains and losses over N years (the visitor's control)
-  w: 0.7,        // fixed-income share of the made-up account
+  w: 0.65,       // fixed-income share of the made-up account (a round figure that matches no published mix)
   L: 10,         // bond ladder length, years
   spread: 0.01,  // made-up credit spread over government yields, both lines
   prem: 0.04,    // made-up growth-asset premium over the long bond yield
   start: 1980,   // first year shown
 };
 // Made-up growth-asset surprises, percentage points, zero mean, repeating every 13 years from `start`. They follow no real
-// market. 13 long so that no N from 1 to 10 cancels them exactly.
-export const PAT = [12, 18, -8, 5, -26, 14, 9, -16, 3, -11, 7, -2, -5];
+// market. 13 long so that no N from 1 to 10 cancels them exactly. The research guide's thirteen values, put in an order
+// that keeps every large made-up drop off the well-known market falls (1987, 2000-2002, 2008, 2020, 2022 get -5 to +9),
+// and in which the page’s figure falls as N rises at the example’s mix.
+export const PAT = [18, 9, -5, 7, -16, 12, -11, -2, 5, 3, 14, -26, -8];
 export const STEADY = [0]; // the "steady (no swings)" switch
 // UI bounds, not facts
 export const BOUNDS = {
@@ -93,6 +95,36 @@ export function run(Y, {
   }
   return out;
 }
+
+// RULES: text rules from shared/facts.json, confirmed only. None feeds the arithmetic; each feeds a line, a quote or a
+// Source (SPEC.md section 4.4). No value is typed here: the page shows each fact's own value.
+const fail = (id) => { throw new Error(`par-dividends: the confirmed fact ${id} is missing (no fallback value is used)`); };
+const confirmedOf = (facts) => (Array.isArray(facts) ? facts : facts.facts).filter((f) => f.status === 'confirmed' && f.value != null);
+/** The page cannot do without these (the build stops and names the id). */
+export const REQUIRED = { notGuaranteed: 'par_dividends_not_guaranteed', board: 'par_board_discretion',
+  actualVsAssumed: 'par_actual_vs_assumed', smoothingPurpose: 'par_smoothing_purpose' };
+/** Each of these is left out, with its line or quote, when missing or not confirmed. */
+export const OPTIONAL = { separate: 'par_separate_account', smoothingAllowed: 'par_smoothing_allowed',
+  returnUnsmoothed: 'par_return_unsmoothed', actuary: 'par_actuary_report', onRequest: 'par_policies_on_request',
+  capRange: 'par_shareholder_cap_range', capTiers: 'par_shareholder_cap_tiers' };
+
+/** The rules, keyed as in REQUIRED and OPTIONAL (each the whole fact, or null), plus `shareholderRange` ({ min, max }
+ *  in percent, from the tier rates; null unless both shareholder facts are confirmed) and `used` (the facts read). */
+export function parRules(facts) {
+  const F = confirmedOf(facts), used = [];
+  const find = (id) => F.find((f) => f.id === id) || null;
+  const R = {};
+  for (const [k, id] of Object.entries(REQUIRED)) { R[k] = find(id) || fail(id); used.push(R[k]); }
+  for (const [k, id] of Object.entries(OPTIONAL)) { R[k] = find(id); if (R[k]) used.push(R[k]); }
+  R.shareholderRange = null;
+  if (R.capRange && R.capTiers && Array.isArray(R.capTiers.value)) {
+    const rates = R.capTiers.value.map((r) => Number(r.rate));
+    if (rates.every(Number.isFinite)) R.shareholderRange = { min: Math.min(...rates), max: Math.max(...rates) };
+  }
+  R.used = used;
+  return R;
+}
+// end RULES
 
 const median = (xs) => {
   const s = [...xs].sort((a, b) => a - b), m = s.length >> 1;

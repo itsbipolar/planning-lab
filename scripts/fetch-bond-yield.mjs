@@ -28,7 +28,7 @@ writeFileSync('shared/data/long-bond-yield-yearly.json', JSON.stringify({
   licence: 'Statistics Canada Open Licence', licence_url: 'https://www.statcan.gc.ca/en/reference/licence',
   terms_url: 'https://www.bankofcanada.ca/terms/',
   attribution: 'Adapted from Statistics Canada, Table 10-10-0122-01 (Bank of Canada data). This does not constitute an endorsement by Statistics Canada of this product. Source: Bank of Canada. Not affiliated with or endorsed by the Bank of Canada.',
-  changes: 'Year-end values taken from the monthly series (the December observation of each year, from 1950); the latest month is kept separately.',
+  changes: 'Year-end values taken from the monthly series (December of each year).',
   unit: 'percent', retrieved: today,
   values,
   latest: months.at(-1),

@@ -20,6 +20,107 @@ rounded to the dollar, not to $1,000. Phones get a stacked key under the bar; on
 Go deeper quotes 148(9) and 83(2) from the facts instead of paraphrasing them. The insurer par-fund comparison
 is on hold and nothing here touches it.
 
+## Read left to right (2026-11-17, second pass; wins over every section below where they differ, "Simplification" included)
+
+Mo, 2026-11-17, on the simplified page: "too complicated and doing too much. I want a simpler explanation and more
+visualization. It's doing too much talking and isn't following our website feel and intention." Three cold reads and a
+planner's read found the cause in the picture: the control was a jargon term with no gloss; the tax was drawn twice (a
+dashed empty slot and a dropped red block); nothing marked the cost base as a span or said whose tax it was; the
+readings moved and changed form while dragging; the page jumped; the control sat below 700px on a phone; three folds
+and three education notes in a row; Go deeper was all prose; one source was listed twice. The engine, the facts, the
+figures, the rounding and every accuracy fix are unchanged.
+
+- **The picture, read left to right.** One bar, the $1,000,000 example payout: income tax (d4, solid), the taxable
+  dividend after tax (d1, hatched), the capital dividend (d1, solid), 2px ground gaps. The tax is drawn once, inside the
+  bar; no dashed slot, no dropped bite, no bubble. **Over the bar**, two spans meet at the handle: "{$200,000} cost base"
+  (ink) and "{$800,000} tax-free capital dividend" (d1). **Under it**, two spans meet where the tax ends: "{$95,480} the
+  family's income tax" (d4) and "{$904,520} to the family" (d1). The four readings are pinned to the bar's two ends
+  (left readings start at x = 0, right readings end at the right edge), so they never move; only the spans and the
+  handle do. Under 640px each reading is two lines (figure over words), from 640px one line. A span narrower than a few
+  pixels is left out; its reading still says the figure. 12 label words in the picture.
+- **The control** is the handle (unchanged mechanics: the native range lies over the bar; tap or drag; keys and page
+  steps ease over 160ms). aria-label "The policy's cost base". The falling bite is gone.
+- **One plain line under the picture** (the figcaption, after EXAMPLE DATA): "Drag the cost base. Premiums raise it;
+  the insurance's cost lowers it." (without the 148(9) fact: "Drag the policy's cost base.").
+- **The answer:** "Reaches the family" / {$904,520} (no "of $1,000,000": the lede says it, and it wrapped at $1,000,000)
+  / "Paid out now, the {$200,000} cost base is a taxable dividend." · "No cost base: all of it can be a capital
+  dividend." · "Paid out now, the whole payout is a taxable dividend." The line keeps two lines' height on phones, and
+  the picture's height never changes, so nothing under it moves (tested). No "How this is worked out" fold in the
+  answer: its steps moved into Go deeper.
+- **Lede** "A made-up owner dies; the company receives $1,000,000." **Assumptions** "Hypothetical illustration ·
+  Education, not advice. Ontario, {2026} top rates." 60 words above Go deeper at 390 (tested).
+- **Go deeper** (closed; preview "Chart, steps, assumptions"), in order: **A bigger cost base, less to the family** (a
+  picture: what reaches the family, d1 tint under a straight d1 line, the income tax, d4 tint, above it, as the cost
+  base runs from $0 to the payout; a dashed rule and dot at the current cost base with "{$904,520} now"; the line's right
+  end; a three-column table under it, Cost base · Income tax · Reaches the family, at 0, ¼, ½, ¾, all and now, with no
+  swiping) · Step by step (the three steps, unchanged words) then "In this example's numbers" (the old worked steps,
+  every rate in its fact span, the one CDA abbr) · the dividend tax per $100, the rate year and the 2027 Ontario credit
+  note · the cost base in the Act (148(9)) · the election (83(2)) · This example assumes (all 20 items).
+- **After Go deeper:** the professional line (now regular weight, ink2, not bold), Sources (each source line once; the
+  version said once, there; the footer's version line is gone), the one Up next, the footer.
+
+## Simplification (2026-11-17; wins over every section below where they differ, sections 1, 2, 3, 5, 6 and 11 included)
+
+Mo, 2026-11-17: "too complicated and doing too much. I want a simpler explanation and more visualization. It's doing
+too much talking and isn't following our website feel and intention." Measured before the pass: 305 visible words
+above Go deeper, a 4,403px page at 390, the only picture starting at y = 1,699 on a phone and no picture in the first
+screen at 1440, and the same three figures said four times. **One picture is now the explanation and the control.**
+The engine (model.mjs), the facts, the figures, the rounding and every accuracy fix are unchanged; only the page
+changed. After the pass: 60 words above Go deeper (tested), a 1,807px page at 390 with the answer and the whole picture
+in the first phone screen, and everything down to the Go deeper summary in the first 1440 screen.
+
+- **The picture ("the bite").** The $1,000,000 example payout is one bar. Left to right: the income tax's slot (a
+  dashed outline in ink2, where the tax was), the taxable dividend after tax (d1, hatched), the capital dividend (d1,
+  solid), with 2px ground gaps. The income tax itself (d4) is drawn dropped out of the bar under its slot: 12px down as
+  a 30px block on phones (so the picture fits the first screen), 18px down at the bar's own height from 640px. The
+  family's money is one unbroken d1 run whose length is the big answer. A $0 part is not drawn. No legend, no tooltip,
+  no chart title, subtitle or stamp chip; the SVG keeps role="img", a `<desc>` with every figure, and the hidden table.
+- **The handle is the control** (`[data-first-move]` on the wrapper of the range and the bubble). The native range
+  lies exactly over the bar, half a thumb (14px) past each end, so the thumb's centre is the boundary; its thumb is an
+  invisible 28px grip and the handle is drawn in the picture (a 4px ink rule, a 28px ink-ringed grip with two chevrons).
+  A tap anywhere on the bar moves the boundary there. aria-label "The policy's cost base at death"; aria-valuetext
+  "$200,000, an example"; aria-describedby a `.desk-sr` sentence naming the adjusted cost basis. The payout stepper,
+  its cue, echo, Back to the example and clamp note are gone: the payout is fixed at EXAMPLE.payout (BOUNDS.payout and
+  its model tests stay).
+- **The bubble** (HTML `<output>`, aria-hidden) rides the handle, clamped inside the bar: "{$200,000} cost base".
+- **Readings on the picture.** Under 640px: the capital dividend is written inside its solid part in the ground
+  colour when it fits ("$800,000 / tax-free capital dividend"), the income tax beside the dropped bite, and a key row
+  (swatch, figure, words) for any part that has no place of its own. From 640px: "{$904,520} to the family" over a
+  bracket spanning the whole d1 run, and each part's reading under it with a 2px bracket in its colour (the bite's under
+  the bite), placed so none collides. Word strings: "tax-free capital dividend", "taxable dividend, after tax", "income
+  tax". At most 16 label words in the picture, figures not counted (tested at six states).
+- **The answer** (`[data-answer]`): "Reaches the family" / {$904,520} "of {$1,000,000}" (the big figure is now
+  S.family, so the number and the d1 run agree; the capital dividend is the first reading) / one line of 12 words or
+  fewer: "The {$200,000} cost base part is a taxable dividend." · "No cost base: all of it can be a capital dividend." ·
+  "Cost base equals the payout: all of it is a taxable dividend." "How this is worked out" (closed) is unchanged.
+- **The one assumptions line:** "Hypothetical illustration · Education, not advice. A made-up owner in Ontario;
+  {2026} top rates."
+- **First screen.** 390: kicker, H1, lede, answer, picture, EXAMPLE DATA, assumptions, Go deeper. 960+: the H1, lede and
+  assumptions in columns 1–5; the answer and, under it, the picture in columns 6–12, top-aligned with the H1, so the
+  answer sits beside the control that moves it (a change from the design note, which put the answer under the H1 and
+  left it 400px from the handle).
+- **Word budget:** 60 or fewer above the Go deeper summary at 390, the summary and its preview ("Steps, rates, the Act,
+  assumptions") included; not the picture, not `.desk-sr`, not the inside of a closed fold. Any new word replaces one.
+- **Go deeper** (closed), in order: Step by step (the three What happens steps, unchanged words) · The dividend tax on
+  the taxable part (the per-$100 lines, then the rate-year line and the 2027 Ontario credit note, unchanged) · The cost
+  base, in the Act (the old help paragraph, then the 148(9) quote and "this tool does not estimate it"; without the
+  148(9) fact only the naming sentence stays) · The election (83(2), unchanged) · The numbers behind the picture (the
+  0–100% table) · This example assumes (all three caveat groups, all 20 items, word for word).
+- **Visible after Go deeper:** "How any of this applies to a real company is a question for a tax professional and a
+  lawyer." Then Sources, the one Up next, the footer.
+- **Motion.** A drag follows the thumb on the same frame; a key, page step or tap eases the parts, handle and bubble
+  over 160ms; the readout counts up over 300ms after an act. On the first act only, the bite starts level with the bar
+  and falls into place over 220ms; on load it is already in place. Reduced motion: all instant, the bite never moves.
+- **The poster** (dist/poster.json) now reads the page's answer: "{$904,520} reaches the family, of a {$1,000,000}
+  example payout" (the site redraws it on its next sync-labs).
+- **Tests** (tests/page.spec.mjs, 390 and 1440): the shell, template and reduced motion; the word budget (with a
+  planted paragraph that must fail it) and the picture's label cap; only kicker, H1, lede, answer, picture and
+  assumptions above Go deeper; first-screen geometry (390: big figure ≤ 620, control ≤ 700, bar ≤ 720, bite ≤ 820,
+  last reading ≤ 844; 1440: picture and readings ≤ 900, right of the H1); the thumb and the drawn handle within 1px of
+  the boundary at six states; the bite's width is the tax and it sits under its slot; a real pointer drag; a tap on the
+  bar; the bite falls once; no label collisions in both schemes; 3:1 for every part, the slot and the handle; Go
+  deeper holds every moved item; the words, text sizes and axe as before.
+
 ---
 
 ## 0. The choice: scores and what was grafted
@@ -379,14 +480,17 @@ This is checked in page.spec by computed style and in `npm run tokens` on the si
    3. **The election.** The company elects, on the prescribed form and on time, to pay that much as a capital dividend.
       It is not counted in the family's income. Here, the cost base part is paid out now as an ordinary taxable dividend.
 
-   Each step's wording is checked against its fact's value by a test (keywords: "less", "immediately before the
-   death"/"just before", "elects", "no part ... included").
+   Each step's wording is checked against its fact by a test (keywords: "in consequence of the death"/"When the owner
+   dies", "immediately before the death"/"just before", "elects" (the title), "no part of the dividend ... included").
+   The text facts' values are the Act's own lines, word for word (2026-11-17; the facts repo's tests hold every
+   Claude-checked text value to its source_quote).
 3. **The chart** (section 5).
 4. **Change the example** (section 3).
 5. **Go deeper** (`details.deeper`, closed). Its summary is at y ≤ 2,800 at 390 (tested). `deskDeeper` writes the "In
    this section:" line. It has four parts:
-   1. **"The cost base, in the Act"** [acbRule]: "Section 148(9) of the Act builds the cost base from a formula. In the
-      words of the facts this page reads:", then the fact's value itself (no paraphrase of the rule). Then one line:
+   1. **"The cost base, in the Act"** [acbRule]: a plain-words line ("In plain words: section 148(9) of the Act builds
+      the cost base from a formula, with amounts that raise it and amounts that lower it. The definition opens:"), then
+      the fact's value as a `<blockquote data-fact>` (the Act's line, word for word) and its source line. Then one line:
       "Which way it moves over a policy's life depends on the policy; this tool does not estimate it." No figures, no
       curve, no policy types.
    2. **"The dividend tax on the taxable part"**: per $100 of dividend, every rate in a `<span data-fact="id">`:
@@ -398,7 +502,10 @@ This is checked in page.spec by computed style and in `npm run tokens` on the si
 
       Each line is rounded to the cent. A test checks that the shown lines add to the shown total within $0.02. The
       bracket in the text above names the fact; every figure on the page is computed.
-   3. **"The election"**: "Section 83(2) of the Act, in the words of the facts this page reads:", then the fact's value.
+   3. **"The election"**: a plain-words line ("In plain words: when the company makes the election on time, for the full
+      dividend, the dividend is a capital dividend up to the account's balance, and none of it counts as the family's
+      income. Section 83(2) of the Act ends with rule (b):"), then the fact's value as a `<blockquote data-fact>` and its
+      source line.
       Then one line: "An election larger than the account has consequences of its own; those, and the anti-avoidance
       rules around the election, are left out here."
    4. **"The numbers behind the chart"**: the table from `tableRows`. The money columns come first ("Capital dividend,

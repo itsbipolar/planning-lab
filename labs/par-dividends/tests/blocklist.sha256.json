@@ -1,7 +1,7 @@
 {
- "_note": "Hashed blocklist (SPEC.md section 10): the insurer, product and document names and the carrier wording from the research guide, Part 3, plus a planted canary, so no name is typed into this repo. Each entry is sha256(\"par-dividends:\" + normalize(term)). normalize: NFKD, strip accents, lower case, every run of characters outside a-z and 0-9 becomes one space, trim. A text is checked by hashing every run of 1 to maxN normalized words. figures: the carrier figures (two decimals, as toFixed(2)), checked against the made-up defaults only.",
+ "_note": "Hashed blocklist (SPEC.md section 10): the insurer, product and document names and the carrier wording from the research guide, Part 3, plus a planted canary, so no name is typed into this repo. Each entry is sha256(\"par-dividends:\" + normalize(term)). normalize: NFKD, strip accents, lower case, every run of characters outside a-z and 0-9 becomes one space, trim. A text is checked by hashing every run of 1 to maxN normalized words. figures: the carrier figures (two decimals, as toFixed(2)): credited rates, returns and the asset-mix shares from the research, checked against the made-up defaults only (the mix both ways: bonds and loans, and the rest).",
  "maxN": 7,
- "canary": "planted canary phrase for the blocklist self check",
+ "canary": "planted blocklist canary",
  "names": [
   "017be6f8bd15def6223cc54c935f74219ea32bfc9e969d3f4a1ecdcf58a83e0a",
   "0b4ce8e7338422129194dc349144a922d509d923b0920c5acc41614ca337ccc6",
@@ -13,6 +13,7 @@
   "1e5534343a11ea42756051b000bd88b5e05bd374a61e55c3dac1fb79c52a658f",
   "22cf9b2311cdbd20cb738668df4acec0b1f1e780721e18a3297a02fc36d44881",
   "25bcc09c11e2394bea6bae78bada37c72daf05b1428e4aadb4572a5457ad7192",
+  "265df730cda6a6299e47fe2f68f57f165ceb48dbe6e644628020cb50d39d1396",
   "2f58e4e715be7779554e56ad69b5ef5557f926b292678c15df61cfd2ab555a5d",
   "2f74ff60b80210f4473d19cd08210a1e6b419d5945a80b5534dca9ac2aeca39b",
   "3216ea29ab95bcf602d27ecda5861161e1b0339f9bff68ef117080b3b6ef6348",
@@ -33,7 +34,6 @@
   "706ea97930e11ee96400697d4c12b398a7c2d9c0cf77378795f942e248b3e995",
   "70a065b02fdaabccdd7ed5e817dd2b9b3b1a78620587bc8ae5e38179e82a7863",
   "7142f43d343fcbc850e4c38cdc1daf3f4f7e257c1a379d5a065283fb48f9f763",
-  "721bfa7f5fbe83251d22f37d78b52b3a6e8a062188d55fc53d30ef7e35970680",
   "7d8fe650c8fea3237b5436424b4357008dba5d14f40dadc7259da7350b3a9602",
   "7d96a337ad9c5f2ea71a441fbbbf634565b12c2e578330105d5836e3f4fef38e",
   "7ee288d35105fe635b1db0e92137d66db2c5b7798241b38b083e3a25dac029af",
@@ -79,6 +79,23 @@
   "93b4e0f6d2c3cfc6075929bb3982ad3a8160c751e4e1494749d9fde8ace47c0d",
   "9826e21210f61ac71595da8500e3685ac0b34a09f33dddd6b4f12e6651ab4293",
   "ad2577656fd0006912c99c2e9eeac2b4085ac01e3b2aa6935f9d60cf8c23506a",
-  "af2fd4d7601540a8a2543acdc697cf6a3a5292ffa5cb53c1a3ab54d0182f161e"
+  "af2fd4d7601540a8a2543acdc697cf6a3a5292ffa5cb53c1a3ab54d0182f161e",
+  "86cdcebec0e83c887e60e5e3f0745d673d38a0cea17301af4e5123b9c011c790",
+  "b40480d7fcd063874979a3a8f3356e9e4fbc535df7f96dee416acdc8ab2e5436",
+  "5242175daf55af371b16cb288d3269e8df05211ebd059c5d69d07bd6d6266af6",
+  "76c47edfdac3d997a02379e50058eaa83528ab88833d13c57233e3b21b7ea445",
+  "11873e73b941fa228292246364d1d2692b6f50bca2a25a18f91561996221189f",
+  "02041fd123491f810dc0b33aeaeaf85cdbf31baf2af087e4dbf397794a4b936f",
+  "46af85d9e57cdfc59f05d8e607c80ec8d543d6b6d988205f7f5d8d9922f7d95c",
+  "d28875f85eee6bdb183685b93feaebc29a99793f6b7e67c2e2af7724577dfd68",
+  "8f5e355bd821f9fe588c5287f6fd14d85ee946882513fe9a9d712e36794a7249",
+  "2196f97a458ad8fe397d12081daf0552e2da12e7eacd8a9d8126e9db2a11fda0",
+  "4c524211f6cf2d8ee376f674618092035c623fb553ad14ce168d88f76fa98fb7",
+  "21b11288f77c896b77a373cdc3597ea4f41dbaf65b57441223983efa9c8c8ec6",
+  "663b1b788b31ab4a8a6bc1c90b6782a9540016a22a6ca323763867474ff3719c",
+  "a3c783c9156b1b44d27d856a295f5c8432e82e3e3a34bdf5c346c7d5bdf06ad7",
+  "fdd52836b644fff49b1efc5f894c42bc01c27689da5ada793065d005a8f19394",
+  "880c4b3502f58b3621fcea526081b458b6fd1ae19bf728ab7f953388aaccd99f",
+  "f9cb2c07dde0f66376b7fc9d8fabd0740c14402774485885067dd3623b3077ca"
  ]
 }

@@ -47,7 +47,8 @@ async function labelClashes(page) {
 }
 
 test('banned phrases are nowhere on the page', () => {
-  const text = readFileSync(file, 'utf8').replace(/data:[^"')]+/g, '');
+  // the inlined facts file is data, not page copy (it holds every confirmed fact, other tools' official wording included)
+  const text = readFileSync(file, 'utf8').replace(/data:[^"')]+/g, '').replace(/<script type="application\/json" id="facts">[\s\S]*?<\/script>/, '');
   for (const re of [/\bshould\b/i, /best for you/i, /\brecommend(s|ed)?\b/i, /guarantee/i, /best age/i, /financial (planner|advisor|adviser)/i, /\bCFP\b/])
     expect(text, String(re)).not.toMatch(re);
 });

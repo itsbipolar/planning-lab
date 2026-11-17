@@ -17,93 +17,78 @@
       <h1 id="question">{{question}}</h1>
       <p class="lede" id="lede">{{lede}}</p>
 
-      <div class="move" data-first-move>
-        <label class="label" for="acb" id="acb-label">The policy’s cost base at death</label>
-        <div class="slide" id="slide">
-          <output class="bubble" id="acb-out" for="acb" aria-hidden="true">{{acb}}</output>
-          <input type="range" id="acb" name="acb" aria-labelledby="acb-label" aria-describedby="acb-help">
-          <div class="slide-ticks" aria-hidden="true"><span id="tick-lo"></span><span id="tick-hi"></span></div>
-        </div>
-        <p class="clamp-note" id="clamp" role="status" aria-live="polite"></p>
+      <div class="stage" id="stage">
+      <div class="readout answer" id="answer" data-answer aria-live="polite">
+        <p class="readout-k" id="answer-k">Reaches the family</p>
+        <p class="readout-fig"><span class="readout-v big" id="answer-v" data-readout-v>{{family}}</span></p>
+        <p class="readout-t" id="answer-t" data-readout-t></p>
       </div>
 
-      <div class="side" id="side">
-      <div class="readout answer" id="answer" data-answer aria-live="polite">
-        <p class="readout-k" id="answer-k">Paid tax-free as a capital dividend</p>
-        <p class="readout-fig"><span class="readout-v big" id="answer-v" data-readout-v>{{capdiv}}</span> <span class="readout-of" id="answer-of">{{of}}</span></p>
-        <p class="readout-t" id="answer-t" data-readout-t></p>
-        <div class="split" id="split">
-          <div class="sum" id="sum" aria-hidden="true"></div>
-          <p class="desk-sr" id="sum-sr"></p>
+      <!-- The one picture is also the one control: the payout as a bar, read left to right. Over it, the policy's cost base
+           and the capital dividend; under it, the income tax and what reaches the family. The range's handle is the line
+           between the cost base and the capital dividend. -->
+      <figure class="chart ins-chart" id="ins-chart">
+        <div class="pic" id="pic">
+          <svg id="chart" role="img" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Where the payout goes</title><desc id="chart-desc"></desc></svg>
+          <div class="move" id="move" data-first-move>
+            <input type="range" id="acb" name="acb" aria-label="The policy’s cost base" aria-describedby="acb-sr">
+          </div>
         </div>
-        <details class="readout-how" id="how-fold"><summary>How this is worked out</summary><div id="how"></div></details>
+        <p class="desk-sr" id="acb-sr">The policy’s adjusted cost basis under the Income Tax Act; the payout less it can go out as a capital dividend.</p>
+        <div class="desk-sr"><table id="chart-table">
+          <caption>The figures in the picture</caption>
+          <thead><tr><th scope="col">Part</th><th scope="col">Dollars</th></tr></thead>
+          <tbody id="chart-table-rows"></tbody>
+        </table></div>
+        <figcaption><span class="chip tag-example">Example data</span> <span class="hint" id="hint"></span></figcaption>
+      </figure>
       </div>
 
       <p class="assume" id="assume" data-assumptions><strong class="stamp">Hypothetical illustration · Education, not advice.</strong> <span id="assume-text"></span></p>
-      </div>
-
-      <p class="help" id="acb-help"><span id="acb-help-name">The cost base is the policy’s adjusted cost basis under the Income Tax Act. The payout less it is what can go out as a capital dividend.</span> <span id="acb-help-rule">Among other things, premiums raise it and the net cost of pure insurance lowers it.</span></p>
-
-      <section class="moves" aria-labelledby="moves-h">
-        <h2 class="sec-label" id="moves-h">What happens</h2>
-        <ol class="steps" id="steps"></ol>
-      </section>
     </section>
 
-    <figure class="chart ins-chart" id="ins-chart" aria-labelledby="chart-title">
-      <figcaption>
-        <p class="chart-title" id="chart-title"></p>
-        <p class="chart-sub" id="chart-sub">Dollars of one example payout, by who ends up with them</p>
-        <p class="chart-tags"><span class="chip tag-example">Example data</span><span class="chip tag-stamp">Hypothetical illustration</span></p>
-      </figcaption>
-      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title">Where the payout goes</title><desc id="chart-desc"></desc></svg></div>
-      <div class="desk-sr"><table id="chart-table">
-        <caption>The figures in the chart</caption>
-        <thead><tr><th scope="col">Bar</th><th scope="col">Part</th><th scope="col">Dollars</th></tr></thead>
-        <tbody id="chart-table-rows"></tbody>
-      </table></div>
-    </figure>
-
-    <section class="change" aria-labelledby="change-h">
-      <h2 class="sec-label" id="change-h">Change the example</h2>
-      <div class="steppers" id="steppers"></div>
-      <p class="hint cue" id="cue">The payout changes the whole bar; the cost base moves the line between its parts.</p>
-      <p class="echo" id="echo" hidden></p>
-      <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
-      <p class="hint" id="year-line"></p>
-    </section>
-
-    <details class="deeper" id="deeper" data-chapter="Go deeper">
+    <details class="deeper" id="deeper" data-chapter="Go deeper" data-preview="Chart, steps, assumptions">
       <summary>Go deeper</summary>
-      <section class="deeper-sub" id="acb-sec" aria-labelledby="acb-h">
-        <h3 id="acb-h">The cost base, in the Act</h3>
-        <div id="acb-rule"></div>
-      </section>
-      <section class="deeper-sub" aria-labelledby="div-h">
-        <h3 id="div-h">The dividend tax on the taxable part</h3>
-        <div id="div-lines"></div>
-      </section>
-      <section class="deeper-sub" aria-labelledby="elect-h">
-        <h3 id="elect-h">The election</h3>
-        <div id="elect"></div>
-      </section>
-      <section class="deeper-sub" aria-labelledby="nums-h">
-        <h3 id="nums-h">The numbers behind the chart</h3>
-        <p class="nums-cap" id="nums-cap"></p>
-        <div class="table-wrap" id="nums-wrap" tabindex="0" role="region" aria-labelledby="nums-h nums-cap">
+      <section class="deeper-sub" aria-labelledby="trend-h">
+        <h3 id="trend-h">A bigger cost base, less to the family</h3>
+        <figure class="trend" id="trend-fig">
+          <svg id="trend" role="img" aria-labelledby="trend-h trend-desc"><desc id="trend-desc"></desc></svg>
+        </figure>
+        <div class="table-wrap" id="nums-wrap" tabindex="0" role="region" aria-labelledby="trend-h nums-cap">
           <table class="nums" id="nums">
+            <caption class="nums-cap" id="nums-cap"></caption>
             <thead><tr id="nums-head"></tr></thead>
             <tbody id="nums-rows"></tbody>
           </table>
         </div>
       </section>
+      <section class="deeper-sub" aria-labelledby="steps-h">
+        <h3 id="steps-h">Step by step</h3>
+        <ol class="steps" id="steps"></ol>
+        <h4 class="sub-h" id="how-h">In this example’s numbers</h4>
+        <div id="how"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="div-h">
+        <h3 id="div-h">The dividend tax on the taxable part</h3>
+        <div id="div-lines"></div>
+        <p id="year-line"></p>
+      </section>
+      <section class="deeper-sub" id="acb-sec" aria-labelledby="acb-h">
+        <h3 id="acb-h">The cost base, in the Act</h3>
+        <p id="acb-help">The cost base is the policy’s adjusted cost basis under the Income Tax Act. The payout less it is what can go out as a capital dividend. Among other things, premiums raise it and the net cost of pure insurance lowers it.</p>
+        <div id="acb-rule"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="elect-h">
+        <h3 id="elect-h">The election</h3>
+        <div id="elect"></div>
+      </section>
+      <section class="deeper-sub caveats callout" aria-labelledby="caveats-h">
+        <h3 id="caveats-h">This example assumes</h3>
+        <div class="cv-groups" id="caveats"></div>
+      </section>
     </details>
 
-    <section class="caveats callout" aria-labelledby="caveats-h">
-      <h2 class="caveats-h" id="caveats-h">This example assumes</h2>
-      <div class="cv-groups" id="caveats"></div>
-      <p class="caveats-close">How any of this applies to a real company is a question for a tax professional and a lawyer.</p>
-    </section>
+    <p class="caveats-close" id="close-line">How any of this applies to a real company is a question for a tax professional and a lawyer.</p>
 
     <details class="fold sources-fold" data-chapter="Sources" data-preview="The statute sections and tax rates used, each linked to its official page">
       <summary>Sources and how it’s made</summary>
@@ -115,7 +100,6 @@
     <footer class="foot">
       <div>
         <!--@@NOTES@@-->
-        <p class="note" id="foot-version"></p>
       </div>
       <p><a href="/">Mohammed El Chayeb</a> · <a href="/tools/">All tools</a></p>
     </footer>

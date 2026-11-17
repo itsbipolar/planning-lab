@@ -68,9 +68,11 @@ test('What happens says what the facts say', () => {
   const R = insuranceRules(JSON.parse(readFileSync(new URL('../../../shared/facts.json', import.meta.url), 'utf8')).facts);
   const steps = strings.filter((s) => /^<b>The (payout|account|election)\.<\/b>/.test(s));
   assert.equal(steps.length, 3);
-  assert.match(R.text.cdaAdd.value, /\bless\b/); assert.match(steps[1], /\bless\b/);
+  // the values are the Act's own lines, word for word (the facts repo's tests hold each to its source_quote); the step
+  // words are the plain-words reading of them
+  assert.match(R.text.cdaAdd.value, /proceeds of a life insurance policy/); assert.match(R.text.cdaAdd.value, /in consequence of the death/); assert.match(steps[0], /When the owner dies/);
+  assert.match(R.text.cdaLess.value, /^\(iii\) the adjusted cost basis/); assert.match(steps[1], /\bless the policy’s cost base\b/);
   assert.match(R.text.cdaLess.value, /immediately before the death/); assert.match(steps[1], /just before the death/);
-  assert.match(R.text.election.value, /elects/); assert.match(steps[2], /elects/);
-  assert.match(R.text.election.value, /no part of it is included in computing the income/); assert.match(steps[2], /not counted in the family’s income/);
-  assert.match(R.text.election.value, /prescribed manner and form/); assert.match(steps[2], /prescribed form/);
+  assert.match(R.text.election.title, /elects to be a capital dividend/); assert.match(steps[2], /elects/);
+  assert.match(R.text.election.value, /no part of the dividend shall be included in computing the income/); assert.match(steps[2], /not counted in the family’s income/);
 });

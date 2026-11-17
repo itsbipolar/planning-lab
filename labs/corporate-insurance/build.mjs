@@ -37,17 +37,15 @@ const data = JSON.stringify({ facts: confirmed, version, asOf }).replace(/</g, '
 
 const src = read(join(here, 'index.src.html'))
   .replace('{{question}}', () => question)
-  .replace('{{lede}}', () => `A made-up owner dies, and the company receives ${money(EXAMPLE.payout)}.`)
-  .replace('{{acb}}', () => money(EXAMPLE.acb))
-  .replace('{{capdiv}}', () => money(S.capDiv))
-  .replace('{{of}}', () => `of the ${money(EXAMPLE.payout)} payout`);
+  .replace('{{lede}}', () => `A made-up owner dies; the company receives ${money(EXAMPLE.payout)}.`)
+  .replace('{{family}}', () => money(S.family));
 if (/\{\{\w+\}\}/.test(src)) throw new Error('index.src.html: an unfilled {{marker}}');
 const html = deskPage(src, LAB).replace('/*@@CSS@@*/', () => css).replace('/*@@DATA@@*/', () => data).replace('/*@@JS@@*/', () => js);
 mkdirSync(join(here, 'dist'), { recursive: true });
 writeFileSync(join(here, 'dist', 'index.html'), html);
 
 // the poster (dist/poster.json), kind "split": the bar as shares of the payout (through the account: capital dividend,
-// to the family after dividend tax, income tax) and the one reading. The comparison bar goes on the poster only when
+// to the family after dividend tax, income tax) and the one reading: the page's big answer, what reaches the family. The comparison bar goes on the poster only when
 // app.js turns it on (COMPARE; off under the safer route). Every figure uses the page's formatter (money), so the poster
 // and the page agree.
 const COMPARE = /var COMPARE = true;/.test(read(join(here, 'app.js')));
@@ -61,11 +59,11 @@ const COMPARE = /var COMPARE = true;/.test(read(join(here, 'app.js')));
       { label: 'Through the capital dividend account', parts: [f(S.capDiv), f(S.afterTax), f(S.tax)], keys: ['capital-dividend', 'after-tax', 'income-tax'] },
       ...(COMPARE ? [cmp] : []),
     ],
-    readings: [{ label: 'paid tax-free as a capital dividend', value: money(S.capDiv), text: `of a ${money(S.inp.payout)} example payout` }],
+    readings: [{ label: 'reaches the family', value: money(S.family), text: `of a ${money(S.inp.payout)} example payout` }],
     labels: COMPARE ? [{ text: cmp.label }] : [],
     source: `Income Tax Act 83(2) and 89(1); CRA and Ontario rates (${R.rateYear})`,
     asOf,
   });
   console.log(`poster.json: ${p.kind}, ${p.readings.map((x) => x.value).join(' · ')}`);
 }
-console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): rates ${R.rateYear}, ${R.used.length} facts, version ${version}; capital dividend ${money(S.capDiv)}, income tax ${money(S.tax)}`);
+console.log(`built dist/index.html (${(html.length / 1024).toFixed(0)} KiB): rates ${R.rateYear}, ${R.used.length} facts, version ${version}; to the family ${money(S.family)} (capital dividend ${money(S.capDiv)}), income tax ${money(S.tax)}`);

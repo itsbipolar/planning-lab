@@ -4,212 +4,148 @@ body{margin:0;background:var(--t-ground);color:var(--t-ink);font:400 19.5px/1.55
 /* The container, type roles, labels, buttons, readouts and the chart frame come from shared/desk/desk-ui.mjs. */
 :focus-visible{outline:2px solid var(--t-point);outline-offset:3px}
 :root[data-theme="light"] :focus-visible{outline-color:var(--t-point-deep)}
-/* colour by data type, the same everywhere (split bars, chart, brackets): money that reaches the family d1 (solid: the
-   tax-free capital dividend; hatched: after dividend tax); income tax d4 */
+/* colour by data type: money that reaches the family d1 (solid: the tax-free capital dividend; hatched: a taxable
+   dividend, after tax); income tax d4; the cost base (a span, not money that goes anywhere) and the handle in ink */
 :root{--c-fam:var(--t-d1);--c-tax:var(--t-d4)}
 
-/* ---- The play row: the question, the one control, the big answer ---- */
+/* ---- The play row: the question, the big answer, the one picture (which is the control), the assumptions ---- */
 .play{padding-top:1.1rem}
 .play .kicker{margin:0}
 .play h1{margin:.3rem 0 0}
 .play .lede{margin:.6rem 0 0}
-.move{margin:1rem 0 0;max-width:34rem}
-.move>.label{display:block}
-.slide{position:relative;padding-top:2.6rem}
-.bubble{position:absolute;top:0;left:0;transform:translateX(-50%);padding:0 .1rem;font:600 1.75rem/1.25 var(--font-display);font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink);white-space:nowrap;pointer-events:none}
-.slide input[type=range]{display:block;width:100%;height:48px;margin:0;background:transparent;accent-color:var(--t-ink);cursor:pointer;-webkit-appearance:none;appearance:none}
-.slide input[type=range]::-webkit-slider-runnable-track{height:6px;background:linear-gradient(to right,var(--t-ink) var(--fill,30%),var(--t-rule) var(--fill,30%));border-radius:3px}
-.slide input[type=range]::-moz-range-track{height:6px;background:var(--t-rule);border-radius:3px}
-.slide input[type=range]::-moz-range-progress{height:6px;background:var(--t-ink);border-radius:3px}
-.slide input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink)}
-.slide input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--t-ground);border:3px solid var(--t-ink)}
-.slide-ticks{position:relative;height:1.6rem;font-size:17.5px;color:var(--t-ink2);font-variant-numeric:lining-nums}
-.slide-ticks span{position:absolute;top:0;white-space:nowrap}
-.slide-ticks span:first-child{left:0}
-.slide-ticks span:last-child{right:0}
-.help{margin:.9rem 0 0;max-width:34rem;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink)}
-.clamp-note{margin:.25rem 0 0;font-size:var(--type-small-size);color:var(--t-ink)}
-.clamp-note:empty{margin:0}
-
 .readout.answer{margin:1.1rem 0 0}
-.readout-fig{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .6rem;margin:.1rem 0 .35rem}
-.readout-fig .readout-v{margin:0}
-.readout-of{font-size:var(--type-small-size);line-height:1.35;color:var(--t-ink);font-variant-numeric:lining-nums;white-space:nowrap}
-/* the sum: a small ledger under the big figure (money right-aligned): the capital dividend, plus what is left after
-   dividend tax, equals the family's money (the total row, a size up, over a rule); the income tax is the rest */
-.split{margin:.6rem 0 0}
-.sum{display:grid;grid-template-columns:auto auto minmax(0,1fr);column-gap:0;margin:0;font-size:var(--type-small-size);line-height:1.4}
-.sum-row{display:contents}
-.sum-op{padding-right:.45rem;text-align:center;color:var(--t-ink2)}
-.sum-v{text-align:right;font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
-.sum-w{padding-left:.55rem;color:var(--t-ink)}
-.sum-row.plus>.sum-v,.sum-row.plus>.sum-w{border-bottom:1px solid var(--t-ink);padding-bottom:.2rem}
-.sum-row.total>*{padding-top:.25rem}
-.sum{align-items:baseline}
-.sum-row.total .sum-v{font-size:1.45rem;line-height:1.25}
-.sum-row.total .sum-w{font-weight:700}
-.sum-row.tax>*{padding-top:.3rem}
-.sum-row.tax .sum-v{color:var(--t-ink)}
-.readout-how ol{margin:.25rem 0 .5rem;padding-left:1.25rem}
-.readout-how li{margin:.3rem 0}
-.readout-how [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums;color:var(--t-ink)}
+.readout-fig{margin:.1rem 0 .2rem}
+.readout-fig .readout-v{margin:0;white-space:nowrap}
+.readout-t{text-wrap:pretty}
 abbr[title]{text-decoration:underline dotted;text-underline-offset:.15em}
 .assume{margin:.9rem 0 0}
 .assume .stamp{color:var(--t-ink);font-weight:700}
 
-/* What happens: three numbered steps as text over one rule (no boxes) */
-.moves{margin:1.5rem 0 0}
-.moves .sec-label{margin-bottom:.4rem}
-.steps{list-style:none;counter-reset:step;margin:0;padding:0;display:grid;gap:.55rem}
-.steps li{counter-increment:step;position:relative;padding-left:1.7rem;font-size:var(--type-small-size);line-height:1.45;max-width:62ch}
-.steps li::before{content:counter(step);position:absolute;left:0;top:-.12em;font:600 1.5rem/1.2 var(--font-display);font-variant-numeric:lining-nums;color:var(--t-ink)}
-.steps b{font-weight:700}
-
-/* The answer and the assumptions line sit in one wrapper (.side): on phones it disappears (display: contents), so the
-   order is the control, the answer, the assumptions, then the help that names the cost base */
-.side{display:contents}
-.readout-t{text-wrap:pretty}
-/* 700-959: the control and the answer side by side (6/6) */
-@media (min-width:700px) and (max-width:959px){
-  .play{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2rem;align-items:start}
-  .play>*,.play>.side>*{grid-column:1/-1;min-width:0}
-  .play>.move{grid-column:1;grid-row:4}
-  .play>.side>.readout.answer{grid-column:2;grid-row:4/6;margin-top:1rem}
-  .play>.help{grid-column:1;grid-row:5}
-  .play>.side>.assume{grid-row:6}
-  .play>.moves{grid-row:7}
-}
-/* 960+: the question, the control and the help on the left (7 of 12); the answer and the assumptions on the right,
-   spanning those rows, so the two columns end together; the three steps across under both. The help's row is the
-   flexible one, so opening "How this is worked out" never moves the control. */
-@media (min-width:960px){
-  .play{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem);grid-template-rows:auto auto auto auto 1fr auto;align-items:start}
-  .play>*{grid-column:1/8;min-width:0}
-  .play>.kicker{grid-row:1}
-  .play>h1{grid-row:2}
-  .play>.lede{grid-row:3}
-  .play>.move{grid-row:4;margin-top:.75rem}
-  .play>.help{grid-row:5;margin-top:.5rem}
-  .play>.side{display:block;grid-column:8/13;grid-row:1/6;margin-top:2.4rem}
-  .play>.side>.readout.answer{margin-top:0}
-  .play>.side>.assume{margin-top:1.25rem}
-  .play>.moves{grid-row:6;grid-column:1/-1;margin-top:1.75rem}
-  .steps{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem)}
-  figure.chart{margin-top:2rem}
-}
-
-/* ---- The chart: drawn at the frame's own width (1 unit = 1px), every label 17.5px or more ---- */
-figure.chart{margin:2rem 0 0}
-#chart{touch-action:pan-y}
-.chart-tags{margin:.15rem 0 0;padding:0;color:var(--t-ink2);font-size:17.5px;line-height:1.35}
-.chart-tags .chip{display:inline;margin:0 .75rem 0 0;padding:0;border:0;background:none;color:var(--t-ink2);white-space:nowrap}
-.chart-tags .tag-stamp{font-family:var(--font-ui);font-weight:600;letter-spacing:0;text-transform:none}
-.chart-frame{width:100%;padding:.25rem 0 0}
+/* ---- The picture: the payout as one bar, drawn at the frame's own width (1 unit = 1px); the range lies over it ---- */
+figure.chart.ins-chart{margin:1.4rem 0 0;padding-top:.75rem}
+.ins-chart figcaption{margin:.5rem 0 0}
+.ins-chart .chip.tag-example{display:inline;margin:0 .4rem 0 0}
+.ins-chart .hint{font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink)}
+.pic{position:relative;width:100%}
 .chart svg{display:block;width:100%;height:auto;overflow:visible}
-#chart:focus-visible{outline-offset:6px}
 .chart svg text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
-.chart svg .bar-t{font-weight:700}
-.chart svg .annot{font-weight:600}
 .chart svg .rd-v{font-family:var(--font-display);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums lining-nums}
-.chart svg .rd-v.p-cap,.chart svg .rd-v.p-after{fill:var(--c-fam)}
-.chart svg .rd-v.p-tax{fill:var(--c-tax)}
-.chart svg .seg{cursor:pointer}
+.chart svg .r-cap .rd-v,.chart svg .r-fam .rd-v,.chart svg .t-fam{fill:var(--c-fam)}
+.chart svg .r-tax .rd-v{fill:var(--c-tax)}
 .chart svg .seg.p-cap{fill:var(--c-fam)}
 .chart svg .seg.p-after{fill:url(#ins-hatch)}
 .chart svg .seg-edge{fill:none;stroke:var(--c-fam);stroke-width:2}
 .chart svg .seg.p-tax{fill:var(--c-tax)}
-.chart svg .seg.on{stroke:var(--t-ink);stroke-width:3}
 .chart svg .hatch-bg{fill:color-mix(in srgb,var(--c-fam) 14%,var(--t-ground))}
 .chart svg .hatch-line{stroke:var(--c-fam);stroke-width:2}
 .chart svg .bracket{stroke-width:2;stroke-linecap:square}
-.chart svg .bracket.p-cap{stroke:var(--c-fam)}
-.chart svg .bracket.p-after{stroke:var(--c-fam);stroke-dasharray:4 3}
-.chart svg .bracket.p-tax{stroke:var(--c-tax)}
-.chart svg .span-bracket{stroke:var(--t-ink);stroke-width:1.5;stroke-linecap:square}
-.chart svg .key-sw.p-cap{fill:var(--c-fam)}
-.chart svg .key-sw.p-after{fill:url(#ins-hatch)}
-.chart svg .key-sw.p-tax{fill:var(--c-tax)}
-.chart svg .seg-read rect{fill:var(--t-raised);stroke:var(--t-ink);stroke-width:1}
-.chart svg .seg-read text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
-.chart svg .seg-read .rv{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
-#chart:has(.seg-read:not([style*="none"])) .labels{opacity:.25}
+.chart svg .bracket.b-acb{stroke:var(--t-ink)}
+.chart svg .bracket.b-cap,.chart svg .bracket.b-fam{stroke:var(--c-fam)}
+.chart svg .bracket.b-tax{stroke:var(--c-tax)}
+.chart svg .handle{pointer-events:none}
+.chart svg .handle-rule{fill:var(--t-ink)}
+.chart svg .grip{fill:var(--t-ground);stroke:var(--t-ink);stroke-width:2.5}
+.chart svg .chev{fill:none;stroke:var(--t-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* steps by key, page or tap ease over 160ms; a drag follows the thumb on the same frame (no class) */
+.pic.ease .seg,.pic.ease .seg-edge{transition:x .16s ease-out,width .16s ease-out}
+.pic.ease .handle{transition:transform .16s ease-out}
 
-/* ---- Change the example: the payout stepper, the cue, the echo, the year ---- */
-.change{margin:2rem 0 0}
-.steppers{display:grid;grid-template-columns:minmax(0,17rem);gap:1.1rem 1.25rem;margin:.75rem 0 0}
-.stepper{display:flex;flex-direction:column;gap:.35rem;min-width:0}
-.stepper-l{font-weight:650;font-size:17.5px;line-height:1.3;color:var(--t-ink)}
-.stepper-row{display:flex;align-items:center;gap:.4rem}
-.stepper button{flex:none;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;border:1.5px solid var(--t-ink);border-radius:0;background:transparent;color:var(--t-ink);font:600 1.6rem/1 var(--font-ui);cursor:pointer}
-.stepper button:hover:not(:disabled){background:var(--t-raised)}
-.stepper button:disabled{border-color:var(--t-rule);color:var(--t-ink3);cursor:not-allowed}
-.stepper output{flex:1 1 auto;min-width:0;text-align:center;font:600 1.3rem/1.2 var(--font-display);font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
-.hint{margin:.75rem 0 0;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink2);max-width:60ch}
-.cue{color:var(--t-ink)}
-.echo{margin:.75rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-ink);font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink);max-width:60ch}
-.echo[hidden]{display:none}
-.reset-row{margin:.5rem 0 0}
-.text-btn{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:none;color:var(--t-ink);font:600 17.5px/1.3 var(--font-ui);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--t-ink) 35%,transparent);text-underline-offset:.2em;cursor:pointer}
-.text-btn:hover{text-decoration-color:var(--t-point);text-decoration-thickness:2px}
-.text-btn[hidden]{display:none}
-.reset-row:has(>[hidden]){display:none}
+/* the control: the range over the bar; its thumb is an invisible 28px grip, the handle is drawn in the picture */
+.move{position:absolute;left:0;right:0;top:0}
+.move input[type=range]{position:absolute;top:0;height:100%;left:-14px;width:calc(100% + 28px);margin:0;padding:0;background:transparent;cursor:ew-resize;-webkit-appearance:none;appearance:none;touch-action:pan-y}
+.move input[type=range]::-webkit-slider-runnable-track{height:100%;background:transparent;border:0}
+.move input[type=range]::-moz-range-track{height:100%;background:transparent;border:0}
+.move input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:100%;min-height:44px;background:transparent;border:0;cursor:ew-resize}
+.move input[type=range]::-moz-range-thumb{width:28px;height:100%;background:transparent;border:0;border-radius:0}
+.move input[type=range]:focus-visible{outline:2px solid var(--t-point);outline-offset:4px}
+:root[data-theme="light"] .move input[type=range]:focus-visible{outline-color:var(--t-point-deep)}
+
+/* The answer and the picture sit in one wrapper (.stage): on phones it disappears (display: contents), so the order is
+   the question, the answer, the picture, the assumptions. 960+: the question, the lede and the assumptions on the left
+   (5 of 12); the answer and, under it, the picture on the right (7 of 12), top-aligned with the question, so the
+   answer sits next to the control that makes it. */
+.stage{display:contents}
+@media (min-width:960px){
+  .play{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(1.5rem,3vw,3rem);grid-template-rows:auto auto auto 1fr;align-items:start}
+  .play>*{grid-column:1/6;min-width:0}
+  .play>.kicker{grid-row:1}
+  .play>h1{grid-row:2}
+  .play>.lede{grid-row:3}
+  .play>.assume{grid-row:4}
+  .play>.stage{display:block;grid-column:6/13;grid-row:1/5;margin-top:2.2rem}
+  .play>.stage>.readout.answer{margin-top:0}
+  .play>.stage>figure.chart.ins-chart{margin-top:1.5rem}
+}
 
 /* ---- Go deeper ---- */
 .deeper h3{margin:0 0 .5rem;font-family:var(--type-card-font);font-weight:var(--type-card-weight);font-size:var(--type-card-size);line-height:var(--type-card-line)}
 .deeper p,.deeper li{font-size:var(--type-small-size);line-height:1.5;max-width:68ch}
 .deeper [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
-.deeper .rule-text{padding-left:.75rem;border-left:2px solid var(--t-rule);color:var(--t-ink2)}
-.deeper .rule-text [data-fact]{font-family:var(--font-ui);font-weight:400;color:var(--t-ink2)}
+.deeper blockquote.rule-text{margin:.5rem 0 0;padding-left:.75rem;border-left:2px solid var(--t-rule);font:400 var(--type-small-size)/1.5 var(--font-ui);color:var(--t-ink);max-width:68ch}
+.deeper .rule-src{margin:.3rem 0 0;color:var(--t-ink2)}
 #div-total{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
 .fold-list{margin:.25rem 0 .5rem;padding-left:1.25rem}
 .fold-list li{margin:.35rem 0}
+/* Step by step: three numbered steps as text (no boxes) */
+.steps{list-style:none;counter-reset:step;margin:0;padding:0;display:grid;gap:.55rem}
+.steps li{counter-increment:step;position:relative;padding-left:1.7rem;line-height:1.45}
+.steps li::before{content:counter(step);position:absolute;left:0;top:-.12em;font:600 1.5rem/1.2 var(--font-display);font-variant-numeric:lining-nums;color:var(--t-ink)}
+.steps b{font-weight:700}
+/* the trend picture in Go deeper: what reaches the family (d1) under the line, the income tax (d4) over it */
+.trend{margin:.5rem 0 0}
+.trend svg{display:block;width:100%;height:auto;overflow:visible}
+.trend svg text{font-family:var(--font-ui);font-size:17.5px;fill:var(--t-ink)}
+.trend svg .rd-v{font-family:var(--font-display);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums lining-nums}
+.trend svg .t-fam{fill:var(--c-fam)}
+.trend svg .ar-fam{fill:color-mix(in srgb,var(--c-fam) 16%,var(--t-ground))}
+.trend svg .ar-tax{fill:color-mix(in srgb,var(--c-tax) 16%,var(--t-ground))}
+.trend svg .ln-fam{stroke:var(--c-fam);stroke-width:3}
+.trend svg .ln-axis{stroke:var(--t-ink);stroke-width:1.5}
+.trend svg .ln-now{stroke:var(--t-ink);stroke-width:1.5;stroke-dasharray:4 3}
+.trend svg .dot-now{fill:var(--c-fam);stroke:var(--t-ground);stroke-width:2}
+.sub-h{margin:1rem 0 .25rem;font:700 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
+#how [data-fact]{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
 .table-wrap{overflow-x:auto;margin:.75rem 0 0;border-top:2px solid var(--t-ink)}
 .table-wrap:focus-visible{outline-offset:2px}
 table.nums{border-collapse:collapse;width:100%;font-size:17.5px;line-height:1.3}
-.nums-cap{margin:.25rem 0 0;color:var(--t-ink2)}
+.nums-cap{caption-side:bottom;margin:.25rem 0 0;text-align:left;font-size:var(--type-small-size);color:var(--t-ink2)}
 table.nums th:first-child,table.nums td:first-child{position:sticky;left:0;background:var(--t-ground);z-index:1}
 table.nums tbody th{font-weight:400;font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
 table.nums th,table.nums td{padding:.4rem .6rem;text-align:right;border-bottom:1px solid var(--t-rule);white-space:nowrap}
 table.nums th:first-child,table.nums td:first-child{text-align:left;padding-left:0}
-table.nums thead th{font-weight:700;vertical-align:bottom;white-space:normal;min-width:7.5rem}
+table.nums thead th{font-weight:700;vertical-align:bottom;white-space:normal}
 table.nums thead th:first-child{min-width:0}
 table.nums td{font-family:var(--font-display);font-variant-numeric:tabular-nums lining-nums}
 table.nums tr.now th,table.nums tr.now td{font-weight:700;border-bottom:2px solid var(--t-ink)}
 .now-tag{font-family:var(--font-ui);font-weight:700;font-size:17.5px;color:var(--t-ink)}
 
-/* ---- The caveats in three groups ---- */
-.caveats{margin:2.25rem 0 0}
-.caveats-h{margin:0;font:700 1.15rem/1.35 var(--font-ui)}
+/* This example assumes: the three groups, inside Go deeper */
 .cv-groups{display:grid;gap:.75rem;margin:.5rem 0 0}
 @media (min-width:960px){.cv-groups{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:2rem}}
 .cv-h{margin:0;font:700 17.5px/1.35 var(--font-ui);color:var(--t-ink)}
 .caveats ul{margin:.25rem 0 0;padding-left:1.1rem}
-.caveats li{margin:.3rem 0;font-size:var(--type-small-size);line-height:1.4}
-.caveats-close{margin:.75rem 0 0;font-size:var(--type-small-size);line-height:1.45;font-weight:600}
+.caveats li{margin:.3rem 0;line-height:1.4}
+/* the one line that points to a professional, always visible after Go deeper */
+.caveats-close{margin:1.25rem 0 0;font-size:var(--type-small-size);line-height:1.45;color:var(--t-ink2)}
 
 .prose p,.prose li{font-size:var(--type-small-size);line-height:1.5}
 .prose ul{padding-left:1.1rem}
 .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem 2rem;margin:3rem 0 0;padding:1.25rem 0 2.5rem;border-top:3px double var(--t-ink);font-size:var(--type-small-size)}
 .foot p{margin:.25rem 0}
 .desk-next{margin-top:3rem}
+body>.page .caveats-close+details.fold{margin-top:1.75rem}
 
-/* phones: the same blocks, closer together (the big figure by 700px, the Go deeper summary within the first 2,800px) */
+/* phones: the same blocks at the same sizes, closer together, so the bar (the control) starts by y = 630 at 390 x 700:
+   the site's link walk wants 48px of the control above y = 700, and this keeps 20px or more in hand. Only the gaps and
+   the line spacing of the question, the lede and the answer's line are tighter; no text is smaller. */
 @media (max-width:559px){
-  .play{padding-top:.8rem}
-  .move{margin-top:.6rem}
-  .slide{padding-top:1.95rem}
-  .bubble{font-size:1.6rem;line-height:1.1}
-  .slide-ticks{height:1.4rem;margin-top:-.2rem}
-  .slide input[type=range]{height:44px}
-  .help{margin-top:.6rem;line-height:1.4}
-  .readout.answer{margin-top:.6rem;padding-top:.15rem}
+  .play{padding-top:.15rem}
+  .play h1{margin-top:0;line-height:1}
+  .play .lede{margin-top:.3rem;line-height:1.25}
+  .readout.answer{margin-top:.3rem;padding-top:0;padding-bottom:0}
+  .readout.answer .readout-fig{margin:0}
+  .readout-t{min-height:2.7em;line-height:1.35}
+  figure.chart.ins-chart{margin-top:.3rem;padding-top:.25rem}
   .assume{margin-top:.6rem;line-height:1.45}
-  .moves{margin-top:1.1rem}
-  .steps{gap:.4rem}
-  figure.chart{margin-top:1.25rem}
-  .change{margin-top:1.25rem}
-  .caveats{padding-left:.75rem;margin-top:1.75rem}
-  .caveats li{margin:.2rem 0;line-height:1.35}
-  .hint{margin-top:.5rem;line-height:1.35}
   body>.page details.deeper{margin-top:1.75rem}
 }

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>/* The reader's light or dark choice, kept in localStorage 'theme' as on the site (the tool bar's button sets it): light unless they chose dark. */try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Participating policy dividends · Mohammed El Chayeb</title>
+<meta name="description" content="A made-up participating account on real Canadian bond yields: what it earned each year, and the smoothed rate it credited. Education, not advice.">
+<style>/*@@CSS@@*/</style>
+</head>
+<body>
+<!--@@TOOLBAR@@-->
+<div class="page">
+  <main>
+    <section class="play" data-chapter="The account">
+      <p class="kicker">Tool</p>
+      <h1 id="question">{{question}}</h1>
+      <p class="lede" id="lede">{{lede}}</p>
+
+      <div class="move" data-first-move>
+        <label class="label" for="n" id="n-label">Spread stock and property swings</label>
+        <div class="slide" id="slide">
+          <output class="bubble" id="n-out" for="n" aria-hidden="true">{{years}}</output>
+          <input type="range" id="n" name="n" aria-labelledby="n-label" aria-describedby="n-help">
+          <div class="slide-ticks" aria-hidden="true"><span id="tick-lo"></span><span id="tick-hi"></span></div>
+        </div>
+        <p class="help" id="n-help">A setting to explore, not any insurer’s.</p>
+      </div>
+
+      <div class="side" id="side">
+        <div class="readout answer" id="answer" data-answer aria-live="polite">
+          <p class="readout-k" id="answer-k">Credited rate’s biggest move</p>
+          <p class="readout-fig"><span class="readout-v big" id="answer-v" data-readout-v>{{big}}</span> <span class="readout-of" id="answer-of">percentage points in a year</span></p>
+          <p class="readout-t" id="answer-t" data-readout-t>{{line}}</p>
+          <details class="readout-how" id="how-fold"><summary>How this is worked out</summary><div id="how"></div></details>
+        </div>
+        <p class="def" id="def"></p>
+        <p class="not-g" id="not-g"></p>
+        <div class="echo-row" id="echo-row" hidden>
+          <p class="echo" id="echo"></p>
+          <button type="button" class="text-btn" id="reset-top">Back to the example</button>
+        </div>
+        <p class="assume" id="assume" data-assumptions><strong class="stamp">Hypothetical illustration · Education, not advice.</strong> <span id="assume-text">A made-up account: the bond yields are real (Bank of Canada); everything else is invented, including the stock swings. Not any insurer’s account, method or rates.</span></p>
+      </div>
+
+    </section>
+
+    <figure class="chart par-chart" id="par-chart" aria-labelledby="chart-title">
+      <figcaption>
+        <p class="chart-title" id="chart-title"></p>
+        <p class="chart-sub" id="chart-sub"></p>
+        <div class="chart-row">
+        <p class="chart-tags"><span class="chip tag-example">Example data</span></p>
+        <fieldset class="swings" id="swings">
+          <legend class="swings-l">Stock and property swings</legend>
+          <div class="radio-row">
+            <label class="radio"><input type="radio" name="swing" value="swings" id="swing-on" checked> <span>Made-up swings</span></label>
+            <label class="radio"><input type="radio" name="swing" value="steady" id="swing-off"> <span>Steady (no swings)</span></label>
+          </div>
+        </fieldset>
+        </div>
+        <p class="chart-hint">Tap or use the arrow keys to read a year.</p>
+      </figcaption>
+      <div class="chart-frame" id="chart-frame"><svg id="chart" role="img" tabindex="0" aria-labelledby="chart-svg-title chart-desc"><title id="chart-svg-title"></title><desc id="chart-desc"></desc></svg></div>
+      <div class="desk-sr"><table id="chart-table">
+        <caption>The figures the chart points out</caption>
+        <tbody id="chart-table-rows"></tbody>
+      </table></div>
+      <p class="chart-after" id="avg-line"></p>
+      <p class="chart-after" id="eighties-line"></p>
+    </figure>
+
+    <details class="deeper" id="deeper" data-chapter="Go deeper">
+      <summary>Go deeper</summary>
+      <section class="deeper-sub moves" aria-labelledby="moves-h">
+        <h3 id="moves-h">What happens</h3>
+        <ol class="steps" id="steps"></ol>
+      </section>
+      <section class="deeper-sub" aria-labelledby="acct-h">
+        <h3 id="acct-h">Change the made-up account</h3>
+        <div class="ctl">
+          <label class="ctl-l" for="w" id="w-label">Bonds and loans in the account</label>
+          <div class="slide slide-2">
+            <output class="bubble" id="w-out" for="w" aria-hidden="true"></output>
+            <input type="range" id="w" name="w" aria-labelledby="w-label" aria-describedby="w-rest">
+          </div>
+          <p class="ctl-help" id="w-rest"></p>
+        </div>
+        <fieldset class="ctl radios" id="ladder">
+          <legend class="ctl-l">Bond ladder</legend>
+          <div class="radio-row" id="ladder-row"></div>
+          <p class="ctl-help">A longer ladder: fewer bonds mature each year, so the credited rate follows yields more slowly.</p>
+        </fieldset>
+        <p class="reset-row"><button type="button" class="text-btn" id="reset" hidden>Back to the example</button></p>
+        <p class="trade">More bonds and loans, or a longer ladder: a steadier credited rate that is slower to follow yields.</p>
+      </section>
+      <section class="deeper-sub" aria-labelledby="rules-h">
+        <h3 id="rules-h">The rules, as the facts file holds them</h3>
+        <div id="rules"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="contract-h">
+        <h3 id="contract-h">What is set in the contract, and what is not guaranteed</h3>
+        <p class="practice">General practice, not a rule from the facts file.</p>
+        <div class="two-lists">
+          <div><p class="list-h">Typically set in the contract, if the required premiums are paid</p>
+            <ul><li>The premium</li><li>The base death benefit</li><li>A table of cash values</li></ul></div>
+          <div><p class="list-h">Not guaranteed</p>
+            <ul><li>Dividends</li><li>The credited rate</li><li>Future dividend uses, such as additions not yet bought or a premium offset</li></ul></div>
+        </div>
+        <p>A dividend already added to a policy, for example as a paid-up addition, typically stays; a later lower dividend does not take it back.</p>
+      </section>
+      <section class="deeper-sub" aria-labelledby="illus-h">
+        <h3 id="illus-h">Why real dividends differ from an illustration</h3>
+        <p class="practice">General practice, not a rule from the facts file.</p>
+        <p>An illustration shows what happens if today’s dividend scale never changes. It will change, so real values will differ.</p>
+        <p>Illustrations often also show a lower scale for comparison; that is not a worst case.</p>
+        <p>Small differences add up over decades.</p>
+        <p>For a real policy, the insurer that issued it can provide an updated in-force illustration, and a qualified professional can explain it.</p>
+      </section>
+      <section class="deeper-sub" aria-labelledby="read-h">
+        <h3 id="read-h">Where to read the rules</h3>
+        <div id="where"></div>
+      </section>
+      <section class="deeper-sub" aria-labelledby="words-h">
+        <h3 id="words-h">Words used here</h3>
+        <dl class="gloss">
+          <dt>Par account</dt><dd>The accounts a life insurer keeps for its participating policies, separate from those for its other policies.</dd>
+          <dt>Dividend scale</dt><dd>The formula that turns the account’s results into each policy’s dividend.</dd>
+          <dt>Credited rate (dividend scale interest rate)</dt><dd>The smoothed interest rate used inside that formula. It is not what a policy earns.</dd>
+          <dt>Actual return</dt><dd>What the account’s investments earned in a year at market value, with no smoothing.</dd>
+          <dt>Smoothing</dt><dd>Feeding good and bad years in gradually, so dividends move by small steps.</dd>
+          <dt>Bond ladder</dt><dd>Bonds bought so that some mature every year; the money is put back into new bonds at that year’s yield.</dd>
+          <dt>Paid-up addition</dt><dd>A small block of extra, fully paid insurance that a dividend can be applied to.</dd>
+          <dt>Dividend class</dt><dd>A group of similar policies that share experience and get the same dividend formula.</dd>
+        </dl>
+      </section>
+      <section class="deeper-sub" aria-labelledby="nums-h">
+        <h3 id="nums-h">The numbers behind the chart</h3>
+        <p class="nums-cap" id="nums-cap"></p>
+        <div class="table-wrap" id="nums-wrap" tabindex="0" role="region" aria-labelledby="nums-h nums-cap">
+          <table class="nums" id="nums">
+            <thead><tr><th scope="col">Year</th><th scope="col">Actual return (made-up)</th><th scope="col">Credited rate (made-up)</th><th scope="col">Bond yield (real)</th></tr></thead>
+            <tbody id="nums-rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </details>
+
+    <section class="caveats callout" aria-labelledby="caveats-h">
+      <h2 class="caveats-h" id="caveats-h">This example assumes</h2>
+      <div class="cv-groups" id="caveats"></div>
+      <p class="caveats-close">How any of this applies to a real policy is a question for the insurer that issued it or a qualified professional.</p>
+    </section>
+
+    <details class="fold sources-fold" data-chapter="Sources" data-preview="The statute, the OSFI guideline and the bond-yield data, each linked to its official page">
+      <summary>Sources and how it’s made</summary>
+      <div id="sources" class="prose"></div>
+    </details>
+
+    <!--@@NEXT@@-->
+
+    <footer class="foot">
+      <div>
+        <!--@@NOTES@@-->
+        <p class="note" id="foot-version"></p>
+      </div>
+      <p><a href="/">Mohammed El Chayeb</a> · <a href="/tools/">All tools</a></p>
+    </footer>
+  </main>
+</div>
+<script type="application/json" id="data">/*@@DATA@@*/</script>
+<script>/*@@JS@@*/</script>
+</body>
+</html>

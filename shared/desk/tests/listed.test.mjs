@@ -37,7 +37,7 @@ test('flipping the one flag makes it the next of Money, then and now and of the 
   const r = resolvedNext(d);
   assert.equal(r.tools.find((t) => t.slug === 'money-then-now').to, 'estate-freeze');
   assert.equal(r.films['double-tax-at-death'].to, 'estate-freeze');
-  assert.ok(r.tools.every((t) => t.listed === true || t.slug === 'company-life-insurance'));
+  assert.ok(r.tools.every((t) => t.listed === true || ['company-life-insurance', 'par-dividends'].includes(t.slug)));
 });
 
 // Company life insurance (labs/corporate-insurance) goes live unlisted (SPEC.md there, section 10): estate-freeze's door
@@ -66,6 +66,43 @@ test('flipping its flag makes it estate-freeze\'s next, and its own next stays T
   assert.equal(r.tools.find((x) => x.slug === 'estate-freeze').to, 'company-life-insurance');
   assert.equal(r.tools.find((x) => x.slug === 'company-life-insurance').to, 'tax-dates');
   assert.equal(resolvedNext(cli(false)).tools.find((x) => x.slug === 'estate-freeze').to, 'tax-dates');
+});
+
+// Participating policy dividends (labs/par-dividends) goes live unlisted after company-life-insurance (SPEC.md there,
+// section 12): both doors lead past it to Tax dates until its flag is flipped.
+const only = (slug, listed) => ({ ...NEXT, tools: NEXT.tools.map((t) => (t.slug === slug ? { ...t, listed } : t)) });
+
+test('par-dividends is unlisted: estate-freeze and company-life-insurance still resolve to Tax dates', () => {
+  const t = NEXT.tools.find((x) => x.slug === 'par-dividends');
+  assert.equal(t.labSlug, 'par-dividends');
+  assert.equal(isListed(t), false);
+  assert.equal(NEXT.tools.find((x) => x.slug === 'company-life-insurance').next, 'par-dividends');
+  assert.equal(t.next, 'tax-dates');
+  const r = resolvedNext();
+  for (const s of ['estate-freeze', 'company-life-insurance', 'par-dividends']) assert.equal(r.tools.find((x) => x.slug === s).to, 'tax-dates', s);
+  assert.ok(Object.values(r.films).every((f) => f.to !== 'par-dividends'), 'no film points to it');
+  assert.match(readFileSync(`${root}labs/par-dividends/dist/index.html`, 'utf8'), /<meta name="robots" content="noindex">/);
+  assert.match(readFileSync(`${root}labs/par-dividends/dist/index.html`, 'utf8'), /<a class="desk-next" data-next href="\/tools\/tax-dates\/">/);
+});
+
+test('with only par-dividends listed, estate-freeze opens it through the unlisted company-life-insurance', () => {
+  const d = only('par-dividends', true);
+  const r = resolvedNext(d);
+  assert.equal(r.tools.find((x) => x.slug === 'estate-freeze').to, 'par-dividends');
+  assert.equal(r.tools.find((x) => x.slug === 'company-life-insurance').to, 'par-dividends');
+  assert.equal(r.tools.find((x) => x.slug === 'par-dividends').to, 'tax-dates');
+  // with both listed, the chain runs estate-freeze -> company-life-insurance -> par-dividends -> tax-dates
+  const both = { ...d, tools: d.tools.map((x) => (x.slug === 'company-life-insurance' ? { ...x, listed: true } : x)) };
+  const rb = resolvedNext(both);
+  assert.deepEqual(['estate-freeze', 'company-life-insurance', 'par-dividends'].map((s) => rb.tools.find((x) => x.slug === s).to), ['company-life-insurance', 'par-dividends', 'tax-dates']);
+});
+
+test('no other lab links to par-dividends', () => {
+  for (const lab of readdirSync(`${root}labs`)) {
+    if (lab === 'par-dividends' || lab.startsWith('_')) continue;
+    const f = `${root}labs/${lab}/dist/index.html`;
+    if (existsSync(f)) assert.ok(!readFileSync(f, 'utf8').includes('href="/tools/par-dividends/"'), lab);
+  }
 });
 
 test('the resolver guards against a loop and an unknown slug', () => {

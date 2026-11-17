@@ -2,6 +2,12 @@
 // from the confirmed facts in the page's data block. Inputs live in memory only: nothing in the address, nothing stored.
 // The page makes no request after it loads. Education only: a made-up owner, no product, no policy, no premium figure,
 // no call to act. Every dollar figure goes through INSURANCE.money (full dollars), so the parts always add to the payout.
+//
+// The read-left-to-right pass (SPEC.md, "Read left to right (2026-11-17)"): one picture is the explanation and the
+// control. The example payout is one bar: the income tax (d4), the taxable dividend after tax (d1, hatched) and the
+// capital dividend (d1, solid). Over the bar, two spans split the payout at the handle: the policy's cost base and the
+// tax-free capital dividend. Under it, two spans: the family's income tax and what reaches the family. The four readings
+// sit at the bar's two ends and never move; only the spans and the handle do.
 (function () {
   'use strict';
   var DATA = JSON.parse(document.getElementById('data').textContent);
@@ -9,20 +15,27 @@
   var R = F.insuranceRules(DATA.facts);
   // the comparison bar (the same payout as a taxable dividend): off under the safer route (Mo, 2026-11-17). Next to the
   // account it read as what company-owned insurance gains, and the page can't state the rules a fair comparison needs
-  // (SPEC.md section 8.2). true would bring back the chart's second bar and the table's comparison columns.
+  // (SPEC.md section 8.2). build.mjs reads this line for the poster; the page no longer draws a second bar.
   var COMPARE = false;
   var STAMP = 'Hypothetical illustration · Education, not advice';
   var NS = 'http://www.w3.org/2000/svg';
   var SANS = '"Source Sans 3 Variable", system-ui, sans-serif', SERIF = '"Source Serif 4 Variable", Georgia, serif';
-  var FS = 17.5, VF = 19;                          // every chart label 17.5px or more; figures 19px in the serif
+  var FS = 17.5, VF = 19;                          // every picture label 17.5px or more; figures 19px in the serif
   var $ = function (id) { return document.getElementById(id); };
   var m = F.money;
+  // the payout is fixed at the example's; only the cost base moves
   var st = { payout: E.payout, acb: E.acb }, S = null;
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   function longDate(d) { var p = String(d).split('-').map(Number); return MONTHS[p[1] - 1] + ' ' + p[2] + ', ' + p[0]; }
   function fact(ids, text) { return '<span data-fact="' + esc(ids) + '">' + esc(text) + '</span>'; }
+  // a rule in the Act's own words: the fact's value as a quotation (it is the official line, word for word, so nothing
+  // is added to or taken from it), with its source under it
+  function quote(f, where) {
+    return '<blockquote class="rule-text" data-fact="' + esc(f.id) + '" cite="' + esc(f.source_url) + '">' + esc(f.value) + '</blockquote>'
+      + '<p class="rule-src">' + esc(where) + ' · <a href="' + esc(f.source_url) + '">source</a></p>';
+  }
   function el(tag, attrs, parent, text) {
     var e = document.createElementNS(NS, tag);
     for (var k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
@@ -33,259 +46,149 @@
   function clear(svg) { Array.prototype.slice.call(svg.childNodes).forEach(function (c) { if (c.nodeName !== 'title' && c.nodeName !== 'desc') svg.removeChild(c); }); }
   var ctx2 = document.createElement('canvas').getContext('2d');
   function measure(text, font) { ctx2.font = font; return ctx2.measureText(text).width; }
-  var fSans = '400 ' + FS + 'px ' + SANS, fSans6 = '600 ' + FS + 'px ' + SANS, fVal = '600 ' + VF + 'px ' + SERIF;
+  var fSans = '400 ' + FS + 'px ' + SANS, fVal = '600 ' + VF + 'px ' + SERIF;
+  var still = function () { return matchMedia('(prefers-reduced-motion: reduce)').matches; };
+  var LH = Math.round(FS * 1.25);                  // the line step of a two-line reading (phones)
 
-  // ---- the parts of the payout: one list, in bar order, with who ends up with each (the chart, the hidden table, the
-  // readings and the sum all read it) ----
+  // ---- the parts of the payout (the hidden table and the description) ----
   function parts(S) {
-    var p = [
-      { key: 'cap', bar: 0, v: S.capDiv, words: 'tax-free, capital dividend', who: 'to the family, tax-free, as a capital dividend', cls: 'p-cap' },
-      { key: 'after', bar: 0, v: S.afterTax, words: 'to the family, after dividend tax', who: 'to the family, after dividend tax', cls: 'p-after' },
-      { key: 'tax', bar: 0, v: S.tax, words: 'income tax', who: 'income tax on the taxable dividend', cls: 'p-tax' },
+    return [
+      { key: 'cap', v: S.capDiv, words: 'tax-free capital dividend' },
+      { key: 'after', v: S.afterTax, words: 'taxable dividend, after tax' },
+      { key: 'tax', v: S.tax, words: 'income tax' },
     ];
-    if (COMPARE) p.push(
-      { key: 'cafter', bar: 1, v: S.compare.family, words: 'to the family, after dividend tax', who: 'to the family, after dividend tax, if all of it were a taxable dividend', cls: 'p-after' },
-      { key: 'ctax', bar: 1, v: S.compare.tax, words: 'income tax', who: 'income tax, if all of it were a taxable dividend', cls: 'p-tax' }
-    );
-    return p;
   }
-  var BAR_TITLES = ['Through the capital dividend account', 'For comparison only: the same payout as a taxable dividend'];
+  // the four readings, at the bar's ends: over it, the payout split at the handle; under it, where the money goes
+  function readingsOf(S) {
+    return {
+      acb: { v: S.inp.acb, words: 'cost base', cls: 'r-acb', end: false, top: true },
+      cap: { v: S.capDiv, words: 'tax-free capital dividend', cls: 'r-cap', end: true, top: true },
+      tax: { v: S.tax, words: 'the family’s income tax', cls: 'r-tax', end: false, top: false },
+      fam: { v: S.family, words: 'to the family', cls: 'r-fam', end: true, top: false },
+    };
+  }
 
-  // ---- the chart: two stacked bars on one dollar scale, readings under each bar (no legend) ----
-  function Placer(W) {
-    var boxes = [];
-    function hit(b) { return b.x < -0.5 || b.x + b.w > W + 0.5 || boxes.some(function (o) { return b.x < o.x + o.w + 8 && o.x < b.x + b.w + 8 && b.y < o.y + o.h && o.y < b.y + b.h; }); }
-    return { hit: hit, add: function (b) { boxes.push(b); } };
-  }
-  var LH = Math.round(FS * 1.35), segRects = [];
-  function drawChart() {
-    var svg = $('chart'), frame = $('chart-frame');
-    var W = Math.max(300, Math.floor(frame.clientWidth)), narrow = W < 640;
-    clear(svg); segRects = [];
+  // ---- the picture: built once per width, then moved on every change ----
+  var pic = $('pic'), svg = $('chart'), move = $('move'), range = $('acb');
+  var G = null;                                    // the geometry and the shapes of the current build
+  var GAP = 2, GRIP = 14, TICK = 6;               // the ground gap between parts; the grip's radius; a bracket's tick
+  function build() {
+    clear(svg);
+    var W = Math.max(280, Math.floor(pic.clientWidth)), wide = W >= 640;
+    var BARH = matchMedia('(min-width: 960px)').matches ? 72 : 56;
     var defs = el('defs', {}, svg);
     var pat = el('pattern', { id: 'ins-hatch', patternUnits: 'userSpaceOnUse', width: 6, height: 6, patternTransform: 'rotate(45)' }, defs);
     el('rect', { x: 0, y: 0, width: 6, height: 6, 'class': 'hatch-bg' }, pat);
     el('line', { x1: 1, y1: 0, x2: 1, y2: 6, 'class': 'hatch-line' }, pat);
-    var P = parts(S), pay = S.inp.payout, X = function (v) { return v / pay * W; };
-    var gText = el('g', { 'class': 'labels' }, svg), y = 4;
-    var BARH = [40, 28], GAP = 2;
-
-    // one bar: its title, (bar 1) the annotation and its leader, the segments, then the readings in rows under the bar
-    function drawBar(b) {
-      var list = P.filter(function (p) { return p.bar === b; });
-      if (!list.length) return;
-      if (b > 0) y += 24;
-      // the bar's title (wrapped to the width)
-      wrapText(BAR_TITLES[b], W - 2, function (s) { return measure(s, fSans6); }).forEach(function (s) {
-        y += LH; el('text', { x: 0, y: (y - LH * 0.28).toFixed(1), 'class': 'bar-t' }, gText, s);
-      });
-      y += 6;
-      // the one annotation, above bar 1 (normal state only): a bracket over the whole cost base span (the hatched part
-      // and the income tax), labelled once above it
-      var bx = X(S.capDiv);
-      if (b === 0 && S.state === 'normal') {
-        var one = 'The ' + m(S.inp.acb) + ' cost base: a taxable dividend here';
-        var mw = function (s) { return measure(s, fSans6); }, full = mw(one);
-        var lines = full <= W - 2 ? [one] : wrapText(one, W - 2, mw);
-        if (lines.length > 1) { var bal = wrapText(one, Math.ceil(full / lines.length) + 24, mw); if (bal.length === lines.length) lines = bal; }
-        var w = Math.max.apply(null, lines.map(mw));
-        // right-aligned to the span's right end (the bar's end), so it sits over the span it names
-        var tx = Math.max(0, W - w - 1);
-        var at = el('text', { x: tx.toFixed(1), y: (y + FS).toFixed(1), 'class': 'annot' }, gText);
-        lines.forEach(function (s, i) { el('tspan', { x: tx.toFixed(1), dy: i ? LH : 0 }, at, s); });
-        y += lines.length * LH + 8;
-        // the bracket: ticks down at both ends of the span, the line across the top
-        var a0 = Math.min(bx + 1, W - 7), z0 = W - 1;
-        el('path', { d: 'M' + a0.toFixed(1) + ' ' + (y + 6).toFixed(1) + 'V' + y.toFixed(1) + 'H' + z0.toFixed(1) + 'V' + (y + 6).toFixed(1), 'class': 'span-bracket', fill: 'none' }, svg);
-        y += 6;
-      }
-      y += 4;
-      var h = BARH[b], x0 = 0, top = y;
-      list.forEach(function (p) {
-        var x1 = x0 + X(p.v);
-        p.x0 = x0; p.x1 = x1;
-        if (p.v > 0) {
-          // a 2px gap of the ground between parts, so each part reads against the ground (non-text contrast)
-          var a = x0 + (x0 > 0 ? GAP / 2 : 0), z = x1 - (x1 < W - 0.5 ? GAP / 2 : 0);
-          var r = el('rect', { x: a.toFixed(1), y: top, width: Math.max(1, z - a).toFixed(1), height: h, 'class': 'seg ' + p.cls, 'data-key': p.key }, svg);
-          if (p.cls === 'p-after') el('rect', { x: (a + 1).toFixed(1), y: top + 1, width: Math.max(0, z - a - 2).toFixed(1), height: h - 2, 'class': 'seg-edge', 'pointer-events': 'none' }, svg);
-          segRects.push({ p: p, el: r, x: a, w: z - a, y: top, h: h });
-        }
-        x0 = x1;
-      });
-      y += h;
-      var shown = list.filter(function (p) { return p.v > 0; });
-      // phones: a stacked key under the bar, one row per part (swatch, figure, words), in bar order
-      if (narrow) {
-        y += 12;
-        shown.forEach(function (p) {
-          var sw = 18, rowH = Math.max(LH, VF + 6), cy = y + rowH / 2;
-          el('rect', { x: 0, y: (cy - sw / 2).toFixed(1), width: sw, height: sw, 'class': 'key-sw ' + p.cls, 'pointer-events': 'none' }, svg);
-          if (p.cls === 'p-after') el('rect', { x: 1, y: (cy - sw / 2 + 1).toFixed(1), width: sw - 2, height: sw - 2, 'class': 'seg-edge', 'pointer-events': 'none' }, svg);
-          var tx2 = sw + 10, avail = W - tx2 - 2, fig = m(p.v), wf = measure(fig, fVal), sep = ' · ';
-          var t = el('text', { x: tx2, y: (cy + VF * 0.34).toFixed(1), 'class': 'rd', 'data-key': p.key }, gText);
-          el('tspan', { 'class': 'rd-v ' + p.cls }, t, fig);
-          if (wf + measure(sep + p.words, fSans) <= avail) { el('tspan', { 'class': 'rd-w' }, t, sep + p.words); y += rowH + 4; }
-          else {
-            var ws = wrapText(p.words, avail, function (s) { return measure(s, fSans); });
-            ws.forEach(function (s2) { el('tspan', { 'class': 'rd-w', x: tx2, dy: LH }, t, s2); });
-            y += rowH + ws.length * LH + 4;
-          }
-        });
-        return;
-      }
-      // wider: each reading under its part, a 2px bracket spanning the part, then its figure and words, in rows
-      var Pl = Placer(W), rows = [];
-      shown.forEach(function (p) {
-        var fig = m(p.v), sep = ' · ', wf = measure(fig, fVal), ws = measure(sep, fSans), ww = measure(p.words, fSans);
-        var one = wf + ws + ww, two = Math.max(wf, ww);
-        var forms = one <= W - 2 ? [{ lines: 1, w: one }, { lines: 2, w: two }] : [{ lines: 2, w: two }];
-        for (var r = 0; r < 6; r++) {
-          for (var k = 0; k < forms.length; k++) {
-            var f = forms[k], tx = Math.max(0, Math.min(p.x0, W - f.w));
-            // a reading under a thin part sits at the part's right edge when it can, so it stays near its bracket
-            if (p.x1 - p.x0 < f.w && p.x1 - f.w >= 0 && p.x0 > W / 2) tx = Math.max(0, Math.min(W - f.w, p.x1 - f.w));
-            var box = { x: tx, y: r * 1000, w: f.w, h: 1 };
-            if (Pl.hit(box)) continue;
-            Pl.add(box); (rows[r] = rows[r] || []).push({ p: p, x: tx, f: f });
-            r = 99; break;
-          }
-        }
-      });
-      rows.forEach(function (row) {
-        var lines = Math.max.apply(null, row.map(function (it) { return it.f.lines; }));
-        var by = y + 10;
-        row.forEach(function (it) {
-          var p = it.p, a = p.x0 + 1, z = p.x1 - 1;
-          if (z - a < 6) { a = (p.x0 + p.x1) / 2 - 3; z = a + 6; }
-          el('path', { d: 'M' + a.toFixed(1) + ' ' + (by - 5).toFixed(1) + 'V' + by.toFixed(1) + 'H' + z.toFixed(1) + 'V' + (by - 5).toFixed(1), 'class': 'bracket b-' + p.key + ' ' + p.cls, fill: 'none' }, svg);
-          var t = el('text', { x: it.x.toFixed(1), y: (by + VF + 2).toFixed(1), 'class': 'rd', 'data-key': p.key }, gText);
-          el('tspan', { 'class': 'rd-v ' + p.cls }, t, m(p.v));
-          if (it.f.lines === 1) el('tspan', { 'class': 'rd-w' }, t, ' · ' + p.words);
-          else el('tspan', { 'class': 'rd-w', x: it.x.toFixed(1), dy: LH }, t, p.words);
-        });
-        y = by + VF + 2 + (lines - 1) * LH + 8;
-      });
-    }
-    drawBar(0);
-    if (COMPARE) drawBar(1);
-    y += 4;
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + Math.ceil(y));
-    svg.setAttribute('width', W); svg.setAttribute('height', Math.ceil(y));
-    // the reading box for a tapped or hovered part, pinned above the bars (drawn last, over the titles)
-    readG = el('g', { 'class': 'crosshair seg-read' }, svg); readG.style.display = 'none';
-    readBox = el('rect', { x: 0, y: 0, rx: 2 }, readG); readTxt = el('text', { x: 0, y: 0 }, readG);
-    if (kbIndex != null) showRead(kbIndex);
+    // a reading is one line from 640px (figure, then words) and two lines under it (figure over words); the rows
+    // never change height, so nothing under the picture moves while the handle does
+    var labH = wide ? VF + 6 : VF + LH + 3;
+    // the gaps between a reading and its span, and a span and the bar: closer on phones, so the bar is higher up
+    var LG = wide ? 8 : 5, BG = wide ? 6 : 4;
+    var topBr = labH + LG, barTop = topBr + TICK + BG, barBot = barTop + BARH, botBr = barBot + BG + TICK, botLab = botBr + LG;
+    var H = botLab + labH + 4;
+    G = { W: W, wide: wide, BARH: BARH, barTop: barTop, barBot: barBot, topBr: topBr, botBr: botBr, botLab: botLab, labH: labH, H: H };
+    G.tax = el('rect', { 'class': 'seg p-tax', 'data-key': 'tax', y: barTop, height: BARH }, svg);
+    G.after = el('rect', { 'class': 'seg p-after', 'data-key': 'after', y: barTop, height: BARH }, svg);
+    G.afterEdge = el('rect', { 'class': 'seg-edge', y: barTop + 1, height: BARH - 2 }, svg);
+    G.cap = el('rect', { 'class': 'seg p-cap', 'data-key': 'cap', y: barTop, height: BARH }, svg);
+    G.brackets = el('g', { 'class': 'brackets' }, svg);
+    G.labels = el('g', { 'class': 'labels' }, svg);
+    // the four readings: fixed places at the bar's two ends
+    var R4 = readingsOf(S);
+    G.read = {};
+    Object.keys(R4).forEach(function (k) {
+      var r = R4[k], x = r.end ? W : 0, y0 = r.top ? 0 : botLab;
+      var t = el('text', { x: x, y: (y0 + VF * 0.85).toFixed(1), 'class': 'rd ' + r.cls, 'data-key': k, 'text-anchor': r.end ? 'end' : 'start' }, G.labels);
+      var v = el('tspan', { 'class': 'rd-v' }, t, '');
+      var w = wide ? el('tspan', { 'class': 'rd-w' }, t, ' ' + r.words) : el('tspan', { 'class': 'rd-w', x: x, dy: LH }, t, r.words);
+      G.read[k] = { t: t, v: v, w: w };
+    });
+    G.handle = el('g', { 'class': 'handle', 'aria-hidden': 'true' }, svg);
+    el('rect', { 'class': 'handle-rule', x: -2, y: topBr, width: 4, height: barBot + 3 - topBr }, G.handle);
+    var cy = barTop + BARH / 2;
+    el('circle', { 'class': 'grip', cx: 0, cy: cy, r: GRIP }, G.handle);
+    el('path', { 'class': 'chev', d: 'M-3 ' + (cy - 4) + 'L-7 ' + cy + 'L-3 ' + (cy + 4) + 'M3 ' + (cy - 4) + 'L7 ' + cy + 'L3 ' + (cy + 4) }, G.handle);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('width', W); svg.setAttribute('height', H);
+    // the range lies over the bar (half a thumb past each end, so the thumb's centre lands on the boundary)
+    move.style.top = barTop + 'px';
+    move.style.height = BARH + 'px';
+    place(false);
   }
 
-  // ---- reading a part: hover or tap (it stays on touch until a tap elsewhere), or Left and Right on the focused chart ----
-  var readG = null, readBox = null, readTxt = null, kbIndex = null;
-  function showRead(i) {
-    var sr = segRects[i]; if (!sr || !readG) return;
-    readG.style.display = '';
-    while (readTxt.firstChild) readTxt.removeChild(readTxt.firstChild);
-    el('tspan', { 'class': 'rv' }, readTxt, m(sr.p.v));
-    el('tspan', {}, readTxt, ' · ' + sr.p.who);
-    var W = Number($('chart').getAttribute('width')), pad = 6;
-    var bb = readTxt.getBBox(), w = bb.width + pad * 2, h = bb.height + pad * 2;
-    if (w > W) {
-      // too long for one line on a phone: the figure, then who gets it
-      while (readTxt.firstChild) readTxt.removeChild(readTxt.firstChild);
-      el('tspan', { 'class': 'rv', x: 0, dy: '1em' }, readTxt, m(sr.p.v));
-      wrapText(sr.p.who, W - pad * 2, function (s) { return measure(s, fSans); }).forEach(function (s) { el('tspan', { x: 0, dy: '1.3em' }, readTxt, s); });
-      bb = readTxt.getBBox(); w = bb.width + pad * 2; h = bb.height + pad * 2;
+  // move the shapes, the spans and the figures for the current state
+  function place(ease) {
+    if (!G) return;
+    var W = G.W, pay = S.inp.payout, X = function (v) { return v / pay * W; };
+    var xTax = X(S.tax), xAcb = X(S.inp.acb);
+    pic.classList.toggle('ease', !!ease && !still());
+    function box(r, a, z, show) {
+      r.style.display = show ? '' : 'none';
+      r.style.x = a.toFixed(1) + 'px';
+      r.style.width = Math.max(0, z - a).toFixed(1) + 'px';
     }
-    var cx = sr.x + sr.w / 2, bx = Math.max(0, Math.min(W - w, cx - w / 2)), by = Math.max(0, sr.y - h - 6);
-    readBox.setAttribute('x', bx); readBox.setAttribute('y', by); readBox.setAttribute('width', w); readBox.setAttribute('height', h);
-    readTxt.setAttribute('transform', 'translate(' + (bx + pad - bb.x) + ',' + (by + pad - bb.y) + ')');
-    segRects.forEach(function (s, k) { s.el.classList.toggle('on', k === i); });
+    var hasTax = S.tax > 0, hasAfter = S.afterTax > 0, hasCap = S.capDiv > 0;
+    // the tax, the hatched part after tax, the solid capital dividend, with 2px ground gaps
+    var tz = hasTax ? Math.max(xTax, GAP) : 0;
+    box(G.tax, 0, Math.max(GAP / 2, tz - GAP / 2), hasTax);
+    var aa = hasTax ? tz + GAP / 2 : 0, az = hasCap ? xAcb - GAP / 2 : W;
+    box(G.after, aa, Math.max(aa + 1, az), hasAfter);
+    box(G.afterEdge, aa + 1, Math.max(aa + 1, az - 1), hasAfter);
+    var ca = hasAfter || hasTax ? xAcb + GAP / 2 : 0;
+    box(G.cap, ca, W, hasCap);
+    G.handle.style.transform = 'translateX(' + xAcb.toFixed(1) + 'px)';
+    // the spans: over the bar the cost base and the capital dividend meet at the handle; under it the tax and the
+    // family's money meet where the tax ends
+    var g = G.brackets;
+    while (g.firstChild) g.removeChild(g.firstChild);
+    function span(a, z, y, down, cls) {
+      if (z - a < 1) return;
+      var t = down ? y + TICK : y - TICK;
+      el('path', { d: 'M' + a.toFixed(1) + ' ' + t + 'V' + y + 'H' + z.toFixed(1) + 'V' + t, 'class': 'bracket ' + cls, fill: 'none' }, g);
+    }
+    span(1, xAcb - 3, G.topBr, true, 'b-acb');
+    span(xAcb + 3, W - 1, G.topBr, true, 'b-cap');
+    span(1, tz - GAP / 2 - 1, G.botBr, false, 'b-tax');
+    span(aa + 1, W - 1, G.botBr, false, 'b-fam');
+    var R4 = readingsOf(S);
+    Object.keys(R4).forEach(function (k) { G.read[k].v.textContent = m(R4[k].v); });
   }
-  function hideRead() { if (readG) readG.style.display = 'none'; segRects.forEach(function (s) { s.el.classList.remove('on'); }); }
-  var chart = $('chart');
-  function segAt(e) { var k = e.target && e.target.getAttribute && e.target.getAttribute('data-key'); if (!k) return -1; for (var i = 0; i < segRects.length; i++) if (segRects[i].p.key === k) return i; return -1; }
-  chart.addEventListener('pointermove', function (e) { var i = segAt(e); if (i >= 0) showRead(i); else if (e.pointerType !== 'touch') hideRead(); });
-  chart.addEventListener('pointerdown', function (e) { var i = segAt(e); if (i >= 0) showRead(i); });
-  chart.addEventListener('pointerleave', function (e) { if (e.pointerType !== 'touch') hideRead(); });
-  document.addEventListener('pointerdown', function (e) { if (!chart.contains(e.target)) hideRead(); });
-  chart.addEventListener('keydown', function (e) {
-    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) < 0) return;
-    e.preventDefault();
-    var n = segRects.length;
-    if (kbIndex == null) kbIndex = 0;
-    else if (e.key === 'ArrowRight') kbIndex = Math.min(n - 1, kbIndex + 1);
-    else if (e.key === 'ArrowLeft') kbIndex = Math.max(0, kbIndex - 1);
-    if (e.key === 'Home') kbIndex = 0; if (e.key === 'End') kbIndex = n - 1;
-    showRead(kbIndex);
-  });
-  chart.addEventListener('blur', function () { kbIndex = null; hideRead(); });
 
-  // ---- the first move: the cost base slider (from $0 to the payout) ----
-  var range = $('acb'), bubble = $('acb-out');
-  range.min = B.acb.min; range.step = B.acb.step;
-  function paintSlider() {
-    range.max = st.payout; range.value = st.acb;
-    var f = st.payout > 0 ? (st.acb - B.acb.min) / (st.payout - B.acb.min) : 0, w = range.clientWidth, thumb = 28;
-    bubble.textContent = m(st.acb);
+  // ---- the first move: the cost base, from $0 to the payout, on the bar itself ----
+  range.min = B.acb.min; range.max = st.payout; range.step = B.acb.step;
+  function paintControl() {
+    range.value = st.acb;
     range.setAttribute('aria-valuetext', m(st.acb) + ', an example');
-    $('tick-lo').textContent = m(B.acb.min); $('tick-hi').textContent = m(st.payout);
-    var half = bubble.offsetWidth / 2, x = f * (w - thumb) + thumb / 2;
-    bubble.style.left = Math.max(half, Math.min(w - half, x)) + 'px';
-    range.style.setProperty('--fill', (f * 100).toFixed(2) + '%');
   }
-  var clampNote = '';
-  function setAcb(v) { st.acb = Math.max(B.acb.min, Math.min(st.payout, v)); clampNote = ''; paintSlider(); render(false, true); }
-  range.addEventListener('input', function () { setAcb(Number(range.value)); });
+  var pressed = false, pressMoves = 0;
+  range.addEventListener('pointerdown', function () { pressed = true; pressMoves = 0; });
+  addEventListener('pointerup', function () { pressed = false; });
+  addEventListener('pointercancel', function () { pressed = false; });
+  function setAcb(v, ease) {
+    st.acb = Math.max(B.acb.min, Math.min(st.payout, v));
+    render(ease);
+  }
+  // a drag follows the thumb on the same frame; a key, a page step or a tap eases over 160ms
+  range.addEventListener('input', function () {
+    var ease = !pressed || pressMoves === 0;
+    if (pressed) pressMoves++;
+    setAcb(Number(range.value), ease);
+  });
   range.addEventListener('keydown', function (e) {
     if (e.key !== 'PageUp' && e.key !== 'PageDown') return;
     e.preventDefault();
-    setAcb(st.acb + (e.key === 'PageUp' ? 1 : -1) * B.acb.page);
+    setAcb(st.acb + (e.key === 'PageUp' ? 1 : -1) * B.acb.page, true);
   });
-
-  // ---- the payout stepper: label, minus, the value, plus; 48px buttons, disabled at a bound, never wrapping ----
-  var STEP = { key: 'payout', label: 'The payout', name: 'the payout', min: B.payout.min, max: B.payout.max, step: B.payout.step };
-  (function makeStepper(host, c) {
-    var box = document.createElement('div'); box.className = 'stepper';
-    var id = 'st-' + c.key, lab = document.createElement('span'); lab.className = 'stepper-l'; lab.id = id + '-l'; lab.textContent = c.label;
-    var row = document.createElement('div'); row.className = 'stepper-row'; row.setAttribute('role', 'group'); row.setAttribute('aria-labelledby', id + '-l');
-    var dn = document.createElement('button'), up = document.createElement('button'), out = document.createElement('output');
-    dn.type = up.type = 'button'; dn.textContent = '−'; up.textContent = '+'; out.id = id; out.setAttribute('data-flash', '');
-    row.appendChild(dn); row.appendChild(out); row.appendChild(up); box.appendChild(lab); box.appendChild(row); host.appendChild(box);
-    function go(dir) {
-      var v = Math.max(c.min, Math.min(c.max, Math.round((st.payout + dir * c.step) / c.step) * c.step));
-      if (v === st.payout) return;
-      st.payout = v;
-      if (st.acb > v) { st.acb = v; clampNote = 'Cost base lowered to ' + m(v) + ': it can’t be more than the payout here.'; } else clampNote = '';
-      paintSlider(); render();
-    }
-    dn.addEventListener('click', function () { go(-1); }); up.addEventListener('click', function () { go(1); });
-    c.paint = function () {
-      var txt = m(st.payout);
-      out.textContent = txt;
-      dn.disabled = st.payout <= c.min; up.disabled = st.payout >= c.max;
-      dn.setAttribute('aria-label', 'Decrease ' + c.name + ', now ' + txt);
-      up.setAttribute('aria-label', 'Increase ' + c.name + ', now ' + txt);
-    };
-    c.out = out;
-  })($('steppers'), STEP);
-  $('reset').addEventListener('click', function () { st = { payout: E.payout, acb: E.acb }; clampNote = ''; paintSlider(); render(); range.focus(); });
 
   // ---- the words that follow the state ----
   var readout = deskReadout('#answer', { format: m });
   function lineFor(S) {
     return {
-      normal: 'If paid out now, the ' + m(S.inp.acb) + ' cost base is a taxable dividend here.',
-      noCost: 'No cost base at death: here, all of the payout can go out this way.',
-      allCost: 'The cost base equals the payout, so none of it goes out this way.',
+      normal: 'Paid out now, the ' + m(S.inp.acb) + ' cost base is a taxable dividend.',
+      noCost: 'No cost base: all of it can be a capital dividend.',
+      allCost: 'Paid out now, the whole payout is a taxable dividend.',
     }[S.state];
-  }
-  function figB(v) { return '<b>' + esc(v) + '</b>'; }
-  function pc(v) { return S.inp.payout > 0 ? Math.max(0, Math.min(100, v / S.inp.payout * 100)).toFixed(3) + '%' : '0%'; }
-  function paintSplit() {
-    // the sum, as a small ledger: the capital dividend plus what is left after dividend tax is the family's money (the
-    // total row); the income tax takes the rest. Every part in full dollars; the family and the tax add to the payout.
-    var rows = [[m(S.capDiv), 'as a capital dividend', '', ''], [m(S.afterTax), 'after dividend tax', '+', ' plus'], [m(S.family), 'to the family in all', '=', ' total'], [m(S.tax), 'income tax', '', ' tax']];
-    $('sum').innerHTML = rows.map(function (r) { return '<span class="sum-row' + r[3] + '"><span class="sum-op">' + r[2] + '</span><b class="sum-v">' + esc(r[0]) + '</b><span class="sum-w">' + esc(r[1]) + '</span></span>'; }).join('');
-    $('sum-sr').textContent = m(S.capDiv) + ' tax-free as a capital dividend, plus ' + m(S.afterTax) + ' after dividend tax, makes ' + m(S.family) + ' to the family in all; ' + m(S.tax) + ' of the ' + m(S.inp.payout) + ' payout is income tax.';
   }
   function stepsHtml() {
     return [
@@ -294,21 +197,16 @@
       '<b>The election.</b> The company elects, on the prescribed form and on time, to pay that much as a capital dividend. It is not counted in the family’s income. Here, the cost base part is paid out now as an ordinary taxable dividend.',
     ];
   }
+  $('steps').innerHTML = stepsHtml().map(function (s) { return '<li>' + s + '</li>'; }).join('');
   var rid = [R.ids.fedTop, R.ids.onTop, R.ids.surtax, R.ids.grossUp, R.ids.fedDTC, R.ids.onDTC].join(' ');
   function paintWords(first) {
     var i = S.inp;
-    readout.set({ n: S.capDiv, line: lineFor(S), animate: first ? false : undefined });
-    $('answer-of').textContent = 'of the ' + m(i.payout) + ' payout';
-    paintSplit();
-    $('lede').textContent = 'A made-up owner dies, and the company receives ' + m(i.payout) + '.';
-    $('clamp').textContent = clampNote;
-    $('chart-title').textContent = S.state === 'noCost' ? 'All of it through the account' : S.state === 'allCost' ? 'None of it through the account' : 'Where the payout goes';
-    $('chart-svg-title').textContent = $('chart-title').textContent;
-    $('chart-desc').textContent = (COMPARE ? 'Two bars' : 'One bar') + ' of one example payout of ' + m(i.payout) + '. Through the capital dividend account: ' + m(S.capDiv) + ' tax-free as a capital dividend, '
-      + m(S.afterTax) + ' to the family after dividend tax and ' + m(S.tax) + ' income tax.'
-      + (COMPARE ? ' For comparison, the same payout as a taxable dividend: ' + m(S.compare.family) + ' to the family and ' + m(S.compare.tax) + ' income tax.' : '');
-    $('chart-table-rows').innerHTML = parts(S).map(function (p) { return '<tr><td>' + esc(p.bar ? 'For comparison: as a taxable dividend' : BAR_TITLES[0]) + '</td><td>' + esc(p.words) + '</td><td>' + esc(m(p.v)) + '</td></tr>'; }).join('');
-    // How this is worked out: plain steps, every rate wrapped in its fact
+    readout.set({ n: S.family, line: lineFor(S), animate: first ? false : undefined });
+    $('chart-desc').textContent = 'One bar: the example payout of ' + m(i.payout) + '. On the left, the policy’s cost base of ' + m(i.acb)
+      + '; to its right, ' + m(S.capDiv) + ' as a tax-free capital dividend. Paid out now, the cost base part loses ' + m(S.tax)
+      + ' to the family’s income tax and leaves ' + m(S.afterTax) + ', so ' + m(S.family) + ' reaches the family.';
+    $('chart-table-rows').innerHTML = parts(S).map(function (p) { return '<tr><td>' + esc(p.words) + '</td><td>' + esc(m(p.v)) + '</td></tr>'; }).join('');
+    // In this example's numbers: plain steps, every rate wrapped in its fact
     var how = [
       'Into the capital dividend account (<abbr title="capital dividend account">CDA</abbr>): payout ' + esc(m(i.payout)) + ' − the policy’s cost base ' + esc(m(i.acb)) + ' = ' + esc(m(S.cda)) + '.',
       'Elected as a capital dividend: ' + esc(m(S.capDiv)) + ', not counted in the family’s income.',
@@ -317,26 +215,24 @@
         : 'With no cost base, nothing is paid as a taxable dividend, so there is no income tax.',
       'The family receives ' + esc(m(S.capDiv)) + ' + ' + esc(m(S.afterTax)) + ' = ' + esc(m(S.family)) + ' of the ' + esc(m(i.payout)) + '.',
     ];
-    $('how').innerHTML = '<ol>' + how.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><p>The rate is the ' + R.rateYear + ' top federal and Ontario rate on a non-eligible dividend, worked out in Go deeper.</p>';
-    var li = $('steps').children, stp = stepsHtml();
-    if (li.length !== stp.length) $('steps').innerHTML = stp.map(function (s) { return '<li>' + s + '</li>'; }).join('');
-    var changed = i.payout !== E.payout || i.acb !== E.acb;
-    $('reset').hidden = !changed;
-    var echo = $('echo');
-    echo.textContent = changed ? 'Now: a ' + m(i.payout) + ' payout, a ' + m(i.acb) + ' cost base.' : '';
-    echo.hidden = !changed;
+    $('how').innerHTML = '<ol class="fold-list">' + how.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><p>The rate is the ' + R.rateYear + ' top federal and Ontario rate on a non-eligible dividend, worked out below.</p>';
   }
 
-  // ---- static words: the assumptions, the year, Go deeper's rules, the caveats, the sources ----
-  $('assume-text').textContent = 'A made-up Ontario owner; the family taxed at the ' + R.rateYear + ' top rate; every figure an example.';
+  // ---- static words: the assumptions, the hint, Go deeper's rules and the year, the caveats, the sources ----
+  $('assume-text').textContent = 'Ontario, ' + R.rateYear + ' top rates.';
+  // the one line that says what the handle is and what moves it (the second sentence only with the 148(9) fact)
+  $('hint').textContent = R.acbRule ? 'Drag the cost base. Premiums raise it; the insurance’s cost lowers it.' : 'Drag the policy’s cost base.';
   // the year, and (when a later year's Ontario credit is already confirmed and lower) what that does to the taxable part
   $('year-line').innerHTML = esc('Rates for ' + R.rateYear + ': the latest year with every figure published.')
     + (R.onDTCLater ? ' ' + fact(R.onDTCLater.id, 'The Ontario dividend credit is already set lower from ' + R.onDTCLater.year) + esc(', so with other rates unchanged the tax on the taxable part would be higher then.') : '');
-  // without the 148(9) fact, the help keeps only its name line and Go deeper drops "The cost base, in the Act"
-  if (!R.acbRule) { $('acb-help-rule').remove(); $('acb-sec').remove(); }
-  else {
-    $('acb-rule').innerHTML = '<p>Section 148(9) of the Act builds the cost base from a formula. In the words of the facts this page reads:</p>'
-      + '<p class="rule-text">' + fact(R.ids.acbRule, R.acbRule) + '</p>'
+  // without the 148(9) fact, "The cost base, in the Act" keeps only the line that names the cost base
+  if (!R.acbRule) {
+    $('acb-h').textContent = 'The cost base';
+    $('acb-help').textContent = 'The cost base is the policy’s adjusted cost basis under the Income Tax Act. The payout less it is what can go out as a capital dividend.';
+    $('acb-rule').remove();
+  } else {
+    $('acb-rule').innerHTML = '<p>In plain words: section 148(9) of the Act builds the cost base from a formula, with amounts that raise it and amounts that lower it. The definition opens:</p>'
+      + quote(R.text.acbRule, 'Income Tax Act, subsection 148(9)')
       + '<p>Which way it moves over a policy’s life depends on the policy; this tool does not estimate it.</p>';
   }
   (function dividendLines() {
@@ -350,58 +246,101 @@
     ];
     $('div-lines').innerHTML = '<p>Per $' + L.dividend + ' of non-eligible dividend, at the ' + R.rateYear + ' top rates; each line is rounded to the cent.</p><ol class="fold-list">' + rows.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol>';
   })();
-  $('elect').innerHTML = '<p>Section 83(2) of the Act, in the words of the facts this page reads:</p>'
-    + '<p class="rule-text">' + fact(R.ids.election, R.text.election.value) + '</p>'
+  $('elect').innerHTML = '<p>In plain words: when the company makes the election on time, for the full dividend, the dividend is a capital dividend up to the account’s balance, and none of it counts as the family’s income. Section 83(2) of the Act ends with rule (b):</p>'
+    + quote(R.text.election, 'Income Tax Act, paragraph 83(2)(b)')
     + '<p>An election larger than the account has consequences of its own; those, and the anti-avoidance rules around the election, are left out here.</p>';
   $('caveats').innerHTML = [
     ['The set-up', ['A made-up owner of an Ontario private company.', 'The company owns the policy and is its beneficiary.', 'The account holds only this payout, with nothing else added or taken off.', 'The owner’s family are the company’s shareholders after the death.']],
     ['Paying it out', ['The election is made on time, for the full dividend.', 'The cost base part is paid out now, as a non-eligible dividend.', 'The family is taxed at the ' + R.rateYear + ' top Ontario rate.']],
     ['Left out', ['Premiums, and how they are paid.', 'Which kind of policy.', 'Policies tied to borrowing arrangements, and some older policies.', 'The estate as the first shareholder after the death.', 'Any tax the company may pay on the payout.', 'How the cost base changes over the years.', 'Holding the policy personally.',
       'Tax on the owner’s shares at death, and the payout’s effect on their value.', 'Probate; creditors’ claims on company assets.', 'The dividend refund and other company tax accounts.', 'Keeping the money in the company.', 'Family members outside Ontario or Canada.', 'Lower brackets.']],
-  ].map(function (g) { return '<div class="cv-group"><h3 class="cv-h">' + g[0] + '</h3><ul>' + g[1].map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div>'; }).join('');
+  ].map(function (g) { return '<div class="cv-group"><h4 class="cv-h">' + g[0] + '</h4><ul>' + g[1].map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div>'; }).join('');
   (function sources() {
-    var items = R.used.map(function (f) { return '<li><a href="' + esc(f.source_url) + '">' + esc(f.title) + '</a> · as of ' + esc(longDate(f.as_of)) + '</li>'; });
+    // one line per source page: two facts read from the same page (a rate for two years) share it
+    var seen = {}, items = [];
+    R.used.forEach(function (f) {
+      var k = f.source_url + '|' + f.title;
+      if (seen[k]) return;
+      seen[k] = true;
+      items.push('<li><a href="' + esc(f.source_url) + '">' + esc(f.title) + '</a> · as of ' + esc(longDate(f.as_of)) + '</li>');
+    });
     var ver = 'Version ' + DATA.version + ' · rates for ' + R.rateYear + ' · made in this browser; nothing was sent.';
     $('sources').innerHTML = '<p>Every rate and rule on this page is read from these official sources (confirmed values only):</p><ul>' + items.join('') + '</ul>'
       + '<p>These rules were checked against the statutes and the government’s pages on ' + esc(longDate(DATA.asOf)) + '; reference data, verify at the source.</p>'
       + '<p>How it’s made: the calculation was written from scratch for this site, from the statute text, and runs in this browser. The owner, the company and the figures are made up: example assumptions, not facts, and not anyone’s situation. ' + esc(ver) + '</p>';
-    $('foot-version').textContent = ver;
   })();
 
-  // ---- Go deeper: the numbers behind the chart (filled when open) ----
-  var deeper = $('deeper');
-  function drawTable() {
+  // ---- Go deeper: the cost base from $0 to the payout, as a picture and a table (drawn when open) ----
+  var deeper = $('deeper'), tsvg = $('trend');
+  function drawTrend() {
     if (!deeper.open) return;
-    var cols = ['Cost base', 'Capital dividend, tax-free', 'To the family after dividend tax', 'Income tax', 'Family in all'];
-    if (COMPARE) cols.push('As a taxable dividend: to the family', 'As a taxable dividend: income tax');
+    clear(tsvg);
+    var W = Math.max(280, Math.floor($('trend-fig').clientWidth)), pay = S.inp.payout;
+    var top = 8, PH = W >= 640 ? 220 : 180, axisY = top + PH, H = axisY + 10 + VF + 6;
+    var X = function (v) { return v / pay * W; }, Y = function (v) { return top + PH - v / pay * PH; };
+    var lo = F.split(R, { payout: pay, acb: 0 }), hi = F.split(R, { payout: pay, acb: pay });
+    var y0 = Y(lo.family), y1 = Y(hi.family);
+    // what reaches the family (d1 tint) under the line; the income tax (d4 tint) between it and the payout
+    el('path', { d: 'M0 ' + y0.toFixed(1) + 'L' + W + ' ' + y1.toFixed(1) + 'V' + axisY + 'H0Z', 'class': 'ar-fam' }, tsvg);
+    el('path', { d: 'M0 ' + y0.toFixed(1) + 'L' + W + ' ' + y1.toFixed(1) + 'V' + top + 'Z', 'class': 'ar-tax' }, tsvg);
+    el('line', { x1: 0, y1: y0.toFixed(1), x2: W, y2: y1.toFixed(1), 'class': 'ln-fam' }, tsvg);
+    el('line', { x1: 0, y1: axisY, x2: W, y2: axisY, 'class': 'ln-axis' }, tsvg);
+    var Pl = [], hit = function (b) { return Pl.some(function (o) { return b.x < o.x + o.w + 8 && o.x < b.x + b.w + 8 && b.y < o.y + o.h && o.y < b.y + b.h; }); };
+    function label(x, y, parts, anchor, need) {
+      var w = parts.reduce(function (s, p) { return s + measure(p[0], p[1] === 'rd-v' ? fVal : fSans); }, 0);
+      var bx = { x: anchor === 'end' ? x - w : x, y: y - VF, w: w, h: VF + 6 };
+      if (!need && hit(bx)) return;
+      Pl.push(bx);
+      var t = el('text', { x: x.toFixed(1), y: y.toFixed(1), 'text-anchor': anchor }, tsvg);
+      parts.forEach(function (p) { el('tspan', { 'class': p[1] }, t, p[0]); });
+    }
+    // the current cost base: a rule down to the axis and a dot on the line, its reading beside the dot
+    var xa = X(S.inp.acb), ya = Y(S.family), right = xa < W / 2;
+    el('line', { x1: xa.toFixed(1), y1: ya.toFixed(1), x2: xa.toFixed(1), y2: axisY, 'class': 'ln-now' }, tsvg);
+    el('circle', { cx: xa.toFixed(1), cy: ya.toFixed(1), r: 6, 'class': 'dot-now' }, tsvg);
+    Pl.push({ x: xa - 8, y: ya - 8, w: 16, h: 16 });
+    // under the line all along the reading (the line falls to the right, so a reading to the right sits lower)
+    var nowW = measure(m(S.family), fVal) + measure(' now', fSans), slope = (y1 - y0) / W;
+    label(right ? xa + 12 : xa - 12, ya + VF + 14 + (right ? Math.max(0, slope * (12 + nowW)) : 0), [[m(S.family), 'rd-v t-fam'], [' now', 'rd-w']], right ? 'start' : 'end', true);
+    // the area names on the side away from the current cost base, then the line's right end where there is room
+    label(right ? W - 4 : 4, axisY - 12, [['Reaches the family', 'rd-w']], right ? 'end' : 'start', false);
+    label(W - 4, top + VF + 4, [['Income tax', 'rd-w']], 'end', false);
+    label(W - 4, y1 + VF + 14, [[m(hi.family), 'rd-v t-fam']], 'end', false);
+    // the cost base along the bottom
+    label(0, axisY + 10 + VF, [[m(0), 'rd-v'], [' cost base', 'rd-w']], 'start', true);
+    label(W, axisY + 10 + VF, [[m(pay), 'rd-v'], [' cost base', 'rd-w']], 'end', true);
+    tsvg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    tsvg.setAttribute('width', W); tsvg.setAttribute('height', H);
+    $('trend-desc').textContent = 'As the cost base grows from $0 to the ' + m(pay) + ' payout, what reaches the family falls in a straight line from '
+      + m(lo.family) + ' to ' + m(hi.family) + '. At the ' + m(S.inp.acb) + ' cost base now, ' + m(S.family) + ' reaches the family.';
+    // the numbers behind it: three columns, so nothing is cut off on a phone
+    var cols = ['Cost base', 'Income tax', 'Reaches the family'];
     $('nums-head').innerHTML = cols.map(function (c) { return '<th scope="col">' + c + '</th>'; }).join('');
-    $('nums-rows').innerHTML = F.tableRows(R, S.inp.payout, S.inp.acb).map(function (r) {
-      var cells = [m(r.capDiv), m(r.afterTax), m(r.tax), m(r.family)];
-      if (COMPARE) cells.push(m(r.compare.family), m(r.compare.tax));
+    $('nums-rows').innerHTML = F.tableRows(R, pay, S.inp.acb).map(function (r) {
+      var cells = [m(r.tax), m(r.family)];
       return '<tr' + (r.now ? ' class="now"' : '') + '><th scope="row">' + esc(m(r.acb)) + (r.now ? ' <span class="now-tag">now</span>' : '') + '</th><td>' + cells.map(esc).join('</td><td>') + '</td></tr>';
     }).join('');
-    var wrap = $('nums-wrap'), wr = wrap.getBoundingClientRect(), hidden = 0;
-    [].forEach.call(document.querySelectorAll('#nums-head th'), function (th) { if (th.getBoundingClientRect().right - wr.left + wrap.scrollLeft > wrap.clientWidth + 1) hidden++; });
-    $('nums-cap').textContent = 'The cost base at 0, a quarter, half, three quarters and all of the ' + m(S.inp.payout) + ' payout, and now.' + (hidden ? ' Swipe the table for ' + hidden + ' more column' + (hidden === 1 ? '' : 's') + ' →' : '');
+    var wrap = $('nums-wrap'), cut = wrap.scrollWidth > wrap.clientWidth + 1;
+    $('nums-cap').textContent = 'The cost base at 0, a quarter, half, three quarters and all of the ' + m(pay) + ' payout, and now.' + (cut ? ' Swipe the table for more →' : '');
   }
-  deeper.addEventListener('toggle', drawTable);
+  deeper.addEventListener('toggle', drawTrend);
 
-  // ---- one render for every change ----
-  var queued = false;
-  function render(first, later) {
+  // ---- one render for every change: the words at once, the picture on the next frame ----
+  var queued = false, queuedEase = false;
+  function render(ease, first) {
     S = F.split(R, st); st.acb = S.inp.acb;
+    paintControl();
     paintWords(first === true);
-    STEP.paint();
-    drawTable();
-    if (!later) { drawChart(); return; }
+    drawTrend();
+    if (first) { build(); return; }
+    queuedEase = queuedEase || !!ease;
     if (queued) return;
     queued = true;
-    requestAnimationFrame(function () { queued = false; drawChart(); });
+    requestAnimationFrame(function () { queued = false; var e = queuedEase; queuedEase = false; place(e); });
   }
-  render(true);
-  paintSlider();
-  deskWatchFlash(STEP.out);
-  var frame = $('chart-frame'), lastW = frame.clientWidth;
-  new ResizeObserver(function () { if (frame.clientWidth !== lastW) { lastW = frame.clientWidth; drawChart(); paintSlider(); } }).observe(frame);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { drawChart(); paintSlider(); });
+  render(false, true);
+  var lastW = pic.clientWidth;
+  new ResizeObserver(function () { if (pic.clientWidth !== lastW) { lastW = pic.clientWidth; build(); drawTrend(); } }).observe(pic);
+  addEventListener('resize', function () { build(); drawTrend(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { build(); drawTrend(); });
 })();

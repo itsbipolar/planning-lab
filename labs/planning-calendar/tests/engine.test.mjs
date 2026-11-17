@@ -179,7 +179,7 @@ test('no figure from the facts file is written into the code, the config or the 
     if (/^\d+(\.\d+)?$/.test(s) && Number(s) < 1000) figures.add(s);
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) { figures.add(s); figures.add(s.slice(5)); }
     for (const m of s.matchAll(/(\d+) (?:calendar )?days/g)) figures.add(m[1]);
-    for (const m of s.matchAll(/(\d+)%/g)) figures.add(m[1]);
+    for (const m of s.matchAll(/(?<![\d.])(\d+(?:\.\d+)?)%/g)) figures.add(m[1]); // a whole percentage ("2.5%" is 2.5, not 5)
     for (const m of s.matchAll(/[A-Z][a-z]+ \d{1,2}\b/g)) figures.add(m[0]);
   }
   for (const [name, t] of files) for (const x of figures) assert.ok(!figure(x).test(t), `${name} contains ${x}`);
