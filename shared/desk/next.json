@@ -16,6 +16,8 @@
     "double-tax-at-death": { "next": "estate-freeze" },
     "money-history": { "next": "money-then-now" },
     "apollo-envelopes": { "next": "order-of-returns" },
-    "money-year": { "next": "money-then-now", "hash": "this-year" }
+    "money-year": { "next": "money-then-now", "hash": "this-year" },
+    "casa-loma": { "next": "money-then-now" },
+    "klondike-food": { "next": "money-then-now" }
   }
 }
