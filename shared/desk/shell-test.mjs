@@ -58,6 +58,11 @@ export async function expectShell(page, labSlug) {
   await expect(card).toContainText('Up next');
   await expect(card).toContainText(questionOf(next));
 
+  // Summit's one line: only on a listed tool whose subject is one of the preview's flags, linking the exact preview url
+  const summitLine = SITE.summit?.lines?.[tool.slug] && tool.listed !== false;
+  await expect(page.locator('.desk-summit')).toHaveCount(summitLine ? 1 : 0);
+  if (summitLine) await expect(page.locator('.desk-summit a')).toHaveAttribute('href', SITE.summit.url);
+
   // the education line and the AI note, in the body
   const body = await page.locator('body').innerText();
   expect(body).toContain(SITE.footerNote);

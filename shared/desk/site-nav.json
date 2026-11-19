@@ -1,5 +1,5 @@
 {
-  "_note": "The portfolio site's masthead, shared with every tool's tool bar (redesign v2, step 1). The site's sync-labs check compares nav with src/site.config.ts. origin is where the site lives (share cards and canonical links need absolute URLs).",
+  "_note": "The portfolio site's masthead, shared with every tool's tool bar (redesign v2, step 1). The site's sync-labs check compares nav with src/site.config.ts. origin is where the site lives (share cards and canonical links need absolute URLs). summit: the link to Summit's preview (Mo's planning workbench, in progress; a claude.ai page with an invented household) and its one line on the three tools whose subject is one of the preview's flags; the site's sync-labs check fails if url differs from the site's src/data/summit.json.",
   "origin": "https://mochayeb.com",
   "wordmark": "Mohammed El Chayeb",
   "footerNote": "Education only, not advice.",
@@ -9,5 +9,15 @@
     { "label": "Watch", "href": "/watch/" },
     { "label": "How I build", "href": "/how-i-build/" },
     { "label": "About", "href": "/about/" }
-  ]
+  ],
+  "summit": {
+    "url": "https://claude.ai/artifact/FEjstNweVZMJmeDqEYHGnw",
+    "kicker": "Summit · In progress",
+    "cta": "Open the Summit preview",
+    "lines": {
+      "estate-freeze": "A freeze is one move in a bigger plan. Summit, the planning workbench I’m building, reads an invented household’s company statements and wills, and flags a will written before the corporation.",
+      "tax-dates": "These dates apply to everyone. Summit, the planning workbench I’m building, lists one invented household’s own deadlines, each tied to the document it came from, with who does what.",
+      "your-year": "Summit, the planning workbench I’m building, sets an invented household’s TFSA room against its savings, read from the room statement itself."
+    }
+  }
 }

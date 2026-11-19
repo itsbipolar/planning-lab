@@ -105,6 +105,13 @@ export function upNext(tool) {
   return `<a class="desk-next" data-next href="/tools/${esc(next.slug)}/"><span class="desk-next-k">Up next</span><span class="desk-next-q">${esc(questionOf(next))}</span><span class="desk-next-go" aria-hidden="true">→</span></a>`;
 }
 
+/** Summit's one line (site-nav.json summit.lines), only on a listed tool whose subject is one of the preview's flags. */
+export function summitLine(tool) {
+  const line = SITE.summit?.lines?.[tool.slug];
+  if (!line || !isListed(tool)) return '';
+  return `<div class="desk-summit"><p class="label">${esc(SITE.summit.kicker)}</p><p>${esc(line)}</p><p><a href="${esc(SITE.summit.url)}">${esc(SITE.summit.cta)}<span class="desk-sr"> (opens on claude.ai)</span>&nbsp;<span aria-hidden="true">↗</span></a></p></div>`;
+}
+
 export function notes() {
   return `<p class="desk-notes"><strong>${esc(SITE.footerNote)}</strong> ${esc(SITE.aiNote)}</p>`;
 }
@@ -155,7 +162,7 @@ export function deskPage(html, labSlug) {
     .replace('</head>', () => headTags(html, tool) + '\n</head>')
     .replace('<!--@@TOOLBAR@@-->', () => toolBar(tool, { year: html.includes('<!--@@YEAR@@-->') }))
     .replace('<!--@@NEXT@@-->', () => upNext(tool))
-    .replace('<!--@@NOTES@@-->', () => notes())
+    .replace('<!--@@NOTES@@-->', () => summitLine(tool) + notes())
     // rules replace ornament (redesign v2, step 2): a section label carries no number
     .replace(/(<p class="sec-label"[^>]*>)\s*<b>\d+<\/b>\s*/g, '$1');
   if ((out.match(/data-next/g) || []).length !== 1) throw new Error(`${labSlug}: expected exactly one data-next`);
